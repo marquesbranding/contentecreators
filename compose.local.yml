@@ -1,0 +1,20 @@
+name: contente-creators-local
+
+services:
+  mailpit:
+    image: axllent/mailpit:v1.30.0
+    restart: unless-stopped
+    environment:
+      MP_DATABASE: /data/mailpit.db
+      MP_MAX_MESSAGES: "500"
+      TZ: America/Sao_Paulo
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
+    volumes:
+      - mailpit-data:/data
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  mailpit-data:
