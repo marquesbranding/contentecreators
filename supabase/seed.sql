@@ -202,7 +202,13 @@ values
   ('f0000000-0000-4000-8000-000000000002', 'gastronomia', 'Gastronomia', 20),
   ('f0000000-0000-4000-8000-000000000003', 'moda', 'Moda', 30),
   ('f0000000-0000-4000-8000-000000000004', 'tecnologia', 'Tecnologia', 40),
-  ('f0000000-0000-4000-8000-000000000005', 'viagem', 'Viagem', 50);
+  ('f0000000-0000-4000-8000-000000000005', 'viagem', 'Viagem', 50)
+on conflict (slug) do update
+set
+  name = excluded.name,
+  sort_order = excluded.sort_order,
+  is_active = true,
+  updated_at = now();
 
 insert into public.creator_niches (creator_profile_id, niche_id)
 select

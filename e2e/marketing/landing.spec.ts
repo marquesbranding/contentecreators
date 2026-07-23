@@ -97,6 +97,27 @@ test.describe("public marketing landing", () => {
         dimensions.scrollWidth,
         `horizontal overflow at ${width}px`,
       ).toBeLessThanOrEqual(dimensions.clientWidth);
+
+      const hero = page.getByTestId("marketing-hero");
+      const criticalHeroElements = [
+        hero.getByRole("heading", { level: 1 }),
+        hero.locator('[data-slot="text-animate"]').last(),
+        ...(await hero.getByRole("link").all()),
+      ];
+
+      for (const element of criticalHeroElements) {
+        const box = await element.boundingBox();
+
+        expect(box, `missing hero element box at ${width}px`).not.toBeNull();
+        expect(
+          box!.x,
+          `hero element clipped at ${width}px`,
+        ).toBeGreaterThanOrEqual(0);
+        expect(
+          box!.x + box!.width,
+          `hero element clipped at ${width}px`,
+        ).toBeLessThanOrEqual(width);
+      }
     }
   });
 
@@ -119,6 +140,20 @@ test.describe("public marketing landing", () => {
       await page.addStyleTag({
         content: "nextjs-portal { display: none !important; }",
       });
+
+      for (const animatedText of await page
+        .locator('[data-slot="text-animate"]')
+        .all()) {
+        await animatedText.scrollIntoViewIfNeeded();
+        await expect(animatedText.locator(":scope > span").last()).toHaveCSS(
+          "opacity",
+          "1",
+        );
+      }
+      await page.evaluate(() =>
+        window.scrollTo({ behavior: "instant", left: 0, top: 0 }),
+      );
+      await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 
       await expect(page).toHaveScreenshot(`landing-${width}.png`, {
         animations: "disabled",

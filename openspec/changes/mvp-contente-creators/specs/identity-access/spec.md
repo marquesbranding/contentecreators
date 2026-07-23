@@ -4,10 +4,12 @@
 
 The system SHALL use Supabase Auth and SHALL support email/password and Google authentication. It MUST NOT offer Instagram authentication in the Beta.
 
-#### Scenario: User signs up with email and password
+#### Scenario: User signs up with email, password, and profile
 
-- **WHEN** a visitor submits a valid email and compliant password
-- **THEN** Supabase Auth creates the identity and initiates email confirmation
+- **WHEN** a visitor submits a valid email, compliant password, one public role, and the corresponding complete profile
+- **THEN** one browser request coordinates creation of the Supabase identity, application role, and role-specific profile
+- **AND** Supabase Auth initiates email confirmation before the profile enters moderation
+- **AND** a failed application write is not allowed to leave a reusable partial Auth registration
 
 #### Scenario: User signs in with Google
 
@@ -42,23 +44,31 @@ The system SHALL provide forgot-password and reset-password flows using single-u
 - **WHEN** a user opens an invalid or expired recovery link
 - **THEN** the system refuses the password change and offers a safe way to request a new link
 
-### Requirement: First access requires one application role
+### Requirement: Registration requires one application role
 
-The system SHALL redirect a non-admin authenticated user without a role to first-access role selection. The user SHALL select exactly one role, `INFLUENCER` or `COMPANY`; `ADMIN` MUST NOT be selectable publicly.
+The system SHALL require exactly one role, `INFLUENCER` or `COMPANY`; `ADMIN` MUST NOT be selectable publicly. Email/password registration SHALL capture the role before its combined credential-and-profile submission. A Google-authenticated non-admin without a role SHALL be redirected to a blocking first-access role-selection modal before the corresponding profile form opens.
 
-#### Scenario: New user chooses influencer
+#### Scenario: Email visitor chooses influencer
 
-- **WHEN** a new authenticated user confirms the influencer path
-- **THEN** the account role becomes `INFLUENCER` and the creator onboarding form opens
+- **WHEN** a visitor starts from the influencer landing path or selects influencer on the registration page
+- **THEN** the combined registration form displays influencer-specific fields
+- **AND** successful persistence sets the account role to `INFLUENCER`
 
-#### Scenario: New user chooses company
+#### Scenario: Email visitor chooses company
 
-- **WHEN** a new authenticated user confirms the company path
-- **THEN** the account role becomes `COMPANY` and the company onboarding form opens
+- **WHEN** a visitor starts from the company landing path or selects company on the registration page
+- **THEN** the combined registration form displays company-specific fields
+- **AND** successful persistence sets the account role to `COMPANY`
+
+#### Scenario: New Google user chooses a role
+
+- **WHEN** a Google-authenticated user has no application role
+- **THEN** the application opens a blocking role-selection modal
+- **AND** confirming `INFLUENCER` or `COMPANY` opens only that role’s profile form
 
 #### Scenario: Caller attempts to choose admin
 
-- **WHEN** a non-admin request submits `ADMIN` as a self-selected role
+- **WHEN** a public registration or non-admin first-access request submits `ADMIN`
 - **THEN** the system rejects the request without changing the account
 
 ### Requirement: Self-selected roles are immutable

@@ -1,7 +1,7 @@
 import { ArrowLeft, FileWarning } from "lucide-react";
 import Link from "next/link";
 
-import { BrandLogo } from "@/features/marketing/components/brand-logo";
+import { BrandLogo } from "@/shared/components/brand-logo";
 import { ptBR } from "@/shared/copy/pt-BR";
 
 type LegalPlaceholderPageProps = {

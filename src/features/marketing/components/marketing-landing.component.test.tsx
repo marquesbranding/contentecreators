@@ -82,6 +82,23 @@ describe("MarketingLanding", () => {
     );
   });
 
+  it("uses purposeful Magic UI motion while keeping the content accessible", () => {
+    const { container } = render(<MarketingLanding />);
+
+    expect(
+      container.querySelectorAll('[data-slot="text-animate"]').length,
+    ).toBeGreaterThanOrEqual(3);
+    expect(
+      container.querySelector('[data-slot="aurora-text"]'),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("marketing-motion-strip")).toHaveTextContent(
+      "Creators",
+    );
+    expect(
+      container.querySelector('[data-slot="scroll-velocity-container"]'),
+    ).toBeInTheDocument();
+  });
+
   it("has no serious or critical automated accessibility violations", async () => {
     const { container } = render(<MarketingLanding />);
 

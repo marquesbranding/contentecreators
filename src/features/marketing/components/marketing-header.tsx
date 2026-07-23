@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { BrandLogo } from "@/features/marketing/components/brand-logo";
+import { BrandLogo } from "@/shared/components/brand-logo";
 import { buttonVariants } from "@/shared/components/ui/button";
 import { ptBR } from "@/shared/copy/pt-BR";
 import { cn } from "@/shared/lib/cn";

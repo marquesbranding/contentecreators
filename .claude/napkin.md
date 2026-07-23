@@ -18,6 +18,15 @@
 3. **[2026-07-23] Keep synthetic UUIDs RFC-valid**
    Do instead: use a valid UUID version nibble and variant (for example `...-4000-8000-...`) because PostgreSQL accepts looser UUID strings that strict Zod validation correctly rejects.
 
+4. **[2026-07-23] Preserve the complete Supabase SSR refresh response**
+   Do instead: in Next.js 16 `src/proxy.ts`, copy every refreshed cookie and the current `setAll` response headers onto redirects; keep Proxy limited to refresh plus optimistic routing and repeat authorization in the server DAL/action.
+
+5. **[2026-07-23] Restart Turbopack after adding browser runtime dependencies**
+   Do instead: restart `next dev` after installing packages such as `motion`; an already-running dev process can serve updated markup with a stale client bundle and leave entrance animation elements in their hidden initial state.
+
+6. **[2026-07-23] Keep Base UI value state controlled for the component lifetime**
+   Do instead: initialize selection controls with `null`, never `undefined`, and remount mutually exclusive role-specific form subtrees with a stable role key so inputs do not switch between controlled and uncontrolled modes.
+
 ## Product Requirements
 
 1. **[2026-07-22] Product prompt overrides the roadmap DOCX**

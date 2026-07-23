@@ -9,6 +9,17 @@ The system SHALL provide an `INFLUENCER` onboarding form that collects name, ver
 - **WHEN** an influencer supplies every required review field with valid values and accepts current legal documents
 - **THEN** the profile can be submitted for moderation
 
+#### Scenario: Email influencer registers in one submission
+
+- **WHEN** an anonymous visitor submits valid credentials and all required influencer fields
+- **THEN** one server action creates the identity, `INFLUENCER` account, and creator profile
+- **AND** the prepared profile enters moderation only after email confirmation
+
+#### Scenario: Google influencer completes first access
+
+- **WHEN** a verified Google user selects `INFLUENCER` in the first-access modal and submits valid creator fields
+- **THEN** the profile and moderation submission are committed for that existing identity
+
 #### Scenario: Influencer chooses both creator types
 
 - **WHEN** the submitted creator type contains both `INFLUENCER` and `UGC` or more than one value
@@ -23,6 +34,17 @@ The system SHALL provide a `COMPANY` onboarding form that collects legal name, C
 - **WHEN** a company supplies valid required review fields and accepts current legal documents
 - **THEN** the profile can be submitted for moderation
 
+#### Scenario: Email company registers in one submission
+
+- **WHEN** an anonymous visitor submits valid credentials and all required company fields
+- **THEN** one server action creates the identity, `COMPANY` account, company profile, and primary location
+- **AND** the prepared profile enters moderation only after email confirmation
+
+#### Scenario: Google company completes first access
+
+- **WHEN** a verified Google user selects `COMPANY` in the first-access modal and submits valid company fields
+- **THEN** the company profile, primary location, consent, and moderation submission are committed for that existing identity
+
 #### Scenario: Company submits malformed CNPJ
 
 - **WHEN** a company submits a CNPJ that fails local checksum validation
@@ -30,7 +52,7 @@ The system SHALL provide a `COMPANY` onboarding form that collects legal name, C
 
 ### Requirement: CNPJ lookup assists but never verifies a company
 
-The system SHALL provide authenticated server-side BrasilAPI lookup after a complete checksum-valid CNPJ is entered. It SHALL show loading, success, not-found, unavailable, timeout, and manual-entry states. Returned fields SHALL remain editable and MUST NOT change moderation status or establish legitimacy.
+The system SHALL provide server-side BrasilAPI lookup after a complete checksum-valid CNPJ is entered. Google onboarding requests SHALL require an authenticated identity. The combined email registration flow MAY call the same minimized endpoint before Auth creation, protected by a bounded per-network rate limit because the company profile is completed in the same request as credentials. It SHALL show loading, success, not-found, unavailable, timeout, rate-limited, and manual-entry states. Returned fields SHALL remain editable and MUST NOT change moderation status or establish legitimacy.
 
 #### Scenario: Lookup succeeds
 

@@ -67,6 +67,26 @@ Daily commands:
   Postgres (direct and pooled), Auth, Storage, both email inboxes, and the
   committed private buckets.
 
+## Auth and OAuth callback contract
+
+Configure each stage independently. Never reuse the development Google client
+or Supabase project in production.
+
+| Stage       | Supabase Auth application redirect allowlist                               | Google Console authorized redirect URI                             |
+| ----------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Local       | `http://localhost:3000/auth/callback` and the exact `127.0.0.1` equivalent | `http://127.0.0.1:54321/auth/v1/callback`                          |
+| Development | `https://<contente-creators-dev-domain>/auth/callback`                     | `https://<contente-creators-dev-ref>.supabase.co/auth/v1/callback` |
+| Production  | `https://<contente-creators-prd-domain>/auth/callback`                     | `https://<contente-creators-prd-ref>.supabase.co/auth/v1/callback` |
+
+For each Vercel project, `NEXT_PUBLIC_APP_URL` must be the exact application
+origin represented in its Supabase allowlist. The application callback accepts
+only internal destinations under `/app`, `/onboarding`, `/backoffice`, or
+`/reset-password`; external and protocol-relative return paths fall back to
+`/onboarding/role`. Production must use exact origins—no wildcard preview URLs.
+The real development/production domains, Supabase project references, and
+Google credentials remain client-owned launch configuration and must replace
+the placeholders above before enabling each provider.
+
 The reset script uses the CLI's local-only `stop --no-backup` plus `start`
 sequence. Before running any Supabase command against hosted infrastructure,
 verify the linked project reference and target stage explicitly.

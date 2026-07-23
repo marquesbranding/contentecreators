@@ -1,0 +1,208 @@
+"use server";
+
+import "server-only";
+
+import { redirect } from "next/navigation";
+import type { ZodError } from "zod";
+
+import { parseRegistrationIntent } from "../../domain/registration-intent";
+import {
+  forgotPasswordSchema,
+  loginSchema,
+  resendConfirmationSchema,
+  resetPasswordSchema,
+  signUpSchema,
+} from "../../schemas/auth-form-schemas";
+import type { AuthActionState, AuthFieldName } from "../../types/auth.types";
+import { createServerIdentityAuthService } from "../services/server-identity-auth.service";
+
+function formValue(formData: FormData, key: string) {
+  return formData.get(key);
+}
+
+function validationFailure(error: ZodError, email?: string): AuthActionState {
+  const flattened = error.flatten().fieldErrors as Partial<
+    Record<AuthFieldName, string[] | undefined>
+  >;
+  const fieldErrors: Partial<Record<AuthFieldName, string[]>> = {};
+
+  for (const field of ["email", "password", "passwordConfirmation"] as const) {
+    const messages = flattened[field];
+
+    if (messages?.length) {
+      fieldErrors[field] = messages;
+    }
+  }
+
+  return {
+    fieldErrors,
+    message: "Revise os campos destacados.",
+    status: "error",
+    values: email ? { email } : undefined,
+  };
+}
+
+export async function signInAction(
+  _previousState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = loginSchema.safeParse({
+    email: formValue(formData, "email"),
+    nextPath: formValue(formData, "nextPath"),
+    password: formValue(formData, "password"),
+  });
+
+  if (!parsed.success) {
+    return validationFailure(
+      parsed.error,
+      String(formValue(formData, "email") ?? ""),
+    );
+  }
+
+  const service = await createServerIdentityAuthService();
+  const result = await service.signIn(parsed.data);
+
+  if (result.kind === "redirect") {
+    redirect(result.destination);
+  }
+
+  return {
+    message: result.message,
+    status: "error",
+    values: { email: parsed.data.email },
+  };
+}
+
+export async function signUpAction(
+  _previousState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = signUpSchema.safeParse({
+    email: formValue(formData, "email"),
+    intent: formValue(formData, "intent"),
+    password: formValue(formData, "password"),
+    passwordConfirmation: formValue(formData, "passwordConfirmation"),
+  });
+
+  if (!parsed.success) {
+    return validationFailure(
+      parsed.error,
+      String(formValue(formData, "email") ?? ""),
+    );
+  }
+
+  const service = await createServerIdentityAuthService();
+  const result = await service.signUp(parsed.data);
+
+  if (result.kind === "redirect") {
+    redirect(result.destination);
+  }
+
+  return {
+    message: result.message,
+    status:
+      result.kind === "confirmation_required"
+        ? "confirmation_required"
+        : "error",
+    values: { email: parsed.data.email },
+  };
+}
+
+export async function startGoogleSignInAction(
+  formData: FormData,
+): Promise<void> {
+  const service = await createServerIdentityAuthService();
+  const intent = parseRegistrationIntent(formValue(formData, "intent"));
+  const result = await service.beginGoogleSignIn(
+    formValue(formData, "nextPath"),
+    intent,
+  );
+
+  if (result.kind === "redirect") {
+    redirect(result.url);
+  }
+
+  redirect("/login?error=provider");
+}
+
+export async function resendConfirmationAction(
+  _previousState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = resendConfirmationSchema.safeParse({
+    email: formValue(formData, "email"),
+    intent: formValue(formData, "intent"),
+  });
+
+  if (!parsed.success) {
+    return validationFailure(
+      parsed.error,
+      String(formValue(formData, "email") ?? ""),
+    );
+  }
+
+  const service = await createServerIdentityAuthService();
+  const result = await service.resendConfirmation(
+    parsed.data.email,
+    parsed.data.intent,
+  );
+
+  return {
+    message: result.message,
+    status: "success",
+    values: { email: parsed.data.email },
+  };
+}
+
+export async function forgotPasswordAction(
+  _previousState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = forgotPasswordSchema.safeParse({
+    email: formValue(formData, "email"),
+  });
+
+  if (!parsed.success) {
+    return validationFailure(
+      parsed.error,
+      String(formValue(formData, "email") ?? ""),
+    );
+  }
+
+  const service = await createServerIdentityAuthService();
+  const result = await service.requestPasswordRecovery(parsed.data.email);
+
+  return {
+    message: result.message,
+    status: "success",
+    values: { email: parsed.data.email },
+  };
+}
+
+export async function resetPasswordAction(
+  _previousState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = resetPasswordSchema.safeParse({
+    password: formValue(formData, "password"),
+    passwordConfirmation: formValue(formData, "passwordConfirmation"),
+  });
+
+  if (!parsed.success) {
+    return validationFailure(parsed.error);
+  }
+
+  const service = await createServerIdentityAuthService();
+  const result = await service.updatePassword(parsed.data);
+
+  return {
+    message: result.message,
+    status: result.kind === "success" ? "success" : "error",
+  };
+}
+
+export async function signOutAction(): Promise<void> {
+  const service = await createServerIdentityAuthService();
+  await service.signOut();
+  redirect("/");
+}

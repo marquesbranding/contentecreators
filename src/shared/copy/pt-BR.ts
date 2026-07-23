@@ -62,6 +62,12 @@ export const ptBR = {
         badge: "Pronto para conectar",
       },
     },
+    motionStrip: [
+      "Creators",
+      "Marcas",
+      "Curadoria humana",
+      "Conexões relevantes",
+    ],
     audience: {
       eyebrow: "Feita para os dois lados da parceria",
       title: "Menos ruído. Mais conexão.",

@@ -12,6 +12,12 @@ import Link from "next/link";
 
 import { MarketingHeader } from "@/features/marketing/components/marketing-header";
 import { buildRegistrationHref } from "@/features/marketing/domain/registration-intent";
+import { AuroraText } from "@/registry/magicui/aurora-text";
+import {
+  ScrollVelocityContainer,
+  ScrollVelocityRow,
+} from "@/registry/magicui/scroll-based-velocity";
+import { TextAnimate } from "@/registry/magicui/text-animate";
 import { buttonVariants } from "@/shared/components/ui/button";
 import { ptBR } from "@/shared/copy/pt-BR";
 import { cn } from "@/shared/lib/cn";
@@ -87,6 +93,39 @@ function HeroPreview() {
   );
 }
 
+function MotionStrip() {
+  return (
+    <section
+      aria-label="O que move a Contente Creators"
+      className="bg-brand-blue border-y border-white/15 py-3 text-white sm:py-4"
+      data-testid="marketing-motion-strip"
+    >
+      <ScrollVelocityContainer>
+        <ScrollVelocityRow
+          baseVelocity={2}
+          className="text-sm font-extrabold tracking-[0.12em] uppercase sm:text-base"
+          direction={-1}
+        >
+          <div className="flex items-center">
+            {copy.motionStrip.map((item) => (
+              <span
+                className="flex items-center gap-5 pr-5 sm:gap-8 sm:pr-8"
+                key={item}
+              >
+                <span>{item}</span>
+                <span
+                  aria-hidden="true"
+                  className="bg-brand-lime size-2 shrink-0 rounded-full"
+                />
+              </span>
+            ))}
+          </div>
+        </ScrollVelocityRow>
+      </ScrollVelocityContainer>
+    </section>
+  );
+}
+
 function AudienceSection() {
   return (
     <section
@@ -99,12 +138,16 @@ function AudienceSection() {
           <p className="text-brand-lime text-sm font-extrabold tracking-[0.12em] uppercase">
             {copy.audience.eyebrow}
           </p>
-          <h2
+          <TextAnimate
+            animation="blurInUp"
+            as="h2"
+            by="word"
             className="mt-4 text-4xl leading-[1.02] font-extrabold tracking-[-0.045em] sm:text-5xl lg:text-6xl"
             id="audience-title"
+            once
           >
             {copy.audience.title}
-          </h2>
+          </TextAnimate>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-white/65">
             {copy.audience.description}
           </p>
@@ -203,12 +246,16 @@ function StepsSection() {
             <p className="text-sm font-extrabold tracking-[0.12em] text-[#0059db] uppercase">
               {copy.steps.eyebrow}
             </p>
-            <h2
+            <TextAnimate
+              animation="slideUp"
+              as="h2"
+              by="word"
               className="mt-4 text-4xl leading-[1.04] font-extrabold tracking-[-0.045em] text-black sm:text-5xl"
               id="steps-title"
+              once
             >
               {copy.steps.title}
-            </h2>
+            </TextAnimate>
             <p className="mt-5 max-w-xl text-lg leading-8 text-[#686868]">
               {copy.steps.description}
             </p>
@@ -270,9 +317,15 @@ function FinalCallToAction() {
           <p className="text-sm font-extrabold tracking-[0.12em] text-white uppercase">
             {copy.finalCta.eyebrow}
           </p>
-          <h2 className="mt-4 text-4xl leading-[1.02] font-extrabold tracking-[-0.045em] sm:text-5xl lg:text-6xl">
+          <TextAnimate
+            animation="blurInUp"
+            as="h2"
+            by="word"
+            className="mt-4 text-4xl leading-[1.02] font-extrabold tracking-[-0.045em] sm:text-5xl lg:text-6xl"
+            once
+          >
             {copy.finalCta.title}
-          </h2>
+          </TextAnimate>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-white">
             {copy.finalCta.description}
           </p>
@@ -357,16 +410,37 @@ export function MarketingLanding() {
                 aria-label={copy.hero.title}
                 className="mt-7 text-[clamp(2.9rem,8.5vw,6.7rem)] leading-[0.9] font-extrabold tracking-[-0.065em] text-white"
               >
-                <span aria-hidden="true">
+                <TextAnimate
+                  accessible={false}
+                  animation="blurInUp"
+                  as="span"
+                  by="word"
+                  className="block"
+                  duration={0.55}
+                  startOnView={false}
+                >
                   Creators e marcas,
-                  <span className="text-brand-sky mt-2 block">
+                </TextAnimate>
+                <span className="mt-2 block">
+                  <AuroraText
+                    colors={["#1e9bf0", "#c5f500", "#f5167e", "#1e9bf0"]}
+                    speed={0.8}
+                  >
                     no mesmo ritmo.
-                  </span>
+                  </AuroraText>
                 </span>
               </h1>
-              <p className="mt-7 max-w-2xl text-lg leading-8 text-white/70 sm:text-xl sm:leading-9">
+              <TextAnimate
+                animation="fadeIn"
+                as="p"
+                by="word"
+                className="mt-7 max-w-2xl text-lg leading-8 text-white/70 sm:text-xl sm:leading-9"
+                delay={0.35}
+                duration={0.6}
+                startOnView={false}
+              >
                 {copy.hero.description}
-              </p>
+              </TextAnimate>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
                   className={cn(
@@ -400,6 +474,7 @@ export function MarketingLanding() {
           </div>
         </section>
 
+        <MotionStrip />
         <AudienceSection />
         <StepsSection />
         <FinalCallToAction />

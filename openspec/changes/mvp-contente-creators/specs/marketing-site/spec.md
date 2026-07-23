@@ -12,19 +12,19 @@ The system SHALL provide a public Brazilian Portuguese landing page in the same 
 
 ### Requirement: Audience calls to action preserve registration intent
 
-The system SHALL provide “Sou influencer” and “Sou empresa” calls to action that lead to authentication/registration and preserve the intended onboarding path without assigning a trusted role before successful authentication.
+The system SHALL provide “Sou influencer” and “Sou empresa” calls to action that lead to a combined email/password and role-specific profile registration form. The selected intent SHALL control the visible form variant but SHALL remain untrusted until the server validates it and successfully creates the Auth identity plus application profile.
 
 #### Scenario: Company visitor starts registration
 
 - **WHEN** a visitor activates the “Sou empresa” call to action
-- **THEN** the system opens the authentication flow with company intent preserved
-- **AND** the user still confirms the role after authentication
+- **THEN** the system opens the combined registration flow with the company variant selected
+- **AND** the same submission contains credentials and company profile data
 
 #### Scenario: Influencer visitor starts registration
 
 - **WHEN** a visitor activates the “Sou influencer” call to action
-- **THEN** the system opens the authentication flow with influencer intent preserved
-- **AND** the user still confirms the role after authentication
+- **THEN** the system opens the combined registration flow with the influencer variant selected
+- **AND** the same submission contains credentials and creator profile data
 
 ### Requirement: Public profile and company listings remain disabled
 

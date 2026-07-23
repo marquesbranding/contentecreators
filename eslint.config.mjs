@@ -35,6 +35,11 @@ const eslintConfig = defineConfig([
           partialMatch: false,
         },
         {
+          type: "shared",
+          pattern: "src/registry",
+          partialMatch: false,
+        },
+        {
           type: "test",
           pattern: "src/test",
           partialMatch: false,
@@ -94,6 +99,14 @@ const eslintConfig = defineConfig([
                       type: "feature",
                       captured: {
                         featureName: "{{from.element.captured.featureName}}",
+                      },
+                    },
+                  },
+                  {
+                    element: {
+                      type: "feature",
+                      captured: {
+                        featureName: "audit",
                       },
                     },
                   },
@@ -196,7 +209,7 @@ const eslintConfig = defineConfig([
         {
           patterns: [
             {
-              regex: "^@/features/[^/]+/.+",
+              regex: "^@/features/[^/]+/(?!server$).+",
               message:
                 "Compose a feature through its client-safe index.ts or guarded server.ts public API.",
             },

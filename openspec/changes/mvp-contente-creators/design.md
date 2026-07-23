@@ -244,7 +244,7 @@ Alternative considered: all authorization in `proxy.ts`. Rejected because Proxy 
 
 ### 3. Use Supabase Auth with one identity system and application-owned roles
 
-Supabase Auth is the credential and session authority for email/password and Google OAuth. `@supabase/ssr` supplies browser/server clients and cookie refresh behavior. Email/password registration requires email confirmation before onboarding submission; Google users continue after the OAuth callback. Password recovery uses Supabase Auth templates and the Marques Branding SMTP configuration.
+Supabase Auth is the credential and session authority for email/password and Google OAuth. `@supabase/ssr` supplies browser/server clients and cookie refresh behavior. Email/password registration starts from an explicit landing-page or registration-form role choice and submits credentials plus the complete role-specific profile in one browser request. The server creates the Auth identity and application profile as one coordinated workflow, compensating the Auth identity if application persistence fails. Email confirmation remains required before that prepared profile can enter moderation. Google users continue after the OAuth callback, choose exactly one role in a blocking first-access modal, and then submit the corresponding profile form. Password recovery uses Supabase Auth templates and the Marques Branding SMTP configuration.
 
 The application role is stored in `accounts.role`, not editable Auth metadata:
 
@@ -252,7 +252,7 @@ The application role is stored in `accounts.role`, not editable Auth metadata:
 - `INFLUENCER`: creator-facing account area. `creator_profiles.creator_type` is exactly one of `INFLUENCER` or `UGC`.
 - `COMPANY`: company-facing account area.
 
-The first successful non-admin login with no selected role redirects to `/onboarding/role`. Role selection is a one-time self-service operation. Changing it later requires an audited administrator operation because profile shape, catalog policy, and moderation evidence differ by role.
+An email/password visitor chooses `INFLUENCER` or `COMPANY` before the combined registration submission; the trusted role is written only after Supabase Auth successfully creates the identity. A Google-authenticated non-admin without a role redirects to `/onboarding/role`, where a blocking modal requires the same one-time choice before the role-specific profile form opens. Role selection is a one-time self-service operation in both paths. Changing it later requires an audited administrator operation because profile shape, catalog policy, and moderation evidence differ by role.
 
 `/backoffice/login` is a dedicated administrative entry experience but uses the same Supabase Auth project. A non-admin who authenticates there is signed out of the attempted backoffice flow and receives a generic access-denied response. The initial admin is provisioned by a server-only bootstrap script from an explicit email; later admins are invited/provisioned by an existing admin. Public admin sign-up does not exist.
 

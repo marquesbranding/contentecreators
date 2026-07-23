@@ -95,41 +95,41 @@
 
 ## 8. Supabase Auth and session flows
 
-- [ ] 8.1 Write failing tests for email sign-up, email confirmation gating, login errors without enumeration, logout, recovery, callback validation, and Google intent return paths. `[identity-access]`
-- [ ] 8.2 Implement browser/server Supabase SSR clients with correct cookie adapters and no service-role leakage. `[identity-access]`
-- [ ] 8.3 Implement Next.js 16 `src/proxy.ts` for Supabase cookie refresh and cheap protected-route redirects while preserving all response cookies/headers. `[identity-access]`
-- [ ] 8.4 Add email/password registration and login forms with shared server validation, loading, disabled, error, and success states in `pt-BR`. `[identity-access]`
-- [ ] 8.5 Add Google OAuth initiation/callback with allowlisted return destinations and local/dev/prd callback configuration. `[identity-access]`
-- [ ] 8.6 Add email-confirmation pending/resend experience and server enforcement before profile submission. `[identity-access]`
-- [ ] 8.7 Add forgot/reset password pages and single-use/expired-token handling without user enumeration. `[identity-access]`
-- [ ] 8.8 Add secure logout and test that protected data is removed after session termination. `[identity-access]`
+- [x] 8.1 Write failing tests for email sign-up, email confirmation gating, login errors without enumeration, logout, recovery, callback validation, and Google intent return paths. `[identity-access]`
+- [x] 8.2 Implement browser/server Supabase SSR clients with correct cookie adapters and no service-role leakage. `[identity-access]`
+- [x] 8.3 Implement Next.js 16 `src/proxy.ts` for Supabase cookie refresh and cheap protected-route redirects while preserving all response cookies/headers. `[identity-access]`
+- [x] 8.4 Replace the standalone email/password sign-up with a combined credentials + selected role + role-specific profile form, preserving shared server validation and accessible `pt-BR` states. `[identity-access] [onboarding-profiles]`
+- [x] 8.5 Add Google OAuth initiation/callback with allowlisted return destinations and local/dev/prd callback configuration. `[identity-access]`
+- [x] 8.6 Add email-confirmation pending/resend experience and server enforcement before profile submission. `[identity-access]`
+- [x] 8.7 Add forgot/reset password pages and single-use/expired-token handling without user enumeration. `[identity-access]`
+- [x] 8.8 Add secure logout and test that protected data is removed after session termination. `[identity-access]`
 - [ ] 8.9 Add dedicated `/backoffice/login` behavior that admits only `ADMIN` after shared Supabase authentication. `[identity-access] [backoffice-operations]`
 - [ ] 8.10 Add an idempotent, server-only initial-admin bootstrap script and authorized subsequent-admin provisioning flow with audit. `[identity-access]`
 
 ## 9. Role selection and banned-identity enforcement
 
-- [ ] 9.1 Write failing domain/action tests for one-time `INFLUENCER`/`COMPANY` selection, public `ADMIN` rejection, role immutability, and safe preserved marketing intent. `[identity-access]`
-- [ ] 9.2 Build the first-access role-selection page and accessible confirmation copy for role consequences. `[identity-access]`
-- [ ] 9.3 Implement the atomic role-selection action and route decision service for role/status destinations. `[identity-access]`
+- [x] 9.1 Write failing domain/action tests for one-time `INFLUENCER`/`COMPANY` selection, public `ADMIN` rejection, role immutability, and safe preserved marketing intent. `[identity-access]`
+- [x] 9.2 Present first-access role selection as a blocking accessible modal for roleless Google users, with explicit role consequences. `[identity-access]`
+- [x] 9.3 Implement the atomic role-selection action and route decision service for role/status destinations. `[identity-access]`
 - [ ] 9.4 Add a database/Auth hook or supported pre-user-creation defense for known blocked identities and test email/Google variants. `[identity-access]`
 - [ ] 9.5 Add post-auth banned-account defense, session revocation/administrative Auth ban, and blocked `pt-BR` status experience. `[identity-access] [moderation-lifecycle]`
 - [ ] 9.6 Add tests documenting the explicit limitation that another unknown identity is outside automated antifraud scope. `[identity-access]`
 
 ## 10. Shared onboarding domain and consent
 
-- [ ] 10.1 Write failing Zod/domain tests for shared email, WhatsApp, URL, text lengths, enum, number, and consent rules with safe `pt-BR` messages. `[onboarding-profiles]`
+- [x] 10.1 Write failing Zod/domain tests for shared email, WhatsApp, URL, text lengths, enum, number, and consent rules with safe `pt-BR` messages. `[onboarding-profiles]`
 - [ ] 10.2 Implement owner-scoped draft save/load with optimistic version checks and stale-tab conflict handling. `[onboarding-profiles]`
 - [ ] 10.3 Add legal-document seeds/fixtures and unselected Terms/Privacy/contact-visibility consent controls. `[audit-compliance]`
-- [ ] 10.4 Implement version/hash/timestamp consent persistence in the onboarding submission transaction. `[audit-compliance]`
+- [x] 10.4 Implement version/hash/timestamp consent persistence in the onboarding submission transaction. `[audit-compliance]`
 - [ ] 10.5 Implement a role/status route decision component that shows onboarding, analysis, correction, suspended, banned, or approved destinations without premature catalog reads. `[moderation-lifecycle]`
 - [ ] 10.6 Build a shared mobile-first form shell with step/progress semantics, accessible error summary, autosave status, leave protection, and submit confirmation. `[onboarding-profiles]`
 
 ## 11. Influencer and UGC onboarding/profile
 
-- [ ] 11.1 Write failing tests for required review fields and exclusive `INFLUENCER | UGC` creator type. `[onboarding-profiles]`
-- [ ] 11.2 Define and seed the initial niche taxonomy and supported social-platform enum with client-review placeholders clearly tracked. `[onboarding-profiles]`
-- [ ] 11.3 Implement influencer schema/actions for name, WhatsApp, creator type, city/UF, niches, bio, and social profiles. `[onboarding-profiles]`
-- [ ] 11.4 Implement dated self-reported follower/engagement metric snapshots and presentation labels. `[onboarding-profiles]`
+- [x] 11.1 Write failing tests for required review fields and exclusive `INFLUENCER | UGC` creator type. `[onboarding-profiles]`
+- [x] 11.2 Define and seed the initial niche taxonomy and supported social-platform enum with client-review placeholders clearly tracked. `[onboarding-profiles]`
+- [x] 11.3 Implement influencer schema/actions for name, WhatsApp, creator type, city/UF, niches, bio, and social profiles. `[onboarding-profiles]`
+- [x] 11.4 Implement dated self-reported follower/engagement metric snapshots and presentation labels. `[onboarding-profiles]`
 - [ ] 11.5 Integrate avatar/cover uploads and replacement into the influencer form. `[onboarding-profiles]`
 - [ ] 11.6 Build the responsive influencer onboarding steps with loading, validation, save, restore, empty, and failure states. `[onboarding-profiles]`
 - [ ] 11.7 Implement influencer profile read/edit for approved users with immediate audited publication and no status reset. `[onboarding-profiles]`
@@ -137,11 +137,11 @@
 
 ## 12. Company onboarding and CNPJ assistance
 
-- [ ] 12.1 Write failing CNPJ normalization/checksum tests including punctuation, invalid digits, and valid examples. `[onboarding-profiles]`
-- [ ] 12.2 Implement the authenticated BrasilAPI adapter/DTO with timeout, bounded retry, typed errors, and raw-response minimization. `[onboarding-profiles]`
-- [ ] 12.3 Add per-account/privacy-safe network rate limiting and bounded successful-response caching for CNPJ lookup. `[onboarding-profiles]`
+- [x] 12.1 Write failing CNPJ normalization/checksum tests including punctuation, invalid digits, and valid examples. `[onboarding-profiles]`
+- [ ] 12.2 Implement the server-side BrasilAPI adapter/DTO with timeout, bounded retry, typed errors, raw-response minimization, authenticated Google access, and the rate-limited pre-Auth combined-registration exception. `[onboarding-profiles]`
+- [x] 12.3 Add per-account or privacy-safe pre-Auth network rate limiting and bounded successful-response caching for CNPJ lookup. `[onboarding-profiles]`
 - [ ] 12.4 Write contract tests for BrasilAPI success, not found, malformed data, timeout, rate limit, and provider outage. `[onboarding-profiles]`
-- [ ] 12.5 Implement `/api/company-registry/cnpj/[cnpj]` with authentication, checksum validation, safe mapping, and observability that omits CNPJ. `[onboarding-profiles]`
+- [ ] 12.5 Implement `/api/company-registry/cnpj/[cnpj]` with authenticated Google access, the bounded combined-registration exception, checksum validation, safe mapping, and observability that omits CNPJ. `[onboarding-profiles]`
 - [ ] 12.6 Implement company schema/actions for legal/trade name, CNPJ, employee range, segment, WhatsApp, description, website/social links, and optimistic versioning. `[onboarding-profiles]`
 - [ ] 12.7 Implement multiple company locations with exactly one primary location and BrasilAPI field proposals that remain editable. `[onboarding-profiles]`
 - [ ] 12.8 Integrate logo/cover uploads and replacement into the company form. `[onboarding-profiles]`
@@ -162,7 +162,7 @@
 - [ ] 14.1 Write the complete failing unit test matrix for all allowed/forbidden transitions, required reasons, actor roles, stale versions, and terminal banned behavior. `[moderation-lifecycle]`
 - [ ] 14.2 Implement the pure moderation policy and typed commands/results. `[moderation-lifecycle]`
 - [ ] 14.3 Add database constraints/functions that reinforce allowed transitions and reason/actor requirements. `[moderation-lifecycle]`
-- [ ] 14.4 Implement first submission as one transaction: validation, consent, case/event, `PENDING_REVIEW`, audit, and outbox intent. `[moderation-lifecycle]`
+- [x] 14.4 Implement first submission as one transaction: validation, consent, case/event, `PENDING_REVIEW`, audit, and outbox intent. `[moderation-lifecycle]`
 - [ ] 14.5 Implement `CHANGES_REQUESTED` owner edit/resubmission with incremented submission sequence and preserved history. `[moderation-lifecycle]`
 - [ ] 14.6 Implement idempotency keys and stale-profile-version protection for user/admin moderation commands. `[moderation-lifecycle]`
 - [ ] 14.7 Implement approval, correction request, suspension, restoration, ban, exceptional unban, and archive transactions. `[moderation-lifecycle]`
@@ -244,7 +244,7 @@
 
 - [x] 21.1 Write failing route/data tests proving anonymous public pages never query or serialize participant/profile/logo listing data. `[marketing-site]`
 - [x] 21.2 Distill approved brand assets/tokens and create the mobile-first marketing visual system without copying competitor branding or unsupported claims. `[marketing-site]`
-- [x] 21.3 Build header/hero with “Sou influencer”, “Sou empresa”, and “Entrar”, preserving untrusted role intent through Auth. `[marketing-site]`
+- [x] 21.3 Build header/hero with “Sou influencer”, “Sou empresa”, and “Entrar”, routing the untrusted intent to the matching combined registration variant. `[marketing-site]`
 - [x] 21.4 Build audience benefit/problem sections and a concise three- or four-step “Como funciona” sequence. `[marketing-site]`
 - [ ] 21.5 Add the optional generic public promotional slot with protected-profile suppression. `[marketing-site] [sponsorship-placements]`
 - [ ] 21.6 Build final CTA/footer with approved support/privacy contact, Terms, and Privacy routes. `[marketing-site] [audit-compliance]`
@@ -299,8 +299,8 @@
 
 ## 26. End-to-end acceptance journeys
 
-- [ ] 26.1 Write E2E for public landing → influencer intent → email registration/confirmation → role selection → influencer onboarding → pending analysis fallback. `[marketing-site] [identity-access] [onboarding-profiles]`
-- [ ] 26.2 Write E2E for Google callback substitute → company role → successful CNPJ autofill → editable fields → company onboarding → pending fallback. `[identity-access] [onboarding-profiles]`
+- [ ] 26.1 Write E2E for public landing → influencer intent → one combined email/creator registration request → confirmation → pending analysis fallback, with no second role-selection step. `[marketing-site] [identity-access] [onboarding-profiles]`
+- [ ] 26.2 Write E2E for Google callback substitute → blocking company-role modal → successful CNPJ autofill → editable company onboarding → pending fallback. `[identity-access] [onboarding-profiles]`
 - [ ] 26.3 Write E2E for BrasilAPI timeout/unavailable → manual company completion → successful submission. `[onboarding-profiles]`
 - [ ] 26.4 Write E2E for admin queue → full review → changes request with reason → user correction/resubmission → approval → email outbox. `[moderation-lifecycle] [backoffice-operations]`
 - [ ] 26.5 Write E2E proving pending/changes-requested/suspended/banned direct catalog requests receive no listing/detail data. `[moderation-lifecycle] [private-catalog]`
