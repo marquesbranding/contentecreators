@@ -16,11 +16,13 @@ import { useSubmitConfirmation } from "@/shared/hooks/use-submit-confirmation";
 import { useUnsavedChangesGuard } from "@/shared/hooks/use-unsaved-changes-guard";
 
 import { useOnboardingAutosave } from "../hooks/use-onboarding-autosave";
+import type { CorrectedProfileResubmissionCommand } from "../schemas/corrected-profile-resubmission-schema";
 import type { OnboardingAction } from "../types/onboarding-action.types";
 import { initialOnboardingActionState } from "../types/onboarding-action.types";
 import type {
   OnboardingDraftAction,
   OnboardingDraftClientDto,
+  OnboardingDraftPayload,
 } from "../types/onboarding-draft.types";
 import { FormErrorSummary, mergeFieldErrors } from "./form-error-summary";
 import { OnboardingAutosaveStatus } from "./onboarding-autosave-status";
@@ -29,14 +31,18 @@ import { ProfileFormFields } from "./profile-form-fields.client";
 
 export function ProfileOnboardingForm({
   action,
+  correctionCommand,
   draftAction,
   initialDraft,
+  initialValues,
   mediaFields,
   role,
 }: {
   action: OnboardingAction;
+  correctionCommand?: CorrectedProfileResubmissionCommand;
   draftAction: OnboardingDraftAction;
   initialDraft: OnboardingDraftClientDto | null;
+  initialValues?: OnboardingDraftPayload;
   mediaFields?: React.ReactNode;
   role: "INFLUENCER" | "COMPANY";
 }) {
@@ -75,6 +81,25 @@ export function ProfileOnboardingForm({
         }
       >
         <input name="role" type="hidden" value={role} />
+        {correctionCommand ? (
+          <>
+            <input
+              name="expectedAccountVersion"
+              type="hidden"
+              value={correctionCommand.expectedAccountVersion}
+            />
+            <input
+              name="expectedProfileVersion"
+              type="hidden"
+              value={correctionCommand.expectedProfileVersion}
+            />
+            <input
+              name="resubmissionIdempotencyKey"
+              type="hidden"
+              value={correctionCommand.idempotencyKey}
+            />
+          </>
+        ) : null}
         <OnboardingAutosaveStatus status={autosave.status} />
         {state.message ? (
           <Alert aria-live="polite" variant="destructive">
@@ -89,7 +114,8 @@ export function ProfileOnboardingForm({
           fieldErrors={state.fieldErrors}
           getFieldErrors={formValidation.getFieldErrors}
           initialValues={
-            initialDraft?.role === role ? initialDraft.payload : undefined
+            initialValues ??
+            (initialDraft?.role === role ? initialDraft.payload : undefined)
           }
           onFieldChange={formValidation.clearFieldError}
           role={role}

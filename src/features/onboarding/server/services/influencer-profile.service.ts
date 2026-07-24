@@ -25,6 +25,7 @@ export interface InfluencerProfileRepository {
     accountId: string,
     input: InfluencerProfileEditInput,
     requestId: string,
+    auditReason?: string,
   ): Promise<InfluencerProfileUpdateResult>;
 }
 

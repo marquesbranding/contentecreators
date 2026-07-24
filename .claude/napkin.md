@@ -30,6 +30,9 @@
 7. **[2026-07-24] Publish each completed implementation wave**
    Do instead: after the relevant validations pass, commit the finished scoped changes and push the current branch without waiting for a separate reminder.
 
+8. **[2026-07-24] Serialize local integration test files that share Supabase**
+   Do instead: keep the Vitest integration project on `fileParallelism: false` with Docker-tolerant test/hook timeouts; parallel files can observe committed fixtures from other suites, choose unstable plans, or deadlock on shared tables.
+
 ## Product Requirements
 
 1. **[2026-07-22] Product prompt overrides the roadmap DOCX**

@@ -159,12 +159,12 @@
 
 ## 14. Moderation state machine and atomic submission
 
-- [ ] 14.1 Write the complete failing unit test matrix for all allowed/forbidden transitions, required reasons, actor roles, stale versions, and terminal banned behavior. `[moderation-lifecycle]`
-- [ ] 14.2 Implement the pure moderation policy and typed commands/results. `[moderation-lifecycle]`
-- [ ] 14.3 Add database constraints/functions that reinforce allowed transitions and reason/actor requirements. `[moderation-lifecycle]`
+- [x] 14.1 Write the complete failing unit test matrix for all allowed/forbidden transitions, required reasons, actor roles, stale versions, and terminal banned behavior. `[moderation-lifecycle]`
+- [x] 14.2 Implement the pure moderation policy and typed commands/results. `[moderation-lifecycle]`
+- [x] 14.3 Add database constraints/functions that reinforce allowed transitions and reason/actor requirements. `[moderation-lifecycle]`
 - [x] 14.4 Implement first submission as one transaction: validation, consent, case/event, `PENDING_REVIEW`, audit, and outbox intent. `[moderation-lifecycle]`
-- [ ] 14.5 Implement `CHANGES_REQUESTED` owner edit/resubmission with incremented submission sequence and preserved history. `[moderation-lifecycle]`
-- [ ] 14.6 Implement idempotency keys and stale-profile-version protection for user/admin moderation commands. `[moderation-lifecycle]`
+- [x] 14.5 Implement `CHANGES_REQUESTED` owner edit/resubmission with incremented submission sequence and preserved history. `[moderation-lifecycle]`
+- [x] 14.6 Implement idempotency keys and stale-profile-version protection for user/admin moderation commands. `[moderation-lifecycle]`
 - [ ] 14.7 Implement approval, correction request, suspension, restoration, ban, exceptional unban, and archive transactions. `[moderation-lifecycle]`
 - [ ] 14.8 Implement blocked-identity creation/removal and Auth session/ban side effects for ban/unban with retryable operational handling. `[moderation-lifecycle] [identity-access]`
 - [ ] 14.9 Add integration tests proving every transition atomically creates the correct event, revision, outbox item, cache invalidation, and visibility. `[moderation-lifecycle]`

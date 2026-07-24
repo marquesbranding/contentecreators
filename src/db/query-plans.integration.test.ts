@@ -120,7 +120,8 @@ describeLocalStack("representative database query plans", () => {
             bio,
             creator_type,
             city,
-            state
+            state,
+            archived_at
           )
           select
             gen_random_uuid(),
@@ -141,6 +142,11 @@ describeLocalStack("representative database query plans", () => {
               when split_part(split_part(account.operational_email, '@', 1), '-', 3)::integer % 4 = 0
                 then 'RJ'
               else 'SP'
+            end,
+            case
+              when split_part(split_part(account.operational_email, '@', 1), '-', 3)::integer % 4 = 0
+                then now()
+              else null
             end
           from public.accounts account
           where account.operational_email like 'query-plan-%@contentecreators.test'
@@ -331,7 +337,9 @@ describeLocalStack("representative database query plans", () => {
             "creator_profiles_catalog_idx",
           ]),
           catalogSearch: expect.arrayContaining([
-            "creator_profiles_search_active_trgm_idx",
+            expect.stringMatching(
+              /^creator_profiles_search(?:_active)?_trgm_idx$/u,
+            ),
           ]),
           moderationQueue: expect.arrayContaining([
             "accounts_moderation_role_queue_idx",

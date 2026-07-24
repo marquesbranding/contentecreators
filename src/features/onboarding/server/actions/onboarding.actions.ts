@@ -8,11 +8,13 @@ import { getPublicEnv } from "@/shared/lib/env/public-env";
 import { createServerSupabaseClient } from "@/shared/server/supabase/server-client";
 
 import { readAdditionalCompanyLocations } from "../../domain/company-location-form-data";
+import { correctedProfileResubmissionCommandSchema } from "../../schemas/corrected-profile-resubmission-schema";
 import {
   emailRegistrationSchema,
   googleProfileSchema,
 } from "../../schemas/onboarding-form-schema";
 import type { OnboardingActionState } from "../../types/onboarding-action.types";
+import { createServerCorrectedProfileResubmissionService } from "../services/server-corrected-profile-resubmission.service";
 import { createServerOnboardingRegistrationService } from "../services/server-onboarding-registration.service";
 
 function formPayload(formData: FormData) {
@@ -121,6 +123,52 @@ export async function submitGoogleProfileAction(
 
   if (!user?.email) {
     redirect("/login?next=%2Fonboarding%2Frole");
+  }
+
+  const rawIdempotencyKey = formData.get("resubmissionIdempotencyKey");
+  if (rawIdempotencyKey) {
+    const command = correctedProfileResubmissionCommandSchema.safeParse({
+      expectedAccountVersion: formData.get("expectedAccountVersion"),
+      expectedProfileVersion: formData.get("expectedProfileVersion"),
+      idempotencyKey: rawIdempotencyKey,
+    });
+
+    if (!command.success) {
+      return {
+        message:
+          "Este formulário está desatualizado. Recarregue a página antes de reenviar.",
+        status: "error",
+        values: { role: parsed.data.role },
+      };
+    }
+
+    try {
+      const correctionService =
+        await createServerCorrectedProfileResubmissionService();
+      const correctionResult = await correctionService.resubmit({
+        command: command.data,
+        profile: parsed.data,
+        requestId: crypto.randomUUID(),
+      });
+
+      if (correctionResult.kind === "conflict") {
+        return {
+          message:
+            "Seu cadastro foi atualizado em outra aba. Recarregue a página e revise os dados antes de reenviar.",
+          status: "error",
+          values: { role: parsed.data.role },
+        };
+      }
+    } catch {
+      return {
+        message:
+          "Não foi possível reenviar as correções. Revise os dados ou tente novamente.",
+        status: "error",
+        values: { role: parsed.data.role },
+      };
+    }
+
+    redirect("/app/status/analysis");
   }
 
   const service = await createServerOnboardingRegistrationService();

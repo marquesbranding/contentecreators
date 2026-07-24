@@ -25,6 +25,7 @@ export interface CompanyProfileRepository {
     accountId: string,
     input: CompanyProfileEditInput,
     requestId: string,
+    auditReason?: string,
   ): Promise<CompanyProfileUpdateResult>;
 }
 

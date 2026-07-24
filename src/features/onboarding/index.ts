@@ -19,6 +19,7 @@ export type {
   ProfileCompletionRole,
   ProfileCompletionResult,
 } from "./domain/profile-completion";
+export type { CorrectedProfileResubmissionCommand } from "./schemas/corrected-profile-resubmission-schema";
 export type {
   InfluencerProfileAction,
   InfluencerProfileDto,

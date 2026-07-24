@@ -71,9 +71,11 @@ export const moderationEvents = pgTable(
     toStatus: accountStatusEnum("to_status").notNull(),
     action: moderationActionEnum("action").notNull(),
     reason: text("reason"),
-    actorAccountId: uuid("actor_account_id").references(() => accounts.id, {
-      onDelete: "restrict",
-    }),
+    actorAccountId: uuid("actor_account_id")
+      .notNull()
+      .references(() => accounts.id, {
+        onDelete: "restrict",
+      }),
     idempotencyKey: varchar("idempotency_key", { length: 160 }).notNull(),
     occurredAt: timestamp("occurred_at", { withTimezone: true })
       .notNull()
@@ -95,11 +97,15 @@ export const moderationEvents = pgTable(
     ),
     check(
       "moderation_events_transition_check",
-      sql`${table.fromStatus} <> ${table.toStatus}`,
+      sql`(
+        (${table.action} = 'ARCHIVE' and ${table.fromStatus} = ${table.toStatus})
+        or
+        (${table.action} <> 'ARCHIVE' and ${table.fromStatus} <> ${table.toStatus})
+      )`,
     ),
     check(
       "moderation_events_reason_check",
-      sql`${table.action} not in ('REQUEST_CHANGES', 'SUSPEND', 'BAN', 'UNBAN', 'ARCHIVE')
+      sql`${table.action} not in ('REQUEST_CHANGES', 'SUSPEND', 'RESTORE', 'BAN', 'UNBAN', 'ARCHIVE')
           or length(trim(${table.reason})) >= 3`,
     ),
   ],

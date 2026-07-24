@@ -3,7 +3,7 @@
 **Status:** em desenvolvimento
 **Data-base do acompanhamento:** 24/07/2026
 **OpenSpec relacionado:** `mvp-contente-creators`
-**Progresso atual:** 130 de 252 entregas concluídas (51,6%); 122 entregas pendentes.
+**Progresso atual:** 135 de 252 entregas concluídas (53,6%); 117 entregas pendentes.
 
 ## 1. Objetivo do produto
 
@@ -259,12 +259,12 @@ O produto deve permitir que:
 
 > Como administrador, quero decidir o ciclo de vida de cada cadastro com motivos, confirmação e histórico; como usuário, quero corrigir e reenviar quando solicitado e receber uma experiência adequada ao meu status.
 
-- [ ] `14.1` Testar todas as transições permitidas/proibidas, motivos, papéis, versões obsoletas e terminalidade do banimento.
-- [ ] `14.2` Implementar policy pura de moderação e comandos/resultados tipados.
-- [ ] `14.3` Reforçar transições, motivos e atores por constraints/funções no banco.
+- [x] `14.1` Testar todas as transições permitidas/proibidas, motivos, papéis, versões obsoletas e terminalidade do banimento.
+- [x] `14.2` Implementar policy pura de moderação e comandos/resultados tipados.
+- [x] `14.3` Reforçar transições, motivos e atores por constraints/funções no banco.
 - [x] `14.4` Implementar primeira submissão atômica com validação, consentimento, caso/evento, `PENDING_REVIEW`, auditoria e intenção de e-mail.
-- [ ] `14.5` Permitir edição/reenvio em `CHANGES_REQUESTED`, incrementando a sequência e preservando o histórico.
-- [ ] `14.6` Adicionar idempotência e proteção de versão obsoleta aos comandos de usuário/admin.
+- [x] `14.5` Permitir edição/reenvio em `CHANGES_REQUESTED`, incrementando a sequência e preservando o histórico.
+- [x] `14.6` Adicionar idempotência e proteção de versão obsoleta aos comandos de usuário/admin.
 - [ ] `14.7` Implementar transações de aprovação, correção, suspensão, restauração, banimento, desbanimento excepcional e arquivamento.
 - [ ] `14.8` Implementar bloqueio/desbloqueio de identidade e efeitos sobre Auth/sessão com tratamento operacional retryable.
 - [ ] `14.9` Testar que cada transição cria atomicamente evento, revisão, outbox, invalidação de cache e visibilidade correta.

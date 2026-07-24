@@ -224,7 +224,13 @@ export function createDrizzleInfluencerProfileRepository(): InfluencerProfileRep
   return {
     loadApprovedProfile: loadProfile,
 
-    async updateApprovedProfile(transaction, accountId, input, requestId) {
+    async updateApprovedProfile(
+      transaction,
+      accountId,
+      input,
+      requestId,
+      auditReason = "Update approved influencer profile",
+    ) {
       const [currentProfile] = await transaction
         .select({
           id: creatorProfiles.id,
@@ -255,7 +261,7 @@ export function createDrizzleInfluencerProfileRepository(): InfluencerProfileRep
         actorAccountId: accountId,
         actorRole: "INFLUENCER",
         actorType: "USER",
-        reason: "Update approved influencer profile",
+        reason: auditReason,
         requestId,
         source: "APPLICATION",
       });

@@ -184,7 +184,13 @@ export function createDrizzleCompanyProfileRepository(): CompanyProfileRepositor
   return {
     loadApprovedProfile: loadProfile,
 
-    async updateApprovedProfile(transaction, accountId, input, requestId) {
+    async updateApprovedProfile(
+      transaction,
+      accountId,
+      input,
+      requestId,
+      auditReason = "Update approved company profile",
+    ) {
       const [currentProfile] = await transaction
         .select({
           id: companyProfiles.id,
@@ -215,7 +221,7 @@ export function createDrizzleCompanyProfileRepository(): CompanyProfileRepositor
         actorAccountId: accountId,
         actorRole: "COMPANY",
         actorType: "USER",
-        reason: "Update approved company profile",
+        reason: auditReason,
         requestId,
         source: "APPLICATION",
       });

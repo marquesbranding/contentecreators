@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createServerSupabaseClient } from "@/shared/server/supabase/server-client";
 
 import { createServerOnboardingRegistrationService } from "../services/server-onboarding-registration.service";
+import { createServerCorrectedProfileResubmissionService } from "../services/server-corrected-profile-resubmission.service";
 import {
   registerWithEmailAction,
   submitGoogleProfileAction,
@@ -23,10 +24,16 @@ vi.mock("@/shared/server/supabase/server-client", () => ({
 vi.mock("../services/server-onboarding-registration.service", () => ({
   createServerOnboardingRegistrationService: vi.fn(),
 }));
+vi.mock("../services/server-corrected-profile-resubmission.service", () => ({
+  createServerCorrectedProfileResubmissionService: vi.fn(),
+}));
 
 const mockedCreateServerSupabaseClient = vi.mocked(createServerSupabaseClient);
 const mockedCreateRegistrationService = vi.mocked(
   createServerOnboardingRegistrationService,
+);
+const mockedCreateCorrectionService = vi.mocked(
+  createServerCorrectedProfileResubmissionService,
 );
 
 function completeCreatorProfile() {
@@ -146,6 +153,40 @@ describe("onboarding actions", () => {
         role: "INFLUENCER",
       }),
     });
+    expect(redirect).toHaveBeenCalledWith("/app/status/analysis");
+  });
+
+  it("resubmits a corrected profile with stable idempotency and expected versions", async () => {
+    const redirectSignal = new Error("NEXT_REDIRECT");
+    const resubmit = vi.fn().mockResolvedValue({ kind: "submitted" });
+    mockedCreateCorrectionService.mockResolvedValue({ resubmit });
+    redirect.mockImplementation(() => {
+      throw redirectSignal;
+    });
+    const formData = completeCreatorProfile();
+    formData.set("expectedAccountVersion", "3");
+    formData.set("expectedProfileVersion", "5");
+    formData.set(
+      "resubmissionIdempotencyKey",
+      "99000000-0000-4000-8000-000000000001",
+    );
+
+    await expect(
+      submitGoogleProfileAction({ status: "idle" }, formData),
+    ).rejects.toBe(redirectSignal);
+
+    expect(resubmit).toHaveBeenCalledWith({
+      command: {
+        expectedAccountVersion: 3,
+        expectedProfileVersion: 5,
+        idempotencyKey: "99000000-0000-4000-8000-000000000001",
+      },
+      profile: expect.objectContaining({
+        role: "INFLUENCER",
+      }),
+      requestId: expect.any(String),
+    });
+    expect(mockedCreateRegistrationService).not.toHaveBeenCalled();
     expect(redirect).toHaveBeenCalledWith("/app/status/analysis");
   });
 

@@ -15,6 +15,7 @@ import {
 } from "@/features/onboarding";
 import {
   loadCurrentOnboardingDraft,
+  loadCurrentCorrectionContext,
   saveOnboardingDraftAction,
   submitGoogleProfileAction,
 } from "@/features/onboarding/server";
@@ -42,6 +43,13 @@ export default async function InfluencerOnboardingPage() {
     loadCurrentOnboardingDraft(),
     loadCurrentInfluencerMediaFormState(),
   ]);
+  const correctionContext = correctionRequested
+    ? await loadCurrentCorrectionContext()
+    : undefined;
+
+  if (correctionRequested && !correctionContext) {
+    redirect("/app");
+  }
 
   return (
     <OnboardingFormShell
@@ -54,8 +62,10 @@ export default async function InfluencerOnboardingPage() {
     >
       <ProfileOnboardingForm
         action={submitGoogleProfileAction}
+        correctionCommand={correctionContext?.command}
         draftAction={saveOnboardingDraftAction}
         initialDraft={initialDraft}
+        initialValues={correctionContext?.initialValues}
         mediaFields={
           <InfluencerMediaFields
             actions={{

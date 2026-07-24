@@ -71,6 +71,9 @@ export default defineConfig({
           include: ["src/**/*.integration.test.{ts,tsx}"],
           globalSetup: ["./src/test/setup-local-stack.ts"],
           setupFiles: ["./src/test/setup-integration.ts"],
+          fileParallelism: false,
+          hookTimeout: 20_000,
+          testTimeout: 20_000,
           clearMocks: true,
           restoreMocks: true,
           sequence: {
