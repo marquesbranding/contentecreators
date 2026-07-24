@@ -53,9 +53,7 @@ export interface OnboardingDraftRepository {
 }
 
 export type OnboardingDraftErrorCode =
-  | "INVALID_INPUT"
-  | "ROLE_MISMATCH"
-  | "STATUS_FORBIDDEN";
+  "INVALID_INPUT" | "ROLE_MISMATCH" | "STATUS_FORBIDDEN";
 
 export class OnboardingDraftError extends Error {
   constructor(readonly code: OnboardingDraftErrorCode) {
@@ -73,10 +71,7 @@ function requireDraftOwner(owner: OwnerDraftContext): asserts owner is {
     throw new OnboardingDraftError("ROLE_MISMATCH");
   }
 
-  if (
-    owner.status !== "ONBOARDING" &&
-    owner.status !== "CHANGES_REQUESTED"
-  ) {
+  if (owner.status !== "ONBOARDING" && owner.status !== "CHANGES_REQUESTED") {
     throw new OnboardingDraftError("STATUS_FORBIDDEN");
   }
 }

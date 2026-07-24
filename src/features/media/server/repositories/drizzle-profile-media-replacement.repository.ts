@@ -10,6 +10,7 @@ import {
   type CurrentAccountDto,
   type VerifiedAccountTransactionRunner,
 } from "@/features/identity/server";
+import { persistCurrentAccountProfileCompletion } from "@/features/onboarding/server";
 
 import { isMediaPurposeAllowed } from "../../domain/media-upload-policy";
 import type { ProfileMediaPurpose } from "../../types/media-upload.types";
@@ -247,6 +248,14 @@ export function createDrizzleProfileMediaReplacementRepository({
           if (!profileVersion) {
             throw new Error("Profile media reference update failed.");
           }
+          if (account.role !== "INFLUENCER" && account.role !== "COMPANY") {
+            throw new AccountAccessError("ROLE_FORBIDDEN");
+          }
+          await persistCurrentAccountProfileCompletion(
+            transaction,
+            account.id,
+            account.role,
+          );
 
           return {
             assetId: pendingAsset.id,

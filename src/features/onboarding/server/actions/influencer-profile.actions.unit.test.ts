@@ -6,6 +6,9 @@ import { updateInfluencerProfileAction } from "./influencer-profile.actions";
 vi.mock("../services/server-influencer-profile.service", () => ({
   createServerInfluencerProfileService: vi.fn(),
 }));
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
 
 const mockedCreateService = vi.mocked(createServerInfluencerProfileService);
 

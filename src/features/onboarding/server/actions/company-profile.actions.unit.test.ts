@@ -6,6 +6,9 @@ import { updateCompanyProfileAction } from "./company-profile.actions";
 vi.mock("../services/server-company-profile.service", () => ({
   createServerCompanyProfileService: vi.fn(),
 }));
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
 
 const mockedCreateService = vi.mocked(createServerCompanyProfileService);
 

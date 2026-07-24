@@ -33,8 +33,7 @@ function createRunner(
     status: "ONBOARDING",
   },
 ): OwnerDraftTransactionRunner {
-  return async (_request, work) =>
-    work({} as ApplicationTransaction, owner);
+  return async (_request, work) => work({} as ApplicationTransaction, owner);
 }
 
 function createRepository(
@@ -95,15 +94,12 @@ describe("onboarding draft service", () => {
     });
 
     expect(result.kind).toBe("saved");
-    expect(repository.saveOwnerDraft).toHaveBeenCalledWith(
-      expect.anything(),
-      {
-        accountId: "a0000000-0000-4000-8000-000000000001",
-        expectedVersion: 0,
-        payload: creatorPayload,
-        role: "INFLUENCER",
-      },
-    );
+    expect(repository.saveOwnerDraft).toHaveBeenCalledWith(expect.anything(), {
+      accountId: "a0000000-0000-4000-8000-000000000001",
+      expectedVersion: 0,
+      payload: creatorPayload,
+      role: "INFLUENCER",
+    });
   });
 
   it("rejects unknown or unsafe fields instead of persisting them", async () => {
@@ -114,14 +110,14 @@ describe("onboarding draft service", () => {
     });
 
     const unsafeInput = {
-        expectedVersion: 0,
-        payload: {
-          displayName: "Joana",
-          password: "NaoDeveSerPersistida123",
-        },
-        requestId: "request-invalid",
-        role: "INFLUENCER",
-      } as unknown as Parameters<typeof service.saveOwnerDraft>[0];
+      expectedVersion: 0,
+      payload: {
+        displayName: "Joana",
+        password: "NaoDeveSerPersistida123",
+      },
+      requestId: "request-invalid",
+      role: "INFLUENCER",
+    } as unknown as Parameters<typeof service.saveOwnerDraft>[0];
 
     await expect(service.saveOwnerDraft(unsafeInput)).rejects.toEqual(
       new OnboardingDraftError("INVALID_INPUT"),

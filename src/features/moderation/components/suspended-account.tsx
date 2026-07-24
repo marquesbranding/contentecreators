@@ -20,7 +20,7 @@ export function SuspendedAccount({
     <main className="bg-brand-canvas relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-10">
       <div
         aria-hidden="true"
-        className="bg-amber-400/15 absolute -top-40 left-1/2 size-[34rem] -translate-x-1/2 rounded-full blur-3xl"
+        className="absolute -top-40 left-1/2 size-[34rem] -translate-x-1/2 rounded-full bg-amber-400/15 blur-3xl"
       />
       <Card className="relative w-full max-w-xl gap-0 overflow-hidden rounded-3xl py-0 shadow-[0_28px_80px_rgba(8,8,8,0.1)]">
         <CardHeader className="items-start gap-4 border-b px-6 py-7 sm:px-9 sm:py-9">

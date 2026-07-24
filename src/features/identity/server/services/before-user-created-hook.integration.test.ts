@@ -189,8 +189,7 @@ describeLocalStack("Before User Created blocked-identity hook", () => {
   it("is wired into local Supabase Auth and prevents the blocked email user row", async () => {
     const blockedEmail = "blocked-auth-hook@contentecreators.test";
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const publishableKey =
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
     if (!supabaseUrl || !publishableKey) {
       throw new Error("Local Supabase public test configuration is missing.");
@@ -232,9 +231,7 @@ describeLocalStack("Before User Created blocked-identity hook", () => {
       email: blockedEmail,
       password: "LocalBlocked123!",
     });
-    const [persistedIdentity] = await database<
-      [{ exists: boolean }]
-    >`
+    const [persistedIdentity] = await database<[{ exists: boolean }]>`
       select exists (
         select 1
         from auth.users
@@ -248,9 +245,7 @@ describeLocalStack("Before User Created blocked-identity hook", () => {
   });
 
   it("documents the MVP limit by allowing a different unknown email and provider subject", async () => {
-    const [result] = await database<
-      [{ hook_result: Record<string, unknown> }]
-    >`
+    const [result] = await database<[{ hook_result: Record<string, unknown> }]>`
       select public.before_user_created(
         ${database.json(
           eventFor({

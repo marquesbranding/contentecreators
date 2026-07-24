@@ -143,6 +143,8 @@ describeLocalStack("onboarding registration repository", () => {
     const [result] = await sqlClient<
       {
         cnpj: string;
+        completion_percentage: number;
+        completion_version: number;
         location_count: number;
         moderation_count: number;
         primary_location_count: number;
@@ -154,6 +156,8 @@ describeLocalStack("onboarding registration repository", () => {
       select
         account.role::text,
         account.status::text,
+        account.completion_percentage,
+        account.completion_version,
         profile.cnpj,
         (
           select count(*)::integer
@@ -189,6 +193,8 @@ describeLocalStack("onboarding registration repository", () => {
 
     expect(result).toEqual({
       cnpj: "11222333000181",
+      completion_percentage: 80,
+      completion_version: 1,
       location_count: 3,
       moderation_count: 1,
       primary_location_count: 1,

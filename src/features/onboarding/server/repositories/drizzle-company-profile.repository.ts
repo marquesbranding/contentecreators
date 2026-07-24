@@ -9,6 +9,7 @@ import { applyVerifiedAuditContext } from "@/features/audit/server";
 import type { CompanyProfileEditInput } from "../../schemas/company-profile-edit-schema";
 import type { CompanyProfileDto } from "../../types/company-profile.types";
 import type { CompanyProfileRepository } from "../services/company-profile.service";
+import { persistCurrentAccountProfileCompletion } from "./drizzle-profile-completion.repository";
 
 function normalizeWhatsapp(value: string) {
   const digits = value.replace(/\D/gu, "");
@@ -277,6 +278,11 @@ export function createDrizzleCompanyProfileRepository(): CompanyProfileRepositor
         .where(eq(companyLocations.id, primaryLocation.id));
       await replaceAdditionalLocations(transaction, currentProfile.id, input);
       await updateCompanySocial(transaction, accountId, input);
+      await persistCurrentAccountProfileCompletion(
+        transaction,
+        accountId,
+        "COMPANY",
+      );
 
       const profile = await loadProfile(transaction, accountId);
       if (!profile) {

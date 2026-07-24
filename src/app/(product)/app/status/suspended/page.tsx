@@ -9,8 +9,6 @@ export const metadata: Metadata = {
 
 export default function SuspendedAccountPage() {
   return (
-    <AccountStatusBoundary
-      renderApproved={() => redirect("/app/catalog")}
-    />
+    <AccountStatusBoundary renderApproved={() => redirect("/app/catalog")} />
   );
 }

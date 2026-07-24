@@ -2,6 +2,8 @@
 
 import "server-only";
 
+import { revalidatePath } from "next/cache";
+
 import {
   activateProfileMediaSchema,
   finalizeMediaUploadSchema,
@@ -29,11 +31,16 @@ export async function activateProfileMediaAction(
 
   try {
     const service = await createServerProfileMediaReplacementService();
-
-    return service.activateProfileMedia({
+    const result = await service.activateProfileMedia({
       ...parsed.data,
       requestId: crypto.randomUUID(),
     });
+
+    if (result.kind === "activated") {
+      revalidatePath("/app/profile");
+    }
+
+    return result;
   } catch {
     return {
       code: "STORAGE_UNAVAILABLE",

@@ -150,12 +150,12 @@
 
 ## 13. Profile completion service
 
-- [ ] 13.1 Define documented versioned completion weights for influencer/UGC and company required/optional fields. `[onboarding-profiles]`
-- [ ] 13.2 Write failing unit tests for empty, partial, complete, invalidated, media, location, social, and metric combinations. `[onboarding-profiles]`
-- [ ] 13.3 Implement the pure completion calculator returning percentage and missing-field keys. `[onboarding-profiles]`
-- [ ] 13.4 Persist/recalculate completion after relevant changes without using it as approval. `[onboarding-profiles]`
-- [ ] 13.5 Build owner completion indicator/checklist in correct `pt-BR`. `[onboarding-profiles]`
-- [ ] 13.6 Add integration tests proving account detail and dashboard aggregates use the same calculator version. `[onboarding-profiles] [backoffice-operations]`
+- [x] 13.1 Define documented versioned completion weights for influencer/UGC and company required/optional fields. `[onboarding-profiles]`
+- [x] 13.2 Write failing unit tests for empty, partial, complete, invalidated, media, location, social, and metric combinations. `[onboarding-profiles]`
+- [x] 13.3 Implement the pure completion calculator returning percentage and missing-field keys. `[onboarding-profiles]`
+- [x] 13.4 Persist/recalculate completion after relevant changes without using it as approval. `[onboarding-profiles]`
+- [x] 13.5 Build owner completion indicator/checklist in correct `pt-BR`. `[onboarding-profiles]`
+- [x] 13.6 Add integration tests proving account detail and dashboard aggregates use the same calculator version. `[onboarding-profiles] [backoffice-operations]`
 
 ## 14. Moderation state machine and atomic submission
 

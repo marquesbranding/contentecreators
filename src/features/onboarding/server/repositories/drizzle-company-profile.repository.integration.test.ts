@@ -40,6 +40,10 @@ describeLocalStack("Drizzle approved company profile repository", () => {
   it("publishes audited company, location and social edits without resetting APPROVED", async () => {
     let proof:
       | {
+          accountCompletion: {
+            percentage: number;
+            version: number;
+          };
           accountStatus: string;
           auditRows: { entityTable: string; operation: string }[];
           locationCount: number;
@@ -128,7 +132,11 @@ describeLocalStack("Drizzle approved company profile repository", () => {
 
         await transaction.execute(sql.raw("reset role"));
         const [account] = await transaction
-          .select({ status: accounts.status })
+          .select({
+            completionPercentage: accounts.completionPercentage,
+            completionVersion: accounts.completionVersion,
+            status: accounts.status,
+          })
           .from(accounts)
           .where(eq(accounts.id, companyContext.accountId));
         const [profile] = await transaction
@@ -167,6 +175,10 @@ describeLocalStack("Drizzle approved company profile repository", () => {
         }
 
         proof = {
+          accountCompletion: {
+            percentage: account.completionPercentage,
+            version: account.completionVersion,
+          },
           accountStatus: account.status,
           auditRows,
           locationCount: locationCounts.locationCount,
@@ -184,6 +196,10 @@ describeLocalStack("Drizzle approved company profile repository", () => {
     }
 
     expect(proof).toMatchObject({
+      accountCompletion: {
+        percentage: 80,
+        version: 1,
+      },
       accountStatus: "APPROVED",
       locationCount: 2,
       primaryCount: 1,
@@ -203,10 +219,8 @@ describeLocalStack("Drizzle approved company profile repository", () => {
         { entityTable: "company_locations", operation: "UPDATE" },
         { entityTable: "company_locations", operation: "INSERT" },
         { entityTable: "social_profiles", operation: "INSERT" },
+        { entityTable: "accounts", operation: "UPDATE" },
       ]),
-    );
-    expect(proof?.auditRows).not.toContainEqual(
-      expect.objectContaining({ entityTable: "accounts" }),
     );
   });
 });

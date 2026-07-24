@@ -2,7 +2,12 @@ import { asc, eq, sql } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { createDatabaseClient } from "@/db/client";
-import { auditRevisions, creatorProfiles, mediaAssets } from "@/db/schema";
+import {
+  accounts,
+  auditRevisions,
+  creatorProfiles,
+  mediaAssets,
+} from "@/db/schema";
 import type {
   VerifiedAccountContext,
   VerifiedAccountTransactionRunner,
@@ -33,6 +38,10 @@ describeLocalStack("Drizzle profile media replacement repository", () => {
   it("activates a new object, archives its predecessor and preserves both histories", async () => {
     let result:
       | {
+          accountCompletion: {
+            percentage: number;
+            version: number;
+          };
           auditRows: {
             actorAccountId: string | null;
             entityId: string;
@@ -146,6 +155,13 @@ describeLocalStack("Drizzle profile media replacement repository", () => {
           .select({ avatarAssetId: creatorProfiles.avatarAssetId })
           .from(creatorProfiles)
           .where(eq(creatorProfiles.accountId, creatorContext.accountId));
+        const [account] = await transaction
+          .select({
+            completionPercentage: accounts.completionPercentage,
+            completionVersion: accounts.completionVersion,
+          })
+          .from(accounts)
+          .where(eq(accounts.id, creatorContext.accountId));
         const auditRows = await transaction
           .select({
             actorAccountId: auditRevisions.actorAccountId,
@@ -158,6 +174,10 @@ describeLocalStack("Drizzle profile media replacement repository", () => {
           .orderBy(asc(auditRevisions.revision));
 
         result = {
+          accountCompletion: {
+            percentage: account?.completionPercentage ?? -1,
+            version: account?.completionVersion ?? -1,
+          },
           auditRows,
           first,
           mediaRows,
@@ -173,6 +193,10 @@ describeLocalStack("Drizzle profile media replacement repository", () => {
     }
 
     expect(result).toEqual({
+      accountCompletion: {
+        percentage: 85,
+        version: 1,
+      },
       auditRows: [
         {
           actorAccountId: creatorContext.accountId,
@@ -190,6 +214,12 @@ describeLocalStack("Drizzle profile media replacement repository", () => {
           actorAccountId: creatorContext.accountId,
           entityId: "d0000000-0000-4000-8000-000000000004",
           entityTable: "creator_profiles",
+          operation: "UPDATE",
+        },
+        {
+          actorAccountId: creatorContext.accountId,
+          entityId: creatorContext.accountId,
+          entityTable: "accounts",
           operation: "UPDATE",
         },
       ],

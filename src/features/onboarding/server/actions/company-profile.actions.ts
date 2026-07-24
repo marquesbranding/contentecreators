@@ -2,6 +2,8 @@
 
 import "server-only";
 
+import { revalidatePath } from "next/cache";
+
 import { readAdditionalCompanyLocations } from "../../domain/company-location-form-data";
 import { companyProfileEditSchema } from "../../schemas/company-profile-edit-schema";
 import type { CompanyProfileActionState } from "../../types/company-profile.types";
@@ -69,6 +71,7 @@ export async function updateCompanyProfileAction(
       };
     }
 
+    revalidatePath("/app/profile");
     return {
       message: "Perfil da empresa atualizado com sucesso.",
       profileVersion: result.profile.version,

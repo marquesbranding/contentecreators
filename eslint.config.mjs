@@ -131,6 +131,26 @@ const eslintConfig = defineConfig([
             {
               from: {
                 element: {
+                  type: "feature",
+                  captured: {
+                    featureName: "media",
+                  },
+                },
+              },
+              allow: {
+                to: {
+                  element: {
+                    type: "feature",
+                    captured: {
+                      featureName: "onboarding",
+                    },
+                  },
+                },
+              },
+            },
+            {
+              from: {
+                element: {
                   type: "shared",
                 },
               },

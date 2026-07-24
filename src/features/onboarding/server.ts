@@ -6,6 +6,7 @@ export { updateCompanyProfileAction } from "./server/actions/company-profile.act
 export { loadCurrentOnboardingDraft } from "./server/queries/onboarding-draft.queries";
 export { loadCurrentInfluencerProfile } from "./server/queries/influencer-profile.queries";
 export { loadCurrentCompanyProfile } from "./server/queries/company-profile.queries";
+export { loadCurrentProfileCompletion } from "./server/queries/profile-completion.queries";
 export {
   registerWithEmailAction,
   resendPreparedRegistrationConfirmationAction,
@@ -16,3 +17,9 @@ export { consumeCnpjLookupCapacity } from "./server/services/cnpj-lookup-rate-li
 export { createServerCnpjLookupRouteHandler } from "./server/route-handlers/cnpj-lookup-route-handler";
 export { createServerOnboardingDraftService } from "./server/services/server-onboarding-draft.service";
 export { createServerOnboardingRegistrationService } from "./server/services/server-onboarding-registration.service";
+export {
+  calculateProfileCompletionForAccount,
+  loadProfileCompletionAggregate,
+  persistCurrentAccountProfileCompletion,
+  persistProfileCompletionDirect,
+} from "./server/repositories/drizzle-profile-completion.repository";

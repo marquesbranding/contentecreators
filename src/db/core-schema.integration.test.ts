@@ -54,6 +54,7 @@ const requiredTables = [
   "moderation_cases",
   "moderation_events",
   "niches",
+  "onboarding_drafts",
   "social_profiles",
   "sponsorship_placements",
 ] as const;

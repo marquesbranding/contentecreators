@@ -9,10 +9,14 @@ import {
   prepareMediaUploadAction,
 } from "@/features/media/server";
 import { AccountStatusBoundary } from "@/features/moderation/server";
-import { OnboardingFormShell } from "@/features/onboarding";
+import {
+  OnboardingFormShell,
+  ProfileCompletionIndicator,
+} from "@/features/onboarding";
 import {
   loadCurrentInfluencerProfile,
   loadCurrentCompanyProfile,
+  loadCurrentProfileCompletion,
   updateCompanyProfileAction,
   updateInfluencerProfileAction,
 } from "@/features/onboarding/server";
@@ -28,9 +32,10 @@ export default function ProfilePage() {
     <AccountStatusBoundary
       renderApproved={async (account) => {
         if (account.role === "COMPANY") {
-          const [profile, mediaState] = await Promise.all([
+          const [profile, mediaState, completion] = await Promise.all([
             loadCurrentCompanyProfile(),
             loadCurrentCompanyMediaFormState(),
+            loadCurrentProfileCompletion(),
           ]);
 
           return (
@@ -40,16 +45,22 @@ export default function ProfilePage() {
               progressLabel="Dados, localidades e imagens"
               title="Edite o perfil da empresa"
             >
-              <CompanyProfileEditor
-                action={updateCompanyProfileAction}
-                mediaActions={{
-                  activate: activateProfileMediaAction,
-                  finalize: finalizeMediaUploadAction,
-                  prepare: prepareMediaUploadAction,
-                }}
-                mediaState={mediaState}
-                profile={profile}
-              />
+              <div className="space-y-8">
+                <ProfileCompletionIndicator
+                  completion={completion}
+                  role="COMPANY"
+                />
+                <CompanyProfileEditor
+                  action={updateCompanyProfileAction}
+                  mediaActions={{
+                    activate: activateProfileMediaAction,
+                    finalize: finalizeMediaUploadAction,
+                    prepare: prepareMediaUploadAction,
+                  }}
+                  mediaState={mediaState}
+                  profile={profile}
+                />
+              </div>
             </OnboardingFormShell>
           );
         }
@@ -58,9 +69,10 @@ export default function ProfilePage() {
           redirect("/app/catalog");
         }
 
-        const [profile, mediaState] = await Promise.all([
+        const [profile, mediaState, completion] = await Promise.all([
           loadCurrentInfluencerProfile(),
           loadCurrentInfluencerMediaFormState(),
+          loadCurrentProfileCompletion(),
         ]);
 
         return (
@@ -70,16 +82,22 @@ export default function ProfilePage() {
             progressLabel="Dados e imagens"
             title="Edite seu perfil de creator"
           >
-            <ProfileEditor
-              action={updateInfluencerProfileAction}
-              mediaActions={{
-                activate: activateProfileMediaAction,
-                finalize: finalizeMediaUploadAction,
-                prepare: prepareMediaUploadAction,
-              }}
-              mediaState={mediaState}
-              profile={profile}
-            />
+            <div className="space-y-8">
+              <ProfileCompletionIndicator
+                completion={completion}
+                role="INFLUENCER"
+              />
+              <ProfileEditor
+                action={updateInfluencerProfileAction}
+                mediaActions={{
+                  activate: activateProfileMediaAction,
+                  finalize: finalizeMediaUploadAction,
+                  prepare: prepareMediaUploadAction,
+                }}
+                mediaState={mediaState}
+                profile={profile}
+              />
+            </div>
           </OnboardingFormShell>
         );
       }}

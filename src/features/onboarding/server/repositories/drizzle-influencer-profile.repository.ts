@@ -15,6 +15,7 @@ import { applyVerifiedAuditContext } from "@/features/audit/server";
 import type { InfluencerProfileEditInput } from "../../schemas/influencer-profile-edit-schema";
 import type { InfluencerProfileDto } from "../../types/influencer-profile.types";
 import type { InfluencerProfileRepository } from "../services/influencer-profile.service";
+import { persistCurrentAccountProfileCompletion } from "./drizzle-profile-completion.repository";
 
 function normalizeWhatsapp(value: string) {
   const digits = value.replace(/\D/gu, "");
@@ -291,6 +292,11 @@ export function createDrizzleInfluencerProfileRepository(): InfluencerProfileRep
         accountId,
         currentProfile.id,
         input,
+      );
+      await persistCurrentAccountProfileCompletion(
+        transaction,
+        accountId,
+        "INFLUENCER",
       );
 
       const profile = await loadProfile(transaction, accountId);

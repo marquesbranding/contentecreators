@@ -34,6 +34,7 @@ import type {
   EmailRegistrationInput,
   GoogleProfileInput,
 } from "../../schemas/onboarding-form-schema";
+import { calculateProfileCompletionForAccount } from "./drizzle-profile-completion.repository";
 import type { OnboardingRegistrationRepository } from "../services/onboarding-registration.service";
 
 type ProfileInput = EmailRegistrationInput | GoogleProfileInput;
@@ -487,11 +488,17 @@ async function submitPreparedAccount(
     submissionSequence: 1,
     toStatus: "PENDING_REVIEW",
   });
+  const completion = await calculateProfileCompletionForAccount(
+    transaction,
+    account.id,
+    account.role,
+  );
 
   await transaction
     .update(accounts)
     .set({
-      completionPercentage: 100,
+      completionPercentage: completion.percentage,
+      completionVersion: completion.version,
       status: "PENDING_REVIEW",
       submittedAt: now,
       updatedAt: now,

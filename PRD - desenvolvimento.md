@@ -3,7 +3,7 @@
 **Status:** em desenvolvimento
 **Data-base do acompanhamento:** 24/07/2026
 **OpenSpec relacionado:** `mvp-contente-creators`
-**Progresso atual:** 112 de 252 entregas concluídas (44,4%); 140 entregas pendentes.
+**Progresso atual:** 130 de 252 entregas concluídas (51,6%); 122 entregas pendentes.
 
 ## 1. Objetivo do produto
 
@@ -248,12 +248,12 @@ O produto deve permitir que:
 
 > Como usuário, quero saber quanto do meu perfil está completo e o que falta; como administrador, quero usar exatamente a mesma regra nas análises e métricas.
 
-- [ ] `13.1` Definir pesos versionados para campos obrigatórios e opcionais de criador/UGC e empresa.
-- [ ] `13.2` Testar combinações vazias, parciais, completas, invalidadas, de mídia, local, rede e métrica.
-- [ ] `13.3` Implementar calculadora pura que retorne porcentagem e chaves dos campos faltantes.
-- [ ] `13.4` Recalcular/persistir completude após mudanças relevantes sem tratá-la como aprovação.
-- [ ] `13.5` Exibir indicador e checklist de completude ao proprietário em `pt-BR`.
-- [ ] `13.6` Provar que detalhe da conta e dashboard usam a mesma versão da calculadora.
+- [x] `13.1` Definir pesos versionados para campos obrigatórios e opcionais de criador/UGC e empresa.
+- [x] `13.2` Testar combinações vazias, parciais, completas, invalidadas, de mídia, local, rede e métrica.
+- [x] `13.3` Implementar calculadora pura que retorne porcentagem e chaves dos campos faltantes.
+- [x] `13.4` Recalcular/persistir completude após mudanças relevantes sem tratá-la como aprovação.
+- [x] `13.5` Exibir indicador e checklist de completude ao proprietário em `pt-BR`.
+- [x] `13.6` Provar que detalhe da conta e dashboard usam a mesma versão da calculadora.
 
 ### HU-14 — Moderação e ciclo de vida da conta
 

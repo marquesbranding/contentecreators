@@ -43,6 +43,10 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
   it("publishes an audited owner edit without resetting APPROVED and rejects a stale version", async () => {
     let proof:
       | {
+          accountCompletion: {
+            percentage: number;
+            version: number;
+          };
           accountStatus: string;
           auditRows: { entityTable: string; operation: string }[];
           metric: {
@@ -219,7 +223,11 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
 
         await transaction.execute(sql.raw("reset role"));
         const [account] = await transaction
-          .select({ status: accounts.status })
+          .select({
+            completionPercentage: accounts.completionPercentage,
+            completionVersion: accounts.completionVersion,
+            status: accounts.status,
+          })
           .from(accounts)
           .where(eq(accounts.id, creatorContext.accountId));
         const [profile] = await transaction
@@ -277,6 +285,10 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
         }
 
         proof = {
+          accountCompletion: {
+            percentage: account.completionPercentage,
+            version: account.completionVersion,
+          },
           accountStatus: account.status,
           auditRows,
           metric,
@@ -295,6 +307,10 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
     }
 
     expect(proof).toMatchObject({
+      accountCompletion: {
+        percentage: 69,
+        version: 1,
+      },
       accountStatus: "APPROVED",
       metric: {
         engagementRate: "6.7500",
@@ -324,10 +340,8 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
         { entityTable: "creator_niches", operation: "INSERT" },
         { entityTable: "social_profiles", operation: "UPDATE" },
         { entityTable: "creator_metric_snapshots", operation: "INSERT" },
+        { entityTable: "accounts", operation: "UPDATE" },
       ]),
-    );
-    expect(proof?.auditRows).not.toContainEqual(
-      expect.objectContaining({ entityTable: "accounts" }),
     );
   });
 });

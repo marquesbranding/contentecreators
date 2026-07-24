@@ -2,6 +2,8 @@
 
 import "server-only";
 
+import { revalidatePath } from "next/cache";
+
 import { influencerProfileEditSchema } from "../../schemas/influencer-profile-edit-schema";
 import type { InfluencerProfileActionState } from "../../types/influencer-profile.types";
 import { createServerInfluencerProfileService } from "../services/server-influencer-profile.service";
@@ -62,6 +64,7 @@ export async function updateInfluencerProfileAction(
       };
     }
 
+    revalidatePath("/app/profile");
     return {
       message: "Perfil atualizado com sucesso.",
       profileVersion: result.profile.version,
