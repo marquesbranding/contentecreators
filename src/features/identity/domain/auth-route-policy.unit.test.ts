@@ -26,6 +26,7 @@ describe("optimistic auth route policy", () => {
     "/forgot-password",
     "/reset-password",
     "/auth/callback?code=abc",
+    "/app/status/blocked",
     "/privacy",
   ])("allows the public path %s", (requestPath) => {
     expect(

@@ -67,6 +67,16 @@ export const sponsorshipPlacements = pgTable(
     index("sponsorship_placements_advertiser_idx")
       .on(table.advertiserAccountId, table.id)
       .where(sql`${table.archivedAt} is null`),
+    index("sponsorship_placements_delivery_idx")
+      .on(
+        table.slotKey,
+        table.audience,
+        table.sortOrder,
+        table.id,
+        table.startsAt,
+        table.endsAt,
+      )
+      .where(sql`${table.isActive} and ${table.archivedAt} is null`),
     check(
       "sponsorship_placements_slot_key_check",
       sql`${table.slotKey} ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'`,

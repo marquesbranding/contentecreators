@@ -3,7 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createServerSupabaseClient } from "@/shared/server/supabase/server-client";
 
 import { createServerOnboardingRegistrationService } from "../services/server-onboarding-registration.service";
-import { submitGoogleProfileAction } from "./onboarding.actions";
+import {
+  registerWithEmailAction,
+  submitGoogleProfileAction,
+} from "./onboarding.actions";
 
 const { redirect } = vi.hoisted(() => ({
   redirect: vi.fn(),
@@ -29,8 +32,10 @@ const mockedCreateRegistrationService = vi.mocked(
 function completeCreatorProfile() {
   const formData = new FormData();
   const fields = {
+    avatarAssetId: "79000000-0000-4000-8000-000000000031",
     bio: "Crio conteúdo de tecnologia e produtividade para a internet.",
     city: "São Paulo",
+    coverAssetId: "79000000-0000-4000-8000-000000000032",
     creatorType: "INFLUENCER",
     displayName: "Joana Cria",
     engagementRate: "4.25",
@@ -48,6 +53,52 @@ function completeCreatorProfile() {
   Object.entries(fields).forEach(([name, value]) => formData.set(name, value));
   formData.append("nicheSlugs", "tecnologia");
 
+  return formData;
+}
+
+function completeCompanyRegistration() {
+  const formData = new FormData();
+  const fields = {
+    city: "São Paulo",
+    cnpj: "11.222.333/0001-81",
+    complement: "",
+    description:
+      "Empresa de tecnologia que busca creators para campanhas institucionais.",
+    email: "empresa@example.com",
+    employeeRange: "11_TO_50",
+    legalName: "Empresa Exemplo Ltda.",
+    neighborhood: "Centro",
+    number: "100",
+    password: "StrongPass1",
+    passwordConfirmation: "StrongPass1",
+    postalCode: "01001-000",
+    privacyAccepted: "on",
+    role: "COMPANY",
+    segment: "Tecnologia",
+    socialPlatform: "LINKEDIN",
+    socialUrl: "HTTPS://LinkedIn.COM:443/company/empresa-exemplo/#sobre",
+    state: "SP",
+    street: "Praça da Sé",
+    termsAccepted: "on",
+    tradeName: "Empresa Exemplo",
+    websiteUrl: "https://empresa.example",
+    whatsapp: "(11) 99999-9999",
+  };
+
+  Object.entries(fields).forEach(([name, value]) => formData.set(name, value));
+  const additionalLocation = {
+    city: "Curitiba",
+    complement: "",
+    label: "Filial Sul",
+    neighborhood: "Centro",
+    number: "120",
+    postalCode: "80010-000",
+    state: "PR",
+    street: "Rua das Flores",
+  };
+  Object.entries(additionalLocation).forEach(([name, value]) => {
+    formData.set(`additionalLocations.branch-south.${name}`, value);
+  });
   return formData;
 }
 
@@ -90,9 +141,67 @@ describe("onboarding actions", () => {
       email: "joana@example.com",
       identityId: "91000000-0000-4000-8000-000000000010",
       profile: expect.objectContaining({
+        avatarAssetId: "79000000-0000-4000-8000-000000000031",
+        coverAssetId: "79000000-0000-4000-8000-000000000032",
         role: "INFLUENCER",
       }),
     });
     expect(redirect).toHaveBeenCalledWith("/app/status/analysis");
+  });
+
+  it("never echoes credentials or private profile fields in an Action validation DTO", async () => {
+    const formData = completeCreatorProfile();
+    formData.set("email", "joana@example.com");
+    formData.set("password", "raw-password");
+    formData.set("passwordConfirmation", "different-password");
+
+    const result = await registerWithEmailAction({ status: "idle" }, formData);
+    const serializedResult = JSON.stringify(result);
+
+    expect(result).toMatchObject({
+      status: "error",
+      values: {
+        email: "joana@example.com",
+        role: "INFLUENCER",
+      },
+    });
+    expect(serializedResult).not.toContain("raw-password");
+    expect(serializedResult).not.toContain("different-password");
+    expect(serializedResult).not.toContain("(11) 99999-9999");
+    expect(serializedResult).not.toContain(
+      "Crio conteúdo de tecnologia e produtividade para a internet.",
+    );
+    expect(serializedResult).not.toContain("https://instagram.com/joanacria");
+  });
+
+  it("validates and canonicalizes optional company social data before registration", async () => {
+    const registerWithEmail = vi.fn().mockResolvedValue({
+      kind: "confirmation_required",
+      message: "Confirme seu e-mail.",
+    });
+    mockedCreateRegistrationService.mockResolvedValue({
+      finalizePreparedRegistration: vi.fn(),
+      registerWithEmail,
+      submitGoogleProfile: vi.fn(),
+    });
+
+    await registerWithEmailAction(
+      { status: "idle" },
+      completeCompanyRegistration(),
+    );
+
+    expect(registerWithEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        role: "COMPANY",
+        additionalLocations: [
+          expect.objectContaining({
+            city: "Curitiba",
+            label: "Filial Sul",
+          }),
+        ],
+        socialPlatform: "LINKEDIN",
+        socialUrl: "https://linkedin.com/company/empresa-exemplo",
+      }),
+    );
   });
 });

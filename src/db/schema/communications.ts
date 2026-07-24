@@ -57,6 +57,9 @@ export const emailOutbox = pgTable(
     index("email_outbox_due_idx")
       .on(table.status, table.dueAt, table.id)
       .where(sql`${table.status} in ('PENDING', 'FAILED')`),
+    index("email_outbox_due_claim_idx")
+      .on(table.dueAt, table.id)
+      .where(sql`${table.status} in ('PENDING', 'FAILED')`),
     index("email_outbox_lock_idx")
       .on(table.lockedAt, table.id)
       .where(sql`${table.lockedAt} is not null`),

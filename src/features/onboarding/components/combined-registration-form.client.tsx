@@ -25,10 +25,14 @@ import { Input } from "@/shared/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
+import { useSubmitConfirmation } from "@/shared/hooks/use-submit-confirmation";
+import { useUnsavedChangesGuard } from "@/shared/hooks/use-unsaved-changes-guard";
 import { cn } from "@/shared/lib/cn";
 
 import type { OnboardingAction } from "../types/onboarding-action.types";
 import { initialOnboardingActionState } from "../types/onboarding-action.types";
+import { FormErrorSummary, mergeFieldErrors } from "./form-error-summary";
+import { OnboardingSubmitConfirmation } from "./onboarding-submit-confirmation";
 import { ProfileFormFields } from "./profile-form-fields.client";
 
 const roleOptions = [
@@ -60,6 +64,7 @@ export function CombinedRegistrationForm({
   const [role, setRole] = useState<"INFLUENCER" | "COMPANY" | null>(
     initialRole ?? null,
   );
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [state, formAction, pending] = useActionState(
     action,
     initialOnboardingActionState,
@@ -69,6 +74,14 @@ export function CombinedRegistrationForm({
     initialOnboardingActionState,
   );
   const formValidation = useRequiredFieldValidation();
+  const submitConfirmation = useSubmitConfirmation();
+  useUnsavedChangesGuard(
+    hasUnsavedChanges && !pending && state.status !== "confirmation_required",
+  );
+  const summaryErrors = mergeFieldErrors(
+    formValidation.clientFieldErrors,
+    state.fieldErrors,
+  );
   const roleErrors = formValidation.getFieldErrors(
     "role",
     state.fieldErrors?.role,
@@ -137,9 +150,19 @@ export function CombinedRegistrationForm({
         action={formAction}
         className="space-y-9"
         noValidate
-        {...formValidation.formValidationProps}
+        onInput={(event) => {
+          setHasUnsavedChanges(true);
+          formValidation.formValidationProps.onInput(event);
+        }}
+        onSubmit={(event) =>
+          submitConfirmation.handleSubmit(
+            event,
+            formValidation.formValidationProps.onSubmit,
+          )
+        }
       >
         <RequiredFieldsNotice />
+        <FormErrorSummary errors={summaryErrors} />
         <FieldSet>
           <FieldLegend id="registration-role-label" required>
             Como você vai usar a plataforma?
@@ -338,6 +361,11 @@ export function CombinedRegistrationForm({
           {pending ? "Criando cadastro..." : "Criar conta e enviar perfil"}
         </Button>
       </form>
+      <OnboardingSubmitConfirmation
+        onConfirm={submitConfirmation.confirmSubmission}
+        onOpenChange={submitConfirmation.setOpen}
+        open={submitConfirmation.open}
+      />
 
       <FieldSeparator>ou entre com</FieldSeparator>
 

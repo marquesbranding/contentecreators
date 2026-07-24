@@ -40,6 +40,27 @@ describe("identity auth forms", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("renders a dedicated administrative login without public registration", async () => {
+    const { container } = render(
+      <LoginForm
+        googleAction={vi.fn()}
+        initialNextPath="/backoffice"
+        mode="backoffice"
+        signInAction={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByText("Acesso exclusivo para administradores autorizados."),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Criar conta" }),
+    ).not.toBeInTheDocument();
+    expect(
+      await getBlockingComponentAccessibilityViolations(container),
+    ).toEqual([]);
+  });
+
   it("preserves influencer intent in registration without exposing ADMIN", () => {
     const { container } = render(
       <SignUpForm

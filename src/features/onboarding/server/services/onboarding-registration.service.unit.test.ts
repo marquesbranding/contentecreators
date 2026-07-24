@@ -6,6 +6,7 @@ import { createOnboardingRegistrationService } from "./onboarding-registration.s
 const influencerInput = {
   bio: "Crio conteúdo de tecnologia e produtividade para a internet.",
   city: "São Paulo",
+  contactVisibilityAccepted: false,
   creatorType: "INFLUENCER",
   displayName: "Joana Cria",
   email: "joana@example.com",

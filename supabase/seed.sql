@@ -162,12 +162,12 @@ select
 from public.accounts account
 join (
   values
-    ('c0000000-0000-4000-8000-000000000001'::uuid, 'Empresa Um Exemplo Ltda', 'Empresa Um', '10000000000001', '1-9', 'Varejo', 'Empresa sintética em preenchimento.', 'https://example.test/empresa-um'),
-    ('c0000000-0000-4000-8000-000000000002'::uuid, 'Empresa Dois Exemplo Ltda', 'Empresa Dois', '10000000000002', '10-49', 'Tecnologia', 'Empresa sintética aguardando análise.', 'https://example.test/empresa-dois'),
-    ('c0000000-0000-4000-8000-000000000003'::uuid, 'Empresa Três Exemplo Ltda', 'Empresa Três', '10000000000003', '10-49', 'Moda', 'Empresa sintética com correções.', 'https://example.test/empresa-tres'),
-    ('c0000000-0000-4000-8000-000000000004'::uuid, 'Empresa Quatro Exemplo Ltda', 'Empresa Quatro', '10000000000004', '50-99', 'Alimentação', 'Empresa sintética aprovada.', 'https://example.test/empresa-quatro'),
-    ('c0000000-0000-4000-8000-000000000005'::uuid, 'Empresa Cinco Exemplo Ltda', 'Empresa Cinco', '10000000000005', '50-99', 'Turismo', 'Empresa sintética suspensa.', 'https://example.test/empresa-cinco'),
-    ('c0000000-0000-4000-8000-000000000006'::uuid, 'Empresa Seis Exemplo Ltda', 'Empresa Seis', '10000000000006', '100-499', 'Serviços', 'Empresa sintética banida.', 'https://example.test/empresa-seis')
+    ('c0000000-0000-4000-8000-000000000001'::uuid, 'Empresa Um Exemplo Ltda', 'Empresa Um', '12345678000195', 'UP_TO_10', 'Varejo', 'Empresa sintética em preenchimento.', 'https://example.test/empresa-um'),
+    ('c0000000-0000-4000-8000-000000000002'::uuid, 'Empresa Dois Exemplo Ltda', 'Empresa Dois', '12345678000276', '11_TO_50', 'Tecnologia', 'Empresa sintética aguardando análise.', 'https://example.test/empresa-dois'),
+    ('c0000000-0000-4000-8000-000000000003'::uuid, 'Empresa Três Exemplo Ltda', 'Empresa Três', '12345678000357', '11_TO_50', 'Moda', 'Empresa sintética com correções.', 'https://example.test/empresa-tres'),
+    ('c0000000-0000-4000-8000-000000000004'::uuid, 'Empresa Quatro Exemplo Ltda', 'Empresa Quatro', '12345678000438', '51_TO_200', 'Alimentação', 'Empresa sintética aprovada.', 'https://example.test/empresa-quatro'),
+    ('c0000000-0000-4000-8000-000000000005'::uuid, 'Empresa Cinco Exemplo Ltda', 'Empresa Cinco', '12345678000519', '51_TO_200', 'Turismo', 'Empresa sintética suspensa.', 'https://example.test/empresa-cinco'),
+    ('c0000000-0000-4000-8000-000000000006'::uuid, 'Empresa Seis Exemplo Ltda', 'Empresa Seis', '12345678000608', '201_TO_500', 'Serviços', 'Empresa sintética banida.', 'https://example.test/empresa-seis')
 ) as fixture(account_id, legal_name, trade_name, cnpj, employee_range, segment, description, website_url)
   on fixture.account_id = account.id;
 
@@ -379,7 +379,7 @@ select
   'f5000000-0000-4000-8000-000000000003',
   account.status = 'APPROVED',
   account.status = 'APPROVED',
-  true
+  account.status = 'APPROVED'
 from public.accounts account
 where account.role = 'INFLUENCER';
 

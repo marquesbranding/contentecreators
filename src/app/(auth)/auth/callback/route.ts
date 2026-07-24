@@ -1,7 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { sanitizeAuthReturnPath } from "@/features/identity";
-import { createServerIdentityAuthService } from "@/features/identity/server";
+import {
+  createServerBannedAccountDefenseService,
+  createServerIdentityAuthService,
+} from "@/features/identity/server";
 import { createServerOnboardingRegistrationService } from "@/features/onboarding/server";
 
 export async function GET(request: NextRequest) {
@@ -13,7 +16,20 @@ export async function GET(request: NextRequest) {
   const result = await service.exchangeCallback(code);
 
   if (result.kind === "failure") {
-    return NextResponse.redirect(new URL("/login?error=callback", request.url));
+    const loginPath = destination.startsWith("/backoffice")
+      ? "/backoffice/login"
+      : "/login";
+
+    return NextResponse.redirect(
+      new URL(`${loginPath}?error=callback`, request.url),
+    );
+  }
+
+  const defense = await createServerBannedAccountDefenseService();
+  const access = await defense.enforce(crypto.randomUUID());
+
+  if (access.kind === "blocked") {
+    return NextResponse.redirect(new URL(access.destination, request.url));
   }
 
   const identity = await service.requireVerifiedIdentity();

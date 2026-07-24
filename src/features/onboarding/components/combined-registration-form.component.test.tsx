@@ -167,6 +167,9 @@ describe("combined registration form", () => {
     expect(
       screen.getAllByText("Você precisa aceitar para continuar."),
     ).toHaveLength(2);
+    expect(
+      screen.getByRole("heading", { name: "Corrija os campos abaixo" }),
+    ).toBeInTheDocument();
   });
 
   it("has no serious or critical automated accessibility violations", async () => {

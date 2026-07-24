@@ -1,8 +1,14 @@
 "use client";
 
+import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useActionState } from "react";
 
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/shared/components/ui/alert";
 import {
   Field,
   FieldError,
@@ -25,6 +31,7 @@ interface LoginFormProps {
   googleAction: AuthRedirectAction;
   initialMessage?: string;
   initialNextPath: string;
+  mode?: "backoffice" | "member";
   signInAction: AuthFormAction;
 }
 
@@ -32,6 +39,7 @@ export function LoginForm({
   googleAction,
   initialMessage,
   initialNextPath,
+  mode = "member",
   signInAction,
 }: LoginFormProps) {
   const [state, formAction, pending] = useActionState(
@@ -57,6 +65,16 @@ export function LoginForm({
   return (
     <div className="space-y-6">
       <AuthFeedback state={state} />
+
+      {mode === "backoffice" ? (
+        <Alert className="border-brand-blue/20 bg-brand-blue/5">
+          <ShieldCheck aria-hidden="true" className="text-brand-blue" />
+          <AlertTitle>Ambiente administrativo</AlertTitle>
+          <AlertDescription>
+            Acesso exclusivo para administradores autorizados.
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       <form
         action={formAction}
@@ -122,15 +140,17 @@ export function LoginForm({
         <GoogleAuthButton />
       </form>
 
-      <p className="text-muted-foreground text-center text-sm">
-        Ainda não tem uma conta?{" "}
-        <Link
-          className="text-brand-blue focus-visible:ring-ring/50 font-semibold underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:ring-3 focus-visible:outline-none"
-          href="/sign-up"
-        >
-          Criar conta
-        </Link>
-      </p>
+      {mode === "member" ? (
+        <p className="text-muted-foreground text-center text-sm">
+          Ainda não tem uma conta?{" "}
+          <Link
+            className="text-brand-blue focus-visible:ring-ring/50 font-semibold underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:ring-3 focus-visible:outline-none"
+            href="/sign-up"
+          >
+            Criar conta
+          </Link>
+        </p>
+      ) : null}
     </div>
   );
 }

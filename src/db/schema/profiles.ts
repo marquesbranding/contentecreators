@@ -7,6 +7,7 @@ import {
   date,
   index,
   integer,
+  jsonb,
   numeric,
   pgTable,
   primaryKey,
@@ -19,6 +20,7 @@ import {
 
 import { accounts } from "./accounts";
 import {
+  accountRoleEnum,
   creatorMetricSourceEnum,
   creatorTypeEnum,
   socialPlatformEnum,
@@ -77,6 +79,9 @@ export const creatorProfiles = pgTable(
       "gin",
       table.searchDocument.op("gin_trgm_ops"),
     ),
+    index("creator_profiles_search_active_trgm_idx")
+      .using("gin", table.searchDocument.op("gin_trgm_ops"))
+      .where(sql`${table.archivedAt} is null`),
     check(
       "creator_profiles_state_check",
       sql`${table.state} is null or ${table.state} ~ '^[A-Z]{2}$'`,
@@ -88,6 +93,45 @@ export const creatorProfiles = pgTable(
     check("creator_profiles_version_check", sql`${table.version} > 0`),
   ],
 );
+
+export const onboardingDrafts = pgTable(
+  "onboarding_drafts",
+  {
+    accountId: uuid("account_id")
+      .primaryKey()
+      .references(() => accounts.id, { onDelete: "restrict" }),
+    role: accountRoleEnum("role").notNull(),
+    payload: jsonb("payload")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    version: integer("version").notNull().default(1),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("onboarding_drafts_updated_at_idx").on(
+      table.updatedAt,
+      table.accountId,
+    ),
+    check(
+      "onboarding_drafts_role_check",
+      sql`${table.role} in ('INFLUENCER', 'COMPANY')`,
+    ),
+    check(
+      "onboarding_drafts_payload_check",
+      sql`jsonb_typeof(${table.payload}) = 'object' and octet_length(${table.payload}::text) <= 50000`,
+    ),
+    check("onboarding_drafts_version_check", sql`${table.version} > 0`),
+  ],
+);
+
+export type OnboardingDraft = typeof onboardingDrafts.$inferSelect;
+export type NewOnboardingDraft = typeof onboardingDrafts.$inferInsert;
 
 export const companyProfiles = pgTable(
   "company_profiles",

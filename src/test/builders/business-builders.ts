@@ -72,6 +72,13 @@ export type ConsentFixture = {
   id: string;
 };
 
+export type LegalDocumentFixture = {
+  contentHash: string;
+  documentType: "TERMS" | "PRIVACY" | "CONTACT_VISIBILITY";
+  id: string;
+  version: string;
+};
+
 export type AuditRevisionFixture = {
   actorAccountId: string;
   actorType: "USER" | "ADMIN" | "SYSTEM";
@@ -189,6 +196,19 @@ export function buildConsent(
     documentVersion: "test-v1",
     granted: true,
     id: ids.record,
+    ...overrides,
+  };
+}
+
+export function buildLegalDocument(
+  overrides: Partial<LegalDocumentFixture> = {},
+): LegalDocumentFixture {
+  return {
+    contentHash:
+      "6f027472d9452c4c207ff66c8e4b95b66c2df7283af192a4e348d4f2cfe6f71c",
+    documentType: "TERMS",
+    id: ids.aggregate,
+    version: "BETA-PLACEHOLDER-v1",
     ...overrides,
   };
 }

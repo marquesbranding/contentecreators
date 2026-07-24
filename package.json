@@ -16,6 +16,7 @@
     "sharp": "0.35.3"
   },
   "scripts": {
+    "admin:bootstrap": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/bootstrap-initial-admin.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "dev": "next dev",

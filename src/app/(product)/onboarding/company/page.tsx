@@ -2,11 +2,22 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { createServerRoleSelectionService } from "@/features/identity/server";
+import { CompanyMediaFields } from "@/features/media";
+import {
+  activateProfileMediaAction,
+  finalizeMediaUploadAction,
+  loadCurrentCompanyMediaFormState,
+  prepareMediaUploadAction,
+} from "@/features/media/server";
 import {
   OnboardingFormShell,
   ProfileOnboardingForm,
 } from "@/features/onboarding";
-import { submitGoogleProfileAction } from "@/features/onboarding/server";
+import {
+  loadCurrentOnboardingDraft,
+  saveOnboardingDraftAction,
+  submitGoogleProfileAction,
+} from "@/features/onboarding/server";
 
 export const metadata: Metadata = {
   title: "Cadastro de empresa",
@@ -19,18 +30,39 @@ export default async function CompanyOnboardingPage() {
   if (decision.kind === "ready") {
     redirect("/onboarding/role");
   }
-  if (decision.destination !== "/onboarding/company") {
+  const correctionRequested =
+    decision.destination === "/onboarding/company?corrections=requested";
+  if (decision.destination !== "/onboarding/company" && !correctionRequested) {
     redirect(decision.destination);
   }
+  const [initialDraft, initialMediaState] = await Promise.all([
+    loadCurrentOnboardingDraft(),
+    loadCurrentCompanyMediaFormState(),
+  ]);
 
   return (
     <OnboardingFormShell
+      currentStep={2}
       description="Complete os dados da empresa. Ao enviar, o cadastro ficará aguardando a revisão da nossa equipe."
-      progress={75}
+      correctionRequested={correctionRequested}
+      progressLabel="Dados da empresa"
       title="Conte sobre a sua empresa"
+      totalSteps={2}
     >
       <ProfileOnboardingForm
         action={submitGoogleProfileAction}
+        draftAction={saveOnboardingDraftAction}
+        initialDraft={initialDraft}
+        mediaFields={
+          <CompanyMediaFields
+            actions={{
+              activate: activateProfileMediaAction,
+              finalize: finalizeMediaUploadAction,
+              prepare: prepareMediaUploadAction,
+            }}
+            initialState={initialMediaState}
+          />
+        }
         role="COMPANY"
       />
     </OnboardingFormShell>

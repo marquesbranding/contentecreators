@@ -121,6 +121,23 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 - Icon/color reinforce text but never replace it
 - Pending review uses calm blue, correction requests use warning, suspension/ban use danger
 
+### Media upload surface
+
+- Use a product card with a persistent required label, file constraints, preview, and one primary upload action.
+- Avatar and logo open a square crop dialog; cover and sponsorship creative use a 16:9 crop. Zoom and horizontal/vertical position remain keyboard-operable range controls.
+- Announce preparation, transfer, validation, activation, completion, and errors through visible `pt-BR` status copy plus an `aria-live` region.
+- Upload progress is a labeled shadcn/ui progress indicator. Recoverable errors stay beside the field and expose an explicit retry action.
+- Keep the selected file, preview, crop, and transient progress local to the upload hook. Server media records remain authoritative and are never copied into Zustand.
+- Use signed, single-use upload preparation and server finalization; a successful transfer is not presented as active media until finalization and profile activation both succeed.
+
+### Administrative access surface
+
+- `/backoffice/login` reuses the branded authentication shell but clearly labels the administrative context and never shows public registration.
+- A calm shield alert communicates restricted access without exposing which emails or roles are valid.
+- Protected backoffice pages use the night header, supplied logo, warm canvas, white product cards, and one visible sign-out action.
+- Privileged forms always explain required fields, collect a human-readable reason, show an inline success/error alert, and keep the destructive-looking consequence explicit in the submit label.
+- UI visibility is supplementary: every privileged page, action, and database operation revalidates the administrator role independently.
+
 ## Marketing patterns
 
 - Black header/brand panels allow the supplied blue-and-white logo to blend with its original black field.

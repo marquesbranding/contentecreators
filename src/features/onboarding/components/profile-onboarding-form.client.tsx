@@ -12,16 +12,32 @@ import { Button } from "@/shared/components/ui/button";
 import { RequiredFieldsNotice } from "@/shared/components/ui/field";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
+import { useSubmitConfirmation } from "@/shared/hooks/use-submit-confirmation";
+import { useUnsavedChangesGuard } from "@/shared/hooks/use-unsaved-changes-guard";
 
+import { useOnboardingAutosave } from "../hooks/use-onboarding-autosave";
 import type { OnboardingAction } from "../types/onboarding-action.types";
 import { initialOnboardingActionState } from "../types/onboarding-action.types";
+import type {
+  OnboardingDraftAction,
+  OnboardingDraftClientDto,
+} from "../types/onboarding-draft.types";
+import { FormErrorSummary, mergeFieldErrors } from "./form-error-summary";
+import { OnboardingAutosaveStatus } from "./onboarding-autosave-status";
+import { OnboardingSubmitConfirmation } from "./onboarding-submit-confirmation";
 import { ProfileFormFields } from "./profile-form-fields.client";
 
 export function ProfileOnboardingForm({
   action,
+  draftAction,
+  initialDraft,
+  mediaFields,
   role,
 }: {
   action: OnboardingAction;
+  draftAction: OnboardingDraftAction;
+  initialDraft: OnboardingDraftClientDto | null;
+  mediaFields?: React.ReactNode;
   role: "INFLUENCER" | "COMPANY";
 }) {
   const [state, formAction, pending] = useActionState(
@@ -29,33 +45,66 @@ export function ProfileOnboardingForm({
     initialOnboardingActionState,
   );
   const formValidation = useRequiredFieldValidation();
+  const submitConfirmation = useSubmitConfirmation();
+  const autosave = useOnboardingAutosave({
+    action: draftAction,
+    initialDraft,
+    role,
+  });
+  useUnsavedChangesGuard(autosave.hasUnsavedChanges && !pending);
+  const summaryErrors = mergeFieldErrors(
+    formValidation.clientFieldErrors,
+    state.fieldErrors,
+  );
 
   return (
-    <form
-      action={formAction}
-      className="space-y-9"
-      noValidate
-      {...formValidation.formValidationProps}
-    >
-      <input name="role" type="hidden" value={role} />
-      {state.message ? (
-        <Alert aria-live="polite" variant="destructive">
-          <CircleAlert aria-hidden="true" />
-          <AlertTitle>Não foi possível enviar</AlertTitle>
-          <AlertDescription>{state.message}</AlertDescription>
-        </Alert>
-      ) : null}
-      <RequiredFieldsNotice />
-      <ProfileFormFields
-        fieldErrors={state.fieldErrors}
-        getFieldErrors={formValidation.getFieldErrors}
-        onFieldChange={formValidation.clearFieldError}
-        role={role}
+    <>
+      <form
+        action={formAction}
+        className="space-y-9"
+        noValidate
+        onInput={(event) => {
+          formValidation.formValidationProps.onInput(event);
+          autosave.onFormInput(event);
+        }}
+        onSubmit={(event) =>
+          submitConfirmation.handleSubmit(
+            event,
+            formValidation.formValidationProps.onSubmit,
+          )
+        }
+      >
+        <input name="role" type="hidden" value={role} />
+        <OnboardingAutosaveStatus status={autosave.status} />
+        {state.message ? (
+          <Alert aria-live="polite" variant="destructive">
+            <CircleAlert aria-hidden="true" />
+            <AlertTitle>Não foi possível enviar</AlertTitle>
+            <AlertDescription>{state.message}</AlertDescription>
+          </Alert>
+        ) : null}
+        <RequiredFieldsNotice />
+        <FormErrorSummary errors={summaryErrors} />
+        <ProfileFormFields
+          fieldErrors={state.fieldErrors}
+          getFieldErrors={formValidation.getFieldErrors}
+          initialValues={
+            initialDraft?.role === role ? initialDraft.payload : undefined
+          }
+          onFieldChange={formValidation.clearFieldError}
+          role={role}
+        />
+        {mediaFields}
+        <Button className="w-full" disabled={pending} size="lg" type="submit">
+          {pending ? <Spinner aria-label="Enviando perfil" /> : null}
+          {pending ? "Enviando para análise..." : "Enviar perfil para análise"}
+        </Button>
+      </form>
+      <OnboardingSubmitConfirmation
+        onConfirm={submitConfirmation.confirmSubmission}
+        onOpenChange={submitConfirmation.setOpen}
+        open={submitConfirmation.open}
       />
-      <Button className="w-full" disabled={pending} size="lg" type="submit">
-        {pending ? <Spinner aria-label="Enviando perfil" /> : null}
-        {pending ? "Enviando para análise..." : "Enviar perfil para análise"}
-      </Button>
-    </form>
+    </>
   );
 }

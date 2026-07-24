@@ -65,6 +65,93 @@ describe("ProfileFormFields company CNPJ experience", () => {
     expect(screen.getByLabelText("Site (opcional)")).not.toBeRequired();
   });
 
+  it("starts every applicable consent unchecked and keeps contact sharing optional", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<ProfileFormFields role="INFLUENCER" />);
+    const terms = screen.getByRole("checkbox", {
+      name: /Li e aceito os Termos de Uso/iu,
+    });
+    const privacy = screen.getByRole("checkbox", {
+      name: /Li e aceito a Política de Privacidade/iu,
+    });
+    const contact = screen.getByRole("checkbox", {
+      name: /Autorizo que empresas aprovadas visualizem meus canais de contato/iu,
+    });
+
+    expect(terms).not.toBeChecked();
+    expect(privacy).not.toBeChecked();
+    expect(contact).not.toBeChecked();
+    expect(contact).not.toHaveAttribute("aria-required", "true");
+
+    await user.click(contact);
+    expect(contact).toBeChecked();
+
+    rerender(<ProfileFormFields role="COMPANY" />);
+    expect(
+      screen.queryByRole("checkbox", {
+        name: /Autorizo que empresas aprovadas/iu,
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("restores an influencer draft while keeping every consent unchecked", () => {
+    render(
+      <ProfileFormFields
+        initialValues={{
+          bio: "Conteúdo restaurado sobre tecnologia e produtividade.",
+          city: "Curitiba",
+          creatorType: "UGC",
+          displayName: "Creator Restaurada",
+          engagementRate: 5.25,
+          followers: 42000,
+          legalName: "Joana Restaurada",
+          nicheSlugs: ["tecnologia", "viagem"],
+          socialPlatform: "YOUTUBE",
+          socialUrl: "https://youtube.com/@creator-restaurada",
+          state: "PR",
+          whatsapp: "(41) 99999-9999",
+        }}
+        role="INFLUENCER"
+      />,
+    );
+
+    expect(screen.getByLabelText("Nome completo")).toHaveValue(
+      "Joana Restaurada",
+    );
+    expect(screen.getByLabelText("Nome de creator")).toHaveValue(
+      "Creator Restaurada",
+    );
+    expect(screen.getByLabelText("Tipo de atuação")).toHaveTextContent(
+      "Creator UGC",
+    );
+    expect(screen.getByLabelText("Canal principal")).toHaveTextContent(
+      "YouTube",
+    );
+    expect(screen.getByRole("checkbox", { name: "Tecnologia" })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Viagem" })).toBeChecked();
+    expect(
+      screen.getByRole("checkbox", {
+        name: /Li e aceito os Termos de Uso/iu,
+      }),
+    ).not.toBeChecked();
+    expect(
+      screen.getByRole("checkbox", {
+        name: /Li e aceito a Política de Privacidade/iu,
+      }),
+    ).not.toBeChecked();
+  });
+
+  it("omits registration consents when an approved influencer edits the profile", () => {
+    render(<ProfileFormFields role="INFLUENCER" showLegalConsents={false} />);
+
+    expect(screen.queryByText("Termos e privacidade")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("checkbox", {
+        name: /Li e aceito os Termos de Uso/iu,
+      }),
+    ).not.toBeInTheDocument();
+  });
+
   it("applies provider fields as an editable proposal", async () => {
     const user = userEvent.setup();
     useCnpjLookupMock.mockReturnValue({
@@ -104,5 +191,56 @@ describe("ProfileFormFields company CNPJ experience", () => {
     await user.clear(screen.getByLabelText("Nome fantasia"));
     await user.type(screen.getByLabelText("Nome fantasia"), "Nome revisado");
     expect(screen.getByLabelText("Nome fantasia")).toHaveValue("Nome revisado");
+  });
+
+  it("restores optional company social fields without marking them required", () => {
+    render(
+      <ProfileFormFields
+        initialValues={{
+          socialPlatform: "LINKEDIN",
+          socialUrl: "https://linkedin.com/company/empresa-exemplo",
+          websiteUrl: "https://empresa.example",
+        }}
+        role="COMPANY"
+      />,
+    );
+
+    expect(screen.getByLabelText("Rede social (opcional)")).toHaveTextContent(
+      "LinkedIn",
+    );
+    expect(screen.getByLabelText("Link da rede social (opcional)")).toHaveValue(
+      "https://linkedin.com/company/empresa-exemplo",
+    );
+    expect(
+      screen.getByLabelText("Link da rede social (opcional)"),
+    ).not.toBeRequired();
+  });
+
+  it("adds and removes editable secondary locations while keeping the headquarters primary", async () => {
+    const user = userEvent.setup();
+    render(<ProfileFormFields role="COMPANY" />);
+
+    expect(screen.getByText("Localização principal")).toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", { name: "Adicionar localidade" }),
+    );
+
+    expect(screen.getByText("Localidade adicional 1")).toBeInTheDocument();
+    await user.type(screen.getByLabelText("Nome da localidade"), "Filial Sul");
+    await user.type(
+      screen.getByLabelText("Logradouro da localidade"),
+      "Rua das Flores",
+    );
+    expect(screen.getByLabelText("Nome da localidade")).toHaveValue(
+      "Filial Sul",
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Remover localidade 1" }),
+    );
+    expect(
+      screen.queryByText("Localidade adicional 1"),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("Localização principal")).toBeInTheDocument();
   });
 });

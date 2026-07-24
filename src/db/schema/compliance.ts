@@ -131,7 +131,7 @@ export const accountContactPreferences = pgTable(
       "social_visible_to_approved_companies",
     )
       .notNull()
-      .default(true),
+      .default(false),
     version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -240,11 +240,21 @@ export const auditRevisions = pgTable(
       table.occurredAt.desc(),
       table.revision.desc(),
     ),
+    index("audit_revisions_entity_period_idx").on(
+      table.entityTable,
+      table.occurredAt.desc(),
+      table.revision.desc(),
+    ),
     index("audit_revisions_actor_timeline_idx")
       .on(table.actorAccountId, table.occurredAt.desc(), table.revision.desc())
       .where(sql`${table.actorAccountId} is not null`),
     index("audit_revisions_operation_timeline_idx").on(
       table.operation,
+      table.occurredAt.desc(),
+      table.revision.desc(),
+    ),
+    index("audit_revisions_source_timeline_idx").on(
+      table.source,
       table.occurredAt.desc(),
       table.revision.desc(),
     ),

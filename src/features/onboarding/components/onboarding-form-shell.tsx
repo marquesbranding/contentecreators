@@ -1,7 +1,12 @@
-import { LockKeyhole, ShieldCheck } from "lucide-react";
+import { FilePenLine, LockKeyhole, ShieldCheck } from "lucide-react";
 
 import { BrandLogo } from "@/shared/components/brand-logo";
 import { Badge } from "@/shared/components/ui/badge";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/shared/components/ui/alert";
 import {
   Card,
   CardContent,
@@ -13,17 +18,31 @@ import { Progress, ProgressLabel } from "@/shared/components/ui/progress";
 
 export function OnboardingFormShell({
   children,
+  correctionRequested = false,
+  currentStep = 1,
   description,
   eyebrow = "Cadastro para análise",
-  progress = 50,
+  progress,
+  progressLabel = "Dados do perfil",
   title,
+  totalSteps = 1,
 }: {
   children: React.ReactNode;
+  correctionRequested?: boolean;
+  currentStep?: number;
   description: string;
   eyebrow?: string;
   progress?: number;
+  progressLabel?: string;
   title: string;
+  totalSteps?: number;
 }) {
+  const safeTotalSteps = Math.max(1, totalSteps);
+  const safeCurrentStep = Math.min(Math.max(1, currentStep), safeTotalSteps);
+  const progressValue =
+    progress ?? Math.round((safeCurrentStep / safeTotalSteps) * 100);
+  const stepText = `Etapa ${safeCurrentStep} de ${safeTotalSteps}`;
+
   return (
     <main className="bg-brand-canvas relative min-h-screen overflow-hidden px-4 py-5 sm:px-8 sm:py-9">
       <div
@@ -53,14 +72,28 @@ export function OnboardingFormShell({
             <CardDescription className="max-w-3xl text-base leading-7">
               {description}
             </CardDescription>
-            <Progress aria-label="Progresso do cadastro" value={progress}>
-              <ProgressLabel>Etapa atual</ProgressLabel>
+            <Progress
+              aria-label="Progresso do cadastro"
+              aria-valuetext={`${stepText}: ${progressLabel}`}
+              value={progressValue}
+            >
+              <ProgressLabel>{stepText}</ProgressLabel>
               <span className="text-muted-foreground ml-auto text-sm tabular-nums">
-                {progress === 100 ? "Pronto para enviar" : "Perfil e acesso"}
+                {progressLabel}
               </span>
             </Progress>
           </CardHeader>
           <CardContent className="px-5 py-6 sm:px-9 sm:py-8">
+            {correctionRequested ? (
+              <Alert className="mb-7">
+                <FilePenLine aria-hidden="true" />
+                <AlertTitle>Correções solicitadas</AlertTitle>
+                <AlertDescription>
+                  Revise os dados indicados pela equipe e envie o cadastro
+                  novamente para análise.
+                </AlertDescription>
+              </Alert>
+            ) : null}
             {children}
           </CardContent>
         </Card>

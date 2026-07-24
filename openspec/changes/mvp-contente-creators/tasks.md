@@ -56,7 +56,7 @@
 - [x] 4.12 Add `legal_documents`, `account_consents`, and contact-visibility consent modeling. `[audit-compliance]`
 - [x] 4.13 Add `blocked_identities` with restricted normalized identity/provider keys and audited block/unblock metadata. `[identity-access] [moderation-lifecycle]`
 - [x] 4.14 Add `audit_revisions` with monotonic revision, entity/actor/source/request/reason fields, changed fields, and JSON snapshots. `[audit-compliance]`
-- [ ] 4.15 Add catalog/search, moderation queue, placement schedule/order, outbox, and audit lookup indexes and prove intended query plans on representative seed volume. `[private-catalog] [backoffice-operations]`
+- [x] 4.15 Add catalog/search, moderation queue, placement schedule/order, outbox, and audit lookup indexes and prove intended query plans on representative seed volume. `[private-catalog] [backoffice-operations]`
 - [x] 4.16 Mirror the migration in modular Drizzle schemas/relations/types and add a drift-focused integration test. `[platform-delivery]`
 - [x] 4.17 Document and enforce that Supabase migrations are authoritative and `drizzle-kit push` is forbidden for shared/production databases. `[platform-delivery]`
 
@@ -73,25 +73,25 @@
 
 ## 6. Row-level security and database access layer
 
-- [ ] 6.1 Write the RLS permission matrix for anonymous, owner, approved influencer, approved company, admin, suspended, and banned contexts for every exposed table. `[identity-access] [audit-compliance]`
-- [ ] 6.2 Write failing local integration tests for owner success, cross-account denial, approved catalog access, contact-field restrictions, admin access, and every non-approved denial. `[private-catalog] [audit-compliance]`
-- [ ] 6.3 Enable RLS/default-deny and add least-privilege grants/policies to all exposed application tables. `[audit-compliance] [platform-delivery]`
-- [ ] 6.4 Implement the verified Supabase-token-to-transaction-local-claims Drizzle wrapper and reset behavior for Supavisor transaction mode. `[identity-access] [platform-delivery]`
+- [x] 6.1 Write the RLS permission matrix for anonymous, owner, approved influencer, approved company, admin, suspended, and banned contexts for every exposed table. `[identity-access] [audit-compliance]`
+- [x] 6.2 Write failing local integration tests for owner success, cross-account denial, approved catalog access, contact-field restrictions, admin access, and every non-approved denial. `[private-catalog] [audit-compliance]`
+- [x] 6.3 Enable RLS/default-deny and add least-privilege grants/policies to all exposed application tables. `[audit-compliance] [platform-delivery]`
+- [x] 6.4 Implement the verified Supabase-token-to-transaction-local-claims Drizzle wrapper and reset behavior for Supavisor transaction mode. `[identity-access] [platform-delivery]`
 - [x] 6.5 Configure the runtime `postgres-js` client with `prepare: false`, short bounded transactions, and server-only module protection. `[platform-delivery]`
-- [ ] 6.6 Create DAL session/account resolvers and minimal DTO conventions with React request-level deduplication where safe. `[identity-access]`
-- [ ] 6.7 Add reusable DAL guards for authenticated, owner, approved, role-specific, admin, and allowed-status checks. `[identity-access]`
-- [ ] 6.8 Add regression tests proving raw rows/secrets/private fields cannot cross Server Component/Action DTO boundaries. `[audit-compliance]`
+- [x] 6.6 Create DAL session/account resolvers and minimal DTO conventions with React request-level deduplication where safe. `[identity-access]`
+- [x] 6.7 Add reusable DAL guards for authenticated, owner, approved, role-specific, admin, and allowed-status checks. `[identity-access]`
+- [x] 6.8 Add regression tests proving raw rows/secrets/private fields cannot cross Server Component/Action DTO boundaries. `[audit-compliance]`
 
 ## 7. Supabase Storage security and media lifecycle
 
-- [ ] 7.1 Write failing Storage policy tests for anonymous, owner, cross-owner, approved catalog read, admin sponsorship upload, suspended, and banned cases. `[onboarding-profiles] [platform-delivery]`
-- [ ] 7.2 Create private `profile-media` and `sponsorship-media` buckets and object-path policies. `[onboarding-profiles] [sponsorship-placements]`
-- [ ] 7.3 Implement shared image validation for JPEG/PNG/WebP, declared/actual MIME, extension, avatar/logo 5 MB and cover/sponsorship 8 MB limits. `[onboarding-profiles]`
-- [ ] 7.4 Implement owner-scoped upload preparation/finalization actions that create media metadata only after authorization/validation. `[onboarding-profiles]`
-- [ ] 7.5 Implement replacement as new object plus archived predecessor and test that historical revisions remain meaningful. `[onboarding-profiles] [audit-compliance]`
-- [ ] 7.6 Implement short-lived signed media DTO generation/caching without exposing bucket listing or permanent public URLs. `[private-catalog]`
-- [ ] 7.7 Build a tested media-upload custom hook plus accessible crop/preview/progress/error/retry components for avatar, logo, cover, and sponsorship creative without mirroring server media records into Zustand. `[onboarding-profiles] [sponsorship-placements]`
-- [ ] 7.8 Add orphan/archived-object cleanup reporting with dry-run-first operation and retention guardrails. `[audit-compliance] [platform-delivery]`
+- [x] 7.1 Write failing Storage policy tests for anonymous, owner, cross-owner, approved catalog read, admin sponsorship upload, suspended, and banned cases. `[onboarding-profiles] [platform-delivery]`
+- [x] 7.2 Create private `profile-media` and `sponsorship-media` buckets and object-path policies. `[onboarding-profiles] [sponsorship-placements]`
+- [x] 7.3 Implement shared image validation for JPEG/PNG/WebP, declared/actual MIME, extension, avatar/logo 5 MB and cover/sponsorship 8 MB limits. `[onboarding-profiles]`
+- [x] 7.4 Implement owner-scoped upload preparation/finalization actions that create media metadata only after authorization/validation. `[onboarding-profiles]`
+- [x] 7.5 Implement replacement as new object plus archived predecessor and test that historical revisions remain meaningful. `[onboarding-profiles] [audit-compliance]`
+- [x] 7.6 Implement short-lived signed media DTO generation/caching without exposing bucket listing or permanent public URLs. `[private-catalog]`
+- [x] 7.7 Build a tested media-upload custom hook plus accessible crop/preview/progress/error/retry components for avatar, logo, cover, and sponsorship creative without mirroring server media records into Zustand. `[onboarding-profiles] [sponsorship-placements]`
+- [x] 7.8 Add orphan/archived-object cleanup reporting with dry-run-first operation and retention guardrails. `[audit-compliance] [platform-delivery]`
 
 ## 8. Supabase Auth and session flows
 
@@ -103,26 +103,26 @@
 - [x] 8.6 Add email-confirmation pending/resend experience and server enforcement before profile submission. `[identity-access]`
 - [x] 8.7 Add forgot/reset password pages and single-use/expired-token handling without user enumeration. `[identity-access]`
 - [x] 8.8 Add secure logout and test that protected data is removed after session termination. `[identity-access]`
-- [ ] 8.9 Add dedicated `/backoffice/login` behavior that admits only `ADMIN` after shared Supabase authentication. `[identity-access] [backoffice-operations]`
-- [ ] 8.10 Add an idempotent, server-only initial-admin bootstrap script and authorized subsequent-admin provisioning flow with audit. `[identity-access]`
+- [x] 8.9 Add dedicated `/backoffice/login` behavior that admits only `ADMIN` after shared Supabase authentication. `[identity-access] [backoffice-operations]`
+- [x] 8.10 Add an idempotent, server-only initial-admin bootstrap script and authorized subsequent-admin provisioning flow with audit. `[identity-access]`
 
 ## 9. Role selection and banned-identity enforcement
 
 - [x] 9.1 Write failing domain/action tests for one-time `INFLUENCER`/`COMPANY` selection, public `ADMIN` rejection, role immutability, and safe preserved marketing intent. `[identity-access]`
 - [x] 9.2 Present first-access role selection as a blocking accessible modal for roleless Google users, with explicit role consequences. `[identity-access]`
 - [x] 9.3 Implement the atomic role-selection action and route decision service for role/status destinations. `[identity-access]`
-- [ ] 9.4 Add a database/Auth hook or supported pre-user-creation defense for known blocked identities and test email/Google variants. `[identity-access]`
-- [ ] 9.5 Add post-auth banned-account defense, session revocation/administrative Auth ban, and blocked `pt-BR` status experience. `[identity-access] [moderation-lifecycle]`
-- [ ] 9.6 Add tests documenting the explicit limitation that another unknown identity is outside automated antifraud scope. `[identity-access]`
+- [x] 9.4 Add a database/Auth hook or supported pre-user-creation defense for known blocked identities and test email/Google variants. `[identity-access]`
+- [x] 9.5 Add post-auth banned-account defense, session revocation/administrative Auth ban, and blocked `pt-BR` status experience. `[identity-access] [moderation-lifecycle]`
+- [x] 9.6 Add tests documenting the explicit limitation that another unknown identity is outside automated antifraud scope. `[identity-access]`
 
 ## 10. Shared onboarding domain and consent
 
 - [x] 10.1 Write failing Zod/domain tests for shared email, WhatsApp, URL, text lengths, enum, number, and consent rules with safe `pt-BR` messages. `[onboarding-profiles]`
-- [ ] 10.2 Implement owner-scoped draft save/load with optimistic version checks and stale-tab conflict handling. `[onboarding-profiles]`
-- [ ] 10.3 Add legal-document seeds/fixtures and unselected Terms/Privacy/contact-visibility consent controls. `[audit-compliance]`
+- [x] 10.2 Implement owner-scoped draft save/load with optimistic version checks and stale-tab conflict handling. `[onboarding-profiles]`
+- [x] 10.3 Add legal-document seeds/fixtures and unselected Terms/Privacy/contact-visibility consent controls. `[audit-compliance]`
 - [x] 10.4 Implement version/hash/timestamp consent persistence in the onboarding submission transaction. `[audit-compliance]`
-- [ ] 10.5 Implement a role/status route decision component that shows onboarding, analysis, correction, suspended, banned, or approved destinations without premature catalog reads. `[moderation-lifecycle]`
-- [ ] 10.6 Build a shared mobile-first form shell with step/progress semantics, accessible error summary, autosave status, leave protection, and submit confirmation. `[onboarding-profiles]`
+- [x] 10.5 Implement a role/status route decision component that shows onboarding, analysis, correction, suspended, banned, or approved destinations without premature catalog reads. `[moderation-lifecycle]`
+- [x] 10.6 Build a shared mobile-first form shell with step/progress semantics, accessible error summary, autosave status, leave protection, and submit confirmation. `[onboarding-profiles]`
 
 ## 11. Influencer and UGC onboarding/profile
 
@@ -130,10 +130,10 @@
 - [x] 11.2 Define and seed the initial niche taxonomy and supported social-platform enum with client-review placeholders clearly tracked. `[onboarding-profiles]`
 - [x] 11.3 Implement influencer schema/actions for name, WhatsApp, creator type, city/UF, niches, bio, and social profiles. `[onboarding-profiles]`
 - [x] 11.4 Implement dated self-reported follower/engagement metric snapshots and presentation labels. `[onboarding-profiles]`
-- [ ] 11.5 Integrate avatar/cover uploads and replacement into the influencer form. `[onboarding-profiles]`
-- [ ] 11.6 Build the responsive influencer onboarding steps with loading, validation, save, restore, empty, and failure states. `[onboarding-profiles]`
-- [ ] 11.7 Implement influencer profile read/edit for approved users with immediate audited publication and no status reset. `[onboarding-profiles]`
-- [ ] 11.8 Add component/integration tests for narrow mobile, keyboard, stale draft, invalid metrics, social URL normalization, and approved edit audit. `[onboarding-profiles]`
+- [x] 11.5 Integrate avatar/cover uploads and replacement into the influencer form. `[onboarding-profiles]`
+- [x] 11.6 Build the responsive influencer onboarding steps with loading, validation, save, restore, empty, and failure states. `[onboarding-profiles]`
+- [x] 11.7 Implement influencer profile read/edit for approved users with immediate audited publication and no status reset. `[onboarding-profiles]`
+- [x] 11.8 Add component/integration tests for narrow mobile, keyboard, stale draft, invalid metrics, social URL normalization, and approved edit audit. `[onboarding-profiles]`
 
 ## 12. Company onboarding and CNPJ assistance
 
@@ -142,11 +142,11 @@
 - [x] 12.3 Add per-account or privacy-safe pre-Auth network rate limiting and bounded successful-response caching for CNPJ lookup. `[onboarding-profiles]`
 - [x] 12.4 Write contract tests for BrasilAPI success, not found, malformed data, timeout, rate limit, and provider outage. `[onboarding-profiles]`
 - [x] 12.5 Implement `/api/company-registry/cnpj/[cnpj]` with authenticated Google access, the bounded combined-registration exception, checksum validation, safe mapping, and observability that omits CNPJ. `[onboarding-profiles]`
-- [ ] 12.6 Implement company schema/actions for legal/trade name, CNPJ, employee range, segment, WhatsApp, description, website/social links, and optimistic versioning. `[onboarding-profiles]`
-- [ ] 12.7 Implement multiple company locations with exactly one primary location and BrasilAPI field proposals that remain editable. `[onboarding-profiles]`
-- [ ] 12.8 Integrate logo/cover uploads and replacement into the company form. `[onboarding-profiles]`
+- [x] 12.6 Implement company schema/actions for legal/trade name, CNPJ, employee range, segment, WhatsApp, description, website/social links, and optimistic versioning. `[onboarding-profiles]`
+- [x] 12.7 Implement multiple company locations with exactly one primary location and BrasilAPI field proposals that remain editable. `[onboarding-profiles]`
+- [x] 12.8 Integrate logo/cover uploads and replacement into the company form. `[onboarding-profiles]`
 - [x] 12.9 Build a tested company-slice CNPJ query hook using the shared Axios/TanStack Query layer, then expose explicit loading/success/not-found/unavailable/timeout/manual-entry indicators and screen-reader announcements. `[onboarding-profiles]`
-- [ ] 12.10 Build the responsive company onboarding/profile edit experience and test manual completion when BrasilAPI is offline. `[onboarding-profiles]`
+- [x] 12.10 Build the responsive company onboarding/profile edit experience and test manual completion when BrasilAPI is offline. `[onboarding-profiles]`
 
 ## 13. Profile completion service
 

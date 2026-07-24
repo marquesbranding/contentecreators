@@ -7,6 +7,7 @@ import {
   buildCompanyProfile,
   buildConsent,
   buildCreatorProfile,
+  buildLegalDocument,
   buildModerationEvent,
   buildSponsorshipPlacement,
 } from "@/test/builders/business-builders";
@@ -47,6 +48,10 @@ describe("synthetic business builders", () => {
     expect(buildConsent()).toMatchObject({
       documentType: "PRIVACY",
       granted: true,
+    });
+    expect(buildLegalDocument()).toMatchObject({
+      documentType: "TERMS",
+      version: "BETA-PLACEHOLDER-v1",
     });
     expect(buildAuditRevision()).toMatchObject({
       actorType: "USER",

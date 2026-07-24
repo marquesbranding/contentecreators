@@ -7,10 +7,14 @@ function isBackofficeLogin(pathname: string) {
   return pathname === "/backoffice/login";
 }
 
+function isPublicBlockedStatus(pathname: string) {
+  return pathname === "/app/status/blocked";
+}
+
 function isProtectedPath(pathname: string) {
   return (
-    pathname === "/app" ||
-    pathname.startsWith("/app/") ||
+    ((pathname === "/app" || pathname.startsWith("/app/")) &&
+      !isPublicBlockedStatus(pathname)) ||
     pathname === "/onboarding" ||
     pathname.startsWith("/onboarding/") ||
     (pathname.startsWith("/backoffice") && !isBackofficeLogin(pathname))

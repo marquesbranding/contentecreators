@@ -112,6 +112,14 @@ const eslintConfig = defineConfig([
                   },
                   {
                     element: {
+                      type: "feature",
+                      captured: {
+                        featureName: "identity",
+                      },
+                    },
+                  },
+                  {
+                    element: {
                       types: {
                         anyOf: ["shared", "db"],
                       },
@@ -242,7 +250,7 @@ const eslintConfig = defineConfig([
   },
   {
     files: [
-      "src/features/**/{api,components,hooks,stores}/**/*.{ts,tsx}",
+      "src/features/*/{api,components,hooks,stores}/**/*.{ts,tsx}",
       "src/**/*.client.{ts,tsx}",
     ],
     rules: {

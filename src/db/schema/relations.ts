@@ -18,6 +18,7 @@ import {
   creatorNiches,
   creatorProfiles,
   niches,
+  onboardingDrafts,
   socialProfiles,
 } from "./profiles";
 import { sponsorshipPlacements } from "./sponsorships";
@@ -30,6 +31,10 @@ export const accountsRelations = relations(accounts, ({ many, one }) => ({
   companyProfile: one(companyProfiles, {
     fields: [accounts.id],
     references: [companyProfiles.accountId],
+  }),
+  onboardingDraft: one(onboardingDrafts, {
+    fields: [accounts.id],
+    references: [onboardingDrafts.accountId],
   }),
   mediaAssets: many(mediaAssets),
   socialProfiles: many(socialProfiles),
@@ -48,6 +53,16 @@ export const accountsRelations = relations(accounts, ({ many, one }) => ({
   auditRevisions: many(auditRevisions),
   sponsorshipPlacements: many(sponsorshipPlacements),
 }));
+
+export const onboardingDraftsRelations = relations(
+  onboardingDrafts,
+  ({ one }) => ({
+    account: one(accounts, {
+      fields: [onboardingDrafts.accountId],
+      references: [accounts.id],
+    }),
+  }),
+);
 
 export const mediaAssetsRelations = relations(mediaAssets, ({ many, one }) => ({
   ownerAccount: one(accounts, {

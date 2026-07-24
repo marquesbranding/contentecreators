@@ -87,6 +87,24 @@ export function createIdentityAuthService(
   gateway: IdentityAuthGateway,
   configuration: IdentityAuthServiceConfiguration,
 ) {
+  async function beginGoogleSignInAt(destination: unknown) {
+    const result = await gateway.beginGoogleSignIn({
+      redirectTo: buildAuthCallbackUrl(configuration.appUrl, destination),
+    });
+
+    if (result.kind === "failure") {
+      return {
+        kind: "failure" as const,
+        message: AUTH_MESSAGES.providerUnavailable,
+      };
+    }
+
+    return {
+      kind: "redirect" as const,
+      url: result.url,
+    };
+  }
+
   return {
     async signIn(input: LoginInput) {
       const result = await gateway.signInWithPassword({
@@ -141,26 +159,10 @@ export function createIdentityAuthService(
     async beginGoogleSignIn(destination: unknown, intent?: RegistrationIntent) {
       void destination;
       void intent;
-      const intendedDestination = buildRoleSelectionPath();
-      const result = await gateway.beginGoogleSignIn({
-        redirectTo: buildAuthCallbackUrl(
-          configuration.appUrl,
-          intendedDestination,
-        ),
-      });
-
-      if (result.kind === "failure") {
-        return {
-          kind: "failure" as const,
-          message: AUTH_MESSAGES.providerUnavailable,
-        };
-      }
-
-      return {
-        kind: "redirect" as const,
-        url: result.url,
-      };
+      return beginGoogleSignInAt(buildRoleSelectionPath());
     },
+
+    beginGoogleSignInAt,
 
     async exchangeCallback(code: string) {
       if (!code.trim()) {

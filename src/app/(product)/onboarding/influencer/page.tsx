@@ -2,11 +2,22 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { createServerRoleSelectionService } from "@/features/identity/server";
+import { InfluencerMediaFields } from "@/features/media";
+import {
+  activateProfileMediaAction,
+  finalizeMediaUploadAction,
+  loadCurrentInfluencerMediaFormState,
+  prepareMediaUploadAction,
+} from "@/features/media/server";
 import {
   OnboardingFormShell,
   ProfileOnboardingForm,
 } from "@/features/onboarding";
-import { submitGoogleProfileAction } from "@/features/onboarding/server";
+import {
+  loadCurrentOnboardingDraft,
+  saveOnboardingDraftAction,
+  submitGoogleProfileAction,
+} from "@/features/onboarding/server";
 
 export const metadata: Metadata = {
   title: "Cadastro de creator",
@@ -19,18 +30,42 @@ export default async function InfluencerOnboardingPage() {
   if (decision.kind === "ready") {
     redirect("/onboarding/role");
   }
-  if (decision.destination !== "/onboarding/influencer") {
+  const correctionRequested =
+    decision.destination === "/onboarding/influencer?corrections=requested";
+  if (
+    decision.destination !== "/onboarding/influencer" &&
+    !correctionRequested
+  ) {
     redirect(decision.destination);
   }
+  const [initialDraft, initialMediaState] = await Promise.all([
+    loadCurrentOnboardingDraft(),
+    loadCurrentInfluencerMediaFormState(),
+  ]);
 
   return (
     <OnboardingFormShell
+      currentStep={2}
       description="Complete seu perfil de creator. Ao enviar, o cadastro ficará aguardando a revisão da nossa equipe."
-      progress={75}
+      correctionRequested={correctionRequested}
+      progressLabel="Dados do perfil"
       title="Conte sobre o seu trabalho"
+      totalSteps={2}
     >
       <ProfileOnboardingForm
         action={submitGoogleProfileAction}
+        draftAction={saveOnboardingDraftAction}
+        initialDraft={initialDraft}
+        mediaFields={
+          <InfluencerMediaFields
+            actions={{
+              activate: activateProfileMediaAction,
+              finalize: finalizeMediaUploadAction,
+              prepare: prepareMediaUploadAction,
+            }}
+            initialState={initialMediaState}
+          />
+        }
         role="INFLUENCER"
       />
     </OnboardingFormShell>

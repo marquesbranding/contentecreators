@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { getPublicEnv } from "@/shared/lib/env/public-env";
 import { createServerSupabaseClient } from "@/shared/server/supabase/server-client";
 
+import { readAdditionalCompanyLocations } from "../../domain/company-location-form-data";
 import {
   emailRegistrationSchema,
   googleProfileSchema,
@@ -16,10 +17,14 @@ import { createServerOnboardingRegistrationService } from "../services/server-on
 
 function formPayload(formData: FormData) {
   return {
+    additionalLocations: readAdditionalCompanyLocations(formData),
+    avatarAssetId: formData.get("avatarAssetId") || undefined,
     bio: formData.get("bio"),
     city: formData.get("city"),
     cnpj: formData.get("cnpj"),
     complement: formData.get("complement"),
+    contactVisibilityAccepted: formData.get("contactVisibilityAccepted"),
+    coverAssetId: formData.get("coverAssetId") || undefined,
     creatorType: formData.get("creatorType"),
     description: formData.get("description"),
     displayName: formData.get("displayName"),
@@ -28,6 +33,7 @@ function formPayload(formData: FormData) {
     engagementRate: formData.get("engagementRate"),
     followers: formData.get("followers"),
     legalName: formData.get("legalName"),
+    logoAssetId: formData.get("logoAssetId") || undefined,
     neighborhood: formData.get("neighborhood"),
     nicheSlugs: formData.getAll("nicheSlugs"),
     number: formData.get("number"),

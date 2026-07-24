@@ -14,6 +14,8 @@ import {
   signUpSchema,
 } from "../../schemas/auth-form-schemas";
 import type { AuthActionState, AuthFieldName } from "../../types/auth.types";
+import { createServerBackofficeAuthService } from "../services/server-backoffice-auth.service";
+import { createServerBannedAccountDefenseService } from "../services/server-banned-account-defense.service";
 import { createServerIdentityAuthService } from "../services/server-identity-auth.service";
 
 function formValue(formData: FormData, key: string) {
@@ -61,6 +63,44 @@ export async function signInAction(
 
   const service = await createServerIdentityAuthService();
   const result = await service.signIn(parsed.data);
+
+  if (result.kind === "redirect") {
+    const defense = await createServerBannedAccountDefenseService();
+    const access = await defense.enforce(crypto.randomUUID());
+
+    if (access.kind === "blocked") {
+      redirect(access.destination);
+    }
+
+    redirect(result.destination);
+  }
+
+  return {
+    message: result.message,
+    status: "error",
+    values: { email: parsed.data.email },
+  };
+}
+
+export async function signInBackofficeAction(
+  _previousState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = loginSchema.safeParse({
+    email: formValue(formData, "email"),
+    nextPath: formValue(formData, "nextPath"),
+    password: formValue(formData, "password"),
+  });
+
+  if (!parsed.success) {
+    return validationFailure(
+      parsed.error,
+      String(formValue(formData, "email") ?? ""),
+    );
+  }
+
+  const service = await createServerBackofficeAuthService();
+  const result = await service.signIn(parsed.data, crypto.randomUUID());
 
   if (result.kind === "redirect") {
     redirect(result.destination);
@@ -123,6 +163,21 @@ export async function startGoogleSignInAction(
   }
 
   redirect("/login?error=provider");
+}
+
+export async function startBackofficeGoogleSignInAction(
+  formData: FormData,
+): Promise<void> {
+  const service = await createServerBackofficeAuthService();
+  const result = await service.beginGoogleSignIn(
+    formValue(formData, "nextPath"),
+  );
+
+  if (result.kind === "redirect") {
+    redirect(result.url);
+  }
+
+  redirect("/backoffice/login?error=provider");
 }
 
 export async function resendConfirmationAction(

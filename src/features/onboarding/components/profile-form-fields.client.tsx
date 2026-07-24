@@ -1,8 +1,17 @@
 "use client";
 
+import { MapPin, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
+import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import {
   Field,
@@ -25,6 +34,11 @@ import {
 import { Textarea } from "@/shared/components/ui/textarea";
 
 import { useCnpjLookup } from "../hooks/use-cnpj-lookup";
+import type {
+  CompanyOnboardingDraftPayload,
+  CreatorOnboardingDraftPayload,
+} from "../schemas/onboarding-draft-schema";
+import type { OnboardingDraftPayload } from "../types/onboarding-draft.types";
 import { CnpjLookupFeedback } from "./cnpj-lookup-feedback";
 
 const niches = [
@@ -65,6 +79,34 @@ const states = [
   "TO",
 ] as const;
 
+interface AdditionalLocationEditorValue {
+  city: string;
+  clientId: string;
+  complement: string;
+  label: string;
+  neighborhood: string;
+  number: string;
+  postalCode: string;
+  state: string;
+  street: string;
+}
+
+function emptyAdditionalLocation(
+  clientId: string,
+): AdditionalLocationEditorValue {
+  return {
+    city: "",
+    clientId,
+    complement: "",
+    label: "",
+    neighborhood: "",
+    number: "",
+    postalCode: "",
+    state: "",
+    street: "",
+  };
+}
+
 function ErrorMessages({ errors, id }: { errors?: string[]; id: string }) {
   return (
     <FieldError id={id}>
@@ -79,6 +121,7 @@ function ErrorMessages({ errors, id }: { errors?: string[]; id: string }) {
 
 function TextField({
   autoComplete,
+  defaultValue,
   errors,
   id,
   inputMode,
@@ -91,6 +134,7 @@ function TextField({
   onChange,
 }: {
   autoComplete?: string;
+  defaultValue?: number | string;
   errors?: string[];
   id: string;
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
@@ -120,8 +164,8 @@ function TextField({
         placeholder={placeholder}
         required={required}
         type={type}
-        value={value}
         onChange={onChange}
+        {...(value === undefined ? { defaultValue } : { value })}
       />
       <ErrorMessages errors={errors} id={errorId ?? `${id}-error`} />
     </Field>
@@ -136,6 +180,7 @@ function ControlledSelect({
   options,
   placeholder,
   selectedValue,
+  initialValue,
   onFieldChange,
   onValueChange,
   required = true,
@@ -147,11 +192,14 @@ function ControlledSelect({
   options: readonly (readonly [string, string])[];
   placeholder: string;
   selectedValue?: string;
+  initialValue?: string;
   onFieldChange?: (fieldName: string) => void;
   onValueChange?: (value: string) => void;
   required?: boolean;
 }) {
-  const [internalValue, setInternalValue] = useState<string | null>(null);
+  const [internalValue, setInternalValue] = useState<string | null>(
+    initialValue || null,
+  );
   const value =
     selectedValue === undefined ? internalValue : selectedValue || null;
   const errorId = errors?.length ? `${id}-error` : undefined;
@@ -162,6 +210,7 @@ function ControlledSelect({
         {label}
       </FieldLabel>
       <Select
+        items={Object.fromEntries(options)}
         name={name}
         onValueChange={(nextValue) => {
           setInternalValue(nextValue);
@@ -199,30 +248,55 @@ function ControlledSelect({
 export function ProfileFormFields({
   fieldErrors,
   getFieldErrors,
+  initialValues,
   onFieldChange,
   role,
+  showLegalConsents = true,
 }: {
   fieldErrors?: Record<string, string[]>;
   getFieldErrors?: (
     fieldName: string,
     serverErrors?: string[],
   ) => string[] | undefined;
+  initialValues?: OnboardingDraftPayload;
   onFieldChange?: (fieldName: string) => void;
   role: "INFLUENCER" | "COMPANY";
+  showLegalConsents?: boolean;
 }) {
-  const [companyFields, setCompanyFields] = useState({
-    city: "",
-    cnpj: "",
-    complement: "",
-    legalName: "",
-    neighborhood: "",
-    number: "",
-    postalCode: "",
-    segment: "",
-    state: "",
-    street: "",
-    tradeName: "",
-  });
+  const creatorInitialValues =
+    role === "INFLUENCER"
+      ? (initialValues as CreatorOnboardingDraftPayload | undefined)
+      : undefined;
+  const companyInitialValues =
+    role === "COMPANY"
+      ? (initialValues as CompanyOnboardingDraftPayload | undefined)
+      : undefined;
+  const [companyFields, setCompanyFields] = useState(() => ({
+    city: companyInitialValues?.city ?? "",
+    cnpj: companyInitialValues?.cnpj ?? "",
+    complement: companyInitialValues?.complement ?? "",
+    legalName: companyInitialValues?.legalName ?? "",
+    neighborhood: companyInitialValues?.neighborhood ?? "",
+    number: companyInitialValues?.number ?? "",
+    postalCode: companyInitialValues?.postalCode ?? "",
+    segment: companyInitialValues?.segment ?? "",
+    state: companyInitialValues?.state ?? "",
+    street: companyInitialValues?.street ?? "",
+    tradeName: companyInitialValues?.tradeName ?? "",
+  }));
+  const nextLocationId = useRef(
+    companyInitialValues?.additionalLocations?.length ?? 0,
+  );
+  const [additionalLocations, setAdditionalLocations] = useState<
+    AdditionalLocationEditorValue[]
+  >(() =>
+    (companyInitialValues?.additionalLocations ?? []).map(
+      (location, index) => ({
+        ...emptyAdditionalLocation(`initial-${index}`),
+        ...location,
+      }),
+    ),
+  );
   const cnpjLookup = useCnpjLookup(
     role === "COMPANY" ? companyFields.cnpj : "",
   );
@@ -260,6 +334,38 @@ export function ProfileFormFields({
     };
   }
 
+  function addAdditionalLocation() {
+    const clientId = `new-${nextLocationId.current}`;
+    nextLocationId.current += 1;
+    setAdditionalLocations((current) => [
+      ...current,
+      emptyAdditionalLocation(clientId),
+    ]);
+    onFieldChange?.("additionalLocations");
+  }
+
+  function removeAdditionalLocation(clientId: string) {
+    setAdditionalLocations((current) =>
+      current.filter((location) => location.clientId !== clientId),
+    );
+    onFieldChange?.("additionalLocations");
+  }
+
+  function updateAdditionalLocation(
+    clientId: string,
+    field: Exclude<keyof AdditionalLocationEditorValue, "clientId">,
+    value: string,
+  ) {
+    setAdditionalLocations((current) =>
+      current.map((location) =>
+        location.clientId === clientId
+          ? { ...location, [field]: value }
+          : location,
+      ),
+    );
+    onFieldChange?.("additionalLocations");
+  }
+
   return (
     <>
       <FieldSet>
@@ -280,6 +386,7 @@ export function ProfileFormFields({
             placeholder={
               role === "COMPANY" ? "Empresa Exemplo Ltda." : "Seu nome completo"
             }
+            defaultValue={creatorInitialValues?.legalName}
             value={role === "COMPANY" ? companyFields.legalName : undefined}
             onChange={
               role === "COMPANY" ? updateCompanyField("legalName") : undefined
@@ -330,6 +437,7 @@ export function ProfileFormFields({
                 id="company-employee-range"
                 label="Tamanho da empresa"
                 name="employeeRange"
+                initialValue={companyInitialValues?.employeeRange}
                 options={[
                   ["UP_TO_10", "Até 10 pessoas"],
                   ["11_TO_50", "11 a 50 pessoas"],
@@ -344,6 +452,7 @@ export function ProfileFormFields({
           ) : (
             <>
               <TextField
+                defaultValue={creatorInitialValues?.displayName}
                 errors={resolveFieldErrors("displayName")}
                 id="creator-display-name"
                 label="Nome de creator"
@@ -355,6 +464,7 @@ export function ProfileFormFields({
                 id="creator-type"
                 label="Tipo de atuação"
                 name="creatorType"
+                initialValue={creatorInitialValues?.creatorType}
                 options={[
                   ["INFLUENCER", "Influencer"],
                   ["UGC", "Creator UGC"],
@@ -363,6 +473,7 @@ export function ProfileFormFields({
                 placeholder="Selecione uma opção"
               />
               <TextField
+                defaultValue={creatorInitialValues?.followers}
                 errors={resolveFieldErrors("followers")}
                 id="creator-followers"
                 inputMode="numeric"
@@ -372,6 +483,7 @@ export function ProfileFormFields({
                 type="number"
               />
               <TextField
+                defaultValue={creatorInitialValues?.engagementRate}
                 errors={resolveFieldErrors("engagementRate")}
                 id="creator-engagement"
                 inputMode="decimal"
@@ -392,20 +504,59 @@ export function ProfileFormFields({
             name="whatsapp"
             placeholder="(11) 99999-9999"
             type="tel"
+            defaultValue={
+              role === "COMPANY"
+                ? companyInitialValues?.whatsapp
+                : creatorInitialValues?.whatsapp
+            }
           />
 
           {role === "COMPANY" ? (
-            <TextField
-              autoComplete="url"
-              errors={resolveFieldErrors("websiteUrl")}
-              id="company-website"
-              inputMode="url"
-              label="Site (opcional)"
-              name="websiteUrl"
-              placeholder="https://suaempresa.com.br"
-              required={false}
-              type="url"
-            />
+            <>
+              <TextField
+                autoComplete="url"
+                errors={resolveFieldErrors("websiteUrl")}
+                id="company-website"
+                inputMode="url"
+                label="Site (opcional)"
+                name="websiteUrl"
+                placeholder="https://suaempresa.com.br"
+                required={false}
+                type="url"
+                defaultValue={companyInitialValues?.websiteUrl}
+              />
+              <ControlledSelect
+                errors={resolveFieldErrors("socialPlatform")}
+                id="company-social-platform"
+                initialValue={companyInitialValues?.socialPlatform}
+                label="Rede social (opcional)"
+                name="socialPlatform"
+                onFieldChange={onFieldChange}
+                options={[
+                  ["INSTAGRAM", "Instagram"],
+                  ["TIKTOK", "TikTok"],
+                  ["YOUTUBE", "YouTube"],
+                  ["FACEBOOK", "Facebook"],
+                  ["X", "X"],
+                  ["LINKEDIN", "LinkedIn"],
+                  ["OTHER", "Outra"],
+                ]}
+                placeholder="Selecione uma rede"
+                required={false}
+              />
+              <TextField
+                autoComplete="url"
+                defaultValue={companyInitialValues?.socialUrl}
+                errors={resolveFieldErrors("socialUrl")}
+                id="company-social-url"
+                inputMode="url"
+                label="Link da rede social (opcional)"
+                name="socialUrl"
+                placeholder="https://linkedin.com/company/suaempresa"
+                required={false}
+                type="url"
+              />
+            </>
           ) : null}
         </FieldGroup>
 
@@ -427,6 +578,11 @@ export function ProfileFormFields({
                 ?.length,
             )}
             className="min-h-32 rounded-xl"
+            defaultValue={
+              role === "COMPANY"
+                ? companyInitialValues?.description
+                : creatorInitialValues?.bio
+            }
             id={`${role.toLowerCase()}-description`}
             name={role === "COMPANY" ? "description" : "bio"}
             placeholder={
@@ -460,6 +616,7 @@ export function ProfileFormFields({
               id="creator-social-platform"
               label="Canal principal"
               name="socialPlatform"
+              initialValue={creatorInitialValues?.socialPlatform}
               options={[
                 ["INSTAGRAM", "Instagram"],
                 ["TIKTOK", "TikTok"],
@@ -473,6 +630,7 @@ export function ProfileFormFields({
               placeholder="Selecione uma rede"
             />
             <TextField
+              defaultValue={creatorInitialValues?.socialUrl}
               errors={resolveFieldErrors("socialUrl")}
               id="creator-social-url"
               inputMode="url"
@@ -509,6 +667,9 @@ export function ProfileFormFields({
                     aria-invalid={Boolean(
                       resolveFieldErrors("nicheSlugs")?.length,
                     )}
+                    defaultChecked={creatorInitialValues?.nicheSlugs?.includes(
+                      value,
+                    )}
                     name="nicheSlugs"
                     onCheckedChange={() => onFieldChange?.("nicheSlugs")}
                     value={value}
@@ -525,11 +686,17 @@ export function ProfileFormFields({
         </FieldSet>
       ) : (
         <FieldSet>
-          <FieldLegend>Endereço principal</FieldLegend>
+          <FieldLegend>Localidades da empresa</FieldLegend>
           <FieldDescription>
-            O endereço pode ser preenchido automaticamente a partir do CNPJ e
-            sempre poderá ser revisado antes do envio.
+            A sede permanece como localização principal. Os dados sugeridos pelo
+            CNPJ continuam editáveis, e você pode cadastrar até nove localidades
+            adicionais.
           </FieldDescription>
+          <input name="additionalLocationsPresent" type="hidden" value="true" />
+          <Badge className="w-fit gap-1.5" variant="secondary">
+            <MapPin aria-hidden="true" />
+            Localização principal
+          </Badge>
           <FieldGroup className="grid gap-5 md:grid-cols-2">
             <TextField
               autoComplete="postal-code"
@@ -578,6 +745,167 @@ export function ProfileFormFields({
               onChange={updateCompanyField("neighborhood")}
             />
           </FieldGroup>
+
+          {additionalLocations.length > 0 ? (
+            <div className="grid gap-4">
+              {additionalLocations.map((location, index) => {
+                const namePrefix = `additionalLocations.${location.clientId}`;
+                const idPrefix = `company-location-${location.clientId}`;
+
+                return (
+                  <Card className="gap-4 py-5" key={location.clientId}>
+                    <CardHeader className="flex-row items-center justify-between gap-3 px-5">
+                      <CardTitle className="text-base">
+                        Localidade adicional {index + 1}
+                      </CardTitle>
+                      <Button
+                        aria-label={`Remover localidade ${index + 1}`}
+                        onClick={() =>
+                          removeAdditionalLocation(location.clientId)
+                        }
+                        size="icon-sm"
+                        type="button"
+                        variant="ghost"
+                      >
+                        <Trash2 aria-hidden="true" />
+                      </Button>
+                    </CardHeader>
+                    <CardContent className="grid gap-5 px-5 md:grid-cols-2">
+                      <TextField
+                        errors={resolveFieldErrors("additionalLocations")}
+                        id={`${idPrefix}-label`}
+                        label="Nome da localidade"
+                        name={`${namePrefix}.label`}
+                        onChange={(event) =>
+                          updateAdditionalLocation(
+                            location.clientId,
+                            "label",
+                            event.target.value,
+                          )
+                        }
+                        placeholder="Ex.: Filial Sul"
+                        value={location.label}
+                      />
+                      <TextField
+                        autoComplete="postal-code"
+                        id={`${idPrefix}-postal-code`}
+                        inputMode="numeric"
+                        label="CEP da localidade"
+                        name={`${namePrefix}.postalCode`}
+                        onChange={(event) =>
+                          updateAdditionalLocation(
+                            location.clientId,
+                            "postalCode",
+                            event.target.value,
+                          )
+                        }
+                        placeholder="00000-000"
+                        value={location.postalCode}
+                      />
+                      <TextField
+                        autoComplete="address-line1"
+                        id={`${idPrefix}-street`}
+                        label="Logradouro da localidade"
+                        name={`${namePrefix}.street`}
+                        onChange={(event) =>
+                          updateAdditionalLocation(
+                            location.clientId,
+                            "street",
+                            event.target.value,
+                          )
+                        }
+                        value={location.street}
+                      />
+                      <TextField
+                        id={`${idPrefix}-number`}
+                        label="Número da localidade"
+                        name={`${namePrefix}.number`}
+                        onChange={(event) =>
+                          updateAdditionalLocation(
+                            location.clientId,
+                            "number",
+                            event.target.value,
+                          )
+                        }
+                        value={location.number}
+                      />
+                      <TextField
+                        autoComplete="address-line2"
+                        id={`${idPrefix}-complement`}
+                        label="Complemento da localidade (opcional)"
+                        name={`${namePrefix}.complement`}
+                        onChange={(event) =>
+                          updateAdditionalLocation(
+                            location.clientId,
+                            "complement",
+                            event.target.value,
+                          )
+                        }
+                        required={false}
+                        value={location.complement}
+                      />
+                      <TextField
+                        id={`${idPrefix}-neighborhood`}
+                        label="Bairro da localidade"
+                        name={`${namePrefix}.neighborhood`}
+                        onChange={(event) =>
+                          updateAdditionalLocation(
+                            location.clientId,
+                            "neighborhood",
+                            event.target.value,
+                          )
+                        }
+                        value={location.neighborhood}
+                      />
+                      <TextField
+                        autoComplete="address-level2"
+                        id={`${idPrefix}-city`}
+                        label="Cidade da localidade"
+                        name={`${namePrefix}.city`}
+                        onChange={(event) =>
+                          updateAdditionalLocation(
+                            location.clientId,
+                            "city",
+                            event.target.value,
+                          )
+                        }
+                        value={location.city}
+                      />
+                      <ControlledSelect
+                        id={`${idPrefix}-state`}
+                        label="UF da localidade"
+                        name={`${namePrefix}.state`}
+                        onFieldChange={() =>
+                          onFieldChange?.("additionalLocations")
+                        }
+                        onValueChange={(value) =>
+                          updateAdditionalLocation(
+                            location.clientId,
+                            "state",
+                            value,
+                          )
+                        }
+                        options={states.map((state) => [state, state] as const)}
+                        placeholder="UF"
+                        selectedValue={location.state}
+                      />
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : null}
+
+          <Button
+            className="w-fit"
+            disabled={additionalLocations.length >= 9}
+            onClick={addAdditionalLocation}
+            type="button"
+            variant="outline"
+          >
+            <Plus aria-hidden="true" />
+            Adicionar localidade
+          </Button>
         </FieldSet>
       )}
 
@@ -590,6 +918,7 @@ export function ProfileFormFields({
             id={`${role.toLowerCase()}-city`}
             label="Cidade"
             name="city"
+            defaultValue={creatorInitialValues?.city}
             value={role === "COMPANY" ? companyFields.city : undefined}
             onChange={
               role === "COMPANY" ? updateCompanyField("city") : undefined
@@ -600,6 +929,7 @@ export function ProfileFormFields({
             id={`${role.toLowerCase()}-state`}
             label="UF"
             name="state"
+            initialValue={creatorInitialValues?.state}
             options={states.map((state) => [state, state] as const)}
             onFieldChange={onFieldChange}
             placeholder="UF"
@@ -617,89 +947,115 @@ export function ProfileFormFields({
         </FieldGroup>
       </FieldSet>
 
-      <FieldSet>
-        <FieldLegend>Termos e privacidade</FieldLegend>
-        <FieldGroup>
-          <Field
-            data-invalid={Boolean(resolveFieldErrors("termsAccepted")?.length)}
-          >
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4">
-              <Checkbox
-                aria-describedby="terms-accepted-error"
-                aria-invalid={Boolean(
-                  resolveFieldErrors("termsAccepted")?.length,
-                )}
-                aria-required="true"
-                data-field-kind="checkbox"
-                data-field-name="termsAccepted"
-                data-required-field="true"
-                data-required-message="Você precisa aceitar para continuar."
-                name="termsAccepted"
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    onFieldChange?.("termsAccepted");
-                  }
-                }}
+      {showLegalConsents ? (
+        <FieldSet>
+          <FieldLegend>Termos e privacidade</FieldLegend>
+          <FieldGroup>
+            <Field
+              data-invalid={Boolean(
+                resolveFieldErrors("termsAccepted")?.length,
+              )}
+            >
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4">
+                <Checkbox
+                  aria-describedby="terms-accepted-error"
+                  aria-invalid={Boolean(
+                    resolveFieldErrors("termsAccepted")?.length,
+                  )}
+                  aria-required="true"
+                  data-field-kind="checkbox"
+                  data-field-name="termsAccepted"
+                  data-required-field="true"
+                  data-required-message="Você precisa aceitar para continuar."
+                  defaultChecked={false}
+                  name="termsAccepted"
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      onFieldChange?.("termsAccepted");
+                    }
+                  }}
+                />
+                <span className="text-sm leading-6">
+                  Li e aceito os{" "}
+                  <Link
+                    className="text-brand-blue font-semibold underline"
+                    href="/terms"
+                    target="_blank"
+                  >
+                    Termos de Uso
+                  </Link>
+                  <RequiredIndicator />.
+                </span>
+              </label>
+              <ErrorMessages
+                errors={resolveFieldErrors("termsAccepted")}
+                id="terms-accepted-error"
               />
-              <span className="text-sm leading-6">
-                Li e aceito os{" "}
-                <Link
-                  className="text-brand-blue font-semibold underline"
-                  href="/terms"
-                  target="_blank"
-                >
-                  Termos de Uso
-                </Link>
-                <RequiredIndicator />.
-              </span>
-            </label>
-            <ErrorMessages
-              errors={resolveFieldErrors("termsAccepted")}
-              id="terms-accepted-error"
-            />
-          </Field>
-          <Field
-            data-invalid={Boolean(
-              resolveFieldErrors("privacyAccepted")?.length,
-            )}
-          >
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4">
-              <Checkbox
-                aria-describedby="privacy-accepted-error"
-                aria-invalid={Boolean(
-                  resolveFieldErrors("privacyAccepted")?.length,
-                )}
-                aria-required="true"
-                data-field-kind="checkbox"
-                data-field-name="privacyAccepted"
-                data-required-field="true"
-                data-required-message="Você precisa aceitar para continuar."
-                name="privacyAccepted"
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    onFieldChange?.("privacyAccepted");
-                  }
-                }}
+            </Field>
+            <Field
+              data-invalid={Boolean(
+                resolveFieldErrors("privacyAccepted")?.length,
+              )}
+            >
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4">
+                <Checkbox
+                  aria-describedby="privacy-accepted-error"
+                  aria-invalid={Boolean(
+                    resolveFieldErrors("privacyAccepted")?.length,
+                  )}
+                  aria-required="true"
+                  data-field-kind="checkbox"
+                  data-field-name="privacyAccepted"
+                  data-required-field="true"
+                  data-required-message="Você precisa aceitar para continuar."
+                  defaultChecked={false}
+                  name="privacyAccepted"
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      onFieldChange?.("privacyAccepted");
+                    }
+                  }}
+                />
+                <span className="text-sm leading-6">
+                  Li e aceito a{" "}
+                  <Link
+                    className="text-brand-blue font-semibold underline"
+                    href="/privacy"
+                    target="_blank"
+                  >
+                    Política de Privacidade
+                  </Link>
+                  <RequiredIndicator />.
+                </span>
+              </label>
+              <ErrorMessages
+                errors={resolveFieldErrors("privacyAccepted")}
+                id="privacy-accepted-error"
               />
-              <span className="text-sm leading-6">
-                Li e aceito a{" "}
-                <Link
-                  className="text-brand-blue font-semibold underline"
-                  href="/privacy"
-                  target="_blank"
-                >
-                  Política de Privacidade
-                </Link>
-                <RequiredIndicator />.
-              </span>
-            </label>
-            <ErrorMessages
-              errors={resolveFieldErrors("privacyAccepted")}
-              id="privacy-accepted-error"
-            />
-          </Field>
-        </FieldGroup>
-      </FieldSet>
+            </Field>
+            {role === "INFLUENCER" ? (
+              <Field>
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4">
+                  <Checkbox
+                    data-field-kind="checkbox"
+                    data-field-name="contactVisibilityAccepted"
+                    defaultChecked={false}
+                    name="contactVisibilityAccepted"
+                    onCheckedChange={() =>
+                      onFieldChange?.("contactVisibilityAccepted")
+                    }
+                  />
+                  <span className="text-sm leading-6">
+                    Autorizo que empresas aprovadas visualizem meus canais de
+                    contato para falar comigo sobre oportunidades. Essa
+                    autorização é opcional e começa desmarcada.
+                  </span>
+                </label>
+              </Field>
+            ) : null}
+          </FieldGroup>
+        </FieldSet>
+      ) : null}
     </>
   );
 }

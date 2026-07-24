@@ -27,6 +27,9 @@
 6. **[2026-07-23] Keep Base UI value state controlled for the component lifetime**
    Do instead: initialize selection controls with `null`, never `undefined`, and remount mutually exclusive role-specific form subtrees with a stable role key so inputs do not switch between controlled and uncontrolled modes.
 
+7. **[2026-07-24] Publish each completed implementation wave**
+   Do instead: after the relevant validations pass, commit the finished scoped changes and push the current branch without waiting for a separate reminder.
+
 ## Product Requirements
 
 1. **[2026-07-22] Product prompt overrides the roadmap DOCX**

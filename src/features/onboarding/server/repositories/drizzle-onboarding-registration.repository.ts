@@ -18,6 +18,7 @@ import {
   creatorProfiles,
   emailOutbox,
   legalDocuments,
+  mediaAssets,
   moderationCases,
   moderationEvents,
   niches,
@@ -36,6 +37,13 @@ import type {
 import type { OnboardingRegistrationRepository } from "../services/onboarding-registration.service";
 
 type ProfileInput = EmailRegistrationInput | GoogleProfileInput;
+type CreatorProfileInput = Extract<ProfileInput, { role: "INFLUENCER" }>;
+type CompanyProfileInput = Extract<ProfileInput, { role: "COMPANY" }>;
+
+interface RequestedProfileMedia {
+  id: string;
+  kind: "AVATAR" | "COVER" | "LOGO";
+}
 
 function normalizeWhatsapp(value: string) {
   const digits = value.replace(/\D/gu, "");
@@ -68,12 +76,111 @@ function auditContext(
   };
 }
 
+function requestedCreatorMedia(input: CreatorProfileInput) {
+  return [
+    input.avatarAssetId
+      ? { id: input.avatarAssetId, kind: "AVATAR" as const }
+      : null,
+    input.coverAssetId
+      ? { id: input.coverAssetId, kind: "COVER" as const }
+      : null,
+  ].filter((media) => media !== null);
+}
+
+function requestedCompanyMedia(input: CompanyProfileInput) {
+  return [
+    input.logoAssetId ? { id: input.logoAssetId, kind: "LOGO" as const } : null,
+    input.coverAssetId
+      ? { id: input.coverAssetId, kind: "COVER" as const }
+      : null,
+  ].filter((media) => media !== null);
+}
+
+async function lockInitialProfileMedia(
+  transaction: ApplicationTransaction,
+  accountId: string,
+  requestedMedia: RequestedProfileMedia[],
+) {
+  if (requestedMedia.length === 0) {
+    return;
+  }
+
+  const distinctIds = new Set(requestedMedia.map((media) => media.id));
+  if (distinctIds.size !== requestedMedia.length) {
+    throw new Error("Profile media purposes must use distinct assets.");
+  }
+
+  const mediaRows = await transaction
+    .select({
+      archivedAt: mediaAssets.archivedAt,
+      id: mediaAssets.id,
+      kind: mediaAssets.kind,
+      ownerAccountId: mediaAssets.ownerAccountId,
+      status: mediaAssets.status,
+    })
+    .from(mediaAssets)
+    .where(inArray(mediaAssets.id, [...distinctIds]))
+    .for("update");
+
+  const validMedia = requestedMedia.every((requested) => {
+    const media = mediaRows.find((row) => row.id === requested.id);
+
+    return (
+      media?.ownerAccountId === accountId &&
+      media.kind === requested.kind &&
+      media.status === "PENDING" &&
+      !media.archivedAt
+    );
+  });
+
+  if (!validMedia || mediaRows.length !== requestedMedia.length) {
+    throw new Error("Profile media is unavailable for initial activation.");
+  }
+}
+
+async function activateInitialProfileMedia(
+  transaction: ApplicationTransaction,
+  accountId: string,
+  requestedMedia: RequestedProfileMedia[],
+) {
+  if (requestedMedia.length === 0) {
+    return;
+  }
+
+  const activated = await transaction
+    .update(mediaAssets)
+    .set({
+      status: "ACTIVE",
+      updatedAt: new Date(),
+      version: sql`${mediaAssets.version} + 1`,
+    })
+    .where(
+      and(
+        inArray(
+          mediaAssets.id,
+          requestedMedia.map((media) => media.id),
+        ),
+        eq(mediaAssets.ownerAccountId, accountId),
+        eq(mediaAssets.status, "PENDING"),
+        isNull(mediaAssets.archivedAt),
+      ),
+    )
+    .returning({ id: mediaAssets.id });
+
+  if (activated.length !== requestedMedia.length) {
+    throw new Error("Profile media activation did not converge.");
+  }
+}
+
 async function insertRoleProfile(
   transaction: ApplicationTransaction,
   accountId: string,
   input: ProfileInput,
 ) {
   if (input.role === "COMPANY") {
+    const requestedMedia = requestedCompanyMedia(input);
+    await lockInitialProfileMedia(transaction, accountId, requestedMedia);
+
     const [profile] = await transaction
       .insert(companyProfiles)
       .values({
@@ -82,6 +189,8 @@ async function insertRoleProfile(
         description: input.description,
         employeeRange: input.employeeRange,
         legalName: input.legalName,
+        logoAssetId: input.logoAssetId,
+        coverAssetId: input.coverAssetId,
         segment: input.segment,
         tradeName: input.tradeName,
         websiteUrl: input.websiteUrl,
@@ -93,28 +202,57 @@ async function insertRoleProfile(
       throw new Error("Company profile was not created.");
     }
 
-    await transaction.insert(companyLocations).values({
-      city: input.city,
-      companyProfileId: profile.id,
-      complement: input.complement || null,
-      isPrimary: true,
-      label: "Sede",
-      neighborhood: input.neighborhood,
-      number: input.number,
-      postalCode: input.postalCode,
-      state: input.state,
-      street: input.street,
-    });
+    await activateInitialProfileMedia(transaction, accountId, requestedMedia);
+
+    await transaction.insert(companyLocations).values([
+      {
+        city: input.city,
+        companyProfileId: profile.id,
+        complement: input.complement || null,
+        isPrimary: true,
+        label: "Sede",
+        neighborhood: input.neighborhood,
+        number: input.number,
+        postalCode: input.postalCode,
+        state: input.state,
+        street: input.street,
+      },
+      ...input.additionalLocations.map((location) => ({
+        city: location.city,
+        companyProfileId: profile.id,
+        complement: location.complement || null,
+        isPrimary: false,
+        label: location.label,
+        neighborhood: location.neighborhood,
+        number: location.number,
+        postalCode: location.postalCode,
+        state: location.state,
+        street: location.street,
+      })),
+    ]);
+
+    if (input.socialPlatform && input.socialUrl) {
+      await transaction.insert(socialProfiles).values({
+        normalizedUrl: input.socialUrl,
+        ownerAccountId: accountId,
+        platform: input.socialPlatform,
+      });
+    }
 
     return;
   }
+
+  const requestedMedia = requestedCreatorMedia(input);
+  await lockInitialProfileMedia(transaction, accountId, requestedMedia);
 
   const [profile] = await transaction
     .insert(creatorProfiles)
     .values({
       accountId,
+      avatarAssetId: input.avatarAssetId,
       bio: input.bio,
       city: input.city,
+      coverAssetId: input.coverAssetId,
       creatorType: input.creatorType,
       displayName: input.displayName,
       legalName: input.legalName,
@@ -126,6 +264,8 @@ async function insertRoleProfile(
   if (!profile) {
     throw new Error("Creator profile was not created.");
   }
+
+  await activateInitialProfileMedia(transaction, accountId, requestedMedia);
 
   const [socialProfile] = await transaction
     .insert(socialProfiles)
@@ -162,6 +302,31 @@ async function insertRoleProfile(
       nicheId: niche.id,
     })),
   );
+
+  const [contactDocument] = await transaction
+    .select({ id: legalDocuments.id })
+    .from(legalDocuments)
+    .where(
+      and(
+        eq(legalDocuments.documentType, "CONTACT_VISIBILITY"),
+        isNull(legalDocuments.retiredAt),
+        lte(legalDocuments.activeFrom, new Date()),
+      ),
+    )
+    .orderBy(desc(legalDocuments.activeFrom), desc(legalDocuments.publishedAt))
+    .limit(1);
+
+  if (!contactDocument) {
+    throw new Error("Active contact visibility document is not configured.");
+  }
+
+  await transaction.insert(accountContactPreferences).values({
+    accountId,
+    consentDocumentId: contactDocument.id,
+    emailVisibleToApprovedCompanies: input.contactVisibilityAccepted,
+    socialVisibleToApprovedCompanies: input.contactVisibilityAccepted,
+    whatsappVisibleToApprovedCompanies: input.contactVisibilityAccepted,
+  });
 }
 
 async function hasPreparedProfile(
@@ -246,14 +411,58 @@ async function submitPreparedAccount(
   const contactDocument = documents.find(
     (document) => document.documentType === "CONTACT_VISIBILITY",
   );
-  if (account.role === "INFLUENCER" && contactDocument) {
-    await transaction.insert(accountContactPreferences).values({
-      accountId: account.id,
-      consentDocumentId: contactDocument.id,
-      emailVisibleToApprovedCompanies: false,
-      socialVisibleToApprovedCompanies: true,
-      whatsappVisibleToApprovedCompanies: false,
-    });
+  if (account.role === "INFLUENCER") {
+    if (!contactDocument) {
+      throw new Error("Active contact visibility document is not configured.");
+    }
+
+    const [storedPreference] = await transaction
+      .select()
+      .from(accountContactPreferences)
+      .where(
+        and(
+          eq(accountContactPreferences.accountId, account.id),
+          isNull(accountContactPreferences.archivedAt),
+        ),
+      )
+      .limit(1);
+    const preference =
+      storedPreference ??
+      (
+        await transaction
+          .insert(accountContactPreferences)
+          .values({
+            accountId: account.id,
+            consentDocumentId: contactDocument.id,
+            emailVisibleToApprovedCompanies: false,
+            socialVisibleToApprovedCompanies: false,
+            whatsappVisibleToApprovedCompanies: false,
+          })
+          .returning()
+      )[0];
+
+    if (
+      preference &&
+      (preference.emailVisibleToApprovedCompanies ||
+        preference.socialVisibleToApprovedCompanies ||
+        preference.whatsappVisibleToApprovedCompanies)
+    ) {
+      await transaction.insert(accountConsents).values({
+        accountId: account.id,
+        context: {
+          emailVisibleToApprovedCompanies:
+            preference.emailVisibleToApprovedCompanies,
+          flow: "onboarding",
+          legalCopyApproved: false,
+          socialVisibleToApprovedCompanies:
+            preference.socialVisibleToApprovedCompanies,
+          whatsappVisibleToApprovedCompanies:
+            preference.whatsappVisibleToApprovedCompanies,
+        },
+        legalDocumentId: preference.consentDocumentId,
+        requestId,
+      });
+    }
   }
 
   const [moderationCase] = await transaction

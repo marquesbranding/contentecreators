@@ -51,6 +51,11 @@ export const accounts = pgTable(
       .where(
         sql`${table.archivedAt} is null and ${table.status} in ('PENDING_REVIEW', 'CHANGES_REQUESTED')`,
       ),
+    index("accounts_moderation_role_queue_idx")
+      .on(table.role, table.status, table.submittedAt, table.id)
+      .where(
+        sql`${table.archivedAt} is null and ${table.status} in ('PENDING_REVIEW', 'CHANGES_REQUESTED')`,
+      ),
     check(
       "accounts_completion_percentage_check",
       sql`${table.completionPercentage} between 0 and 100`,
