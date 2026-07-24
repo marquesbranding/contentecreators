@@ -9,7 +9,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/shared/components/ui/alert";
-import { Button } from "@/shared/components/ui/button";
+import { Button, buttonVariants } from "@/shared/components/ui/button";
 import {
   Field,
   FieldDescription,
@@ -19,10 +19,12 @@ import {
   FieldLegend,
   FieldSeparator,
   FieldSet,
+  RequiredFieldsNotice,
 } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 import { Spinner } from "@/shared/components/ui/spinner";
+import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 import { cn } from "@/shared/lib/cn";
 
 import type { OnboardingAction } from "../types/onboarding-action.types";
@@ -66,6 +68,23 @@ export function CombinedRegistrationForm({
     resendAction,
     initialOnboardingActionState,
   );
+  const formValidation = useRequiredFieldValidation();
+  const roleErrors = formValidation.getFieldErrors(
+    "role",
+    state.fieldErrors?.role,
+  );
+  const emailErrors = formValidation.getFieldErrors(
+    "email",
+    state.fieldErrors?.email,
+  );
+  const passwordErrors = formValidation.getFieldErrors(
+    "password",
+    state.fieldErrors?.password,
+  );
+  const passwordConfirmationErrors = formValidation.getFieldErrors(
+    "passwordConfirmation",
+    state.fieldErrors?.passwordConfirmation,
+  );
 
   if (state.status === "confirmation_required" && state.values?.email) {
     return (
@@ -97,13 +116,9 @@ export function CombinedRegistrationForm({
             {resendPending ? "Reenviando..." : "Reenviar confirmação"}
           </Button>
         </form>
-        <Button
-          nativeButton={false}
-          render={<Link href="/login" />}
-          variant="link"
-        >
+        <Link className={buttonVariants({ variant: "link" })} href="/login">
           Voltar para o login
-        </Button>
+        </Link>
       </div>
     );
   }
@@ -118,20 +133,39 @@ export function CombinedRegistrationForm({
         </Alert>
       ) : null}
 
-      <form action={formAction} className="space-y-9" noValidate>
+      <form
+        action={formAction}
+        className="space-y-9"
+        noValidate
+        {...formValidation.formValidationProps}
+      >
+        <RequiredFieldsNotice />
         <FieldSet>
-          <FieldLegend>Como você vai usar a plataforma?</FieldLegend>
+          <FieldLegend id="registration-role-label" required>
+            Como você vai usar a plataforma?
+          </FieldLegend>
           <FieldDescription>
             Essa escolha define os dados do cadastro e não poderá ser alterada
             por você depois do envio.
           </FieldDescription>
-          <Field data-invalid={Boolean(state.fieldErrors?.role)}>
+          <Field data-invalid={Boolean(roleErrors?.length)}>
             <RadioGroup
+              aria-describedby={
+                roleErrors?.length ? "registration-role-error" : undefined
+              }
+              aria-invalid={Boolean(roleErrors?.length)}
+              aria-labelledby="registration-role-label"
+              aria-required="true"
               className="grid gap-4 md:grid-cols-2"
+              data-field-kind="radio-group"
+              data-field-name="role"
+              data-required-field="true"
+              data-required-message="Escolha como você vai usar a plataforma."
               name="role"
               onValueChange={(value) => {
                 if (value === "INFLUENCER" || value === "COMPANY") {
                   setRole(value);
+                  formValidation.clearFieldError("role");
                 }
               }}
               value={role}
@@ -186,7 +220,13 @@ export function CombinedRegistrationForm({
                 );
               })}
             </RadioGroup>
-            <FieldError>{state.fieldErrors?.role?.[0]}</FieldError>
+            <FieldError id="registration-role-error">
+              {roleErrors?.map((message) => (
+                <span className="block" key={message}>
+                  {message}
+                </span>
+              ))}
+            </FieldError>
           </Field>
         </FieldSet>
 
@@ -198,11 +238,16 @@ export function CombinedRegistrationForm({
           <FieldGroup className="grid gap-5 md:grid-cols-2">
             <Field
               className="md:col-span-2"
-              data-invalid={Boolean(state.fieldErrors?.email)}
+              data-invalid={Boolean(emailErrors?.length)}
             >
-              <FieldLabel htmlFor="registration-email">E-mail</FieldLabel>
+              <FieldLabel htmlFor="registration-email" required>
+                E-mail
+              </FieldLabel>
               <Input
-                aria-invalid={Boolean(state.fieldErrors?.email)}
+                aria-describedby={
+                  emailErrors?.length ? "registration-email-error" : undefined
+                }
+                aria-invalid={Boolean(emailErrors?.length)}
                 autoComplete="email"
                 className="h-12 rounded-xl"
                 id="registration-email"
@@ -212,12 +257,21 @@ export function CombinedRegistrationForm({
                 required
                 type="email"
               />
-              <FieldError>{state.fieldErrors?.email?.[0]}</FieldError>
+              <FieldError id="registration-email-error">
+                {emailErrors?.map((message) => (
+                  <span className="block" key={message}>
+                    {message}
+                  </span>
+                ))}
+              </FieldError>
             </Field>
-            <Field data-invalid={Boolean(state.fieldErrors?.password)}>
-              <FieldLabel htmlFor="registration-password">Senha</FieldLabel>
+            <Field data-invalid={Boolean(passwordErrors?.length)}>
+              <FieldLabel htmlFor="registration-password" required>
+                Senha
+              </FieldLabel>
               <Input
-                aria-invalid={Boolean(state.fieldErrors?.password)}
+                aria-describedby="registration-password-description registration-password-error"
+                aria-invalid={Boolean(passwordErrors?.length)}
                 autoComplete="new-password"
                 className="h-12 rounded-xl"
                 id="registration-password"
@@ -225,19 +279,24 @@ export function CombinedRegistrationForm({
                 required
                 type="password"
               />
-              <FieldDescription>
+              <FieldDescription id="registration-password-description">
                 Use 8 caracteres, maiúscula, minúscula e número.
               </FieldDescription>
-              <FieldError>{state.fieldErrors?.password?.[0]}</FieldError>
+              <FieldError id="registration-password-error">
+                {passwordErrors?.map((message) => (
+                  <span className="block" key={message}>
+                    {message}
+                  </span>
+                ))}
+              </FieldError>
             </Field>
-            <Field
-              data-invalid={Boolean(state.fieldErrors?.passwordConfirmation)}
-            >
-              <FieldLabel htmlFor="registration-password-confirmation">
+            <Field data-invalid={Boolean(passwordConfirmationErrors?.length)}>
+              <FieldLabel htmlFor="registration-password-confirmation" required>
                 Confirmar senha
               </FieldLabel>
               <Input
-                aria-invalid={Boolean(state.fieldErrors?.passwordConfirmation)}
+                aria-describedby="registration-password-confirmation-error"
+                aria-invalid={Boolean(passwordConfirmationErrors?.length)}
                 autoComplete="new-password"
                 className="h-12 rounded-xl"
                 id="registration-password-confirmation"
@@ -245,8 +304,12 @@ export function CombinedRegistrationForm({
                 required
                 type="password"
               />
-              <FieldError>
-                {state.fieldErrors?.passwordConfirmation?.[0]}
+              <FieldError id="registration-password-confirmation-error">
+                {passwordConfirmationErrors?.map((message) => (
+                  <span className="block" key={message}>
+                    {message}
+                  </span>
+                ))}
               </FieldError>
             </Field>
           </FieldGroup>
@@ -255,7 +318,9 @@ export function CombinedRegistrationForm({
         {role ? (
           <ProfileFormFields
             fieldErrors={state.fieldErrors}
+            getFieldErrors={formValidation.getFieldErrors}
             key={role}
+            onFieldChange={formValidation.clearFieldError}
             role={role}
           />
         ) : (
@@ -268,12 +333,7 @@ export function CombinedRegistrationForm({
           </Alert>
         )}
 
-        <Button
-          className="w-full"
-          disabled={pending || !role}
-          size="lg"
-          type="submit"
-        >
+        <Button className="w-full" disabled={pending} size="lg" type="submit">
           {pending ? <Spinner aria-label="Criando cadastro" /> : null}
           {pending ? "Criando cadastro..." : "Criar conta e enviar perfil"}
         </Button>

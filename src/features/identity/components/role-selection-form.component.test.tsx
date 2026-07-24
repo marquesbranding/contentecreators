@@ -7,8 +7,11 @@ import { getBlockingComponentAccessibilityViolations } from "@/test/component-ac
 import { RoleSelectionForm } from "./role-selection-form.client";
 
 describe("role selection form", () => {
-  it("offers only influencer and company with permanent-choice copy", () => {
-    render(<RoleSelectionForm action={vi.fn()} />);
+  it("offers only influencer and company and validates an empty choice", async () => {
+    const user = userEvent.setup();
+    const action = vi.fn();
+
+    render(<RoleSelectionForm action={action} />);
 
     expect(
       screen.getByRole("radio", { name: "Sou creator" }),
@@ -21,9 +24,16 @@ describe("role selection form", () => {
     expect(
       screen.getByText(/não poderá ser alterada por você/iu),
     ).toBeInTheDocument();
-    expect(
+    await user.click(
       screen.getByRole("button", { name: "Confirmar tipo de perfil" }),
-    ).toBeDisabled();
+    );
+
+    expect(action).not.toHaveBeenCalled();
+    expect(screen.getByRole("radiogroup")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    expect(screen.getByText("Escolha um tipo de perfil.")).toBeInTheDocument();
   });
 
   it("preserves safe marketing intent and enables explicit confirmation", async () => {

@@ -8,8 +8,10 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
+  RequiredFieldsNotice,
 } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
+import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 
 import type { AuthFormAction } from "../types/auth.types";
 import { initialAuthActionState } from "../types/auth.types";
@@ -21,20 +23,30 @@ export function ForgotPasswordForm({ action }: { action: AuthFormAction }) {
     action,
     initialAuthActionState,
   );
-  const errorId = state.fieldErrors?.email?.length
-    ? "recovery-email-error"
-    : undefined;
+  const formValidation = useRequiredFieldValidation();
+  const emailErrors = formValidation.getFieldErrors(
+    "email",
+    state.fieldErrors?.email,
+  );
+  const errorId = emailErrors?.length ? "recovery-email-error" : undefined;
 
   return (
     <div className="space-y-6">
       <AuthFeedback state={state} />
-      <form action={formAction} noValidate>
+      <form
+        action={formAction}
+        noValidate
+        {...formValidation.formValidationProps}
+      >
         <FieldGroup>
-          <Field data-invalid={Boolean(state.fieldErrors?.email?.length)}>
-            <FieldLabel htmlFor="recovery-email">E-mail</FieldLabel>
+          <RequiredFieldsNotice />
+          <Field data-invalid={Boolean(emailErrors?.length)}>
+            <FieldLabel htmlFor="recovery-email" required>
+              E-mail
+            </FieldLabel>
             <Input
               aria-describedby={errorId}
-              aria-invalid={Boolean(state.fieldErrors?.email?.length)}
+              aria-invalid={Boolean(emailErrors?.length)}
               autoComplete="email"
               className="h-12 rounded-xl"
               id="recovery-email"
@@ -45,7 +57,7 @@ export function ForgotPasswordForm({ action }: { action: AuthFormAction }) {
               type="email"
             />
             <FieldError id={errorId}>
-              {state.fieldErrors?.email?.map((message) => (
+              {emailErrors?.map((message) => (
                 <span className="block" key={message}>
                   {message}
                 </span>

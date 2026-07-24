@@ -22,9 +22,14 @@ function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
 
 function FieldLegend({
   className,
+  required = false,
+  children,
   variant = "legend",
   ...props
-}: React.ComponentProps<"legend"> & { variant?: "legend" | "label" }) {
+}: React.ComponentProps<"legend"> & {
+  required?: boolean;
+  variant?: "legend" | "label";
+}) {
   return (
     <legend
       data-slot="field-legend"
@@ -34,7 +39,10 @@ function FieldLegend({
         className,
       )}
       {...props}
-    />
+    >
+      {children}
+      {required ? <RequiredIndicator /> : null}
+    </legend>
   );
 }
 
@@ -100,8 +108,10 @@ function FieldContent({ className, ...props }: React.ComponentProps<"div">) {
 
 function FieldLabel({
   className,
+  required = false,
+  children,
   ...props
-}: React.ComponentProps<typeof Label>) {
+}: React.ComponentProps<typeof Label> & { required?: boolean }) {
   return (
     <Label
       data-slot="field-label"
@@ -111,7 +121,36 @@ function FieldLabel({
         className,
       )}
       {...props}
+    >
+      {children}
+      {required ? <RequiredIndicator /> : null}
+    </Label>
+  );
+}
+
+function RequiredIndicator({ className }: { className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn("text-destructive ml-0.5 after:content-['*']", className)}
+      data-slot="required-indicator"
     />
+  );
+}
+
+function RequiredFieldsNotice({
+  className,
+  ...props
+}: React.ComponentProps<"p">) {
+  return (
+    <p
+      className={cn("text-muted-foreground text-sm", className)}
+      data-slot="required-fields-notice"
+      {...props}
+    >
+      <RequiredIndicator className="mr-1 ml-0" />
+      Campos obrigatórios
+    </p>
   );
 }
 
@@ -235,4 +274,6 @@ export {
   FieldSet,
   FieldContent,
   FieldTitle,
+  RequiredFieldsNotice,
+  RequiredIndicator,
 };

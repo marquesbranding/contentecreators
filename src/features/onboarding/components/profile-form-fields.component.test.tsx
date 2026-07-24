@@ -48,6 +48,23 @@ describe("ProfileFormFields company CNPJ experience", () => {
     expect(screen.getByLabelText("Logradouro")).toHaveValue("Rua sem consulta");
   });
 
+  it("distinguishes required and optional fields in their labels", () => {
+    const { container } = render(<ProfileFormFields role="COMPANY" />);
+
+    expect(
+      container.querySelector(
+        'label[for="company-legal-name"] [data-slot="required-indicator"]',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector(
+        'label[for="company-website"] [data-slot="required-indicator"]',
+      ),
+    ).toBeNull();
+    expect(screen.getByLabelText("Razão social")).toBeRequired();
+    expect(screen.getByLabelText("Site (opcional)")).not.toBeRequired();
+  });
+
   it("applies provider fields as an editable proposal", async () => {
     const user = userEvent.setup();
     useCnpjLookupMock.mockReturnValue({

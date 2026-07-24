@@ -50,6 +50,9 @@
 7. **[2026-07-23] Preserve the supplied logo and use consistent interface iconography**
    Do instead: keep the original `public/brand/contente-creators-logo.png` asset unchanged, use Lucide icons for UI symbols, avoid emoji, and reserve the supporting pink/sky/royal/lime palette and gradients for restrained marketing accents.
 
+8. **[2026-07-23] Make required-field behavior consistent and accessible**
+   Do instead: use the shared red required indicator and form notice, preserve native `required` semantics, validate custom shadcn/Base UI controls through `useRequiredFieldValidation`, show adjacent `pt-BR` errors with `aria-invalid`, and focus the first invalid field before dispatching a Server Action.
+
 ## Shell & Command Reliability
 
 1. **[2026-07-22] Preserve user work in the shared repository**

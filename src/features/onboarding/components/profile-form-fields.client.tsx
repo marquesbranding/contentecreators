@@ -12,6 +12,7 @@ import {
   FieldLabel,
   FieldLegend,
   FieldSet,
+  RequiredIndicator,
 } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 import {
@@ -105,7 +106,9 @@ function TextField({
 
   return (
     <Field data-invalid={Boolean(errors?.length)}>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <FieldLabel htmlFor={id} required={required}>
+        {label}
+      </FieldLabel>
       <Input
         aria-describedby={errorId}
         aria-invalid={Boolean(errors?.length)}
@@ -133,7 +136,9 @@ function ControlledSelect({
   options,
   placeholder,
   selectedValue,
+  onFieldChange,
   onValueChange,
+  required = true,
 }: {
   errors?: string[];
   id: string;
@@ -142,7 +147,9 @@ function ControlledSelect({
   options: readonly (readonly [string, string])[];
   placeholder: string;
   selectedValue?: string;
+  onFieldChange?: (fieldName: string) => void;
   onValueChange?: (value: string) => void;
+  required?: boolean;
 }) {
   const [internalValue, setInternalValue] = useState<string | null>(null);
   const value =
@@ -151,19 +158,27 @@ function ControlledSelect({
 
   return (
     <Field data-invalid={Boolean(errors?.length)}>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <FieldLabel htmlFor={id} required={required}>
+        {label}
+      </FieldLabel>
       <Select
         name={name}
         onValueChange={(nextValue) => {
           setInternalValue(nextValue);
           onValueChange?.(nextValue ?? "");
+          onFieldChange?.(name);
         }}
         value={value}
       >
         <SelectTrigger
           aria-describedby={errorId}
           aria-invalid={Boolean(errors?.length)}
+          aria-required={required}
           className="h-12 w-full rounded-xl"
+          data-field-name={name}
+          data-field-value={value ?? ""}
+          data-required-field={required}
+          data-required-message="Selecione uma opção."
           id={id}
         >
           <SelectValue placeholder={placeholder} />
@@ -183,9 +198,16 @@ function ControlledSelect({
 
 export function ProfileFormFields({
   fieldErrors,
+  getFieldErrors,
+  onFieldChange,
   role,
 }: {
   fieldErrors?: Record<string, string[]>;
+  getFieldErrors?: (
+    fieldName: string,
+    serverErrors?: string[],
+  ) => string[] | undefined;
+  onFieldChange?: (fieldName: string) => void;
   role: "INFLUENCER" | "COMPANY";
 }) {
   const [companyFields, setCompanyFields] = useState({
@@ -204,12 +226,19 @@ export function ProfileFormFields({
   const cnpjLookup = useCnpjLookup(
     role === "COMPANY" ? companyFields.cnpj : "",
   );
+  const resolveFieldErrors = (fieldName: string) =>
+    getFieldErrors?.(fieldName, fieldErrors?.[fieldName]) ??
+    fieldErrors?.[fieldName];
 
   function applyCompanyLookup() {
     const result = cnpjLookup.data;
 
     if (result?.status !== "success") {
       return;
+    }
+
+    for (const fieldName of Object.keys(result.data)) {
+      onFieldChange?.(fieldName);
     }
 
     setCompanyFields((current) => ({
@@ -222,11 +251,13 @@ export function ProfileFormFields({
   function updateCompanyField(
     field: keyof typeof companyFields,
   ): React.ChangeEventHandler<HTMLInputElement> {
-    return (event) =>
+    return (event) => {
+      onFieldChange?.(field);
       setCompanyFields((current) => ({
         ...current,
         [field]: event.target.value,
       }));
+    };
   }
 
   return (
@@ -242,7 +273,7 @@ export function ProfileFormFields({
         <FieldGroup className="grid gap-5 md:grid-cols-2">
           <TextField
             autoComplete="name"
-            errors={fieldErrors?.legalName}
+            errors={resolveFieldErrors("legalName")}
             id={`${role.toLowerCase()}-legal-name`}
             label={role === "COMPANY" ? "Razão social" : "Nome completo"}
             name="legalName"
@@ -258,7 +289,7 @@ export function ProfileFormFields({
           {role === "COMPANY" ? (
             <>
               <TextField
-                errors={fieldErrors?.tradeName}
+                errors={resolveFieldErrors("tradeName")}
                 id="company-trade-name"
                 label="Nome fantasia"
                 name="tradeName"
@@ -267,7 +298,7 @@ export function ProfileFormFields({
                 onChange={updateCompanyField("tradeName")}
               />
               <TextField
-                errors={fieldErrors?.cnpj}
+                errors={resolveFieldErrors("cnpj")}
                 id="company-cnpj"
                 inputMode="numeric"
                 label="CNPJ"
@@ -286,7 +317,7 @@ export function ProfileFormFields({
                 />
               </div>
               <TextField
-                errors={fieldErrors?.segment}
+                errors={resolveFieldErrors("segment")}
                 id="company-segment"
                 label="Segmento"
                 name="segment"
@@ -295,7 +326,7 @@ export function ProfileFormFields({
                 onChange={updateCompanyField("segment")}
               />
               <ControlledSelect
-                errors={fieldErrors?.employeeRange}
+                errors={resolveFieldErrors("employeeRange")}
                 id="company-employee-range"
                 label="Tamanho da empresa"
                 name="employeeRange"
@@ -306,20 +337,21 @@ export function ProfileFormFields({
                   ["201_TO_500", "201 a 500 pessoas"],
                   ["MORE_THAN_500", "Mais de 500 pessoas"],
                 ]}
+                onFieldChange={onFieldChange}
                 placeholder="Selecione uma faixa"
               />
             </>
           ) : (
             <>
               <TextField
-                errors={fieldErrors?.displayName}
+                errors={resolveFieldErrors("displayName")}
                 id="creator-display-name"
                 label="Nome de creator"
                 name="displayName"
                 placeholder="Como você quer aparecer"
               />
               <ControlledSelect
-                errors={fieldErrors?.creatorType}
+                errors={resolveFieldErrors("creatorType")}
                 id="creator-type"
                 label="Tipo de atuação"
                 name="creatorType"
@@ -327,10 +359,11 @@ export function ProfileFormFields({
                   ["INFLUENCER", "Influencer"],
                   ["UGC", "Creator UGC"],
                 ]}
+                onFieldChange={onFieldChange}
                 placeholder="Selecione uma opção"
               />
               <TextField
-                errors={fieldErrors?.followers}
+                errors={resolveFieldErrors("followers")}
                 id="creator-followers"
                 inputMode="numeric"
                 label="Número de seguidores"
@@ -339,7 +372,7 @@ export function ProfileFormFields({
                 type="number"
               />
               <TextField
-                errors={fieldErrors?.engagementRate}
+                errors={resolveFieldErrors("engagementRate")}
                 id="creator-engagement"
                 inputMode="decimal"
                 label="Taxa de engajamento (%)"
@@ -352,7 +385,7 @@ export function ProfileFormFields({
 
           <TextField
             autoComplete="tel"
-            errors={fieldErrors?.whatsapp}
+            errors={resolveFieldErrors("whatsapp")}
             id={`${role.toLowerCase()}-whatsapp`}
             inputMode="tel"
             label="WhatsApp com DDD"
@@ -364,7 +397,7 @@ export function ProfileFormFields({
           {role === "COMPANY" ? (
             <TextField
               autoComplete="url"
-              errors={fieldErrors?.websiteUrl}
+              errors={resolveFieldErrors("websiteUrl")}
               id="company-website"
               inputMode="url"
               label="Site (opcional)"
@@ -377,15 +410,22 @@ export function ProfileFormFields({
         </FieldGroup>
 
         <Field
-          data-invalid={Boolean(fieldErrors?.bio || fieldErrors?.description)}
+          data-invalid={Boolean(
+            resolveFieldErrors(role === "COMPANY" ? "description" : "bio")
+              ?.length,
+          )}
         >
-          <FieldLabel htmlFor={`${role.toLowerCase()}-description`}>
+          <FieldLabel htmlFor={`${role.toLowerCase()}-description`} required>
             {role === "COMPANY"
               ? "Apresente a empresa"
               : "Conte sobre seu conteúdo"}
           </FieldLabel>
           <Textarea
-            aria-invalid={Boolean(fieldErrors?.bio || fieldErrors?.description)}
+            aria-describedby={`${role.toLowerCase()}-description-error`}
+            aria-invalid={Boolean(
+              resolveFieldErrors(role === "COMPANY" ? "description" : "bio")
+                ?.length,
+            )}
             className="min-h-32 rounded-xl"
             id={`${role.toLowerCase()}-description`}
             name={role === "COMPANY" ? "description" : "bio"}
@@ -398,7 +438,9 @@ export function ProfileFormFields({
           />
           <ErrorMessages
             errors={
-              role === "COMPANY" ? fieldErrors?.description : fieldErrors?.bio
+              role === "COMPANY"
+                ? resolveFieldErrors("description")
+                : resolveFieldErrors("bio")
             }
             id={`${role.toLowerCase()}-description-error`}
           />
@@ -414,7 +456,7 @@ export function ProfileFormFields({
           </FieldDescription>
           <FieldGroup className="grid gap-5 md:grid-cols-2">
             <ControlledSelect
-              errors={fieldErrors?.socialPlatform}
+              errors={resolveFieldErrors("socialPlatform")}
               id="creator-social-platform"
               label="Canal principal"
               name="socialPlatform"
@@ -427,10 +469,11 @@ export function ProfileFormFields({
                 ["LINKEDIN", "LinkedIn"],
                 ["OTHER", "Outro"],
               ]}
+              onFieldChange={onFieldChange}
               placeholder="Selecione uma rede"
             />
             <TextField
-              errors={fieldErrors?.socialUrl}
+              errors={resolveFieldErrors("socialUrl")}
               id="creator-social-url"
               inputMode="url"
               label="Link do perfil"
@@ -439,21 +482,43 @@ export function ProfileFormFields({
               type="url"
             />
           </FieldGroup>
-          <Field data-invalid={Boolean(fieldErrors?.nicheSlugs)}>
-            <FieldLabel>Principais nichos</FieldLabel>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <Field
+            data-invalid={Boolean(resolveFieldErrors("nicheSlugs")?.length)}
+          >
+            <FieldLabel id="creator-niches-label" required>
+              Principais nichos
+            </FieldLabel>
+            <div
+              aria-describedby="creator-niches-error"
+              aria-labelledby="creator-niches-label"
+              className="data-[invalid=true]:ring-destructive/20 grid gap-3 data-[invalid=true]:rounded-xl data-[invalid=true]:ring-3 sm:grid-cols-2 lg:grid-cols-3"
+              data-field-kind="checkbox-group"
+              data-field-name="nicheSlugs"
+              data-invalid={Boolean(resolveFieldErrors("nicheSlugs")?.length)}
+              data-required-field="true"
+              data-required-message="Escolha pelo menos um nicho."
+              role="group"
+            >
               {niches.map(([value, label]) => (
                 <label
                   className="bg-card hover:border-brand-blue/40 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors"
                   key={value}
                 >
-                  <Checkbox name="nicheSlugs" value={value} />
+                  <Checkbox
+                    aria-describedby="creator-niches-error"
+                    aria-invalid={Boolean(
+                      resolveFieldErrors("nicheSlugs")?.length,
+                    )}
+                    name="nicheSlugs"
+                    onCheckedChange={() => onFieldChange?.("nicheSlugs")}
+                    value={value}
+                  />
                   {label}
                 </label>
               ))}
             </div>
             <ErrorMessages
-              errors={fieldErrors?.nicheSlugs}
+              errors={resolveFieldErrors("nicheSlugs")}
               id="creator-niches-error"
             />
           </Field>
@@ -468,7 +533,7 @@ export function ProfileFormFields({
           <FieldGroup className="grid gap-5 md:grid-cols-2">
             <TextField
               autoComplete="postal-code"
-              errors={fieldErrors?.postalCode}
+              errors={resolveFieldErrors("postalCode")}
               id="company-postal-code"
               inputMode="numeric"
               label="CEP"
@@ -479,7 +544,7 @@ export function ProfileFormFields({
             />
             <TextField
               autoComplete="address-line1"
-              errors={fieldErrors?.street}
+              errors={resolveFieldErrors("street")}
               id="company-street"
               label="Logradouro"
               name="street"
@@ -487,7 +552,7 @@ export function ProfileFormFields({
               onChange={updateCompanyField("street")}
             />
             <TextField
-              errors={fieldErrors?.number}
+              errors={resolveFieldErrors("number")}
               id="company-number"
               label="Número"
               name="number"
@@ -496,7 +561,7 @@ export function ProfileFormFields({
             />
             <TextField
               autoComplete="address-line2"
-              errors={fieldErrors?.complement}
+              errors={resolveFieldErrors("complement")}
               id="company-complement"
               label="Complemento (opcional)"
               name="complement"
@@ -505,7 +570,7 @@ export function ProfileFormFields({
               onChange={updateCompanyField("complement")}
             />
             <TextField
-              errors={fieldErrors?.neighborhood}
+              errors={resolveFieldErrors("neighborhood")}
               id="company-neighborhood"
               label="Bairro"
               name="neighborhood"
@@ -521,7 +586,7 @@ export function ProfileFormFields({
         <FieldGroup className="grid gap-5 md:grid-cols-[1fr_10rem]">
           <TextField
             autoComplete="address-level2"
-            errors={fieldErrors?.city}
+            errors={resolveFieldErrors("city")}
             id={`${role.toLowerCase()}-city`}
             label="Cidade"
             name="city"
@@ -531,11 +596,12 @@ export function ProfileFormFields({
             }
           />
           <ControlledSelect
-            errors={fieldErrors?.state}
+            errors={resolveFieldErrors("state")}
             id={`${role.toLowerCase()}-state`}
             label="UF"
             name="state"
             options={states.map((state) => [state, state] as const)}
+            onFieldChange={onFieldChange}
             placeholder="UF"
             selectedValue={role === "COMPANY" ? companyFields.state : undefined}
             onValueChange={
@@ -554,9 +620,27 @@ export function ProfileFormFields({
       <FieldSet>
         <FieldLegend>Termos e privacidade</FieldLegend>
         <FieldGroup>
-          <Field data-invalid={Boolean(fieldErrors?.termsAccepted)}>
+          <Field
+            data-invalid={Boolean(resolveFieldErrors("termsAccepted")?.length)}
+          >
             <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4">
-              <Checkbox name="termsAccepted" />
+              <Checkbox
+                aria-describedby="terms-accepted-error"
+                aria-invalid={Boolean(
+                  resolveFieldErrors("termsAccepted")?.length,
+                )}
+                aria-required="true"
+                data-field-kind="checkbox"
+                data-field-name="termsAccepted"
+                data-required-field="true"
+                data-required-message="Você precisa aceitar para continuar."
+                name="termsAccepted"
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    onFieldChange?.("termsAccepted");
+                  }
+                }}
+              />
               <span className="text-sm leading-6">
                 Li e aceito os{" "}
                 <Link
@@ -566,17 +650,37 @@ export function ProfileFormFields({
                 >
                   Termos de Uso
                 </Link>
-                .
+                <RequiredIndicator />.
               </span>
             </label>
             <ErrorMessages
-              errors={fieldErrors?.termsAccepted}
+              errors={resolveFieldErrors("termsAccepted")}
               id="terms-accepted-error"
             />
           </Field>
-          <Field data-invalid={Boolean(fieldErrors?.privacyAccepted)}>
+          <Field
+            data-invalid={Boolean(
+              resolveFieldErrors("privacyAccepted")?.length,
+            )}
+          >
             <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4">
-              <Checkbox name="privacyAccepted" />
+              <Checkbox
+                aria-describedby="privacy-accepted-error"
+                aria-invalid={Boolean(
+                  resolveFieldErrors("privacyAccepted")?.length,
+                )}
+                aria-required="true"
+                data-field-kind="checkbox"
+                data-field-name="privacyAccepted"
+                data-required-field="true"
+                data-required-message="Você precisa aceitar para continuar."
+                name="privacyAccepted"
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    onFieldChange?.("privacyAccepted");
+                  }
+                }}
+              />
               <span className="text-sm leading-6">
                 Li e aceito a{" "}
                 <Link
@@ -586,11 +690,11 @@ export function ProfileFormFields({
                 >
                   Política de Privacidade
                 </Link>
-                .
+                <RequiredIndicator />.
               </span>
             </label>
             <ErrorMessages
-              errors={fieldErrors?.privacyAccepted}
+              errors={resolveFieldErrors("privacyAccepted")}
               id="privacy-accepted-error"
             />
           </Field>

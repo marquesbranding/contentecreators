@@ -107,6 +107,68 @@ describe("combined registration form", () => {
     ).toBeInTheDocument();
   });
 
+  it("blocks an empty submission and identifies the required role", async () => {
+    const user = userEvent.setup();
+    const action = vi.fn();
+
+    renderRegistration({
+      action,
+      googleAction: vi.fn(),
+      resendAction: vi.fn(),
+    });
+
+    await user.click(
+      screen.getByRole("button", { name: "Criar conta e enviar perfil" }),
+    );
+
+    expect(action).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole("radiogroup", {
+        name: /como você vai usar a plataforma/iu,
+      }),
+    ).toHaveAttribute("aria-invalid", "true");
+    expect(
+      screen.getByText("Escolha como você vai usar a plataforma."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /sou creator/iu })).toHaveFocus();
+  });
+
+  it("validates custom required profile fields in the selected flow", async () => {
+    const user = userEvent.setup();
+    const action = vi.fn();
+    const { container } = renderRegistration({
+      action,
+      googleAction: vi.fn(),
+      initialRole: "INFLUENCER",
+      resendAction: vi.fn(),
+    });
+
+    await user.click(
+      screen.getByRole("button", { name: "Criar conta e enviar perfil" }),
+    );
+
+    expect(action).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Tipo de atuação")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    expect(
+      container.querySelector('[data-field-name="nicheSlugs"]'),
+    ).toHaveAttribute("data-invalid", "true");
+    expect(
+      container.querySelector('[data-field-name="termsAccepted"]'),
+    ).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getAllByText("Selecione uma opção.").length).toBeGreaterThan(
+      0,
+    );
+    expect(
+      screen.getByText("Escolha pelo menos um nicho."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByText("Você precisa aceitar para continuar."),
+    ).toHaveLength(2);
+  });
+
   it("has no serious or critical automated accessibility violations", async () => {
     const { container } = renderRegistration({
       action: vi.fn(),

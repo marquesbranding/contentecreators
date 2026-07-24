@@ -9,8 +9,10 @@ import {
   FieldGroup,
   FieldLabel,
   FieldSeparator,
+  RequiredFieldsNotice,
 } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
+import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 
 import type { AuthFormAction, AuthRedirectAction } from "../types/auth.types";
 import { initialAuthActionState } from "../types/auth.types";
@@ -41,22 +43,36 @@ export function LoginForm({
         }
       : initialAuthActionState,
   );
-  const emailErrorId = state.fieldErrors?.email?.length
-    ? "login-email-error"
-    : undefined;
+  const formValidation = useRequiredFieldValidation();
+  const emailErrors = formValidation.getFieldErrors(
+    "email",
+    state.fieldErrors?.email,
+  );
+  const passwordErrors = formValidation.getFieldErrors(
+    "password",
+    state.fieldErrors?.password,
+  );
+  const emailErrorId = emailErrors?.length ? "login-email-error" : undefined;
 
   return (
     <div className="space-y-6">
       <AuthFeedback state={state} />
 
-      <form action={formAction} noValidate>
+      <form
+        action={formAction}
+        noValidate
+        {...formValidation.formValidationProps}
+      >
         <input name="nextPath" type="hidden" value={initialNextPath} />
         <FieldGroup>
-          <Field data-invalid={Boolean(state.fieldErrors?.email?.length)}>
-            <FieldLabel htmlFor="login-email">E-mail</FieldLabel>
+          <RequiredFieldsNotice />
+          <Field data-invalid={Boolean(emailErrors?.length)}>
+            <FieldLabel htmlFor="login-email" required>
+              E-mail
+            </FieldLabel>
             <Input
               aria-describedby={emailErrorId}
-              aria-invalid={Boolean(state.fieldErrors?.email?.length)}
+              aria-invalid={Boolean(emailErrors?.length)}
               autoComplete="email"
               className="h-12 rounded-xl"
               id="login-email"
@@ -67,7 +83,7 @@ export function LoginForm({
               type="email"
             />
             <FieldError id={emailErrorId}>
-              {state.fieldErrors?.email?.map((message) => (
+              {emailErrors?.map((message) => (
                 <span className="block" key={message}>
                   {message}
                 </span>
@@ -78,7 +94,7 @@ export function LoginForm({
           <div>
             <PasswordField
               autoComplete="current-password"
-              error={state.fieldErrors?.password}
+              error={passwordErrors}
               id="login-password"
               label="Senha"
               name="password"

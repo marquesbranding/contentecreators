@@ -73,6 +73,37 @@ describe("identity auth forms", () => {
     expect(password).toHaveAttribute("name", "password");
   });
 
+  it("marks empty required fields before calling the login action", async () => {
+    const user = userEvent.setup();
+    const signInAction = vi.fn();
+
+    render(
+      <LoginForm
+        googleAction={vi.fn()}
+        initialNextPath="/onboarding/role"
+        signInAction={signInAction}
+      />,
+    );
+
+    const email = screen.getByLabelText("E-mail");
+    const password = screen.getByLabelText("Senha");
+
+    expect(screen.getByText("Campos obrigatórios")).toBeInTheDocument();
+    expect(
+      email
+        .closest('[data-slot="field"]')
+        ?.querySelector('[data-slot="required-indicator"]'),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Entrar" }));
+
+    expect(signInAction).not.toHaveBeenCalled();
+    expect(email).toHaveAttribute("aria-invalid", "true");
+    expect(password).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getAllByText("Preencha este campo.")).toHaveLength(2);
+    expect(email).toHaveFocus();
+  });
+
   it("has no serious or critical automated accessibility violations", async () => {
     const { container } = render(
       <LoginForm

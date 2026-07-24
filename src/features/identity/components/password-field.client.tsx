@@ -40,7 +40,9 @@ export function PasswordField({
 
   return (
     <Field data-invalid={Boolean(error?.length)}>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <FieldLabel htmlFor={id} required>
+        {label}
+      </FieldLabel>
       <InputGroup className="h-12 rounded-xl">
         <InputGroupInput
           aria-describedby={describedBy || undefined}

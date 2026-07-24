@@ -9,7 +9,9 @@ import {
   AlertTitle,
 } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
+import { RequiredFieldsNotice } from "@/shared/components/ui/field";
 import { Spinner } from "@/shared/components/ui/spinner";
+import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 
 import type { OnboardingAction } from "../types/onboarding-action.types";
 import { initialOnboardingActionState } from "../types/onboarding-action.types";
@@ -26,9 +28,15 @@ export function ProfileOnboardingForm({
     action,
     initialOnboardingActionState,
   );
+  const formValidation = useRequiredFieldValidation();
 
   return (
-    <form action={formAction} className="space-y-9" noValidate>
+    <form
+      action={formAction}
+      className="space-y-9"
+      noValidate
+      {...formValidation.formValidationProps}
+    >
       <input name="role" type="hidden" value={role} />
       {state.message ? (
         <Alert aria-live="polite" variant="destructive">
@@ -37,7 +45,13 @@ export function ProfileOnboardingForm({
           <AlertDescription>{state.message}</AlertDescription>
         </Alert>
       ) : null}
-      <ProfileFormFields fieldErrors={state.fieldErrors} role={role} />
+      <RequiredFieldsNotice />
+      <ProfileFormFields
+        fieldErrors={state.fieldErrors}
+        getFieldErrors={formValidation.getFieldErrors}
+        onFieldChange={formValidation.clearFieldError}
+        role={role}
+      />
       <Button className="w-full" disabled={pending} size="lg" type="submit">
         {pending ? <Spinner aria-label="Enviando perfil" /> : null}
         {pending ? "Enviando para análise..." : "Enviar perfil para análise"}

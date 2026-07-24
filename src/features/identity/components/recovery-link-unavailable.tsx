@@ -6,7 +6,8 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/shared/components/ui/alert";
-import { Button } from "@/shared/components/ui/button";
+import { buttonVariants } from "@/shared/components/ui/button";
+import { cn } from "@/shared/lib/cn";
 
 export function RecoveryLinkUnavailable() {
   return (
@@ -19,15 +20,15 @@ export function RecoveryLinkUnavailable() {
           válida.
         </AlertDescription>
       </Alert>
-      <Button
-        className="w-full"
-        nativeButton={false}
-        render={<Link href="/forgot-password" />}
-        size="lg"
-        variant="outline"
+      <Link
+        className={cn(
+          buttonVariants({ size: "lg", variant: "outline" }),
+          "w-full",
+        )}
+        href="/forgot-password"
       >
         Solicitar um novo link
-      </Button>
+      </Link>
     </div>
   );
 }

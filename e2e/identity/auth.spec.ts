@@ -24,6 +24,41 @@ test.describe("identity and first-access routes", () => {
     await expect(page.getByText(/instagram/iu)).toHaveCount(0);
   });
 
+  test("marks required fields and focuses the first invalid control", async ({
+    page,
+  }) => {
+    await page.goto("/login");
+
+    const email = page.getByLabel("E-mail");
+    await page.getByRole("button", { name: "Entrar" }).click();
+
+    await expect(email).toBeFocused();
+    await expect(email).toHaveAttribute("aria-invalid", "true");
+    await expect(page.locator("#login-email-error")).toHaveText(
+      "Preencha este campo.",
+    );
+    await expect(
+      page.locator('label[for="login-email"] [data-slot="required-indicator"]'),
+    ).toHaveCSS("color", "rgb(199, 44, 65)");
+
+    await page.goto("/sign-up");
+    await page
+      .getByRole("button", { name: "Criar conta e enviar perfil" })
+      .click();
+
+    await expect(
+      page.getByRole("radiogroup", {
+        name: "Como você vai usar a plataforma?",
+      }),
+    ).toHaveAttribute("aria-invalid", "true");
+    await expect(
+      page.getByRole("radio", { name: /sou creator/iu }),
+    ).toBeFocused();
+    await expect(page.locator("#registration-role-error")).toHaveText(
+      "Escolha como você vai usar a plataforma.",
+    );
+  });
+
   test("opens the complete company variant from landing intent", async ({
     page,
   }) => {

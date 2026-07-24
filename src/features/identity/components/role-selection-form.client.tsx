@@ -14,9 +14,11 @@ import {
   FieldDescription,
   FieldError,
   FieldLabel,
+  RequiredFieldsNotice,
 } from "@/shared/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 import { Spinner } from "@/shared/components/ui/spinner";
+import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 import { cn } from "@/shared/lib/cn";
 
 import type { RegistrationIntent } from "../types/auth.types";
@@ -56,10 +58,20 @@ export function RoleSelectionForm({
     action,
     initialRoleSelectionActionState,
   );
-  const errorId = state.roleError ? "role-selection-error" : undefined;
+  const formValidation = useRequiredFieldValidation();
+  const roleErrors = formValidation.getFieldErrors(
+    "role",
+    state.roleError ? [state.roleError] : undefined,
+  );
+  const errorId = roleErrors?.length ? "role-selection-error" : undefined;
 
   return (
-    <form action={formAction} className="space-y-6" noValidate>
+    <form
+      action={formAction}
+      className="space-y-6"
+      noValidate
+      {...formValidation.formValidationProps}
+    >
       {state.message ? (
         <Alert aria-live="polite" variant="destructive">
           <CircleAlert aria-hidden="true" />
@@ -68,16 +80,26 @@ export function RoleSelectionForm({
         </Alert>
       ) : null}
 
-      <Field data-invalid={Boolean(state.roleError)}>
-        <FieldLabel className="sr-only">Tipo de perfil</FieldLabel>
+      <RequiredFieldsNotice />
+      <Field data-invalid={Boolean(roleErrors?.length)}>
+        <FieldLabel id="role-selection-label" required>
+          Tipo de perfil
+        </FieldLabel>
         <RadioGroup
           aria-describedby={errorId}
-          aria-invalid={Boolean(state.roleError)}
+          aria-invalid={Boolean(roleErrors?.length)}
+          aria-labelledby="role-selection-label"
+          aria-required="true"
           className="grid gap-4 md:grid-cols-2"
+          data-field-kind="radio-group"
+          data-field-name="role"
+          data-required-field="true"
+          data-required-message="Escolha um tipo de perfil."
           name="role"
           onValueChange={(value) => {
             if (value === "INFLUENCER" || value === "COMPANY") {
               setSelectedRole(value);
+              formValidation.clearFieldError("role");
             }
           }}
           value={selectedRole}
@@ -132,19 +154,20 @@ export function RoleSelectionForm({
             );
           })}
         </RadioGroup>
-        <FieldError id={errorId}>{state.roleError}</FieldError>
+        <FieldError id={errorId}>
+          {roleErrors?.map((message) => (
+            <span className="block" key={message}>
+              {message}
+            </span>
+          ))}
+        </FieldError>
         <FieldDescription className="rounded-xl border border-[#b86800]/25 bg-[#fff5df] px-4 py-3 text-[#69430b]">
           Essa escolha define seu cadastro e não poderá ser alterada por você
           depois da confirmação.
         </FieldDescription>
       </Field>
 
-      <Button
-        className="w-full"
-        disabled={pending || !selectedRole}
-        size="lg"
-        type="submit"
-      >
+      <Button className="w-full" disabled={pending} size="lg" type="submit">
         {pending ? <Spinner aria-label="Confirmando perfil" /> : null}
         {pending ? "Confirmando..." : "Confirmar tipo de perfil"}
       </Button>

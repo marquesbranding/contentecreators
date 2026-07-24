@@ -10,8 +10,10 @@ import {
   FieldGroup,
   FieldLabel,
   FieldSeparator,
+  RequiredFieldsNotice,
 } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
+import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 
 import type {
   AuthFormAction,
@@ -67,9 +69,20 @@ export function SignUpForm({
     signUpAction,
     initialAuthActionState,
   );
-  const emailErrorId = state.fieldErrors?.email?.length
-    ? "signup-email-error"
-    : undefined;
+  const formValidation = useRequiredFieldValidation();
+  const emailErrors = formValidation.getFieldErrors(
+    "email",
+    state.fieldErrors?.email,
+  );
+  const passwordErrors = formValidation.getFieldErrors(
+    "password",
+    state.fieldErrors?.password,
+  );
+  const passwordConfirmationErrors = formValidation.getFieldErrors(
+    "passwordConfirmation",
+    state.fieldErrors?.passwordConfirmation,
+  );
+  const emailErrorId = emailErrors?.length ? "signup-email-error" : undefined;
 
   if (state.status === "confirmation_required" && state.values?.email) {
     return (
@@ -103,14 +116,21 @@ export function SignUpForm({
     <div className="space-y-6">
       <AuthFeedback state={state} />
 
-      <form action={formAction} noValidate>
+      <form
+        action={formAction}
+        noValidate
+        {...formValidation.formValidationProps}
+      >
         <input name="intent" type="hidden" value={initialIntent ?? ""} />
         <FieldGroup>
-          <Field data-invalid={Boolean(state.fieldErrors?.email?.length)}>
-            <FieldLabel htmlFor="signup-email">E-mail</FieldLabel>
+          <RequiredFieldsNotice />
+          <Field data-invalid={Boolean(emailErrors?.length)}>
+            <FieldLabel htmlFor="signup-email" required>
+              E-mail
+            </FieldLabel>
             <Input
               aria-describedby={emailErrorId}
-              aria-invalid={Boolean(state.fieldErrors?.email?.length)}
+              aria-invalid={Boolean(emailErrors?.length)}
               autoComplete="email"
               className="h-12 rounded-xl"
               id="signup-email"
@@ -121,7 +141,7 @@ export function SignUpForm({
               type="email"
             />
             <FieldError id={emailErrorId}>
-              {state.fieldErrors?.email?.map((message) => (
+              {emailErrors?.map((message) => (
                 <span className="block" key={message}>
                   {message}
                 </span>
@@ -132,7 +152,7 @@ export function SignUpForm({
           <PasswordField
             autoComplete="new-password"
             description="Use pelo menos 8 caracteres, com letras maiúsculas, minúsculas e um número."
-            error={state.fieldErrors?.password}
+            error={passwordErrors}
             id="signup-password"
             label="Senha"
             name="password"
@@ -140,7 +160,7 @@ export function SignUpForm({
 
           <PasswordField
             autoComplete="new-password"
-            error={state.fieldErrors?.passwordConfirmation}
+            error={passwordConfirmationErrors}
             id="signup-password-confirmation"
             label="Confirmar senha"
             name="passwordConfirmation"

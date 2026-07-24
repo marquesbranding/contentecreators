@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useActionState } from "react";
 
-import { FieldGroup } from "@/shared/components/ui/field";
+import { FieldGroup, RequiredFieldsNotice } from "@/shared/components/ui/field";
+import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 
 import type { AuthFormAction } from "../types/auth.types";
 import { initialAuthActionState } from "../types/auth.types";
@@ -15,6 +16,15 @@ export function ResetPasswordForm({ action }: { action: AuthFormAction }) {
   const [state, formAction, pending] = useActionState(
     action,
     initialAuthActionState,
+  );
+  const formValidation = useRequiredFieldValidation();
+  const passwordErrors = formValidation.getFieldErrors(
+    "password",
+    state.fieldErrors?.password,
+  );
+  const passwordConfirmationErrors = formValidation.getFieldErrors(
+    "passwordConfirmation",
+    state.fieldErrors?.passwordConfirmation,
   );
 
   if (state.status === "success") {
@@ -34,19 +44,24 @@ export function ResetPasswordForm({ action }: { action: AuthFormAction }) {
   return (
     <div className="space-y-6">
       <AuthFeedback state={state} />
-      <form action={formAction} noValidate>
+      <form
+        action={formAction}
+        noValidate
+        {...formValidation.formValidationProps}
+      >
         <FieldGroup>
+          <RequiredFieldsNotice />
           <PasswordField
             autoComplete="new-password"
             description="Use pelo menos 8 caracteres, com letras maiúsculas, minúsculas e um número."
-            error={state.fieldErrors?.password}
+            error={passwordErrors}
             id="reset-password"
             label="Nova senha"
             name="password"
           />
           <PasswordField
             autoComplete="new-password"
-            error={state.fieldErrors?.passwordConfirmation}
+            error={passwordConfirmationErrors}
             id="reset-password-confirmation"
             label="Confirmar nova senha"
             name="passwordConfirmation"
