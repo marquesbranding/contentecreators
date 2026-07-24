@@ -1,15 +1,8 @@
 "use client";
 
-import { CircleCheck, LoaderCircle, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/shared/components/ui/alert";
-import { Button } from "@/shared/components/ui/button";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import {
   Field,
@@ -31,6 +24,7 @@ import {
 import { Textarea } from "@/shared/components/ui/textarea";
 
 import { useCnpjLookup } from "../hooks/use-cnpj-lookup";
+import { CnpjLookupFeedback } from "./cnpj-lookup-feedback";
 
 const niches = [
   ["beleza", "Beleza"],
@@ -283,51 +277,13 @@ export function ProfileFormFields({
                 onChange={updateCompanyField("cnpj")}
               />
               <div className="md:col-span-2">
-                {cnpjLookup.isFetching ? (
-                  <Alert aria-live="polite">
-                    <LoaderCircle aria-hidden="true" className="animate-spin" />
-                    <AlertTitle>Consultando o CNPJ</AlertTitle>
-                    <AlertDescription>
-                      Buscando os dados públicos para agilizar o preenchimento.
-                    </AlertDescription>
-                  </Alert>
-                ) : null}
-                {cnpjLookup.data?.status === "success" ? (
-                  <Alert aria-live="polite">
-                    <CircleCheck
-                      aria-hidden="true"
-                      className="text-emerald-600"
-                    />
-                    <AlertTitle>Dados encontrados</AlertTitle>
-                    <AlertDescription>
-                      Encontramos dados públicos disponíveis. Você poderá
-                      revisar e editar tudo antes do envio.
-                      <Button
-                        className="mt-3"
-                        onClick={applyCompanyLookup}
-                        size="sm"
-                        type="button"
-                      >
-                        Preencher dados encontrados
-                      </Button>
-                    </AlertDescription>
-                  </Alert>
-                ) : null}
-                {cnpjLookup.isError ||
-                (cnpjLookup.data &&
-                  cnpjLookup.data.status !== "success" &&
-                  cnpjLookup.data.status !== "invalid") ? (
-                  <Alert aria-live="polite">
-                    <TriangleAlert aria-hidden="true" />
-                    <AlertTitle>
-                      Preenchimento automático indisponível
-                    </AlertTitle>
-                    <AlertDescription>
-                      Continue preenchendo os dados manualmente. Isso não impede
-                      o envio para análise.
-                    </AlertDescription>
-                  </Alert>
-                ) : null}
+                <CnpjLookupFeedback
+                  lookupStatus={cnpjLookup.lookupStatus}
+                  onApply={applyCompanyLookup}
+                  onRetry={() => {
+                    void cnpjLookup.refetch();
+                  }}
+                />
               </div>
               <TextField
                 errors={fieldErrors?.segment}

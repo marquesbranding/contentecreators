@@ -79,6 +79,7 @@ describe("createHttpClient", () => {
   it.each([
     [401, "UNAUTHORIZED", "Sua sessão expirou. Entre novamente."],
     [403, "FORBIDDEN", "Você não tem permissão para esta ação."],
+    [429, "RATE_LIMITED", "Aguarde um pouco antes de tentar novamente."],
     [500, "SERVER_ERROR", "Não foi possível concluir agora. Tente novamente."],
     [503, "SERVER_ERROR", "Não foi possível concluir agora. Tente novamente."],
   ] as const)("normalizes HTTP %s responses", async (status, code, message) => {

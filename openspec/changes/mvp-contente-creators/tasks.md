@@ -138,14 +138,14 @@
 ## 12. Company onboarding and CNPJ assistance
 
 - [x] 12.1 Write failing CNPJ normalization/checksum tests including punctuation, invalid digits, and valid examples. `[onboarding-profiles]`
-- [ ] 12.2 Implement the server-side BrasilAPI adapter/DTO with timeout, bounded retry, typed errors, raw-response minimization, authenticated Google access, and the rate-limited pre-Auth combined-registration exception. `[onboarding-profiles]`
+- [x] 12.2 Implement the server-side BrasilAPI adapter/DTO with timeout, bounded retry, typed errors, raw-response minimization, authenticated Google access, and the rate-limited pre-Auth combined-registration exception. `[onboarding-profiles]`
 - [x] 12.3 Add per-account or privacy-safe pre-Auth network rate limiting and bounded successful-response caching for CNPJ lookup. `[onboarding-profiles]`
-- [ ] 12.4 Write contract tests for BrasilAPI success, not found, malformed data, timeout, rate limit, and provider outage. `[onboarding-profiles]`
-- [ ] 12.5 Implement `/api/company-registry/cnpj/[cnpj]` with authenticated Google access, the bounded combined-registration exception, checksum validation, safe mapping, and observability that omits CNPJ. `[onboarding-profiles]`
+- [x] 12.4 Write contract tests for BrasilAPI success, not found, malformed data, timeout, rate limit, and provider outage. `[onboarding-profiles]`
+- [x] 12.5 Implement `/api/company-registry/cnpj/[cnpj]` with authenticated Google access, the bounded combined-registration exception, checksum validation, safe mapping, and observability that omits CNPJ. `[onboarding-profiles]`
 - [ ] 12.6 Implement company schema/actions for legal/trade name, CNPJ, employee range, segment, WhatsApp, description, website/social links, and optimistic versioning. `[onboarding-profiles]`
 - [ ] 12.7 Implement multiple company locations with exactly one primary location and BrasilAPI field proposals that remain editable. `[onboarding-profiles]`
 - [ ] 12.8 Integrate logo/cover uploads and replacement into the company form. `[onboarding-profiles]`
-- [ ] 12.9 Build a tested company-slice CNPJ query hook using the shared Axios/TanStack Query layer, then expose explicit loading/success/not-found/unavailable/timeout/manual-entry indicators and screen-reader announcements. `[onboarding-profiles]`
+- [x] 12.9 Build a tested company-slice CNPJ query hook using the shared Axios/TanStack Query layer, then expose explicit loading/success/not-found/unavailable/timeout/manual-entry indicators and screen-reader announcements. `[onboarding-profiles]`
 - [ ] 12.10 Build the responsive company onboarding/profile edit experience and test manual completion when BrasilAPI is offline. `[onboarding-profiles]`
 
 ## 13. Profile completion service

@@ -14,5 +14,11 @@ export interface CompanyLookupData {
 export type CnpjLookupResult =
   | { data: CompanyLookupData; status: "success" }
   | {
-      status: "invalid" | "not_found" | "rate_limited" | "unavailable";
+      status:
+        | "invalid"
+        | "malformed_response"
+        | "not_found"
+        | "rate_limited"
+        | "timeout"
+        | "unavailable";
     };

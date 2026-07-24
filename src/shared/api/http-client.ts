@@ -16,6 +16,7 @@ export type HttpClientErrorCode =
   | "TIMEOUT"
   | "UNAUTHORIZED"
   | "FORBIDDEN"
+  | "RATE_LIMITED"
   | "VALIDATION_ERROR"
   | "SERVER_ERROR"
   | "NETWORK_ERROR"
@@ -157,6 +158,15 @@ function normalizeHttpError(error: unknown) {
     return new HttpClientError({
       code: "FORBIDDEN",
       message: "Você não tem permissão para esta ação.",
+      requestId,
+      status,
+    });
+  }
+
+  if (status === 429) {
+    return new HttpClientError({
+      code: "RATE_LIMITED",
+      message: "Aguarde um pouco antes de tentar novamente.",
       requestId,
       status,
     });
