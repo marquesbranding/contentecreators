@@ -138,7 +138,10 @@ describeLocalStack("onboarding registration repository", () => {
     });
     await expect(
       repository.finalizePreparedRegistration(identityId),
-    ).resolves.toEqual({ kind: "submitted" });
+    ).resolves.toEqual({
+      kind: "submitted",
+      outboxId: expect.any(String),
+    });
 
     const [result] = await sqlClient<
       {
@@ -277,7 +280,10 @@ describeLocalStack("onboarding registration repository", () => {
         input,
         requestId: "google-profile-submit",
       }),
-    ).resolves.toEqual({ kind: "submitted" });
+    ).resolves.toEqual({
+      kind: "submitted",
+      outboxId: expect.any(String),
+    });
 
     const [result] = await sqlClient<
       {
@@ -420,7 +426,10 @@ describeLocalStack("onboarding registration repository", () => {
         input,
         requestId: "google-company-media-submit",
       }),
-    ).resolves.toEqual({ kind: "submitted" });
+    ).resolves.toEqual({
+      kind: "submitted",
+      outboxId: expect.any(String),
+    });
 
     const [result] = await sqlClient<
       {

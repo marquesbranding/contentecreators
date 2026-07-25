@@ -63,7 +63,7 @@ describe("MarketingLanding", () => {
 
     expect(
       screen.getByRole("img", { name: "Contente Creators" }),
-    ).toHaveAttribute("src", "/brand/contente-creators-logo.png");
+    ).toHaveAttribute("src", "/brand/official/contente-creators-blue.png");
     expect(screen.queryByTestId("creator-listing")).not.toBeInTheDocument();
     expect(screen.queryByTestId("company-listing")).not.toBeInTheDocument();
   });

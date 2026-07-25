@@ -47,7 +47,10 @@ const command = {
 
 function setup(context: VerifiedAccountContext = creatorContext) {
   const repository = {
-    resubmit: vi.fn().mockResolvedValue({ kind: "submitted" as const }),
+    resubmit: vi.fn().mockResolvedValue({
+      kind: "submitted" as const,
+      outboxId: "e0000000-0000-4000-8000-000000000002",
+    }),
   };
   const runVerifiedTransaction: VerifiedAccountTransactionRunner = async <T>(
     _request: { requestId: string },
@@ -56,17 +59,19 @@ function setup(context: VerifiedAccountContext = creatorContext) {
       currentContext: VerifiedAccountContext,
     ) => Promise<T>,
   ) => work(transaction, context);
+  const processOne = vi.fn().mockResolvedValue({ kind: "sent" as const });
   const service = createCorrectedProfileResubmissionService({
+    emailDelivery: { processOne },
     repository,
     runVerifiedTransaction,
   });
 
-  return { repository, runVerifiedTransaction, service };
+  return { processOne, repository, runVerifiedTransaction, service };
 }
 
 describe("corrected profile resubmission service", () => {
   it("authorizes the owner and delegates one typed idempotent command", async () => {
-    const { repository, service } = setup();
+    const { processOne, repository, service } = setup();
 
     await expect(
       service.resubmit({
@@ -84,6 +89,10 @@ describe("corrected profile resubmission service", () => {
         requestId: "request-resubmit-corrections",
       },
     );
+    expect(processOne).toHaveBeenCalledWith({
+      outboxId: "e0000000-0000-4000-8000-000000000002",
+      workerId: expect.stringMatching(/^resubmission:/),
+    });
   });
 
   it("rejects role tampering before touching persistence", async () => {

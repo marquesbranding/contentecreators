@@ -106,22 +106,33 @@ describe("onboarding registration service", () => {
     const repository = {
       finalizePreparedRegistration: vi.fn().mockResolvedValue({
         kind: "submitted",
+        outboxId: "e0000000-0000-4000-8000-000000000001",
       }),
       prepareEmailRegistration: vi.fn().mockResolvedValue({
         accountId: "account-3",
       }),
       submitGoogleProfile: vi.fn(),
     };
-    const service = createOnboardingRegistrationService(identity, repository, {
-      callbackUrl:
-        "http://localhost:3000/auth/callback?next=/app/status/analysis",
-    });
+    const processOne = vi.fn().mockResolvedValue({ kind: "sent" as const });
+    const service = createOnboardingRegistrationService(
+      identity,
+      repository,
+      {
+        callbackUrl:
+          "http://localhost:3000/auth/callback?next=/app/status/analysis",
+      },
+      { processOne },
+    );
 
     const result = await service.registerWithEmail(influencerInput);
 
     expect(repository.finalizePreparedRegistration).toHaveBeenCalledWith(
       "identity-3",
     );
+    expect(processOne).toHaveBeenCalledWith({
+      outboxId: "e0000000-0000-4000-8000-000000000001",
+      workerId: expect.stringMatching(/^onboarding:/),
+    });
     expect(result).toEqual({
       destination: "/app/status/analysis",
       kind: "redirect",

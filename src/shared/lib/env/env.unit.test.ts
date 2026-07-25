@@ -28,6 +28,7 @@ describe("environment parsing", () => {
   it("coerces the server port and secure flag", () => {
     const parsed = parseServerEnv({
       ...validPublicEnv,
+      APP_ENV: "local",
       CRON_SECRET: "local-cron-secret-at-least-32-characters",
       DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres",
       DIRECT_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres",
@@ -44,6 +45,7 @@ describe("environment parsing", () => {
 
     expect(parsed.SMTP_PORT).toBe(1025);
     expect(parsed.SMTP_SECURE).toBe(false);
+    expect(parsed.APP_ENV).toBe("local");
     expect(parsed.PUBLIC_SOCIAL_PROOF_ENABLED).toBe(false);
   });
 
@@ -51,6 +53,7 @@ describe("environment parsing", () => {
     expect(() =>
       parseServerEnv({
         ...validPublicEnv,
+        APP_ENV: "local",
         CRON_SECRET: "local-cron-secret-at-least-32-characters",
         DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres",
         DIRECT_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres",

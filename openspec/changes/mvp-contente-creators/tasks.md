@@ -172,16 +172,16 @@
 
 ## 15. Transactional email and SMTP outbox
 
-- [ ] 15.1 Define `pt-BR` template contracts and write rendering tests for onboarding received, changes requested, approval, suspension, restoration, ban, and admin invite/provisioning as applicable. `[transactional-communications]`
-- [ ] 15.2 Implement responsive branded email templates with safe absolute environment URLs and no unnecessary personal data. `[transactional-communications]`
-- [ ] 15.3 Implement the Marques Branding SMTP adapter with TLS/auth validation, timeouts, redacted failures, and injectable local transport. `[transactional-communications]`
-- [ ] 15.4 Implement outbox claim/lock/send/success/failure/retry logic with bounded exponential backoff and concurrency tests. `[transactional-communications]`
-- [ ] 15.5 Add immediate post-commit delivery attempts that never roll back the business event. `[transactional-communications]`
-- [ ] 15.6 Add the signed scheduled processing Route Handler and reject missing/invalid signatures. `[transactional-communications]`
-- [ ] 15.7 Add admin-only manual retry with audit and duplicate-send protection. `[transactional-communications] [backoffice-operations]`
-- [ ] 15.8 Configure/test local Auth and application email catchers for full registration/moderation journeys. `[transactional-communications]`
-- [ ] 15.9 Create Supabase `pt-BR` confirmation/recovery/invite templates and per-environment redirect configuration documentation. `[transactional-communications]`
-- [ ] 15.10 Add development/production SMTP verification checklist including sender, SPF, DKIM, DMARC, rate limits, and deliverability tests. `[transactional-communications]`
+- [x] 15.1 Define `pt-BR` template contracts and write rendering tests for onboarding received, changes requested, approval, suspension, restoration, ban, and admin invite/provisioning as applicable. `[transactional-communications]`
+- [x] 15.2 Implement responsive branded email templates with safe absolute environment URLs and no unnecessary personal data. `[transactional-communications]`
+- [x] 15.3 Implement the Marques Branding SMTP adapter with TLS/auth validation, timeouts, redacted failures, and injectable local transport. `[transactional-communications]`
+- [x] 15.4 Implement outbox claim/lock/send/success/failure/retry logic with bounded exponential backoff and concurrency tests. `[transactional-communications]`
+- [x] 15.5 Add immediate post-commit delivery attempts that never roll back the business event. `[transactional-communications]`
+- [x] 15.6 Add the signed scheduled processing Route Handler and reject missing/invalid signatures. `[transactional-communications]`
+- [x] 15.7 Add admin-only manual retry with audit and duplicate-send protection. `[transactional-communications] [backoffice-operations]`
+- [x] 15.8 Configure/test local Auth and application email catchers for full registration/moderation journeys. `[transactional-communications]`
+- [x] 15.9 Create Supabase `pt-BR` confirmation/recovery/invite templates and per-environment redirect configuration documentation. `[transactional-communications]`
+- [x] 15.10 Add development/production SMTP verification checklist including sender, SPF, DKIM, DMARC, rate limits, and deliverability tests. `[transactional-communications]`
 
 ## 16. Backoffice shell and moderation operations
 

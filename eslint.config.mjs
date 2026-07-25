@@ -120,6 +120,14 @@ const eslintConfig = defineConfig([
                   },
                   {
                     element: {
+                      type: "feature",
+                      captured: {
+                        featureName: "communications",
+                      },
+                    },
+                  },
+                  {
+                    element: {
                       types: {
                         anyOf: ["shared", "db"],
                       },

@@ -2,22 +2,102 @@ import Image from "next/image";
 
 import { cn } from "@/shared/lib/cn";
 
-export function BrandLogo({ className }: { className?: string }) {
+export const brandLogoVariants = {
+  black: {
+    offsetLeft: "-8.33%",
+    offsetTop: "-110.39%",
+    src: "/brand/official/contente-creators-black.png",
+    width: "116.70%",
+  },
+  blue: {
+    offsetLeft: "-7.42%",
+    offsetTop: "-110.39%",
+    src: "/brand/official/contente-creators-blue.png",
+    width: "116.74%",
+  },
+  lime: {
+    offsetLeft: "-9.80%",
+    offsetTop: "-110.39%",
+    src: "/brand/official/contente-creators-lime.png",
+    width: "116.70%",
+  },
+  pink: {
+    offsetLeft: "-9.80%",
+    offsetTop: "-98.08%",
+    src: "/brand/official/contente-creators-pink.png",
+    width: "116.70%",
+  },
+  "royal-blue": {
+    offsetLeft: "-5.95%",
+    offsetTop: "-110.39%",
+    src: "/brand/official/contente-creators-royal-blue.png",
+    width: "116.70%",
+  },
+  white: {
+    offsetLeft: "-7.42%",
+    offsetTop: "-98.08%",
+    src: "/brand/official/contente-creators-white.png",
+    width: "116.74%",
+  },
+} as const;
+
+export type BrandLogoVariant = keyof typeof brandLogoVariants;
+export type BrandLogoBackground = "auto" | "dark" | "light" | "transparent";
+
+interface BrandLogoProps {
+  background?: BrandLogoBackground;
+  className?: string;
+  preload?: boolean;
+  sizes?: string;
+  variant?: BrandLogoVariant;
+}
+
+const backgroundClasses = {
+  dark: "bg-brand-night",
+  light: "bg-white",
+  transparent: "bg-transparent",
+} as const;
+
+export function BrandLogo({
+  background = "auto",
+  className,
+  preload = false,
+  sizes = "(max-width: 640px) 150px, 171px",
+  variant = "blue",
+}: BrandLogoProps) {
+  const artwork = brandLogoVariants[variant];
+  const resolvedBackground =
+    background === "auto"
+      ? variant === "white"
+        ? "dark"
+        : variant === "black"
+          ? "light"
+          : "transparent"
+      : background;
+
   return (
     <span
       className={cn(
-        "relative block h-[3.15rem] w-[9.35rem] shrink-0 overflow-hidden bg-black sm:h-[3.6rem] sm:w-[10.65rem]",
+        "relative block aspect-[2857/1039] h-auto w-[9.35rem] shrink-0 overflow-hidden sm:w-[10.65rem]",
+        backgroundClasses[resolvedBackground],
         className,
       )}
+      data-brand-background={resolvedBackground}
+      data-brand-variant={variant}
     >
       <Image
         alt="Contente Creators"
-        className="absolute -inset-[2.5%] h-[105%] w-[105%] max-w-none object-cover"
-        height={1_141}
-        priority
-        sizes="(max-width: 640px) 150px, 171px"
-        src="/brand/contente-creators-logo.png"
-        width={3_370}
+        className="absolute h-auto max-w-none select-none"
+        height={3_334}
+        preload={preload}
+        sizes={sizes}
+        src={artwork.src}
+        style={{
+          left: artwork.offsetLeft,
+          top: artwork.offsetTop,
+          width: artwork.width,
+        }}
+        width={3_334}
       />
     </span>
   );

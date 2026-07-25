@@ -1,9 +1,15 @@
 import "server-only";
 
+import { runWithPostCommitEmailDelivery } from "@/features/communications/server";
+
 import type {
   EmailRegistrationInput,
   GoogleProfileInput,
 } from "../../schemas/onboarding-form-schema";
+
+type OnboardingSubmissionResult =
+  | { kind: "already_submitted" | "not_prepared" }
+  | { kind: "submitted"; outboxId: string };
 
 interface RegistrationIdentityGateway {
   deleteIdentity(identityId: string): Promise<void>;
@@ -24,7 +30,7 @@ interface RegistrationIdentityGateway {
 interface OnboardingRegistrationRepository {
   finalizePreparedRegistration(
     identityId: string,
-  ): Promise<{ kind: "already_submitted" | "not_prepared" | "submitted" }>;
+  ): Promise<OnboardingSubmissionResult>;
   prepareEmailRegistration(input: {
     identityId: string;
     input: EmailRegistrationInput;
@@ -35,11 +41,24 @@ interface OnboardingRegistrationRepository {
     identityId: string;
     input: GoogleProfileInput;
     requestId: string;
-  }): Promise<{ kind: "submitted" }>;
+  }): Promise<Extract<OnboardingSubmissionResult, { kind: "submitted" }>>;
 }
 
 interface OnboardingRegistrationConfiguration {
   callbackUrl: string;
+}
+
+interface OnboardingRegistrationEmailDelivery {
+  processOne(input: {
+    outboxId: string;
+    workerId: string;
+  }): Promise<
+    | { kind: "claim_lost" }
+    | { kind: "dead_letter" }
+    | { kind: "failed" }
+    | { kind: "not_claimed" }
+    | { kind: "sent" }
+  >;
 }
 
 const REGISTRATION_FAILURE_MESSAGE =
@@ -49,7 +68,34 @@ export function createOnboardingRegistrationService(
   identity: RegistrationIdentityGateway,
   repository: OnboardingRegistrationRepository,
   configuration: OnboardingRegistrationConfiguration,
+  emailDelivery?: OnboardingRegistrationEmailDelivery,
 ) {
+  async function submitWithImmediateEmail(
+    commitBusinessEvent: () => Promise<OnboardingSubmissionResult>,
+  ) {
+    if (!emailDelivery) {
+      return commitBusinessEvent();
+    }
+
+    const result = await runWithPostCommitEmailDelivery({
+      commitBusinessEvent: async () => {
+        const businessResult = await commitBusinessEvent();
+
+        return {
+          businessResult,
+          outboxId:
+            businessResult.kind === "submitted"
+              ? businessResult.outboxId
+              : null,
+        };
+      },
+      processOne: (delivery) => emailDelivery.processOne(delivery),
+      workerId: `onboarding:${crypto.randomUUID()}`,
+    });
+
+    return result.businessResult;
+  }
+
   return {
     async registerWithEmail(input: EmailRegistrationInput) {
       const identityResult = await identity.signUp({
@@ -89,7 +135,9 @@ export function createOnboardingRegistrationService(
         };
       }
 
-      await repository.finalizePreparedRegistration(identityResult.identityId);
+      await submitWithImmediateEmail(() =>
+        repository.finalizePreparedRegistration(identityResult.identityId),
+      );
 
       return {
         destination: "/app/status/analysis",
@@ -102,12 +150,14 @@ export function createOnboardingRegistrationService(
       identityId: string;
       profile: GoogleProfileInput;
     }) {
-      await repository.submitGoogleProfile({
-        email: input.email,
-        identityId: input.identityId,
-        input: input.profile,
-        requestId: crypto.randomUUID(),
-      });
+      await submitWithImmediateEmail(() =>
+        repository.submitGoogleProfile({
+          email: input.email,
+          identityId: input.identityId,
+          input: input.profile,
+          requestId: crypto.randomUUID(),
+        }),
+      );
 
       return {
         destination: "/app/status/analysis",
@@ -116,7 +166,9 @@ export function createOnboardingRegistrationService(
     },
 
     async finalizePreparedRegistration(identityId: string) {
-      return repository.finalizePreparedRegistration(identityId);
+      return submitWithImmediateEmail(() =>
+        repository.finalizePreparedRegistration(identityId),
+      );
     },
   };
 }

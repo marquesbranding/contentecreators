@@ -15,6 +15,7 @@ export interface AdminModerationTransition {
   authUserId: string;
   eventId: string;
   kind: "already_applied" | "applied";
+  outboxId: string | null;
   profileVersion: number;
   status: AccountStatus;
 }
@@ -23,6 +24,10 @@ export interface AdminModerationDependencies {
   applyTransition(
     command: AdminModerationCommand,
   ): Promise<AdminModerationTransition>;
+  attemptEmailDelivery?(input: {
+    outboxId: string;
+    workerId: string;
+  }): Promise<unknown>;
   invalidateEligibility(accountId: string): Promise<void> | void;
   markAuthEffectFailed(input: {
     effectId: string;
@@ -90,6 +95,19 @@ export function createAdminModerationService(
       const transition = await dependencies.applyTransition(command);
 
       await dependencies.invalidateEligibility(transition.accountId);
+
+      if (
+        transition.kind === "applied" &&
+        transition.outboxId &&
+        dependencies.attemptEmailDelivery
+      ) {
+        await dependencies
+          .attemptEmailDelivery({
+            outboxId: transition.outboxId,
+            workerId: `moderation:${crypto.randomUUID()}`,
+          })
+          .catch(() => undefined);
+      }
 
       if (
         !transition.authEffectId ||

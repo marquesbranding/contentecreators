@@ -274,16 +274,16 @@ O produto deve permitir que:
 
 > Como usuário, quero receber comunicações claras sobre cadastro e moderação; como operação, quero que falhas de SMTP sejam retryable sem desfazer decisões válidas.
 
-- [ ] `15.1` Definir contratos e testes `pt-BR` para recebimento, correção, aprovação, suspensão, restauração, banimento e convite/provisionamento de admin.
-- [ ] `15.2` Criar templates responsivos de marca com URLs absolutas seguras e mínimo de dados pessoais.
-- [ ] `15.3` Implementar adapter SMTP da Marques Branding com TLS, autenticação, timeout, falhas redigidas e transporte local injetável.
-- [ ] `15.4` Implementar claim, lock, envio, sucesso, falha e retry da outbox com backoff limitado e testes de concorrência.
-- [ ] `15.5` Tentar envio logo após o commit sem reverter o evento de negócio em caso de falha.
-- [ ] `15.6` Criar Route Handler assinado para processamento agendado e rejeitar assinatura ausente/inválida.
-- [ ] `15.7` Criar retry manual exclusivo de admin, auditado e protegido contra duplicidade.
-- [ ] `15.8` Testar capturadores locais de e-mail de Auth e aplicação nas jornadas completas.
-- [ ] `15.9` Criar templates Supabase em `pt-BR` e documentar redirects por ambiente.
-- [ ] `15.10` Criar checklist dev/prd de remetente, SPF, DKIM, DMARC, limites e entregabilidade.
+- [x] `15.1` Definir contratos e testes `pt-BR` para recebimento, correção, aprovação, suspensão, restauração, banimento e convite/provisionamento de admin.
+- [x] `15.2` Criar templates responsivos de marca com URLs absolutas seguras e mínimo de dados pessoais.
+- [x] `15.3` Implementar adapter SMTP da Marques Branding com TLS, autenticação, timeout, falhas redigidas e transporte local injetável.
+- [x] `15.4` Implementar claim, lock, envio, sucesso, falha e retry da outbox com backoff limitado e testes de concorrência.
+- [x] `15.5` Tentar envio logo após o commit sem reverter o evento de negócio em caso de falha.
+- [x] `15.6` Criar Route Handler assinado para processamento agendado e rejeitar assinatura ausente/inválida.
+- [x] `15.7` Criar retry manual exclusivo de admin, auditado e protegido contra duplicidade.
+- [x] `15.8` Testar capturadores locais de e-mail de Auth e aplicação nas jornadas completas.
+- [x] `15.9` Criar templates Supabase em `pt-BR` e documentar redirects por ambiente.
+- [x] `15.10` Criar checklist dev/prd de remetente, SPF, DKIM, DMARC, limites e entregabilidade.
 
 ### HU-16 — Backoffice de moderação
 

@@ -7,6 +7,7 @@ const stringBoolean = z
   .transform((value) => value === "true");
 
 const serverEnvSchema = z.object({
+  APP_ENV: z.enum(["local", "development", "production"]),
   CRON_SECRET: z.string().min(32),
   DATABASE_URL: z.url(),
   DIRECT_URL: z.url(),

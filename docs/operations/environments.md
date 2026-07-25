@@ -14,6 +14,8 @@ Contente Creators uses three isolated stages. Never copy production data, users,
 - Browser code receives only `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
 - `DATABASE_URL`, `DIRECT_URL`, service-role, SMTP, and cron values are server-only.
 - Runtime Drizzle uses `DATABASE_URL` through Supavisor transaction pooling. Migrations use `DIRECT_URL`.
+- `APP_ENV` must be `local`, `development`, or `production`; it controls
+  non-production email labeling and must match the target resources.
 - Vercel and Supabase settings must be configured independently for development and production.
 - `PUBLIC_SOCIAL_PROOF_ENABLED` is fixed to `false` for this Beta. A public listing requires a reviewed OpenSpec change, consent review, and new tests.
 - Missing or invalid values fail with key names only; diagnostics never include supplied values.
@@ -46,6 +48,12 @@ Useful local URLs:
 Auth emails stay in Supabase's local inbox. Application emails sent through the
 Marques Branding SMTP adapter use Mailpit locally. This separation makes Auth
 and business-notification tests independently observable.
+
+The committed local Auth templates are under `supabase/templates/`. Hosted
+Supabase projects require those templates to be copied through the dashboard
+or Management API because they do not read the repository files directly.
+Follow [the email delivery runbook](./email-delivery.md) for redirect isolation,
+SMTP/DNS verification, and the local end-to-end acceptance flow.
 
 Email confirmation is required locally. The allowlist contains exact
 `localhost` and `127.0.0.1` callback/recovery URLs. Google Auth remains disabled

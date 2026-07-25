@@ -56,8 +56,8 @@
 6. **[2026-07-22] Do not expose profiles or company logos on the public landing page yet**
    Do instead: keep catalog records private to approved authenticated accounts until the client validates public social proof.
 
-7. **[2026-07-23] Preserve the supplied logo and use consistent interface iconography**
-   Do instead: keep the original `public/brand/contente-creators-logo.png` asset unchanged, use Lucide icons for UI symbols, avoid emoji, and reserve the supporting pink/sky/royal/lime palette and gradients for restrained marketing accents.
+7. **[2026-07-25] Preserve the complete official logo set and use consistent interface iconography**
+   Do instead: keep every PNG under `public/brand/official` byte-identical, select white/pink/blue/lime/royal-blue/black through the shared `BrandLogo`, never recolor the artwork, use Lucide icons for UI symbols, and avoid emoji.
 
 8. **[2026-07-23] Make required-field behavior consistent and accessible**
    Do instead: use the shared red required indicator and form notice, preserve native `required` semantics, validate custom shadcn/Base UI controls through `useRequiredFieldValidation`, show adjacent `pt-BR` errors with `aria-invalid`, and focus the first invalid field before dispatching a Server Action.

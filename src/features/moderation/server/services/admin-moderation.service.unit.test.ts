@@ -13,6 +13,7 @@ const transition: AdminModerationTransition = {
   authUserId: "20000000-0000-4000-8000-000000000004",
   eventId: "f4000000-0000-4000-8000-000000000004",
   kind: "applied",
+  outboxId: "e0000000-0000-4000-8000-000000000003",
   profileVersion: 2,
   status: "BANNED",
 };
@@ -25,6 +26,7 @@ function createDependencies(
 ) {
   return {
     applyTransition: vi.fn(async () => options.transition ?? transition),
+    attemptEmailDelivery: vi.fn(async () => ({ kind: "sent" as const })),
     invalidateEligibility: vi.fn(async () => undefined),
     markAuthEffectFailed: vi.fn(async () => undefined),
     markAuthEffectSynced: vi.fn(async () => undefined),
@@ -61,6 +63,10 @@ describe("admin moderation service", () => {
     expect(dependencies.invalidateEligibility).toHaveBeenCalledWith(
       transition.accountId,
     );
+    expect(dependencies.attemptEmailDelivery).toHaveBeenCalledWith({
+      outboxId: transition.outboxId,
+      workerId: expect.stringMatching(/^moderation:/),
+    });
     expect(dependencies.syncAuthIdentity).toHaveBeenCalledWith({
       action: "BAN",
       authUserId: transition.authUserId,
@@ -131,6 +137,7 @@ describe("admin moderation service", () => {
     });
 
     expect(dependencies.syncAuthIdentity).not.toHaveBeenCalled();
+    expect(dependencies.attemptEmailDelivery).not.toHaveBeenCalled();
     expect(dependencies.invalidateEligibility).toHaveBeenCalledOnce();
   });
 

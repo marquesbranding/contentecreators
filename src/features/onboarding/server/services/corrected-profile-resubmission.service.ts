@@ -11,11 +11,21 @@ import type { CorrectedProfileResubmissionCommand } from "../../schemas/correcte
 
 export type CorrectedProfileResubmissionResult =
   | {
-      kind: "submitted" | "already_submitted";
+      kind: "already_submitted";
+    }
+  | {
+      kind: "submitted";
     }
   | {
       code: "ACCOUNT_STALE" | "PROFILE_STALE";
       kind: "conflict";
+    };
+
+export type CorrectedProfileResubmissionPersistenceResult =
+  | Exclude<CorrectedProfileResubmissionResult, { kind: "submitted" }>
+  | {
+      kind: "submitted";
+      outboxId: string;
     };
 
 export interface CorrectedProfileResubmissionRepository {
@@ -27,7 +37,7 @@ export interface CorrectedProfileResubmissionRepository {
       profile: GoogleProfileInput;
       requestId: string;
     },
-  ): Promise<CorrectedProfileResubmissionResult>;
+  ): Promise<CorrectedProfileResubmissionPersistenceResult>;
 }
 
 export type CorrectedProfileResubmissionErrorCode =
@@ -41,9 +51,22 @@ export class CorrectedProfileResubmissionError extends Error {
 }
 
 export function createCorrectedProfileResubmissionService({
+  emailDelivery,
   repository,
   runVerifiedTransaction,
 }: {
+  emailDelivery?: {
+    processOne(input: {
+      outboxId: string;
+      workerId: string;
+    }): Promise<
+      | { kind: "claim_lost" }
+      | { kind: "dead_letter" }
+      | { kind: "failed" }
+      | { kind: "not_claimed" }
+      | { kind: "sent" }
+    >;
+  };
   repository: CorrectedProfileResubmissionRepository;
   runVerifiedTransaction: VerifiedAccountTransactionRunner;
 }) {
@@ -53,7 +76,7 @@ export function createCorrectedProfileResubmissionService({
       profile: GoogleProfileInput;
       requestId: string;
     }) {
-      return runVerifiedTransaction(
+      const businessResult = await runVerifiedTransaction(
         { requestId: input.requestId },
         async (transaction, context) => {
           if (
@@ -73,6 +96,19 @@ export function createCorrectedProfileResubmissionService({
           return repository.resubmit(transaction, context, input);
         },
       );
+
+      if (businessResult.kind === "submitted" && emailDelivery) {
+        await emailDelivery
+          .processOne({
+            outboxId: businessResult.outboxId,
+            workerId: `resubmission:${crypto.randomUUID()}`,
+          })
+          .catch(() => undefined);
+      }
+
+      return businessResult.kind === "submitted"
+        ? ({ kind: "submitted" } as const)
+        : businessResult;
     },
   };
 }

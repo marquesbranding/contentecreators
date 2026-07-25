@@ -140,9 +140,9 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 
 ## Marketing patterns
 
-- Black header/brand panels allow the supplied blue-and-white logo to blend with its original black field.
-- The external gray edge in the supplied PNG is clipped in presentation rather than redrawing the brand asset.
-- The supplied logo is always used as the source asset; never reconstruct it with CSS or replace it with a wordmark.
+- Use only the supplied official white, pink, blue, lime, royal-blue, and black PNG variants; never recolor, reconstruct with CSS, or replace them with a wordmark.
+- Keep every official square source intact. Crop only its transparent canvas at presentation time through the shared `BrandLogo` component.
+- The white variant receives a night background automatically, the black variant receives a light background, and colored variants remain transparent unless the composition explicitly overrides the semantic surface.
 - Hero composition uses one dominant statement, two audience CTAs, and an illustrative product preview without public creator/company listings.
 - Static radial light washes may add depth to the hero. A darkened pink-to-royal gradient is reserved for prominent marketing CTA surfaces.
 - Never place small white body text directly on the base pink or sky tokens; use night text or darken the surface to preserve WCAG contrast.
@@ -159,3 +159,4 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 | Minimal client boundaries                       | Protects Server Component performance and prevents the entire design system from entering the browser bundle | 2026-07-23 |
 | Supporting marketing spectrum                   | Brings the approved mock's energy into acquisition pages without weakening blue's role in the SaaS product   | 2026-07-23 |
 | shadcn/ui-first product surfaces                | Keeps complex forms and backoffice interactions accessible, consistent, and fast to evolve                   | 2026-07-23 |
+| Untouched official logo variants                | Preserves the supplied brand artwork while the shared component handles safe responsive framing and contrast | 2026-07-25 |

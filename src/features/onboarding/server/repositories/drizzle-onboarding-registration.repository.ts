@@ -506,15 +506,25 @@ async function submitPreparedAccount(
     })
     .where(eq(accounts.id, account.id));
 
-  await transaction.insert(emailOutbox).values({
-    accountId: account.id,
-    idempotencyKey: `onboarding-received:${account.id}:1`,
-    payload: { role: account.role },
-    recipientEmail: account.operationalEmail,
-    template: "ONBOARDING_RECEIVED",
-  });
+  const [outboxItem] = await transaction
+    .insert(emailOutbox)
+    .values({
+      accountId: account.id,
+      idempotencyKey: `onboarding-received:${account.id}:1`,
+      payload: { role: account.role },
+      recipientEmail: account.operationalEmail,
+      template: "ONBOARDING_RECEIVED",
+    })
+    .returning({ id: emailOutbox.id });
 
-  return { kind: "submitted" as const };
+  if (!outboxItem) {
+    throw new Error("Onboarding email outbox item was not created.");
+  }
+
+  return {
+    kind: "submitted" as const,
+    outboxId: outboxItem.id,
+  };
 }
 
 interface Dependencies {

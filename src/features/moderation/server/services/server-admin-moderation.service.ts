@@ -2,6 +2,7 @@ import "server-only";
 
 import { revalidatePath } from "next/cache";
 
+import { createServerEmailDeliveryProcessor } from "@/features/communications/server";
 import { createSupabaseAdminClient } from "@/shared/server/supabase/admin-client";
 
 import { createServerAdminModerationRepository } from "../repositories/drizzle-admin-moderation.repository";
@@ -13,9 +14,11 @@ export async function createServerAdminModerationService() {
   const identityGateway = createSupabaseModerationIdentityGateway(
     createSupabaseAdminClient(),
   );
+  const emailDelivery = createServerEmailDeliveryProcessor();
 
   return createAdminModerationService({
     applyTransition: (command) => repository.applyTransition(command),
+    attemptEmailDelivery: (input) => emailDelivery.processOne(input),
     invalidateEligibility: () => {
       revalidatePath("/app");
       revalidatePath("/app/catalog");

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createServerEmailDeliveryProcessor } from "@/features/communications/server";
 import { getPublicEnv } from "@/shared/lib/env/public-env";
 import { createSupabaseAdminClient } from "@/shared/server/supabase/admin-client";
 import { createServerSupabaseClient } from "@/shared/server/supabase/server-client";
@@ -12,6 +13,7 @@ export async function createServerOnboardingRegistrationService() {
   const environment = getPublicEnv();
   const authClient = await createServerSupabaseClient();
   const adminClient = createSupabaseAdminClient();
+  const emailDelivery = createServerEmailDeliveryProcessor();
   const callbackUrl = new URL(
     "/auth/callback",
     environment.NEXT_PUBLIC_APP_URL,
@@ -22,5 +24,6 @@ export async function createServerOnboardingRegistrationService() {
     createSupabaseRegistrationIdentityGateway(authClient, adminClient),
     createDrizzleOnboardingRegistrationRepository(),
     { callbackUrl: callbackUrl.toString() },
+    emailDelivery,
   );
 }

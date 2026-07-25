@@ -100,7 +100,10 @@ describeLocalStack("Drizzle corrected profile resubmission repository", () => {
           requestId: "corrected-profile-repository",
         });
 
-        expect(result).toEqual({ kind: "submitted" });
+        expect(result).toEqual({
+          kind: "submitted",
+          outboxId: expect.any(String),
+        });
 
         await transaction.execute(sql.raw("reset role"));
 

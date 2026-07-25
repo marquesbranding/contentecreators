@@ -30,8 +30,8 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   icons: {
-    icon: "/brand/contente-creators-logo.png",
-    shortcut: "/brand/contente-creators-logo.png",
+    icon: "/brand/official/contente-creators-blue.png",
+    shortcut: "/brand/official/contente-creators-blue.png",
   },
   openGraph: {
     type: "website",
@@ -44,9 +44,9 @@ export const metadata: Metadata = {
     images: [
       {
         alt: "Contente Creators",
-        height: 1_141,
-        url: "/brand/contente-creators-logo.png",
-        width: 3_370,
+        height: 3_334,
+        url: "/brand/official/contente-creators-blue.png",
+        width: 3_334,
       },
     ],
   },
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     title: "Contente Creators — creators e marcas no mesmo ritmo",
     description:
       "Crie seu perfil, passe por uma curadoria humana e encontre conexões relevantes.",
-    images: ["/brand/contente-creators-logo.png"],
+    images: ["/brand/official/contente-creators-blue.png"],
   },
 };
 

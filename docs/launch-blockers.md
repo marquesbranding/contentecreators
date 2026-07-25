@@ -11,7 +11,9 @@ item as blocking.
 - [ ] Consent wording for Terms, Privacy, and contact visibility
 - [ ] LGPD data-subject export, correction, deletion/anonymization procedure
 - [ ] Audit and operational data-retention decisions
-- [ ] Marques Branding SMTP sender identity plus SPF, DKIM, and DMARC validation
+- [ ] Marques Branding SMTP sender identity plus the complete
+      [email delivery checklist](./operations/email-delivery.md), including
+      SPF, DKIM, DMARC, rate limits, redirect isolation, and deliverability
 - [ ] Initial administrator email(s)
 - [ ] Final niche and company employee-range seed lists
 - [ ] Final favicon or square brand mark derived and approved by the brand owner

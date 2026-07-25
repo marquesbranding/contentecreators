@@ -18,11 +18,12 @@ import type { InfluencerProfileEditInput } from "../../schemas/influencer-profil
 import { createDrizzleCompanyProfileRepository } from "./drizzle-company-profile.repository";
 import { createDrizzleInfluencerProfileRepository } from "./drizzle-influencer-profile.repository";
 import type {
+  CorrectedProfileResubmissionPersistenceResult,
   CorrectedProfileResubmissionRepository,
-  CorrectedProfileResubmissionResult,
 } from "../services/corrected-profile-resubmission.service";
 
 interface ResubmissionFunctionRow extends Record<string, unknown> {
+  outbox_id: string | null;
   result_kind: "ALREADY_APPLIED" | "APPLIED";
 }
 
@@ -242,8 +243,8 @@ export function createDrizzleCorrectedProfileResubmissionRepository(): Corrected
 
       const [transition] =
         await transaction.execute<ResubmissionFunctionRow>(sql`
-          select result_kind
-          from public.app_resubmit_moderation(
+          select result_kind, outbox_id
+          from public.app_resubmit_moderation_with_outbox(
             ${context.accountId}::uuid,
             ${input.command.expectedAccountVersion},
             ${input.command.expectedProfileVersion},
@@ -255,12 +256,22 @@ export function createDrizzleCorrectedProfileResubmissionRepository(): Corrected
         throw new Error("Correction resubmission returned no result.");
       }
 
+      if (transition.result_kind === "ALREADY_APPLIED") {
+        return {
+          kind: "already_submitted",
+        } satisfies CorrectedProfileResubmissionPersistenceResult;
+      }
+
+      if (!transition.outbox_id) {
+        throw new Error(
+          "Correction resubmission email outbox item was not created.",
+        );
+      }
+
       return {
-        kind:
-          transition.result_kind === "ALREADY_APPLIED"
-            ? "already_submitted"
-            : "submitted",
-      } satisfies CorrectedProfileResubmissionResult;
+        kind: "submitted",
+        outboxId: transition.outbox_id,
+      } satisfies CorrectedProfileResubmissionPersistenceResult;
     },
   };
 }

@@ -3,7 +3,7 @@ import "server-only";
 import { and, eq, inArray, sql } from "drizzle-orm";
 
 import type { ApplicationTransaction } from "@/db/client";
-import { identityAuthEffects } from "@/db/schema";
+import { emailOutbox, identityAuthEffects } from "@/db/schema";
 import { applyVerifiedAuditContext } from "@/features/audit/server";
 import {
   createServerVerifiedAccountTransactionRunner,
@@ -129,6 +129,17 @@ export function createDrizzleAdminModerationRepository({
             throw new Error("Admin moderation transition returned no result.");
           }
 
+          const [outboxItem] = await transaction
+            .select({ id: emailOutbox.id })
+            .from(emailOutbox)
+            .where(
+              eq(
+                emailOutbox.idempotencyKey,
+                `moderation-email:${command.idempotencyKey}`,
+              ),
+            )
+            .limit(1);
+
           return {
             accountId: transition.account_id,
             accountVersion: transition.account_version,
@@ -140,6 +151,7 @@ export function createDrizzleAdminModerationRepository({
               transition.result_kind === "APPLIED"
                 ? ("applied" as const)
                 : ("already_applied" as const),
+            outboxId: outboxItem?.id ?? null,
             profileVersion: transition.profile_version,
             status: transition.status,
           } satisfies AdminModerationTransition;
