@@ -3,7 +3,7 @@
 **Status:** em desenvolvimento
 **Data-base do acompanhamento:** 24/07/2026
 **OpenSpec relacionado:** `mvp-contente-creators`
-**Progresso atual:** 135 de 252 entregas concluídas (53,6%); 117 entregas pendentes.
+**Progresso atual:** 139 de 252 entregas concluídas (55,2%); 113 entregas pendentes.
 
 ## 1. Objetivo do produto
 
@@ -265,10 +265,10 @@ O produto deve permitir que:
 - [x] `14.4` Implementar primeira submissão atômica com validação, consentimento, caso/evento, `PENDING_REVIEW`, auditoria e intenção de e-mail.
 - [x] `14.5` Permitir edição/reenvio em `CHANGES_REQUESTED`, incrementando a sequência e preservando o histórico.
 - [x] `14.6` Adicionar idempotência e proteção de versão obsoleta aos comandos de usuário/admin.
-- [ ] `14.7` Implementar transações de aprovação, correção, suspensão, restauração, banimento, desbanimento excepcional e arquivamento.
-- [ ] `14.8` Implementar bloqueio/desbloqueio de identidade e efeitos sobre Auth/sessão com tratamento operacional retryable.
-- [ ] `14.9` Testar que cada transição cria atomicamente evento, revisão, outbox, invalidação de cache e visibilidade correta.
-- [ ] `14.10` Construir telas para análise pendente, alterações solicitadas, suspensão e banimento.
+- [x] `14.7` Implementar transações de aprovação, correção, suspensão, restauração, banimento, desbanimento excepcional e arquivamento.
+- [x] `14.8` Implementar bloqueio/desbloqueio de identidade e efeitos sobre Auth/sessão com tratamento operacional retryable.
+- [x] `14.9` Testar que cada transição cria atomicamente evento, revisão, outbox, invalidação de cache e visibilidade correta.
+- [x] `14.10` Construir telas para análise pendente, alterações solicitadas, suspensão e banimento.
 
 ### HU-15 — E-mails transacionais pela Marques Branding
 

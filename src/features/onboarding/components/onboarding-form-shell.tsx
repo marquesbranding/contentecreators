@@ -18,6 +18,7 @@ import { Progress, ProgressLabel } from "@/shared/components/ui/progress";
 
 export function OnboardingFormShell({
   children,
+  correctionReason,
   correctionRequested = false,
   currentStep = 1,
   description,
@@ -28,6 +29,7 @@ export function OnboardingFormShell({
   totalSteps = 1,
 }: {
   children: React.ReactNode;
+  correctionReason?: string | null;
   correctionRequested?: boolean;
   currentStep?: number;
   description: string;
@@ -89,8 +91,8 @@ export function OnboardingFormShell({
                 <FilePenLine aria-hidden="true" />
                 <AlertTitle>Correções solicitadas</AlertTitle>
                 <AlertDescription>
-                  Revise os dados indicados pela equipe e envie o cadastro
-                  novamente para análise.
+                  {correctionReason ??
+                    "Revise os dados indicados pela equipe e envie o cadastro novamente para análise."}
                 </AlertDescription>
               </Alert>
             ) : null}

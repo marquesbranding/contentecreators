@@ -32,6 +32,7 @@ const auditedTables = [
   "creator_profiles",
   "email_attempts",
   "email_outbox",
+  "identity_auth_effects",
   "legal_documents",
   "media_assets",
   "moderation_cases",

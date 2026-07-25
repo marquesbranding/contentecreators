@@ -16,14 +16,18 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { accounts } from "./accounts";
+import { authUsers } from "./auth";
 import {
   accountRoleEnum,
   auditActorTypeEnum,
   auditOperationEnum,
   auditSourceEnum,
+  identityAuthEffectStatusEnum,
   identityProviderEnum,
   legalDocumentTypeEnum,
+  moderationActionEnum,
 } from "./enums";
+import { moderationEvents } from "./moderation";
 
 export type ConsentContext = Record<string, string | boolean | null>;
 export type AuditSnapshot = Record<string, unknown>;
@@ -206,6 +210,80 @@ export const blockedIdentities = pgTable(
   ],
 );
 
+export const identityAuthEffects = pgTable(
+  "identity_auth_effects",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    moderationEventId: uuid("moderation_event_id")
+      .notNull()
+      .references(() => moderationEvents.id, { onDelete: "restrict" }),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "restrict" }),
+    authUserId: uuid("auth_user_id")
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "restrict" }),
+    action: moderationActionEnum("action").notNull(),
+    status: identityAuthEffectStatusEnum("status").notNull().default("PENDING"),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    lastErrorCategory: varchar("last_error_category", { length: 80 }),
+    syncedAt: timestamp("synced_at", { withTimezone: true }),
+    idempotencyKey: varchar("idempotency_key", { length: 200 }).notNull(),
+    version: integer("version").notNull().default(1),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("identity_auth_effects_event_uidx").on(table.moderationEventId),
+    uniqueIndex("identity_auth_effects_idempotency_key_uidx").on(
+      table.idempotencyKey,
+    ),
+    index("identity_auth_effects_retry_idx")
+      .on(table.status, table.updatedAt, table.id)
+      .where(sql`${table.status} in ('PENDING', 'FAILED')`),
+    index("identity_auth_effects_account_timeline_idx").on(
+      table.accountId,
+      table.createdAt.desc(),
+      table.id,
+    ),
+    check(
+      "identity_auth_effects_action_check",
+      sql`${table.action} in ('BAN', 'UNBAN')`,
+    ),
+    check(
+      "identity_auth_effects_attempt_count_check",
+      sql`${table.attemptCount} >= 0`,
+    ),
+    check(
+      "identity_auth_effects_state_check",
+      sql`(
+        (
+          ${table.status} = 'PENDING'
+          and ${table.syncedAt} is null
+          and ${table.lastErrorCategory} is null
+        )
+        or
+        (
+          ${table.status} = 'FAILED'
+          and ${table.syncedAt} is null
+          and length(trim(${table.lastErrorCategory})) >= 3
+        )
+        or
+        (
+          ${table.status} = 'SYNCED'
+          and ${table.syncedAt} is not null
+          and ${table.lastErrorCategory} is null
+        )
+      )`,
+    ),
+    check("identity_auth_effects_version_check", sql`${table.version} > 0`),
+  ],
+);
+
 export const auditRevisions = pgTable(
   "audit_revisions",
   {
@@ -278,3 +356,4 @@ export const auditRevisions = pgTable(
 
 export type AuditRevision = typeof auditRevisions.$inferSelect;
 export type BlockedIdentity = typeof blockedIdentities.$inferSelect;
+export type IdentityAuthEffect = typeof identityAuthEffects.$inferSelect;

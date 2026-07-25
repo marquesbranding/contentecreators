@@ -103,6 +103,11 @@ export const identityProviderEnum = pgEnum("identity_provider", [
   "GOOGLE",
 ]);
 
+export const identityAuthEffectStatusEnum = pgEnum(
+  "identity_auth_effect_status",
+  ["PENDING", "SYNCED", "FAILED"],
+);
+
 export const auditOperationEnum = pgEnum("audit_operation", [
   "INSERT",
   "UPDATE",

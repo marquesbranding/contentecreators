@@ -165,10 +165,10 @@
 - [x] 14.4 Implement first submission as one transaction: validation, consent, case/event, `PENDING_REVIEW`, audit, and outbox intent. `[moderation-lifecycle]`
 - [x] 14.5 Implement `CHANGES_REQUESTED` owner edit/resubmission with incremented submission sequence and preserved history. `[moderation-lifecycle]`
 - [x] 14.6 Implement idempotency keys and stale-profile-version protection for user/admin moderation commands. `[moderation-lifecycle]`
-- [ ] 14.7 Implement approval, correction request, suspension, restoration, ban, exceptional unban, and archive transactions. `[moderation-lifecycle]`
-- [ ] 14.8 Implement blocked-identity creation/removal and Auth session/ban side effects for ban/unban with retryable operational handling. `[moderation-lifecycle] [identity-access]`
-- [ ] 14.9 Add integration tests proving every transition atomically creates the correct event, revision, outbox item, cache invalidation, and visibility. `[moderation-lifecycle]`
-- [ ] 14.10 Build status experiences for pending (“Seu cadastro está sendo analisado”), changes requested, suspended, and banned states. `[moderation-lifecycle]`
+- [x] 14.7 Implement approval, correction request, suspension, restoration, ban, exceptional unban, and archive transactions. `[moderation-lifecycle]`
+- [x] 14.8 Implement blocked-identity creation/removal and Auth session/ban side effects for ban/unban with retryable operational handling. `[moderation-lifecycle] [identity-access]`
+- [x] 14.9 Add integration tests proving every transition atomically creates the correct event, revision, outbox item, cache invalidation, and visibility. `[moderation-lifecycle]`
+- [x] 14.10 Build status experiences for pending (“Seu cadastro está sendo analisado”), changes requested, suspended, and banned states. `[moderation-lifecycle]`
 
 ## 15. Transactional email and SMTP outbox
 

@@ -85,7 +85,7 @@ export const moderationEvents = pgTable(
     uniqueIndex("moderation_events_idempotency_key_uidx").on(
       table.idempotencyKey,
     ),
-    uniqueIndex("moderation_events_case_sequence_action_uidx").on(
+    index("moderation_events_case_sequence_action_idx").on(
       table.moderationCaseId,
       table.submissionSequence,
       table.action,

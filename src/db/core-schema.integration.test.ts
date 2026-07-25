@@ -26,6 +26,7 @@ const requiredEnums = [
   "email_attempt_status",
   "email_outbox_status",
   "email_template",
+  "identity_auth_effect_status",
   "identity_provider",
   "legal_document_type",
   "media_kind",
@@ -49,6 +50,7 @@ const requiredTables = [
   "creator_profiles",
   "email_attempts",
   "email_outbox",
+  "identity_auth_effects",
   "legal_documents",
   "media_assets",
   "moderation_cases",
@@ -113,6 +115,7 @@ describeLocalStack("core database schema", () => {
           'accounts_auth_user_id_uidx',
           'company_profiles_cnpj_uidx',
           'email_outbox_idempotency_key_uidx',
+          'identity_auth_effects_idempotency_key_uidx',
           'legal_documents_type_version_uidx',
           'media_assets_bucket_path_uidx'
         )
@@ -123,6 +126,7 @@ describeLocalStack("core database schema", () => {
       "accounts_auth_user_id_uidx",
       "company_profiles_cnpj_uidx",
       "email_outbox_idempotency_key_uidx",
+      "identity_auth_effects_idempotency_key_uidx",
       "legal_documents_type_version_uidx",
       "media_assets_bucket_path_uidx",
     ]);

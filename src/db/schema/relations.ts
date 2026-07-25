@@ -6,6 +6,7 @@ import {
   accountContactPreferences,
   auditRevisions,
   blockedIdentities,
+  identityAuthEffects,
   legalDocuments,
 } from "./compliance";
 import { emailAttempts, emailOutbox } from "./communications";
@@ -48,6 +49,7 @@ export const accountsRelations = relations(accounts, ({ many, one }) => ({
   }),
   moderationEvents: many(moderationEvents),
   emailOutboxItems: many(emailOutbox),
+  identityAuthEffects: many(identityAuthEffects),
   consents: many(accountConsents),
   contactPreferences: many(accountContactPreferences),
   auditRevisions: many(auditRevisions),
@@ -288,6 +290,20 @@ export const blockedIdentitiesRelations = relations(
       fields: [blockedIdentities.unblockedByAccountId],
       references: [accounts.id],
       relationName: "unblockedBy",
+    }),
+  }),
+);
+
+export const identityAuthEffectsRelations = relations(
+  identityAuthEffects,
+  ({ one }) => ({
+    account: one(accounts, {
+      fields: [identityAuthEffects.accountId],
+      references: [accounts.id],
+    }),
+    moderationEvent: one(moderationEvents, {
+      fields: [identityAuthEffects.moderationEventId],
+      references: [moderationEvents.id],
     }),
   }),
 );

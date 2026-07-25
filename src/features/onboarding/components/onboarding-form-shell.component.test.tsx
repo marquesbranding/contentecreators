@@ -23,4 +23,24 @@ describe("onboarding form shell", () => {
       "Etapa 2 de 3: Dados do perfil",
     );
   });
+
+  it("shows the exact correction guidance supplied by moderation", () => {
+    render(
+      <OnboardingFormShell
+        correctionReason="Informe um endereço comercial completo e revise o nome fantasia."
+        correctionRequested
+        description="Dados necessários para análise."
+        title="Revise seu cadastro"
+      >
+        <p>Formulário</p>
+      </OnboardingFormShell>,
+    );
+
+    expect(screen.getByText("Correções solicitadas")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Informe um endereço comercial completo e revise o nome fantasia.",
+      ),
+    ).toBeInTheDocument();
+  });
 });

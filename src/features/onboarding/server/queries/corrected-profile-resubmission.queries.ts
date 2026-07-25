@@ -1,8 +1,8 @@
 import "server-only";
 
-import { and, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 
-import { accounts } from "@/db/schema";
+import { accounts, moderationCases, moderationEvents } from "@/db/schema";
 import { createServerVerifiedAccountTransactionRunner } from "@/features/identity/server";
 
 import type { CorrectedProfileResubmissionCommand } from "../../schemas/corrected-profile-resubmission-schema";
@@ -13,6 +13,7 @@ import { createDrizzleInfluencerProfileRepository } from "../repositories/drizzl
 export interface CorrectedProfileResubmissionContext {
   command: CorrectedProfileResubmissionCommand;
   initialValues: OnboardingDraftPayload;
+  reason: string;
 }
 
 export async function loadCurrentCorrectionContext(): Promise<CorrectedProfileResubmissionContext | null> {
@@ -41,6 +42,26 @@ export async function loadCurrentCorrectionContext(): Promise<CorrectedProfileRe
         return null;
       }
 
+      const [correction] = await transaction
+        .select({ reason: moderationEvents.reason })
+        .from(moderationEvents)
+        .innerJoin(
+          moderationCases,
+          eq(moderationCases.id, moderationEvents.moderationCaseId),
+        )
+        .where(
+          and(
+            eq(moderationCases.accountId, context.accountId),
+            eq(moderationEvents.action, "REQUEST_CHANGES"),
+          ),
+        )
+        .orderBy(desc(moderationEvents.occurredAt), desc(moderationEvents.id))
+        .limit(1);
+
+      if (!correction?.reason) {
+        return null;
+      }
+
       if (context.role === "INFLUENCER") {
         const profile =
           await createDrizzleInfluencerProfileRepository().loadApprovedProfile(
@@ -63,6 +84,7 @@ export async function loadCurrentCorrectionContext(): Promise<CorrectedProfileRe
             idempotencyKey: crypto.randomUUID(),
           },
           initialValues,
+          reason: correction.reason,
         };
       }
 
@@ -86,6 +108,7 @@ export async function loadCurrentCorrectionContext(): Promise<CorrectedProfileRe
           idempotencyKey: crypto.randomUUID(),
         },
         initialValues,
+        reason: correction.reason,
       };
     },
   );

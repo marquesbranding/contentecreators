@@ -403,6 +403,27 @@ select
 from public.accounts
 where status = 'BANNED';
 
+insert into public.identity_auth_effects (
+  id,
+  moderation_event_id,
+  account_id,
+  auth_user_id,
+  action,
+  status,
+  attempt_count,
+  idempotency_key
+)
+values (
+  'f9000000-0000-4000-8000-000000000001',
+  'f4000000-0000-4000-8000-000000000006',
+  'b0000000-0000-4000-8000-000000000006',
+  '20000000-0000-4000-8000-000000000006',
+  'BAN',
+  'PENDING',
+  0,
+  'local-seed:identity-auth-ban'
+);
+
 insert into public.sponsorship_placements (
   id,
   placement_type,

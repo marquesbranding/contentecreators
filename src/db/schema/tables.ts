@@ -6,6 +6,7 @@ import {
   accountContactPreferences,
   auditRevisions,
   blockedIdentities,
+  identityAuthEffects,
   legalDocuments,
 } from "./compliance";
 import { emailAttempts, emailOutbox } from "./communications";
@@ -28,6 +29,7 @@ export const applicationTables = [
   accounts,
   auditRevisions,
   blockedIdentities,
+  identityAuthEffects,
   companyLocations,
   companyProfiles,
   creatorMetricSnapshots,

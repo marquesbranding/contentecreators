@@ -33,6 +33,9 @@
 8. **[2026-07-24] Serialize local integration test files that share Supabase**
    Do instead: keep the Vitest integration project on `fileParallelism: false` with Docker-tolerant test/hook timeouts; parallel files can observe committed fixtures from other suites, choose unstable plans, or deadlock on shared tables.
 
+9. **[2026-07-24] Treat Supabase Auth moderation as a post-commit effect**
+   Do instead: commit account status, blocked identities, audit, outbox, and a retryable Auth-effect record atomically; then call `updateUserById` for ban/unban. Admin `signOut` requires the target JWT, so enforce immediate denial through database status/RLS and let the existing banned-session defense revoke a presented token.
+
 ## Product Requirements
 
 1. **[2026-07-22] Product prompt overrides the roadmap DOCX**

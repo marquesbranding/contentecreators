@@ -52,6 +52,7 @@ export default async function CompanyOnboardingPage() {
     <OnboardingFormShell
       currentStep={2}
       description="Complete os dados da empresa. Ao enviar, o cadastro ficará aguardando a revisão da nossa equipe."
+      correctionReason={correctionContext?.reason}
       correctionRequested={correctionRequested}
       progressLabel="Dados da empresa"
       title="Conte sobre a sua empresa"
