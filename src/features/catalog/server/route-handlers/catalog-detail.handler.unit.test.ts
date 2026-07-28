@@ -28,6 +28,26 @@ function context(id = creatorId) {
 }
 
 describe("catalog detail Route Handler", () => {
+  it("rate limits repeated contact-bearing detail requests before loading data", async () => {
+    const load = vi.fn();
+    const handler = createCatalogDetailRouteHandler({
+      consumeContactCapacity: vi.fn().mockResolvedValue({
+        allowed: false,
+        retryAfterSeconds: 42,
+      }),
+      load,
+      requestIdFactory: () => "contact-rate-limit",
+    });
+    const response = await handler(
+      new NextRequest(`http://localhost/api/catalog/creators/${creatorId}`),
+      context(),
+    );
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("retry-after")).toBe("42");
+    expect(load).not.toHaveBeenCalled();
+  });
+
   it("returns only a fresh private detail DTO", async () => {
     const load = vi.fn(async () => detail);
     const handler = createCatalogDetailRouteHandler({

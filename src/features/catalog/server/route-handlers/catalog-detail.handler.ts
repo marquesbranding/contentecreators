@@ -13,6 +13,10 @@ import type { CatalogCreatorDetailViewDto } from "../../types/catalog-detail-vie
 import { catalogNoStoreHeaders } from "../policies/catalog-freshness.policy";
 
 interface CatalogDetailRouteDependencies {
+  consumeContactCapacity?(): Promise<{
+    allowed: boolean;
+    retryAfterSeconds: number;
+  }>;
   load(input: {
     creatorId: string;
     requestId: string;
@@ -51,6 +55,26 @@ export function createCatalogDetailRouteHandler(
     const requestId = safeRequestId(request, dependencies.requestIdFactory);
     const { creatorId } = await context.params;
     let query: { creatorId: string; requestId: string };
+
+    if (dependencies.consumeContactCapacity) {
+      const capacity = await dependencies.consumeContactCapacity();
+
+      if (!capacity.allowed) {
+        return NextResponse.json(
+          {
+            message:
+              "Muitas consultas foram realizadas. Aguarde antes de tentar novamente.",
+          },
+          {
+            headers: {
+              ...responseHeaders(requestId),
+              "retry-after": String(capacity.retryAfterSeconds),
+            },
+            status: 429,
+          },
+        );
+      }
+    }
 
     try {
       query = catalogDetailQuerySchema.parse({ creatorId, requestId });

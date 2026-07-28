@@ -26,6 +26,39 @@ const influencerInput = {
 } satisfies EmailRegistrationInput;
 
 describe("onboarding registration service", () => {
+  it("rate limits the combined registration before creating an Auth identity", async () => {
+    const identity = {
+      deleteIdentity: vi.fn(),
+      signUp: vi.fn(),
+    };
+    const repository = {
+      finalizePreparedRegistration: vi.fn(),
+      prepareEmailRegistration: vi.fn(),
+      submitGoogleProfile: vi.fn(),
+    };
+    const abuseProtection = {
+      consume: vi.fn().mockResolvedValue({ allowed: false }),
+    };
+    const service = createOnboardingRegistrationService(
+      identity,
+      repository,
+      {
+        callbackUrl:
+          "http://localhost:3000/auth/callback?next=/app/status/analysis",
+      },
+      undefined,
+      abuseProtection,
+    );
+
+    await expect(service.registerWithEmail(influencerInput)).resolves.toEqual({
+      kind: "failure",
+      message:
+        "Muitas tentativas foram realizadas. Aguarde antes de tentar novamente.",
+    });
+    expect(abuseProtection.consume).toHaveBeenCalledWith("joana@example.com");
+    expect(identity.signUp).not.toHaveBeenCalled();
+  });
+
   it("prepares identity and profile in one application request", async () => {
     const identity = {
       deleteIdentity: vi.fn(),

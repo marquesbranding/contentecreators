@@ -5,6 +5,8 @@ import "server-only";
 import { redirect } from "next/navigation";
 import type { ZodError } from "zod";
 
+import { operationalLogger } from "@/shared/server/observability/operational-logger";
+
 import { parseRegistrationIntent } from "../../domain/registration-intent";
 import {
   forgotPasswordSchema,
@@ -62,13 +64,27 @@ export async function signInAction(
   }
 
   const service = await createServerIdentityAuthService();
+  const requestId = crypto.randomUUID();
   const result = await service.signIn(parsed.data);
+  operationalLogger.info({
+    event: "auth_result",
+    operation: "application_password_sign_in",
+    outcome: result.kind,
+    requestId,
+  });
 
   if (result.kind === "redirect") {
     const defense = await createServerBannedAccountDefenseService();
-    const access = await defense.enforce(crypto.randomUUID());
+    const access = await defense.enforce(requestId);
 
     if (access.kind === "blocked") {
+      operationalLogger.warn({
+        accountStatus: "BANNED",
+        event: "banned_identity_attempt",
+        operation: "application_access",
+        outcome: "blocked",
+        requestId,
+      });
       redirect(access.destination);
     }
 
@@ -100,7 +116,14 @@ export async function signInBackofficeAction(
   }
 
   const service = await createServerBackofficeAuthService();
-  const result = await service.signIn(parsed.data, crypto.randomUUID());
+  const requestId = crypto.randomUUID();
+  const result = await service.signIn(parsed.data, requestId);
+  operationalLogger.info({
+    event: "auth_result",
+    operation: "backoffice_password_sign_in",
+    outcome: result.kind,
+    requestId,
+  });
 
   if (result.kind === "redirect") {
     redirect(result.destination);

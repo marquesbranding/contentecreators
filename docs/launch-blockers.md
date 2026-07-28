@@ -9,7 +9,9 @@ item as blocking.
 - [ ] Versioned Terms of Use approved by the legal owner
 - [ ] Versioned Privacy Policy approved by the legal owner
 - [ ] Consent wording for Terms, Privacy, and contact visibility
-- [ ] LGPD data-subject export, correction, deletion/anonymization procedure
+- [ ] LGPD data-subject export, correction, deletion/anonymization procedure;
+      review and approve the
+      [manual workflow baseline](./operations/data-subject-requests.md)
 - [ ] Audit and operational data-retention decisions
 - [ ] Marques Branding SMTP sender identity plus the complete
       [email delivery checklist](./operations/email-delivery.md), including

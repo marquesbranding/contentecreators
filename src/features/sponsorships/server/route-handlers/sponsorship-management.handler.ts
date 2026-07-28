@@ -9,6 +9,8 @@ import {
   AccountAccessError,
   VerifiedAccountTransactionError,
 } from "@/features/identity/server";
+import { consumeIdentityRateLimit } from "@/features/security/server";
+import { verifySameOriginRequest } from "@/shared/server/security/same-origin-request";
 
 import {
   parseSponsorshipManagementSearchParams,
@@ -25,6 +27,10 @@ import { SponsorshipPlacementServiceError } from "../services/admin-sponsorship-
 import { createServerSponsorshipManagementViewService } from "../services/server-sponsorship-management-view.service";
 
 interface SponsorshipManagementDependencies {
+  consumeAdminCapacity?(): Promise<{
+    allowed: boolean;
+    retryAfterSeconds: number;
+  }>;
   command(
     placementId: string,
     input: SponsorshipPlacementCommand,
@@ -39,6 +45,9 @@ interface SponsorshipManagementDependencies {
     requestId: string,
   ): Promise<SponsorshipManagementResponseDto>;
   requestIdFactory(): string;
+  verifySameOrigin?(
+    request: Request,
+  ): { allowed: true } | { allowed: false; reason: string };
   update(
     placementId: string,
     input: SponsorshipPlacementWriteInput,
@@ -133,6 +142,52 @@ function malformedJsonResponse(requestId: string) {
   );
 }
 
+function sameOriginResponse(requestId: string) {
+  return NextResponse.json(
+    { message: "Não foi possível validar a origem desta solicitação." },
+    { headers: responseHeaders(requestId), status: 403 },
+  );
+}
+
+function rateLimitResponse(requestId: string, retryAfterSeconds: number) {
+  return NextResponse.json(
+    {
+      message:
+        "Muitas ações administrativas foram realizadas. Aguarde antes de tentar novamente.",
+    },
+    {
+      headers: {
+        ...responseHeaders(requestId),
+        "retry-after": String(retryAfterSeconds),
+      },
+      status: 429,
+    },
+  );
+}
+
+async function verifyMutationRequest(
+  dependencies: SponsorshipManagementDependencies,
+  request: NextRequest,
+  requestId: string,
+) {
+  if (
+    dependencies.verifySameOrigin &&
+    !dependencies.verifySameOrigin(request).allowed
+  ) {
+    return sameOriginResponse(requestId);
+  }
+
+  if (dependencies.consumeAdminCapacity) {
+    const capacity = await dependencies.consumeAdminCapacity();
+
+    if (!capacity.allowed) {
+      return rateLimitResponse(requestId, capacity.retryAfterSeconds);
+    }
+  }
+
+  return null;
+}
+
 function parseServerResponse<T>(
   result: z.ZodType<T>,
   value: unknown,
@@ -184,6 +239,12 @@ export function createSponsorshipManagementRouteHandlers(
 
     async POST(request: NextRequest) {
       const requestId = safeRequestId(request, dependencies.requestIdFactory);
+      const denied = await verifyMutationRequest(
+        dependencies,
+        request,
+        requestId,
+      );
+      if (denied) return denied;
 
       try {
         const input = sponsorshipPlacementWriteSchema
@@ -212,6 +273,12 @@ export function createSponsorshipManagementRouteHandlers(
 
     async PATCH(request: NextRequest, placementId: string) {
       const requestId = safeRequestId(request, dependencies.requestIdFactory);
+      const denied = await verifyMutationRequest(
+        dependencies,
+        request,
+        requestId,
+      );
+      if (denied) return denied;
 
       try {
         const safePlacementId = placementIdSchema.parse(placementId);
@@ -241,6 +308,12 @@ export function createSponsorshipManagementRouteHandlers(
 
     async COMMAND(request: NextRequest, placementId: string) {
       const requestId = safeRequestId(request, dependencies.requestIdFactory);
+      const denied = await verifyMutationRequest(
+        dependencies,
+        request,
+        requestId,
+      );
+      if (denied) return denied;
 
       try {
         const safePlacementId = placementIdSchema.parse(placementId);
@@ -275,9 +348,11 @@ export async function createServerSponsorshipManagementRouteHandlers() {
 
   return createSponsorshipManagementRouteHandlers({
     command: service.command,
+    consumeAdminCapacity: () => consumeIdentityRateLimit("adminCommand"),
     create: service.create,
     list: service.list,
     requestIdFactory: randomUUID,
     update: service.update,
+    verifySameOrigin: verifySameOriginRequest,
   });
 }

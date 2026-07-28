@@ -7,6 +7,8 @@ import type {
   AdminProvisioningActionState,
   AdminProvisioningFieldName,
 } from "../../types/admin-provisioning.types";
+import { consumeIdentityRateLimit } from "@/features/security/server";
+
 import { createServerAdminProvisioningService } from "../services/server-admin-provisioning.service";
 
 const rejectionMessages = {
@@ -40,6 +42,16 @@ export async function provisionAdditionalAdminAction(
       values: {
         email: String(formData.get("email") ?? ""),
       },
+    };
+  }
+
+  const capacity = await consumeIdentityRateLimit("adminCommand");
+  if (!capacity.allowed) {
+    return {
+      message:
+        "Muitas ações administrativas foram realizadas. Aguarde antes de tentar novamente.",
+      status: "error",
+      values: { email: parsed.data.email },
     };
   }
 

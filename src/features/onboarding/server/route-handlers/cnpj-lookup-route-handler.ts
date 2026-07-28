@@ -5,6 +5,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { createServerSupabaseClient } from "@/shared/server/supabase/server-client";
+import { operationalLogger } from "@/shared/server/observability/operational-logger";
 
 import { isValidCnpj, normalizeCnpj } from "../../domain/cnpj";
 import type { CnpjLookupResult } from "../../types/cnpj-lookup.types";
@@ -21,7 +22,7 @@ type CnpjLookupTelemetry = {
 };
 
 type CnpjLookupRouteDependencies = {
-  consumeCapacity: (key: string) => boolean;
+  consumeCapacity: (key: string) => boolean | Promise<boolean>;
   getAuthenticatedAccountId: () => Promise<string | null>;
   log: (event: CnpjLookupTelemetry) => void;
   lookup: (cnpj: string) => Promise<CnpjLookupResult>;
@@ -131,7 +132,7 @@ export function createCnpjLookupRouteHandler(
       ? privacySafeCapacityKey("account", accountId)
       : privacySafeCapacityKey("network", networkIdentity(request));
 
-    const result = dependencies.consumeCapacity(capacityKey)
+    const result = (await dependencies.consumeCapacity(capacityKey))
       ? await dependencies.lookup(normalizedCnpj)
       : ({ status: "rate_limited" } satisfies CnpjLookupResult);
 
@@ -166,7 +167,15 @@ export function createServerCnpjLookupRouteHandler() {
       }
     },
     log(event) {
-      console.info(event);
+      operationalLogger.info({
+        details: { access: event.access },
+        durationMs: event.durationMs,
+        event: event.event,
+        operation: "lookup_company_registry",
+        outcome: event.result,
+        provider: event.provider,
+        requestId: event.requestId,
+      });
     },
     lookup: (cnpj) => service.lookup(cnpj),
     now: Date.now,

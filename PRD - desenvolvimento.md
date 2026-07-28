@@ -383,14 +383,14 @@ O produto deve permitir que:
 > Como usuário e responsável pelo produto, quero proteção de dados, controles contra abuso e diagnósticos redigidos para operar o sistema sem expor informações pessoais ou segredos.
 
 - [x] `23.1` Criar páginas placeholder de Termos/Privacidade e bloquear lançamento até receber conteúdo legal, contato e consentimento aprovados.
-- [ ] `23.2` Documentar/testar fluxo manual de correção, exportação e exclusão/anonimização sem inventar prazo de retenção.
-- [ ] `23.3` Configurar headers de segurança, CSP, frame, referrer e permissions compatíveis com Supabase, Google, Vercel e mídia.
-- [ ] `23.4` Adicionar verificação CSRF/same-origin onde a proteção do framework for insuficiente e testar chamadas diretas.
-- [ ] `23.5` Adicionar rate limits limitados para cadastro/recuperação, CNPJ, contato e comandos administrativos sensíveis.
-- [ ] `23.6` Adicionar request IDs e logs estruturados/redigidos para Auth, autorização, moderação, banimento, CNPJ, e-mail, migrações e health.
-- [ ] `23.7` Testar que logs/DTOs de auditoria não vazam e-mail, WhatsApp, CNPJ, tokens, URLs assinadas, segredos SMTP ou payloads brutos.
-- [ ] `23.8` Criar health checks de liveness/readiness sem revelar configurações ou segredos.
-- [ ] `23.9` Modelar ameaças de sessão, IDOR, RLS, Storage, admin, banimento, CNPJ, SMTP/outbox e exposição pública, convertendo achados em testes.
+- [x] `23.2` Documentar/testar fluxo manual de correção, exportação e exclusão/anonimização sem inventar prazo de retenção.
+- [x] `23.3` Configurar headers de segurança, CSP, frame, referrer e permissions compatíveis com Supabase, Google, Vercel e mídia.
+- [x] `23.4` Adicionar verificação CSRF/same-origin onde a proteção do framework for insuficiente e testar chamadas diretas.
+- [x] `23.5` Adicionar rate limits limitados para cadastro/recuperação, CNPJ, contato e comandos administrativos sensíveis.
+- [x] `23.6` Adicionar request IDs e logs estruturados/redigidos para Auth, autorização, moderação, banimento, CNPJ, e-mail, migrações e health.
+- [x] `23.7` Testar que logs/DTOs de auditoria não vazam e-mail, WhatsApp, CNPJ, tokens, URLs assinadas, segredos SMTP ou payloads brutos.
+- [x] `23.8` Criar health checks de liveness/readiness sem revelar configurações ou segredos.
+- [x] `23.9` Modelar ameaças de sessão, IDOR, RLS, Storage, admin, banimento, CNPJ, SMTP/outbox e exposição pública, convertendo achados em testes.
 
 ### HU-24 — Responsividade, acessibilidade e performance globais
 

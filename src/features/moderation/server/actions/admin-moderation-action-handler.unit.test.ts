@@ -89,6 +89,23 @@ describe("admin moderation action handler", () => {
     expect(apply).not.toHaveBeenCalled();
   });
 
+  it("rate limits a valid sensitive command before creating the service", async () => {
+    const createService = vi.fn();
+    const handler = createAdminModerationActionHandler({
+      consumeCapacity: vi.fn().mockResolvedValue({ allowed: false }),
+      createRequestId: () => "request-admin-action",
+      createService,
+    });
+
+    await expect(handler("APPROVE", validFormData())).resolves.toEqual({
+      code: "RATE_LIMITED",
+      message:
+        "Muitas ações administrativas foram realizadas. Aguarde antes de tentar novamente.",
+      status: "error",
+    });
+    expect(createService).not.toHaveBeenCalled();
+  });
+
   it.each([
     "REQUEST_CHANGES",
     "SUSPEND",

@@ -6,4 +6,5 @@ export * from "./media";
 export * from "./moderation";
 export * from "./profiles";
 export * from "./relations";
+export * from "./security";
 export * from "./sponsorships";

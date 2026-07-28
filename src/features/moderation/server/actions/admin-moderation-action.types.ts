@@ -6,6 +6,7 @@ export type AdminModerationActionCode =
   | "IDEMPOTENCY_CONFLICT"
   | "INVALID_TRANSITION"
   | "NOT_FOUND"
+  | "RATE_LIMITED"
   | "STALE_REVIEW"
   | "UNKNOWN"
   | "VALIDATION_ERROR";

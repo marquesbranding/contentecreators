@@ -37,7 +37,7 @@
     "db:stop": "supabase stop --workdir .",
     "db:status": "supabase status --workdir .",
     "db:reset": "supabase stop --no-backup --workdir . && supabase start --workdir .",
-    "db:migrate": "supabase migration up --local --workdir .",
+    "db:migrate": "node --conditions=react-server --import tsx scripts/run-local-migrations.ts",
     "mail:start": "docker compose -f compose.local.yml up -d --wait",
     "mail:stop": "docker compose -f compose.local.yml down",
     "mail:status": "docker compose -f compose.local.yml ps",

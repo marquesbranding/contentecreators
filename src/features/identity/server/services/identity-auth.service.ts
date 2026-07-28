@@ -83,10 +83,29 @@ interface IdentityAuthServiceConfiguration {
   appUrl: string;
 }
 
+interface IdentityAuthAbuseProtection {
+  consume(input: {
+    identity: string;
+    policy: "passwordRecovery" | "signUp";
+  }): Promise<{ allowed: boolean }>;
+}
+
 export function createIdentityAuthService(
   gateway: IdentityAuthGateway,
   configuration: IdentityAuthServiceConfiguration,
+  abuseProtection?: IdentityAuthAbuseProtection,
 ) {
+  async function isAllowed(
+    policy: "passwordRecovery" | "signUp",
+    identity: string,
+  ) {
+    if (!abuseProtection) {
+      return true;
+    }
+
+    return (await abuseProtection.consume({ identity, policy })).allowed;
+  }
+
   async function beginGoogleSignInAt(destination: unknown) {
     const result = await gateway.beginGoogleSignIn({
       redirectTo: buildAuthCallbackUrl(configuration.appUrl, destination),
@@ -126,6 +145,14 @@ export function createIdentityAuthService(
     },
 
     async signUp(input: SignUpInput) {
+      if (!(await isAllowed("signUp", input.email))) {
+        return {
+          kind: "failure" as const,
+          message:
+            "Muitas tentativas foram realizadas. Aguarde antes de tentar novamente.",
+        };
+      }
+
       const destination = buildRoleSelectionPath(input.intent);
       const result = await gateway.signUpWithPassword({
         email: input.email,
@@ -185,13 +212,15 @@ export function createIdentityAuthService(
     },
 
     async resendConfirmation(email: string, intent?: RegistrationIntent) {
-      await gateway.resendConfirmation({
-        email,
-        emailRedirectTo: buildAuthCallbackUrl(
-          configuration.appUrl,
-          buildRoleSelectionPath(intent),
-        ),
-      });
+      if (await isAllowed("passwordRecovery", email)) {
+        await gateway.resendConfirmation({
+          email,
+          emailRedirectTo: buildAuthCallbackUrl(
+            configuration.appUrl,
+            buildRoleSelectionPath(intent),
+          ),
+        });
+      }
 
       return {
         kind: "success" as const,
@@ -200,13 +229,15 @@ export function createIdentityAuthService(
     },
 
     async requestPasswordRecovery(email: string) {
-      await gateway.requestPasswordRecovery({
-        email,
-        redirectTo: buildAuthCallbackUrl(
-          configuration.appUrl,
-          "/reset-password",
-        ),
-      });
+      if (await isAllowed("passwordRecovery", email)) {
+        await gateway.requestPasswordRecovery({
+          email,
+          redirectTo: buildAuthCallbackUrl(
+            configuration.appUrl,
+            "/reset-password",
+          ),
+        });
+      }
 
       return {
         kind: "success" as const,

@@ -265,14 +265,14 @@
 ## 23. LGPD, security, abuse prevention, and observability
 
 - [x] 23.1 Add approved-placeholder Terms/Privacy pages and a launch-blocking marker until client/legal content, support contact, and consent wording are supplied. `[audit-compliance]`
-- [ ] 23.2 Document and test the manual data-subject correction/export/deletion-anonymization workflow without inventing an automatic retention interval. `[audit-compliance]`
-- [ ] 23.3 Add security headers/CSP/frame/referrer/permissions configuration compatible with Supabase, Google OAuth, Vercel, and required media. `[platform-delivery]`
-- [ ] 23.4 Add CSRF/same-origin verification where framework protections are insufficient and test direct action/route calls. `[identity-access] [platform-delivery]`
-- [ ] 23.5 Add bounded rate limits for sign-up/recovery, CNPJ lookup, contact actions, and sensitive admin commands using a free-tier-compatible strategy. `[identity-access] [platform-delivery]`
-- [ ] 23.6 Add safe request IDs and structured redacted logs for auth, authorization, moderation, bans, CNPJ health, email failures, migrations, and health endpoints. `[audit-compliance] [platform-delivery]`
-- [ ] 23.7 Add tests that scan logs/audit DTOs for email, WhatsApp, CNPJ, tokens, signed URLs, SMTP secrets, and raw provider payload leakage. `[audit-compliance]`
-- [ ] 23.8 Add liveness/readiness health handlers that reveal no secret/configuration details. `[platform-delivery]`
-- [ ] 23.9 Threat-model Auth/session, IDOR, RLS context, Storage paths, admin escalation, banned recreation, CNPJ abuse, SMTP/outbox, and public data exposure; convert findings into tests. `[platform-delivery]`
+- [x] 23.2 Document and test the manual data-subject correction/export/deletion-anonymization workflow without inventing an automatic retention interval. `[audit-compliance]`
+- [x] 23.3 Add security headers/CSP/frame/referrer/permissions configuration compatible with Supabase, Google OAuth, Vercel, and required media. `[platform-delivery]`
+- [x] 23.4 Add CSRF/same-origin verification where framework protections are insufficient and test direct action/route calls. `[identity-access] [platform-delivery]`
+- [x] 23.5 Add bounded rate limits for sign-up/recovery, CNPJ lookup, contact actions, and sensitive admin commands using a free-tier-compatible strategy. `[identity-access] [platform-delivery]`
+- [x] 23.6 Add safe request IDs and structured redacted logs for auth, authorization, moderation, bans, CNPJ health, email failures, migrations, and health endpoints. `[audit-compliance] [platform-delivery]`
+- [x] 23.7 Add tests that scan logs/audit DTOs for email, WhatsApp, CNPJ, tokens, signed URLs, SMTP secrets, and raw provider payload leakage. `[audit-compliance]`
+- [x] 23.8 Add liveness/readiness health handlers that reveal no secret/configuration details. `[platform-delivery]`
+- [x] 23.9 Threat-model Auth/session, IDOR, RLS context, Storage paths, admin escalation, banned recreation, CNPJ abuse, SMTP/outbox, and public data exposure; convert findings into tests. `[platform-delivery]`
 
 ## 24. Global responsive, accessibility, and performance hardening
 

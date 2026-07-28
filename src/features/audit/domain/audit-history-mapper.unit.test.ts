@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { findSensitiveDataLeaks } from "@/shared/server/observability/operational-logger";
+
 import { toAuditHistoryItem } from "./audit-history-mapper";
 
 describe("audit history safe DTO", () => {
@@ -72,6 +74,7 @@ describe("audit history safe DTO", () => {
     expect(JSON.stringify(item)).not.toContain("example.test");
     expect(item).not.toHaveProperty("beforeState");
     expect(item).not.toHaveProperty("afterState");
+    expect(findSensitiveDataLeaks(item)).toEqual([]);
   });
 
   it("represents absent sides as null for stable JSON serialization", () => {

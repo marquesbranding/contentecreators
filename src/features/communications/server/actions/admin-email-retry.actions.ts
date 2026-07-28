@@ -4,6 +4,8 @@ import "server-only";
 
 import { ZodError } from "zod";
 
+import { consumeIdentityRateLimit } from "@/features/security/server";
+
 import { createServerAdminEmailRetryService } from "../services/server-admin-email-retry.service";
 
 export interface AdminEmailRetryActionState {
@@ -23,6 +25,15 @@ export async function retryFailedEmailAction(
   formData: FormData,
 ): Promise<AdminEmailRetryActionState> {
   try {
+    const capacity = await consumeIdentityRateLimit("adminCommand");
+    if (!capacity.allowed) {
+      return {
+        message:
+          "Muitas ações administrativas foram realizadas. Aguarde antes de tentar novamente.",
+        status: "error",
+      };
+    }
+
     const service = await createServerAdminEmailRetryService();
     const result = await service.retry({
       outboxId: String(formData.get("outboxId") ?? ""),

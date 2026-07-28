@@ -31,6 +31,35 @@ function createDependencies() {
 }
 
 describe("sponsorship management route handlers", () => {
+  it("rejects a cross-origin direct mutation before reading its body", async () => {
+    const dependencies = {
+      ...createDependencies(),
+      verifySameOrigin: vi.fn(() => ({
+        allowed: false as const,
+        reason: "ORIGIN_MISMATCH" as const,
+      })),
+    };
+    const handlers = createSponsorshipManagementRouteHandlers(dependencies);
+    const response = await handlers.POST(
+      new NextRequest("https://app.example.test/api/backoffice/sponsorships", {
+        body: JSON.stringify({}),
+        headers: {
+          "content-type": "application/json",
+          host: "app.example.test",
+          origin: "https://attacker.example",
+        },
+        method: "POST",
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(await response.json()).toEqual({
+      message: "Não foi possível validar a origem desta solicitação.",
+    });
+    expect(dependencies.create).not.toHaveBeenCalled();
+  });
+
   it("parses canonical list filters and returns private no-store data", async () => {
     const dependencies = createDependencies();
     const handlers = createSponsorshipManagementRouteHandlers(dependencies);

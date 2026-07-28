@@ -74,6 +74,12 @@ async function insertConfirmedIdentity(identityId: string, email: string) {
 
 describeLocalStack("onboarding registration repository", () => {
   afterAll(async () => {
+    await sqlClient`
+      update public.accounts
+      set archived_at = now()
+      where auth_user_id::text like '91000000-0000-4000-8000-%'
+        and archived_at is null
+    `;
     await sqlClient.end({ timeout: 2 });
     await drizzleClient.client.end({ timeout: 2 });
   });

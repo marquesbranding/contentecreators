@@ -149,7 +149,9 @@ describe("BackofficeAnalyticsDashboard", () => {
     );
 
     await user.click(screen.getByLabelText("Período de novos cadastros"));
-    await user.click(screen.getByRole("option", { name: "Últimos 7 dias" }));
+    await user.click(
+      await screen.findByRole("option", { name: "Últimos 7 dias" }),
+    );
 
     expect(onFiltersChange).toHaveBeenCalledWith({ periodDays: 7 });
   });

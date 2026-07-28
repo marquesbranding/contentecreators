@@ -61,6 +61,10 @@ interface OnboardingRegistrationEmailDelivery {
   >;
 }
 
+interface RegistrationAbuseProtection {
+  consume(identity: string): Promise<{ allowed: boolean }>;
+}
+
 const REGISTRATION_FAILURE_MESSAGE =
   "Não foi possível concluir o cadastro agora. Nenhum cadastro parcial foi mantido.";
 
@@ -69,6 +73,7 @@ export function createOnboardingRegistrationService(
   repository: OnboardingRegistrationRepository,
   configuration: OnboardingRegistrationConfiguration,
   emailDelivery?: OnboardingRegistrationEmailDelivery,
+  abuseProtection?: RegistrationAbuseProtection,
 ) {
   async function submitWithImmediateEmail(
     commitBusinessEvent: () => Promise<OnboardingSubmissionResult>,
@@ -98,6 +103,17 @@ export function createOnboardingRegistrationService(
 
   return {
     async registerWithEmail(input: EmailRegistrationInput) {
+      if (
+        abuseProtection &&
+        !(await abuseProtection.consume(input.email)).allowed
+      ) {
+        return {
+          kind: "failure" as const,
+          message:
+            "Muitas tentativas foram realizadas. Aguarde antes de tentar novamente.",
+        };
+      }
+
       const identityResult = await identity.signUp({
         callbackUrl: configuration.callbackUrl,
         email: input.email,

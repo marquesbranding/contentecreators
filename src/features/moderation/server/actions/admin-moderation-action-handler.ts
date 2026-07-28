@@ -2,6 +2,8 @@ import "server-only";
 
 import { z } from "zod";
 
+import type { OperationalLogInput } from "@/shared/server/observability/operational-logger";
+
 import {
   adminModerationCommandSchema,
   type AdminModerationAction,
@@ -56,10 +58,12 @@ type AdminModerationApplyResult = AdminModerationTransition & {
 };
 
 interface AdminModerationActionHandlerDependencies {
+  consumeCapacity?(): Promise<{ allowed: boolean }>;
   createRequestId(): string;
   createService(): Promise<{
     apply(command: AdminModerationCommand): Promise<AdminModerationApplyResult>;
   }>;
+  log?: (event: OperationalLogInput) => void;
 }
 
 const successMessages: Record<AdminModerationAction, string> = {
@@ -197,6 +201,18 @@ export function createAdminModerationActionHandler(
       };
     }
 
+    if (
+      dependencies.consumeCapacity &&
+      !(await dependencies.consumeCapacity()).allowed
+    ) {
+      return {
+        code: "RATE_LIMITED",
+        message:
+          "Muitas ações administrativas foram realizadas. Aguarde antes de tentar novamente.",
+        status: "error",
+      };
+    }
+
     const commandResult = adminModerationCommandSchema.safeParse({
       accountId: parsed.data.accountId,
       action,
@@ -218,6 +234,16 @@ export function createAdminModerationActionHandler(
     try {
       const service = await dependencies.createService();
       const result = await service.apply(commandResult.data);
+      dependencies.log?.({
+        accountStatus: result.status,
+        event:
+          action === "BAN" || action === "UNBAN"
+            ? "ban_transition"
+            : "moderation_transition",
+        operation: action.toLowerCase(),
+        outcome: "success",
+        requestId: commandResult.data.requestId,
+      });
 
       return {
         message: successMessages[action],
@@ -232,7 +258,20 @@ export function createAdminModerationActionHandler(
         status: "success",
       };
     } catch (error) {
-      return mapModerationError(error);
+      const mappedError = mapModerationError(error);
+      dependencies.log?.({
+        errorCategory: mappedError.code,
+        event:
+          mappedError.code === "ADMIN_REQUIRED"
+            ? "authorization_denied"
+            : action === "BAN" || action === "UNBAN"
+              ? "ban_transition"
+              : "moderation_transition",
+        operation: action.toLowerCase(),
+        outcome: mappedError.status,
+        requestId: commandResult.data.requestId,
+      });
+      return mappedError;
     }
   };
 }

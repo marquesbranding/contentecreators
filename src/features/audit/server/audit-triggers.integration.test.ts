@@ -59,6 +59,20 @@ async function setAuditContext(
 
 describeLocalStack("Envers-style audit triggers", () => {
   afterAll(async () => {
+    await database`
+      update creator_profiles
+      set bio = case id
+        when 'd0000000-0000-4000-8000-000000000004'
+          then 'Perfil sintético aprovado para testes do catálogo.'
+        when 'd0000000-0000-4000-8000-000000000005'
+          then 'Perfil sintético suspenso.'
+        else bio
+      end
+      where id in (
+        'd0000000-0000-4000-8000-000000000004',
+        'd0000000-0000-4000-8000-000000000005'
+      )
+    `;
     await database.end({ timeout: 2 });
     await drizzleClient.client.end({ timeout: 2 });
   });

@@ -65,6 +65,9 @@
 8. **[2026-07-23] Make required-field behavior consistent and accessible**
    Do instead: use the shared red required indicator and form notice, preserve native `required` semantics, validate custom shadcn/Base UI controls through `useRequiredFieldValidation`, show adjacent `pt-BR` errors with `aria-invalid`, and focus the first invalid field before dispatching a Server Action.
 
+9. **[2026-07-28] Keep operational telemetry metadata-only**
+   Do instead: use the central safe request-ID and operational logger primitives; log only bounded categories/durations and scan outputs for email, phone, CNPJ, tokens, signed URLs, SMTP secrets, and provider payloads.
+
 ## Shell & Command Reliability
 
 1. **[2026-07-22] Preserve user work in the shared repository**

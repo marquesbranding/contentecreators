@@ -3,6 +3,9 @@
 import "server-only";
 
 import type { AdminModerationAction } from "../../schemas/admin-moderation-command-schema";
+import { consumeIdentityRateLimit } from "@/features/security/server";
+import { operationalLogger } from "@/shared/server/observability/operational-logger";
+
 import { createServerAdminModerationService } from "../services/server-admin-moderation.service";
 import { createAdminModerationActionHandler } from "./admin-moderation-action-handler";
 import type { AdminModerationActionState } from "./admin-moderation-action.types";
@@ -12,8 +15,10 @@ async function applyAction(
   formData: FormData,
 ): Promise<AdminModerationActionState> {
   const handler = createAdminModerationActionHandler({
+    consumeCapacity: () => consumeIdentityRateLimit("adminCommand"),
     createRequestId: () => crypto.randomUUID(),
     createService: createServerAdminModerationService,
+    log: (event) => operationalLogger.info(event),
   });
 
   return handler(action, formData);

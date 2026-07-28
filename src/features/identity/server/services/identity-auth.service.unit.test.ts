@@ -90,6 +90,36 @@ describe("identity auth service", () => {
     });
   });
 
+  it("blocks bounded sign-up attempts before contacting Supabase Auth", async () => {
+    const gateway = createGateway();
+    const abuseProtection = {
+      consume: vi.fn().mockResolvedValue({ allowed: false }),
+    };
+    const service = createIdentityAuthService(
+      gateway,
+      { appUrl: "http://localhost:3000" },
+      abuseProtection,
+    );
+
+    await expect(
+      service.signUp({
+        email: "pessoa@example.com",
+        intent: "COMPANY",
+        password: "SenhaSegura123",
+        passwordConfirmation: "SenhaSegura123",
+      }),
+    ).resolves.toEqual({
+      kind: "failure",
+      message:
+        "Muitas tentativas foram realizadas. Aguarde antes de tentar novamente.",
+    });
+    expect(abuseProtection.consume).toHaveBeenCalledWith({
+      identity: "pessoa@example.com",
+      policy: "signUp",
+    });
+    expect(gateway.signUpWithPassword).not.toHaveBeenCalled();
+  });
+
   it("never reveals whether a recovery email exists or delivery failed", async () => {
     const service = createIdentityAuthService(
       createGateway({
@@ -107,6 +137,25 @@ describe("identity auth service", () => {
       kind: "success",
       message: AUTH_MESSAGES.recoveryRequested,
     });
+  });
+
+  it("keeps a rate-limited recovery response non-enumerating", async () => {
+    const gateway = createGateway();
+    const service = createIdentityAuthService(
+      gateway,
+      { appUrl: "http://localhost:3000" },
+      {
+        consume: vi.fn().mockResolvedValue({ allowed: false }),
+      },
+    );
+
+    await expect(
+      service.requestPasswordRecovery("unknown@example.com"),
+    ).resolves.toEqual({
+      kind: "success",
+      message: AUTH_MESSAGES.recoveryRequested,
+    });
+    expect(gateway.requestPasswordRecovery).not.toHaveBeenCalled();
   });
 
   it("validates callbacks and always routes Google through role selection", async () => {
