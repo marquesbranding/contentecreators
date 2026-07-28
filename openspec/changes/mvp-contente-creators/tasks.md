@@ -219,15 +219,15 @@
 
 ## 19. Catalog and profile user interface
 
-- [ ] 19.1 Write failing hook/component tests for query-key stability, cancellation, invalidation/removal after eligibility loss, hydrated initial data, URL filter state, loading, no results, error/retry, cursor navigation, mobile sheet, and role-specific controls. `[private-catalog]`
-- [ ] 19.2 Build the approved catalog Server Component authorization/prefetch boundary and client query view so authorization completes before protected execution and query data has only one render owner. `[private-catalog]`
-- [ ] 19.3 Build responsive creator cards with authorized signed media, creator type, niche/location, and self-reported metric labeling. `[private-catalog]`
-- [ ] 19.4 Build a catalog custom hook plus touch-friendly filter/search controls with URL-owned state, active-filter chips, clear action, and accessible async announcements. `[private-catalog]`
-- [ ] 19.5 Build stable cursor navigation/infinite-query enhancement with Axios cancellation and bounded pages without loading the whole catalog. `[private-catalog]`
-- [ ] 19.6 Build creator detail with role-specific contact/social controls and safe unavailable state after loss of eligibility. `[private-catalog]`
-- [ ] 19.7 Build the approved influencer-only company-logo carousel with private signed media. `[private-catalog]`
-- [ ] 19.8 Build loading skeleton, first-empty, filtered-empty, recoverable error, stale-authorization-clearing, and retry states in `pt-BR`. `[private-catalog]`
-- [ ] 19.9 Add responsive/accessibility tests at 320, 390, 768, and 1440 px plus critical WebKit behavior. `[private-catalog] [platform-delivery]`
+- [x] 19.1 Write failing hook/component tests for query-key stability, cancellation, invalidation/removal after eligibility loss, hydrated initial data, URL filter state, loading, no results, error/retry, cursor navigation, mobile sheet, and role-specific controls. `[private-catalog]`
+- [x] 19.2 Build the approved catalog Server Component authorization/prefetch boundary and client query view so authorization completes before protected execution and query data has only one render owner. `[private-catalog]`
+- [x] 19.3 Build responsive creator cards with authorized signed media, creator type, niche/location, and self-reported metric labeling. `[private-catalog]`
+- [x] 19.4 Build a catalog custom hook plus touch-friendly filter/search controls with URL-owned state, active-filter chips, clear action, and accessible async announcements. `[private-catalog]`
+- [x] 19.5 Build stable cursor navigation/infinite-query enhancement with Axios cancellation and bounded pages without loading the whole catalog. `[private-catalog]`
+- [x] 19.6 Build creator detail with role-specific contact/social controls and safe unavailable state after loss of eligibility. `[private-catalog]`
+- [x] 19.7 Build the approved influencer-only company-logo carousel with private signed media. `[private-catalog]`
+- [x] 19.8 Build loading skeleton, first-empty, filtered-empty, recoverable error, stale-authorization-clearing, and retry states in `pt-BR`. `[private-catalog]`
+- [x] 19.9 Add responsive/accessibility tests at 320, 390, 768, and 1440 px plus critical WebKit behavior. `[private-catalog] [platform-delivery]`
 
 ## 20. Sponsorship placement management and rendering
 

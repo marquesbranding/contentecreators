@@ -19,7 +19,9 @@ insert into auth.users (
   email_change
 )
 select
-  '00000000-0000-4000-8000-000000000000'::uuid,
+  -- GoTrue's local default instance is the nil UUID. Using a synthetic
+  -- versioned UUID here makes otherwise valid fixtures invisible to Auth.
+  '00000000-0000-0000-0000-000000000000'::uuid,
   fixture.id,
   'authenticated',
   'authenticated',

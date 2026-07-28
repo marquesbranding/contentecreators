@@ -1,5 +1,6 @@
 import { LogOut, SearchCheck, UserRoundPen } from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { BrandLogo } from "@/shared/components/brand-logo";
 import { Badge } from "@/shared/components/ui/badge";
@@ -13,23 +14,28 @@ import {
 } from "@/shared/components/ui/card";
 
 export function ApprovedCatalogEntry({
+  children,
   showProfileLink = false,
   signOutAction,
 }: {
+  children?: ReactNode;
   showProfileLink?: boolean;
   signOutAction: () => Promise<void>;
 }) {
   return (
     <main className="bg-brand-canvas min-h-screen px-4 py-6 sm:px-8 sm:py-10">
-      <div className="mx-auto max-w-5xl">
-        <header className="flex items-center justify-between gap-4">
+      <div className="mx-auto max-w-7xl">
+        <header className="flex flex-wrap items-center justify-between gap-3">
           <span className="bg-brand-night rounded-md">
             <BrandLogo />
           </span>
           <div className="flex items-center gap-2">
             {showProfileLink ? (
               <Link
-                className={buttonVariants({ variant: "outline" })}
+                className={buttonVariants({
+                  className: "min-h-11",
+                  variant: "outline",
+                })}
                 href="/app/profile"
               >
                 <UserRoundPen aria-hidden="true" />
@@ -37,7 +43,7 @@ export function ApprovedCatalogEntry({
               </Link>
             ) : null}
             <form action={signOutAction}>
-              <Button type="submit" variant="outline">
+              <Button className="min-h-11" type="submit" variant="outline">
                 <LogOut aria-hidden="true" />
                 Sair
               </Button>
@@ -51,19 +57,20 @@ export function ApprovedCatalogEntry({
               Acesso aprovado
             </Badge>
             <CardTitle className="text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
-              <h1>Seu acesso ao catálogo está liberado</h1>
+              <h1>Encontre creators para novas conexões</h1>
             </CardTitle>
             <CardDescription className="max-w-2xl text-base leading-7">
-              Os perfis elegíveis serão apresentados aqui pelo catálogo privado.
-              Nenhum dado público ou perfil não aprovado é carregado nesta
-              etapa.
+              Explore somente perfis aprovados e use busca e filtros para
+              encontrar pessoas alinhadas ao seu objetivo.
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-6 py-8 sm:px-9">
-            <p className="text-muted-foreground text-sm leading-6">
-              A busca, os filtros e os perfis de creators respeitarão as regras
-              de acesso, consentimento e situação cadastral.
-            </p>
+          <CardContent className="px-4 py-6 sm:px-9 sm:py-8">
+            {children ?? (
+              <p className="text-muted-foreground text-sm leading-6">
+                A busca, os filtros e os perfis de creators respeitam as regras
+                de acesso, consentimento e situação cadastral.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>

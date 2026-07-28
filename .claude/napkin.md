@@ -16,7 +16,7 @@
    Do instead: keep the E2E web server on `next build` + `next start`; parallel WebKit against Turbopack dev/HMR can emit transient chunk-load errors even when assertions pass.
 
 3. **[2026-07-23] Keep synthetic UUIDs RFC-valid**
-   Do instead: use a valid UUID version nibble and variant (for example `...-4000-8000-...`) because PostgreSQL accepts looser UUID strings that strict Zod validation correctly rejects.
+   Do instead: use a valid UUID version nibble and variant (for example `...-4000-8000-...`) because PostgreSQL accepts looser UUID strings that strict Zod validation correctly rejects. The deliberate exception is GoTrue's required local `auth.users.instance_id`, which is the nil UUID.
 
 4. **[2026-07-23] Preserve the complete Supabase SSR refresh response**
    Do instead: in Next.js 16 `src/proxy.ts`, copy every refreshed cookie and the current `setAll` response headers onto redirects; keep Proxy limited to refresh plus optimistic routing and repeat authorization in the server DAL/action.
@@ -31,7 +31,7 @@
    Do instead: after the relevant validations pass, commit the finished scoped changes and push the current branch without waiting for a separate reminder.
 
 8. **[2026-07-24] Serialize local integration test files that share Supabase**
-   Do instead: keep the Vitest integration project on `fileParallelism: false` with Docker-tolerant test/hook timeouts; parallel files can observe committed fixtures from other suites, choose unstable plans, or deadlock on shared tables.
+   Do instead: keep the Vitest integration project on `fileParallelism: false` with Docker-tolerant test/hook timeouts, and never launch multiple reset-enabled Vitest processes. After one deterministic reset, use `SKIP_LOCAL_STACK_RESET=true` for targeted reruns; concurrent Docker prune/reset operations can tear down the shared stack.
 
 9. **[2026-07-24] Treat Supabase Auth moderation as a post-commit effect**
    Do instead: commit account status, blocked identities, audit, outbox, and a retryable Auth-effect record atomically; then call `updateUserById` for ban/unban. Admin `signOut` requires the target JWT, so enforce immediate denial through database status/RLS and let the existing banned-session defense revoke a presented token.

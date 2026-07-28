@@ -329,15 +329,15 @@ O produto deve permitir que:
 
 > Como usuário aprovado em dispositivo móvel ou desktop, quero pesquisar, filtrar, navegar e abrir perfis com estados claros, mídia autorizada e controles adequados ao meu papel.
 
-- [ ] `19.1` Testar chaves de query, cancelamento, invalidação, hidratação, filtros na URL, estados, cursor, sheet mobile e controles por papel.
-- [ ] `19.2` Criar boundary Server Component de autorização/prefetch e view cliente com única fonte de renderização dos dados.
-- [ ] `19.3` Criar cards responsivos com mídia assinada, tipo, nicho/localização e rótulo de métricas autodeclaradas.
-- [ ] `19.4` Criar hook do catálogo e controles touch-friendly com estado na URL, chips, limpar e anúncios assíncronos acessíveis.
-- [ ] `19.5` Criar navegação por cursor/infinite query limitada, com cancelamento Axios, sem carregar o catálogo inteiro.
-- [ ] `19.6` Criar detalhe com contatos/redes por papel e estado seguro quando o perfil perde elegibilidade.
-- [ ] `19.7` Criar carrossel privado de logos de empresas somente para influencer aprovado.
-- [ ] `19.8` Criar skeleton, vazio inicial, vazio filtrado, erro recuperável, limpeza após perda de autorização e retry em `pt-BR`.
-- [ ] `19.9` Testar responsividade/acessibilidade em 320, 390, 768 e 1440 px, incluindo WebKit crítico.
+- [x] `19.1` Testar chaves de query, cancelamento, invalidação, hidratação, filtros na URL, estados, cursor, sheet mobile e controles por papel.
+- [x] `19.2` Criar boundary Server Component de autorização/prefetch e view cliente com única fonte de renderização dos dados.
+- [x] `19.3` Criar cards responsivos com mídia assinada, tipo, nicho/localização e rótulo de métricas autodeclaradas.
+- [x] `19.4` Criar hook do catálogo e controles touch-friendly com estado na URL, chips, limpar e anúncios assíncronos acessíveis.
+- [x] `19.5` Criar navegação por cursor/infinite query limitada, com cancelamento Axios, sem carregar o catálogo inteiro.
+- [x] `19.6` Criar detalhe com contatos/redes por papel e estado seguro quando o perfil perde elegibilidade.
+- [x] `19.7` Criar carrossel privado de logos de empresas somente para influencer aprovado.
+- [x] `19.8` Criar skeleton, vazio inicial, vazio filtrado, erro recuperável, limpeza após perda de autorização e retry em `pt-BR`.
+- [x] `19.9` Testar responsividade/acessibilidade em 320, 390, 768 e 1440 px, incluindo WebKit crítico.
 
 ### HU-20 — Espaços de patrocínio
 

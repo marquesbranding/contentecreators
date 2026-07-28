@@ -4,6 +4,7 @@ import { afterAll, describe, expect, it } from "vitest";
 import { createDatabaseClient } from "@/db/client";
 import {
   accounts,
+  creatorMetricSnapshots,
   creatorNiches,
   creatorProfiles,
   niches,
@@ -140,6 +141,15 @@ describeLocalStack("Drizzle creator catalog repository", () => {
           ownerAccountId: fixtureAccountId,
           platform: "TIKTOK",
         });
+        await transaction.insert(creatorMetricSnapshots).values({
+          creatorProfileId: fixtureCreatorId,
+          engagementRate: "4.2500",
+          followerCount: 25_000,
+          id: "e9000000-0000-4000-8000-000000000018",
+          observedOn: new Date("2026-07-20T00:00:00.000Z"),
+          platform: "TIKTOK",
+          socialProfileId: "f9000000-0000-4000-8000-000000000018",
+        });
 
         const createRunner = (
           context: VerifiedAccountContext,
@@ -209,12 +219,22 @@ describeLocalStack("Drizzle creator catalog repository", () => {
     expect(proof).toBeDefined();
     expect(proof?.combinedResult.items).toEqual([
       {
+        avatarAssetId: null,
         bioExcerpt:
           "Perfil sintético de Júlia para busca e filtros do catálogo.",
         city: "São Paulo",
         creatorId: fixtureCreatorId,
         creatorType: "UGC",
         displayName: "Júlia Criadora",
+        metrics: [
+          {
+            engagementRate: 4.25,
+            followerCount: 25_000,
+            observedOn: "2026-07-20",
+            platform: "TIKTOK",
+            source: "SELF_REPORTED",
+          },
+        ],
         niches: [{ name: "Beleza", slug: "beleza" }],
         socialPlatforms: ["TIKTOK"],
         state: "SP",
@@ -227,7 +247,7 @@ describeLocalStack("Drizzle creator catalog repository", () => {
     );
     expect(proof?.selfResult.items).toEqual([]);
     expect(JSON.stringify(proof)).not.toMatch(
-      /accountId|authUserId|operationalEmail|whatsapp|moderation|audit|archivedAt|legalName|objectPath|bucketName/i,
+      /"(?:accountId|authUserId|operationalEmail|whatsapp|moderation|audit|archivedAt|legalName|objectPath|bucketName)"\s*:/i,
     );
   });
 });

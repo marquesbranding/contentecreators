@@ -5,6 +5,7 @@ import { and, asc, eq, gt, isNull, or, sql, type SQL } from "drizzle-orm";
 import type { ApplicationTransaction } from "@/db/client";
 import {
   accounts,
+  creatorMetricSnapshots,
   creatorNiches,
   creatorProfiles,
   niches,
@@ -13,6 +14,7 @@ import {
 
 import type {
   CatalogNicheDto,
+  CatalogCardMetricDto,
   CatalogSocialPlatform,
   CatalogViewer,
   CreatorCatalogPageDto,
@@ -111,6 +113,7 @@ export async function listCreatorCatalog(
 ): Promise<CreatorCatalogPageDto> {
   const rows = await transaction
     .select({
+      avatarAssetId: creatorProfiles.avatarAssetId,
       bioExcerpt: sql<string | null>`
         case
           when ${creatorProfiles.bio} is null then null
@@ -121,6 +124,36 @@ export async function listCreatorCatalog(
       creatorId: creatorProfiles.id,
       creatorType: creatorProfiles.creatorType,
       displayName: creatorProfiles.displayName,
+      metrics: sql<CatalogCardMetricDto[]>`
+        coalesce(
+          (
+            select jsonb_agg(
+              jsonb_build_object(
+                'engagementRate', catalog_metric.engagement_rate,
+                'followerCount', catalog_metric.follower_count,
+                'observedOn', catalog_metric.observed_on,
+                'platform', catalog_metric.platform,
+                'source', 'SELF_REPORTED'
+              )
+              order by catalog_metric.platform
+            )
+            from (
+              select distinct on (catalog_metric_snapshot.platform)
+                catalog_metric_snapshot.engagement_rate::double precision as engagement_rate,
+                catalog_metric_snapshot.follower_count,
+                catalog_metric_snapshot.observed_on,
+                catalog_metric_snapshot.platform
+              from ${creatorMetricSnapshots} catalog_metric_snapshot
+              where catalog_metric_snapshot.creator_profile_id = ${creatorProfiles.id}
+              order by
+                catalog_metric_snapshot.platform,
+                catalog_metric_snapshot.observed_on desc,
+                catalog_metric_snapshot.created_at desc
+            ) catalog_metric
+          ),
+          '[]'::jsonb
+        )
+      `,
       niches: sql<CatalogNicheDto[]>`
         coalesce(
           (

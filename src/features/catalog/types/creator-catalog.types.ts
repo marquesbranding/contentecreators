@@ -31,16 +31,30 @@ export interface CatalogNicheDto {
   slug: string;
 }
 
+export interface CatalogCardMetricDto {
+  engagementRate: number | null;
+  followerCount: number | null;
+  observedOn: string;
+  platform: CatalogSocialPlatform;
+  source: "SELF_REPORTED";
+}
+
 /**
  * Deliberately narrow catalog-list projection. Contact, account, moderation,
  * audit and storage records never belong to this transport type.
  */
 export interface CreatorCatalogCardDto {
+  /**
+   * Server-only reference used to exchange the active profile image for a
+   * short-lived signed URL before the page crosses the browser boundary.
+   */
+  avatarAssetId?: string | null;
   bioExcerpt: string | null;
   city: string | null;
   creatorId: string;
   creatorType: CatalogCreatorType;
   displayName: string;
+  metrics?: CatalogCardMetricDto[];
   niches: CatalogNicheDto[];
   socialPlatforms: CatalogSocialPlatform[];
   state: string | null;
