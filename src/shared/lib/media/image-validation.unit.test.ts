@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { IMAGE_UPLOAD_LIMITS, validateImageUpload } from "./image-validation";
+import {
+  extractImageDimensions,
+  IMAGE_UPLOAD_LIMITS,
+  validateImageUpload,
+} from "./image-validation";
 
 const headers = {
   jpeg: new Uint8Array([0xff, 0xd8, 0xff, 0xe0]),
@@ -11,6 +15,52 @@ const headers = {
 };
 
 describe("image upload validation", () => {
+  it.each([
+    {
+      bytes: new Uint8Array([
+        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0x0d, 0x49,
+        0x48, 0x44, 0x52, 0, 0, 0x05, 0, 0, 0, 0x02, 0xd0,
+      ]),
+      mimeType: "image/png" as const,
+    },
+    {
+      bytes: new Uint8Array([
+        0xff, 0xd8, 0xff, 0xc0, 0, 0x11, 0x08, 0x02, 0xd0, 0x05, 0, 0x03, 0x01,
+        0x11, 0, 0x02, 0x11, 0, 0x03, 0x11, 0,
+      ]),
+      mimeType: "image/jpeg" as const,
+    },
+    {
+      bytes: new Uint8Array([
+        0x52, 0x49, 0x46, 0x46, 0x16, 0, 0, 0, 0x57, 0x45, 0x42, 0x50, 0x56,
+        0x50, 0x38, 0x58, 0x0a, 0, 0, 0, 0, 0, 0, 0, 0xff, 0x04, 0, 0xcf, 0x02,
+        0,
+      ]),
+      mimeType: "image/webp" as const,
+    },
+  ])(
+    "extracts bounded dimensions from $mimeType bytes",
+    ({ bytes, mimeType }) => {
+      expect(extractImageDimensions(bytes, mimeType)).toEqual({
+        height: 720,
+        width: 1280,
+      });
+    },
+  );
+
+  it("rejects missing and implausibly large encoded dimensions", () => {
+    expect(extractImageDimensions(headers.png, "image/png")).toBeNull();
+    expect(
+      extractImageDimensions(
+        new Uint8Array([
+          0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0x0d, 0x49,
+          0x48, 0x44, 0x52, 0, 1, 0, 0, 0, 1, 0, 0,
+        ]),
+        "image/png",
+      ),
+    ).toBeNull();
+  });
+
   it.each([
     {
       declaredMimeType: "image/jpeg",

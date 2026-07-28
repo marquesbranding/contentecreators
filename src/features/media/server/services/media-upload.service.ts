@@ -6,6 +6,7 @@ import {
   type CurrentSessionDto,
 } from "@/features/identity/server";
 import {
+  extractImageDimensions,
   validateImageUpload,
   validateImageUploadDeclaration,
 } from "@/shared/lib/media/image-validation";
@@ -177,13 +178,24 @@ export function createMediaUploadService({
           return errorResult(validation.code);
         }
 
+        const dimensions = extractImageDimensions(
+          storedObject.headerBytes,
+          validation.value.mimeType,
+        );
+
+        if (!dimensions) {
+          return errorResult("INVALID_IMAGE_DIMENSIONS");
+        }
+
         const asset = await repository.createPendingMedia({
           bucketName: input.bucketName,
+          height: dimensions.height,
           kind: input.purpose,
           mimeType: validation.value.mimeType,
           objectPath: input.objectPath,
           requestId: input.requestId,
           sizeBytes: validation.value.sizeBytes,
+          width: dimensions.width,
         });
 
         return {

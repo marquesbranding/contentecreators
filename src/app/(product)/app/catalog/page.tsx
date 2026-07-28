@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { dehydrate } from "@tanstack/react-query";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import {
   ApprovedCatalogEntry,
@@ -21,6 +22,8 @@ import { AccountStatusBoundary } from "@/features/moderation/server";
 import { FeatureHydrationBoundary } from "@/shared/query/feature-hydration-boundary";
 import { getServerQueryClient } from "@/shared/server/query-client";
 
+import { CatalogSponsorshipSlots } from "@/app/_components/catalog-sponsorship-slots";
+import { loadServerCatalogSponsorshipSlots } from "@/app/_server/catalog-sponsorship-slots.loader";
 import { loadServerCreatorCatalogPage } from "@/app/_server/creator-catalog-page.loader";
 
 export const metadata: Metadata = {
@@ -54,6 +57,10 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   return (
     <AccountStatusBoundary
       renderApproved={async (account) => {
+        if (account.role !== "COMPANY" && account.role !== "INFLUENCER") {
+          redirect("/backoffice");
+        }
+
         const queryClient = getServerQueryClient();
         const requestId = `catalog-page-${randomUUID()}`;
 
@@ -69,7 +76,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
                 return viewService.list({}, `company-carousel-${randomUUID()}`);
               })()
             : Promise.resolve(undefined);
-        const [, companyCarousel] = await Promise.all([
+        const [, companyCarousel, sponsorshipSlots] = await Promise.all([
           queryClient.prefetchInfiniteQuery({
             getNextPageParam: (lastPage: CreatorCatalogBrowserPageDto) =>
               lastPage.nextCursor ?? undefined,
@@ -85,18 +92,21 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             queryKey: creatorCatalogKeys.list(filters),
           }),
           companyCarouselPromise,
+          loadServerCatalogSponsorshipSlots(account.role),
         ]);
 
         return (
           <ApprovedCatalogEntry showProfileLink signOutAction={signOutAction}>
-            {companyCarousel ? (
-              <div className="mb-8">
-                <CompanyCarouselScreen initialData={companyCarousel} />
-              </div>
-            ) : null}
-            <FeatureHydrationBoundary state={dehydrate(queryClient)}>
-              <CreatorCatalogView />
-            </FeatureHydrationBoundary>
+            <CatalogSponsorshipSlots slots={sponsorshipSlots}>
+              {companyCarousel ? (
+                <div className="mb-8">
+                  <CompanyCarouselScreen initialData={companyCarousel} />
+                </div>
+              ) : null}
+              <FeatureHydrationBoundary state={dehydrate(queryClient)}>
+                <CreatorCatalogView />
+              </FeatureHydrationBoundary>
+            </CatalogSponsorshipSlots>
           </ApprovedCatalogEntry>
         );
       }}

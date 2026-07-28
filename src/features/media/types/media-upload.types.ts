@@ -25,6 +25,7 @@ export type MediaUploadErrorCode =
   | "EMPTY_FILE"
   | "EXTENSION_MISMATCH"
   | "FILE_TOO_LARGE"
+  | "INVALID_IMAGE_DIMENSIONS"
   | "INVALID_INPUT"
   | "MEDIA_ASSET_NOT_FOUND"
   | "MEDIA_REPLACEMENT_CONFLICT"
@@ -65,11 +66,13 @@ export type FinalizeMediaUploadResult =
 
 export interface PendingMediaMetadata {
   bucketName: MediaBucketName;
+  height: number;
   kind: MediaPurpose;
   mimeType: SupportedImageMimeType;
   objectPath: string;
   requestId: string;
   sizeBytes: number;
+  width: number;
 }
 
 export interface ActivateProfileMediaInput {

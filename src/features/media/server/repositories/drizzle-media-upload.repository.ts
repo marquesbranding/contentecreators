@@ -60,12 +60,14 @@ export function createDrizzleMediaUploadRepository({
             .insert(mediaAssets)
             .values({
               bucketName: input.bucketName,
+              height: input.height,
               kind: input.kind,
               mimeType: input.mimeType,
               objectPath: input.objectPath,
               ownerAccountId: account.id,
               sizeBytes: input.sizeBytes,
               status: "PENDING",
+              width: input.width,
             })
             .onConflictDoNothing({
               target: [mediaAssets.bucketName, mediaAssets.objectPath],
@@ -79,12 +81,14 @@ export function createDrizzleMediaUploadRepository({
           const [existingAsset] = await transaction
             .select({
               bucketName: mediaAssets.bucketName,
+              height: mediaAssets.height,
               id: mediaAssets.id,
               kind: mediaAssets.kind,
               mimeType: mediaAssets.mimeType,
               objectPath: mediaAssets.objectPath,
               ownerAccountId: mediaAssets.ownerAccountId,
               sizeBytes: mediaAssets.sizeBytes,
+              width: mediaAssets.width,
             })
             .from(mediaAssets)
             .where(
@@ -100,7 +104,9 @@ export function createDrizzleMediaUploadRepository({
             existingAsset.ownerAccountId !== account.id ||
             existingAsset.kind !== input.kind ||
             existingAsset.mimeType !== input.mimeType ||
-            existingAsset.sizeBytes !== input.sizeBytes
+            existingAsset.sizeBytes !== input.sizeBytes ||
+            existingAsset.width !== input.width ||
+            existingAsset.height !== input.height
           ) {
             throw new Error(
               "Media object path conflicts with different metadata.",

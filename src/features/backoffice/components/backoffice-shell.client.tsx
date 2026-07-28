@@ -65,12 +65,14 @@ const primaryNavigation = [
     icon: Mail,
     label: "E-mails",
   },
+  {
+    href: "/backoffice/sponsorships",
+    icon: Megaphone,
+    label: "Patrocínios",
+  },
 ] as const;
 
-const plannedNavigation = [
-  { icon: Megaphone, label: "Patrocínios" },
-  { icon: Archive, label: "Arquivados" },
-] as const;
+const plannedNavigation = [{ icon: Archive, label: "Arquivados" }] as const;
 
 function isPathActive(pathname: string, href: string) {
   return href === "/backoffice"
@@ -177,6 +179,8 @@ function BackofficeBreadcrumb() {
     segments.push({ label: "Auditoria" });
   } else if (pathname.startsWith("/backoffice/emails")) {
     segments.push({ label: "E-mails" });
+  } else if (pathname.startsWith("/backoffice/sponsorships")) {
+    segments.push({ label: "Patrocínios" });
   } else {
     segments.push({ label: "Backoffice" });
   }

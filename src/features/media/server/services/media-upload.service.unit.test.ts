@@ -28,7 +28,8 @@ const accounts = {
 } as const;
 const objectId = "73000000-0000-4000-8000-000000000001";
 const pngHeader = new Uint8Array([
-  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0x0d, 0x49, 0x48,
+  0x44, 0x52, 0, 0, 0x05, 0, 0, 0, 0x02, 0xd0,
 ]);
 
 function authenticated(
@@ -191,11 +192,13 @@ describe("media upload service", () => {
       serviceDependencies.repository.createPendingMedia,
     ).toHaveBeenCalledWith({
       bucketName: "profile-media",
+      height: 720,
       kind: "AVATAR",
       mimeType: "image/png",
       objectPath,
       requestId: "finalize-media-unit",
       sizeBytes: 2048,
+      width: 1280,
     });
     expect(result).toEqual({
       asset: {
@@ -269,6 +272,33 @@ describe("media upload service", () => {
     });
     expect(
       invalidDependencies.repository.createPendingMedia,
+    ).not.toHaveBeenCalled();
+  });
+
+  it("does not persist an object whose dimensions cannot be validated", async () => {
+    const serviceDependencies = dependencies();
+    serviceDependencies.storage.inspectObject.mockResolvedValue({
+      contentType: "image/png",
+      headerBytes: new Uint8Array([
+        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+      ]),
+      sizeBytes: 2048,
+    });
+    const service = createMediaUploadService(serviceDependencies);
+
+    await expect(
+      service.finalizeUpload({
+        bucketName: "profile-media",
+        objectPath: `${accounts.creator.id}/avatar/${objectId}.png`,
+        purpose: "AVATAR",
+        requestId: "invalid-dimensions-media-unit",
+      }),
+    ).resolves.toEqual({
+      code: "INVALID_IMAGE_DIMENSIONS",
+      kind: "error",
+    });
+    expect(
+      serviceDependencies.repository.createPendingMedia,
     ).not.toHaveBeenCalled();
   });
 });

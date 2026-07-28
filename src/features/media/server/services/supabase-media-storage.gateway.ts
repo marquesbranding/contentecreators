@@ -37,7 +37,9 @@ export function createSupabaseMediaStorageGateway(
       }
 
       const contentType = fileInfo.contentType ?? file.type;
-      const headerBytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+      const inspectionBytes =
+        file.size <= 8 * 1024 * 1024 ? file : file.slice(0, 12);
+      const headerBytes = new Uint8Array(await inspectionBytes.arrayBuffer());
 
       return {
         contentType,

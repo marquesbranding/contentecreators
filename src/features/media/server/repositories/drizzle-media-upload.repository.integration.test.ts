@@ -42,12 +42,14 @@ describeLocalStack("Drizzle media upload repository", () => {
           firstId: string;
           mediaRows: {
             bucketName: string;
+            height: number | null;
             id: string;
             kind: string;
             mimeType: string;
             ownerAccountId: string;
             sizeBytes: number;
             status: string;
+            width: number | null;
           }[];
           repeatedId: string;
         }
@@ -76,11 +78,13 @@ describeLocalStack("Drizzle media upload repository", () => {
         });
         const input = {
           bucketName: "profile-media" as const,
+          height: 720,
           kind: "AVATAR" as const,
           mimeType: "image/png" as const,
           objectPath: assetPath,
           requestId,
           sizeBytes: 2048,
+          width: 1280,
         };
 
         const first = await repository.createPendingMedia(input);
@@ -90,12 +94,14 @@ describeLocalStack("Drizzle media upload repository", () => {
         const mediaRows = await transaction
           .select({
             bucketName: mediaAssets.bucketName,
+            height: mediaAssets.height,
             id: mediaAssets.id,
             kind: mediaAssets.kind,
             mimeType: mediaAssets.mimeType,
             ownerAccountId: mediaAssets.ownerAccountId,
             sizeBytes: mediaAssets.sizeBytes,
             status: mediaAssets.status,
+            width: mediaAssets.width,
           })
           .from(mediaAssets)
           .where(eq(mediaAssets.objectPath, assetPath));
@@ -138,12 +144,14 @@ describeLocalStack("Drizzle media upload repository", () => {
       mediaRows: [
         {
           bucketName: "profile-media",
+          height: 720,
           id: result?.firstId,
           kind: "AVATAR",
           mimeType: "image/png",
           ownerAccountId: creatorContext.accountId,
           sizeBytes: 2048,
           status: "PENDING",
+          width: 1280,
         },
       ],
       repeatedId: result?.firstId,

@@ -34,6 +34,8 @@ const errorMessages: Readonly<Record<MediaUploadErrorCode, string>> = {
   EXTENSION_MISMATCH:
     "A extensão do arquivo não corresponde ao formato da imagem.",
   FILE_TOO_LARGE: "A imagem ultrapassa o limite permitido.",
+  INVALID_IMAGE_DIMENSIONS:
+    "Não foi possível validar as dimensões da imagem enviada.",
   INVALID_INPUT: "Revise o arquivo selecionado e tente novamente.",
   MEDIA_ASSET_NOT_FOUND: "A imagem enviada não foi encontrada para ativação.",
   MEDIA_REPLACEMENT_CONFLICT:

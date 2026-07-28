@@ -231,14 +231,14 @@
 
 ## 20. Sponsorship placement management and rendering
 
-- [ ] 20.1 Write failing domain tests for placement type, creative completeness, URL safety, schedule boundaries, audience/route, order ties, referenced eligibility, and public privacy. `[sponsorship-placements]`
-- [ ] 20.2 Implement placement validation, eligibility, deterministic ordering, and UTC schedule evaluation. `[sponsorship-placements]`
-- [ ] 20.3 Implement admin placement CRUD/soft removal with audit, optimistic version checks, and private media. `[sponsorship-placements]`
-- [ ] 20.4 Build backoffice placement list/filter/create/edit/preview/activate/deactivate/reorder experiences. `[sponsorship-placements] [backoffice-operations]`
-- [ ] 20.5 Implement top, inline-mobile side, carousel, and featured-creator renderers with audience/route checks. `[sponsorship-placements]`
-- [ ] 20.6 Suppress placements referencing ineligible profiles and participant-derived public creatives while social proof is disabled. `[sponsorship-placements]`
-- [ ] 20.7 Add tests proving no sponsorship price/payment/invoice/commission/split/renewal fields or workflows exist. `[sponsorship-placements]`
-- [ ] 20.8 Add responsive/keyboard/screen-reader tests for creative preview, catalog slots, and narrow mobile inline placement. `[sponsorship-placements]`
+- [x] 20.1 Write failing domain tests for placement type, creative completeness, URL safety, schedule boundaries, audience/route, order ties, referenced eligibility, and public privacy. `[sponsorship-placements]`
+- [x] 20.2 Implement placement validation, eligibility, deterministic ordering, and UTC schedule evaluation. `[sponsorship-placements]`
+- [x] 20.3 Implement admin placement CRUD/soft removal with audit, optimistic version checks, and private media. `[sponsorship-placements]`
+- [x] 20.4 Build backoffice placement list/filter/create/edit/preview/activate/deactivate/reorder experiences. `[sponsorship-placements] [backoffice-operations]`
+- [x] 20.5 Implement top, inline-mobile side, carousel, and featured-creator renderers with audience/route checks. `[sponsorship-placements]`
+- [x] 20.6 Suppress placements referencing ineligible profiles and participant-derived public creatives while social proof is disabled. `[sponsorship-placements]`
+- [x] 20.7 Add tests proving no sponsorship price/payment/invoice/commission/split/renewal fields or workflows exist. `[sponsorship-placements]`
+- [x] 20.8 Add responsive/keyboard/screen-reader tests for creative preview, catalog slots, and narrow mobile inline placement. `[sponsorship-placements]`
 
 ## 21. Public marketing and legal experience
 

@@ -148,6 +148,8 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 - Private catalog discovery uses an approved-account Server Component boundary, one hydrated client render owner, URL-owned filters, a bottom Sheet on mobile, removable filter chips, cursor pagination, and explicit loading/empty/error/access-revoked states.
 - Creator cards never receive Storage identifiers or object paths. The app composition layer exchanges active media references for short-lived signed URLs, labels metrics as creator-reported, and falls back without hiding an otherwise eligible profile.
 - Company logos appear only inside the approved influencer experience. Detail contacts remain role- and consent-gated, with a neutral unavailable state instead of inferred or partially exposed contact data.
+- Sponsorship management is draft-first and URL-filtered. Activation, deactivation, reordering, and archival are separate audited actions with explicit consequences, optimistic-version feedback, and an in-context preview.
+- Sponsorship delivery receives only server-approved DTOs with signed private media. Every renderer labels sponsored content, suppresses ineligible audience/route/profile references, and converts desktop side placements into deliberate inline cards on narrow screens.
 
 ## Marketing patterns
 

@@ -1,9 +1,9 @@
 # PRD — Desenvolvimento do MVP Contente Creators
 
 **Status:** em desenvolvimento
-**Data-base do acompanhamento:** 24/07/2026
+**Data-base do acompanhamento:** 28/07/2026
 **OpenSpec relacionado:** `mvp-contente-creators`
-**Progresso atual:** 165 de 252 entregas concluídas (65,5%); 87 entregas pendentes.
+**Progresso atual:** 191 de 252 entregas concluídas (75,8%); 61 entregas pendentes.
 
 ## 1. Objetivo do produto
 
@@ -343,14 +343,14 @@ O produto deve permitir que:
 
 > Como administrador, quero cadastrar e agendar criativos promocionais por audiência e posição; como usuário, quero vê-los de forma responsiva sem que patrocínio burle aprovação ou privacidade.
 
-- [ ] `20.1` Testar tipo, completude, URL, agenda, audiência/rota, empates de ordem, elegibilidade referenciada e privacidade pública.
-- [ ] `20.2` Implementar validação, elegibilidade, ordem determinística e avaliação de agenda em UTC.
-- [ ] `20.3` Implementar CRUD/remoção lógica auditado, versão otimista e mídia privada para admin.
-- [ ] `20.4` Criar backoffice para listar, filtrar, criar, editar, visualizar, ativar, desativar e reordenar placements.
-- [ ] `20.5` Criar renderizadores de topo, lateral convertida em inline mobile, carrossel e criador em destaque.
-- [ ] `20.6` Suprimir placements com perfil inelegível ou criativo público derivado de participante enquanto social proof estiver desativado.
-- [ ] `20.7` Provar que não existem preço, pagamento, fatura, comissão, split, renovação ou fluxos financeiros.
-- [ ] `20.8` Testar preview e posições em mobile, teclado e leitor de tela.
+- [x] `20.1` Testar tipo, completude, URL, agenda, audiência/rota, empates de ordem, elegibilidade referenciada e privacidade pública.
+- [x] `20.2` Implementar validação, elegibilidade, ordem determinística e avaliação de agenda em UTC.
+- [x] `20.3` Implementar CRUD/remoção lógica auditado, versão otimista e mídia privada para admin.
+- [x] `20.4` Criar backoffice para listar, filtrar, criar, editar, visualizar, ativar, desativar e reordenar placements.
+- [x] `20.5` Criar renderizadores de topo, lateral convertida em inline mobile, carrossel e criador em destaque.
+- [x] `20.6` Suprimir placements com perfil inelegível ou criativo público derivado de participante enquanto social proof estiver desativado.
+- [x] `20.7` Provar que não existem preço, pagamento, fatura, comissão, split, renovação ou fluxos financeiros.
+- [x] `20.8` Testar preview e posições em mobile, teclado e leitor de tela.
 
 ### HU-21 — Landing page e páginas públicas
 
