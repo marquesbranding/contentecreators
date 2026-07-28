@@ -10,8 +10,15 @@ import {
   AlertTitle,
 } from "@/shared/components/ui/alert";
 import { Button, buttonVariants } from "@/shared/components/ui/button";
-import { RequiredFieldsNotice } from "@/shared/components/ui/field";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+  RequiredFieldsNotice,
+} from "@/shared/components/ui/field";
 import { Spinner } from "@/shared/components/ui/spinner";
+import { Textarea } from "@/shared/components/ui/textarea";
 import { cn } from "@/shared/lib/cn";
 import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 import { useUnsavedChangesGuard } from "@/shared/hooks/use-unsaved-changes-guard";
@@ -26,16 +33,30 @@ import { ProfileFormFields } from "./profile-form-fields.client";
 
 export function InfluencerProfileEditForm({
   action,
+  backHref = "/app/catalog",
+  backLabel = "Voltar ao catálogo",
+  changeReason,
   expectedVersion,
+  formLabel = "Editar perfil de creator",
   mediaFields,
   onProfileVersionChange,
   profile,
+  submitLabel = "Salvar alterações",
 }: {
   action: InfluencerProfileAction;
+  backHref?: string;
+  backLabel?: string;
+  changeReason?: {
+    description: string;
+    label: string;
+    placeholder: string;
+  };
   expectedVersion: number;
+  formLabel?: string;
   mediaFields?: React.ReactNode;
   onProfileVersionChange?: (version: number) => void;
   profile: InfluencerProfileDto;
+  submitLabel?: string;
 }) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const actionWithClientSync = useCallback<InfluencerProfileAction>(
@@ -65,7 +86,7 @@ export function InfluencerProfileEditForm({
   return (
     <form
       action={formAction}
-      aria-label="Editar perfil de creator"
+      aria-label={formLabel}
       className="space-y-9"
       noValidate
       onInput={(event) => {
@@ -108,14 +129,45 @@ export function InfluencerProfileEditForm({
         role="INFLUENCER"
         showLegalConsents={false}
       />
+      {changeReason ? (
+        <Field
+          data-invalid={Boolean(
+            formValidation.getFieldErrors("reason", state.fieldErrors?.reason)
+              ?.length,
+          )}
+        >
+          <FieldLabel htmlFor="profile-change-reason" required>
+            {changeReason.label}
+          </FieldLabel>
+          <Textarea
+            aria-invalid={Boolean(
+              formValidation.getFieldErrors("reason", state.fieldErrors?.reason)
+                ?.length,
+            )}
+            id="profile-change-reason"
+            maxLength={1000}
+            minLength={10}
+            name="reason"
+            placeholder={changeReason.placeholder}
+            required
+            rows={4}
+          />
+          <FieldDescription>{changeReason.description}</FieldDescription>
+          <FieldError
+            errors={formValidation
+              .getFieldErrors("reason", state.fieldErrors?.reason)
+              ?.map((message) => ({ message }))}
+          />
+        </Field>
+      ) : null}
       {mediaFields}
 
       <div className="grid gap-3 sm:grid-cols-2">
         <Link
           className={cn(buttonVariants({ size: "lg", variant: "outline" }))}
-          href="/app/catalog"
+          href={backHref}
         >
-          Voltar ao catálogo
+          {backLabel}
         </Link>
         <Button disabled={pending} size="lg" type="submit">
           {pending ? (
@@ -123,7 +175,7 @@ export function InfluencerProfileEditForm({
           ) : (
             <Save aria-hidden="true" />
           )}
-          {pending ? "Salvando..." : "Salvar alterações"}
+          {pending ? "Salvando..." : submitLabel}
         </Button>
       </div>
     </form>

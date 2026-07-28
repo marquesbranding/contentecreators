@@ -190,6 +190,7 @@ export function createDrizzleCompanyProfileRepository(): CompanyProfileRepositor
       input,
       requestId,
       auditReason = "Update approved company profile",
+      auditContext,
     ) {
       const [currentProfile] = await transaction
         .select({
@@ -217,14 +218,17 @@ export function createDrizzleCompanyProfileRepository(): CompanyProfileRepositor
         };
       }
 
-      await applyVerifiedAuditContext(transaction, {
-        actorAccountId: accountId,
-        actorRole: "COMPANY",
-        actorType: "USER",
-        reason: auditReason,
-        requestId,
-        source: "APPLICATION",
-      });
+      await applyVerifiedAuditContext(
+        transaction,
+        auditContext ?? {
+          actorAccountId: accountId,
+          actorRole: "COMPANY",
+          actorType: "USER",
+          reason: auditReason,
+          requestId,
+          source: "APPLICATION",
+        },
+      );
 
       const [updatedProfile] = await transaction
         .update(companyProfiles)

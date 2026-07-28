@@ -197,13 +197,13 @@
 
 ## 17. Backoffice account management, audit, and operations
 
-- [ ] 17.1 Implement server-paginated account search/filter by role/status/archive with URL-owned filters, safe summary DTOs, and a tested backoffice query hook. `[backoffice-operations]`
-- [ ] 17.2 Build account list/detail pages showing authorized full profile, status, completion, moderation, media, consent, and safe operational metadata. `[backoffice-operations]`
-- [ ] 17.3 Implement admin profile edits through the same validation/audit pipeline as owner edits. `[backoffice-operations] [audit-compliance]`
-- [ ] 17.4 Implement append-only audit query DTOs and filters by entity/record/actor/action/source/period. `[audit-compliance]`
-- [ ] 17.5 Build the audit history page/diff presentation with redacted before/after fields and no mutation controls. `[audit-compliance]`
-- [ ] 17.6 Implement email-outbox pending/failed list, attempt detail, and eligible manual retry presentation. `[transactional-communications]`
-- [ ] 17.7 Add cross-role/security tests proving no normal user can read account management, audit, blocked identity, or outbox data. `[backoffice-operations] [audit-compliance]`
+- [x] 17.1 Implement server-paginated account search/filter by role/status/archive with URL-owned filters, safe summary DTOs, and a tested backoffice query hook. `[backoffice-operations]`
+- [x] 17.2 Build account list/detail pages showing authorized full profile, status, completion, moderation, media, consent, and safe operational metadata. `[backoffice-operations]`
+- [x] 17.3 Implement admin profile edits through the same validation/audit pipeline as owner edits. `[backoffice-operations] [audit-compliance]`
+- [x] 17.4 Implement append-only audit query DTOs and filters by entity/record/actor/action/source/period. `[audit-compliance]`
+- [x] 17.5 Build the audit history page/diff presentation with redacted before/after fields and no mutation controls. `[audit-compliance]`
+- [x] 17.6 Implement email-outbox pending/failed list, attempt detail, and eligible manual retry presentation. `[transactional-communications]`
+- [x] 17.7 Add cross-role/security tests proving no normal user can read account management, audit, blocked identity, or outbox data. `[backoffice-operations] [audit-compliance]`
 
 ## 18. Approved-only creator catalog data layer
 

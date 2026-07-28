@@ -36,6 +36,9 @@
 9. **[2026-07-24] Treat Supabase Auth moderation as a post-commit effect**
    Do instead: commit account status, blocked identities, audit, outbox, and a retryable Auth-effect record atomically; then call `updateUserById` for ban/unban. Admin `signOut` requires the target JWT, so enforce immediate denial through database status/RLS and let the existing banned-session defense revoke a presented token.
 
+10. **[2026-07-28] Keep paginated list and count queries structurally equivalent**
+    Do instead: when search predicates reference joined profile tables, repeat the same joins in the total-count query and prove the filtered total against local PostgreSQL; mocked repository tests do not compile the generated SQL.
+
 ## Product Requirements
 
 1. **[2026-07-22] Product prompt overrides the roadmap DOCX**

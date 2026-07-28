@@ -268,6 +268,37 @@ describeLocalStack("business table row-level security", () => {
     });
   });
 
+  it.each([approvedCreatorContext, approvedCompanyContext])(
+    "keeps audit, blocked identities, and outbox invisible to a normal $role",
+    async (context) => {
+      await database.begin(async (transaction) => {
+        await assumeAppContext(transaction, context);
+
+        const [visibility] = await transaction<
+          {
+            audit_count: number;
+            blocked_identity_count: number;
+            outbox_count: number;
+          }[]
+        >`
+          select
+            (select count(*)::integer from public.audit_revisions) as audit_count,
+            (
+              select count(*)::integer
+              from public.blocked_identities
+            ) as blocked_identity_count,
+            (select count(*)::integer from public.email_outbox) as outbox_count
+        `;
+
+        expect(visibility).toEqual({
+          audit_count: 0,
+          blocked_identity_count: 0,
+          outbox_count: 0,
+        });
+      });
+    },
+  );
+
   it.each(nonApprovedContexts)(
     "returns no catalog data to $status accounts",
     async (context) => {

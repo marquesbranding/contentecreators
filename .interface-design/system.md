@@ -142,6 +142,9 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 - Review pages present identity/profile, private contact preferences, social data, media metadata, consent versions, completion/version markers, CNPJ-assistance context, and immutable history before the action panel.
 - Every moderation command opens an accessible confirmation dialog. Required reasons use the shared red asterisk/error pattern, and the consequence appears before submission. Stale-review feedback always offers a reload path.
 - Beta moderation is individual: queue rows/cards have one review link and never render selection checkboxes, bulk toolbars, bulk approval, or bulk ban controls.
+- Account operations reuse URL-owned filters, compact summaries, desktop tables, and semantically equivalent mobile cards. Account details expose only authorized operational metadata and keep profile editing as one deliberate, audited action.
+- Audit history is append-only in both interaction and presentation: responsive diffs redact sensitive values, and the surface never renders edit or delete controls.
+- Email operations expose safe delivery references and categorized attempt outcomes without recipient addresses, message bodies, or provider payloads. Manual retry requires eligibility, confirmation, a human-readable reason, fresh administrator authorization, and an audit record.
 
 ## Marketing patterns
 

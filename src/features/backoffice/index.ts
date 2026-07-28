@@ -1,5 +1,11 @@
 export { BackofficeActionFeedback } from "./components/backoffice-action-feedback";
 export { BackofficeShell } from "./components/backoffice-shell.client";
+export { AccountDetail } from "./components/account-detail";
+export { AccountManagementResults } from "./components/account-management-results";
+export {
+  AccountManagementScreen,
+  AccountManagementView,
+} from "./components/account-management-view.client";
 export {
   ModerationActionPanel,
   type ModerationServerActions,
@@ -19,15 +25,29 @@ export {
   moderationQueueKeys,
 } from "./api/moderation-queue.api";
 export {
+  accountManagementKeys,
+  fetchManagedAccounts,
+} from "./api/account-management.api";
+export {
   createUseModerationQueue,
   useModerationQueue,
 } from "./hooks/use-moderation-queue";
+export {
+  createUseAccountManagement,
+  useAccountManagement,
+} from "./hooks/use-account-management";
 export {
   moderationQueueFiltersSchema,
   parseModerationQueueSearchParams,
   serializeModerationQueueFilters,
 } from "./schemas/moderation-queue.schema";
 export { submissionReviewQuerySchema } from "./schemas/submission-review-schema";
+export {
+  accountManagementFiltersSchema,
+  parseAccountManagementSearchParams,
+  serializeAccountManagementFilters,
+} from "./schemas/account-management.schema";
+export { accountDetailQuerySchema } from "./schemas/account-detail.schema";
 export { SubmissionReview } from "./components/submission-review";
 export type {
   BackofficeAccountRole,
@@ -54,3 +74,20 @@ export type {
   BackofficeReviewSocialProfileDto,
   BackofficeSubmissionReviewDto,
 } from "./types/submission-review.types";
+export type {
+  AccountManagementFilters,
+  AccountManagementResponseDto,
+  ManagedAccountArchiveFilter,
+  ManagedAccountOrder,
+  ManagedAccountRole,
+  ManagedAccountStatus,
+  ManagedAccountSummaryDto,
+} from "./types/account-management.types";
+export type {
+  BackofficeAccountDetailDto,
+  BackofficeAccountMediaDto,
+  BackofficeAccountOperationalDto,
+  BackofficeAccountProfileDto,
+  BackofficeCompanyEditableProfileDto,
+  BackofficeInfluencerEditableProfileDto,
+} from "./types/account-detail.types";

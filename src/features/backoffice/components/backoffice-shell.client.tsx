@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 import { BrandLogo } from "@/shared/components/brand-logo";
 import {
@@ -50,13 +50,25 @@ const primaryNavigation = [
     icon: ClipboardCheck,
     label: "Moderação",
   },
+  {
+    href: "/backoffice/accounts",
+    icon: Users,
+    label: "Contas",
+  },
+  {
+    href: "/backoffice/audit",
+    icon: FileClock,
+    label: "Auditoria",
+  },
+  {
+    href: "/backoffice/emails",
+    icon: Mail,
+    label: "E-mails",
+  },
 ] as const;
 
 const plannedNavigation = [
-  { icon: Users, label: "Contas" },
   { icon: Megaphone, label: "Patrocínios" },
-  { icon: FileClock, label: "Auditoria" },
-  { icon: Mail, label: "E-mails" },
   { icon: Archive, label: "Arquivados" },
 ] as const;
 
@@ -117,7 +129,6 @@ function BackofficeNavigation({ onNavigate }: { onNavigate?: () => void }) {
 
 function BackofficeBreadcrumb() {
   const pathname = usePathname();
-  const reviewMatch = pathname.match(/^\/backoffice\/moderation\/[^/]+/);
 
   if (pathname === "/backoffice") {
     return (
@@ -131,6 +142,45 @@ function BackofficeBreadcrumb() {
     );
   }
 
+  const segments: Array<{ href?: string; label: string }> = [];
+
+  if (pathname.startsWith("/backoffice/moderation")) {
+    segments.push({
+      href:
+        pathname === "/backoffice/moderation"
+          ? undefined
+          : "/backoffice/moderation",
+      label: "Moderação",
+    });
+    if (pathname !== "/backoffice/moderation") {
+      segments.push({ label: "Revisão do cadastro" });
+    }
+  } else if (pathname.startsWith("/backoffice/accounts")) {
+    segments.push({
+      href:
+        pathname === "/backoffice/accounts"
+          ? undefined
+          : "/backoffice/accounts",
+      label: "Contas",
+    });
+    if (pathname !== "/backoffice/accounts") {
+      const editing = pathname.endsWith("/edit");
+      segments.push({
+        href: editing ? pathname.replace(/\/edit$/u, "") : undefined,
+        label: "Detalhes da conta",
+      });
+      if (editing) {
+        segments.push({ label: "Editar perfil" });
+      }
+    }
+  } else if (pathname.startsWith("/backoffice/audit")) {
+    segments.push({ label: "Auditoria" });
+  } else if (pathname.startsWith("/backoffice/emails")) {
+    segments.push({ label: "E-mails" });
+  } else {
+    segments.push({ label: "Backoffice" });
+  }
+
   return (
     <Breadcrumb>
       <BreadcrumbList>
@@ -139,28 +189,22 @@ function BackofficeBreadcrumb() {
             Visão geral
           </BreadcrumbLink>
         </BreadcrumbItem>
-        <BreadcrumbSeparator>
-          <ChevronRight aria-hidden="true" />
-        </BreadcrumbSeparator>
-        <BreadcrumbItem>
-          {reviewMatch ? (
-            <BreadcrumbLink render={<Link href="/backoffice/moderation" />}>
-              Moderação
-            </BreadcrumbLink>
-          ) : (
-            <BreadcrumbPage>Moderação</BreadcrumbPage>
-          )}
-        </BreadcrumbItem>
-        {reviewMatch ? (
-          <>
+        {segments.map((segment) => (
+          <Fragment key={`${segment.href}-${segment.label}`}>
             <BreadcrumbSeparator>
               <ChevronRight aria-hidden="true" />
             </BreadcrumbSeparator>
             <BreadcrumbItem>
-              <BreadcrumbPage>Revisão do cadastro</BreadcrumbPage>
+              {segment.href ? (
+                <BreadcrumbLink render={<Link href={segment.href} />}>
+                  {segment.label}
+                </BreadcrumbLink>
+              ) : (
+                <BreadcrumbPage>{segment.label}</BreadcrumbPage>
+              )}
             </BreadcrumbItem>
-          </>
-        ) : null}
+          </Fragment>
+        ))}
       </BreadcrumbList>
     </Breadcrumb>
   );

@@ -70,13 +70,40 @@ describe("BackofficeShell", () => {
     expect(
       screen.getByRole("navigation", { name: "Navegação estrutural" }),
     ).toHaveTextContent("Moderação");
-    expect(screen.getByText("Contas").closest("a")).toBeNull();
     expect(
-      screen.getByText("Contas").closest("[aria-disabled]"),
-    ).toHaveAttribute("aria-disabled", "true");
+      within(navigation).getByRole("link", { name: "Contas" }),
+    ).toHaveAttribute("href", "/backoffice/accounts");
     expect(
       await getBlockingComponentAccessibilityViolations(container),
     ).toEqual([]);
+  });
+
+  it("marks account operations active and hides identifiers from nested breadcrumbs", () => {
+    renderShell(
+      "/backoffice/accounts/61d89515-0d70-4b03-a251-51bb21c279d0/edit",
+    );
+
+    const navigation = screen.getByRole("navigation", {
+      name: "Navegação do backoffice",
+    });
+    expect(
+      within(navigation).getByRole("link", {
+        name: "Contas",
+        current: "page",
+      }),
+    ).toHaveAttribute("href", "/backoffice/accounts");
+
+    const breadcrumb = screen.getByRole("navigation", {
+      name: "Navegação estrutural",
+    });
+    expect(
+      within(breadcrumb).getByRole("link", { name: "Contas" }),
+    ).toHaveAttribute("href", "/backoffice/accounts");
+    expect(within(breadcrumb).getByText("Detalhes da conta")).toBeVisible();
+    expect(within(breadcrumb).getByText("Editar perfil")).toBeVisible();
+    expect(breadcrumb).not.toHaveTextContent(
+      "61d89515-0d70-4b03-a251-51bb21c279d0",
+    );
   });
 
   it("identifies a profile review without exposing an account identifier", () => {

@@ -78,6 +78,41 @@ describe("InfluencerProfileEditForm", () => {
     expect(screen.getByText("Corrija os campos abaixo")).toBeInTheDocument();
   });
 
+  it("supports an audited administrative reason without forking the profile form", async () => {
+    const user = userEvent.setup();
+    const action = vi.fn();
+    render(
+      <InfluencerProfileEditForm
+        action={action}
+        backHref="/backoffice/accounts/account-id"
+        backLabel="Cancelar e voltar"
+        changeReason={{
+          description: "Este motivo ficará no histórico.",
+          label: "Motivo da alteração administrativa",
+          placeholder: "Descreva o ajuste realizado.",
+        }}
+        expectedVersion={profile.version}
+        formLabel="Editar perfil pelo backoffice"
+        profile={profile}
+        submitLabel="Salvar alteração auditada"
+      />,
+    );
+
+    const reason = screen.getByLabelText("Motivo da alteração administrativa");
+    expect(reason).toBeRequired();
+    expect(
+      screen.getByRole("link", { name: "Cancelar e voltar" }),
+    ).toHaveAttribute("href", "/backoffice/accounts/account-id");
+
+    await user.click(
+      screen.getByRole("button", { name: "Salvar alteração auditada" }),
+    );
+
+    expect(action).not.toHaveBeenCalled();
+    expect(reason).toHaveAttribute("aria-invalid", "true");
+    expect(reason).toHaveFocus();
+  });
+
   it("shows success and publishes the returned optimistic version", async () => {
     const user = userEvent.setup();
     const onProfileVersionChange = vi.fn();

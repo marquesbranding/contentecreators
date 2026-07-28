@@ -7,3 +7,4 @@ export {
   applyVerifiedAuditContext,
   createAuditedTransactionRunner,
 } from "./server/services/audited-transaction";
+export { createServerAuditHistoryRouteHandler } from "./server/route-handlers/audit-history.handler";

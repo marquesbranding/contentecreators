@@ -230,6 +230,7 @@ export function createDrizzleInfluencerProfileRepository(): InfluencerProfileRep
       input,
       requestId,
       auditReason = "Update approved influencer profile",
+      auditContext,
     ) {
       const [currentProfile] = await transaction
         .select({
@@ -257,14 +258,17 @@ export function createDrizzleInfluencerProfileRepository(): InfluencerProfileRep
         };
       }
 
-      await applyVerifiedAuditContext(transaction, {
-        actorAccountId: accountId,
-        actorRole: "INFLUENCER",
-        actorType: "USER",
-        reason: auditReason,
-        requestId,
-        source: "APPLICATION",
-      });
+      await applyVerifiedAuditContext(
+        transaction,
+        auditContext ?? {
+          actorAccountId: accountId,
+          actorRole: "INFLUENCER",
+          actorType: "USER",
+          reason: auditReason,
+          requestId,
+          source: "APPLICATION",
+        },
+      );
 
       const [updatedProfile] = await transaction
         .update(creatorProfiles)

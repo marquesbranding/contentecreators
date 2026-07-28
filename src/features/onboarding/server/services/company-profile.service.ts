@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { ApplicationTransaction } from "@/db/client";
+import type { VerifiedAuditContext } from "@/features/audit/server";
 import {
   requireApproved,
   requireRole,
@@ -26,6 +27,7 @@ export interface CompanyProfileRepository {
     input: CompanyProfileEditInput,
     requestId: string,
     auditReason?: string,
+    auditContext?: VerifiedAuditContext,
   ): Promise<CompanyProfileUpdateResult>;
 }
 

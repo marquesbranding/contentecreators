@@ -344,4 +344,97 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
       ]),
     );
   });
+
+  it("attributes a backoffice profile edit to the verified administrator", async () => {
+    const repository = createDrizzleInfluencerProfileRepository();
+    const targetAccountId = "b0000000-0000-4000-8000-000000000004";
+    const adminAccountId = "a0000000-0000-4000-8000-000000000001";
+    const adminRequestId = "admin-profile-edit-attribution";
+    let proof:
+      | {
+          actorAccountId: string | null;
+          actorRole: string | null;
+          actorType: string;
+          reason: string | null;
+          source: string;
+        }
+      | undefined;
+
+    try {
+      await drizzleClient.database.transaction(async (transaction) => {
+        await transaction.execute(sql`
+          select
+            set_config('app.jwt.auth_user_id', '10000000-0000-4000-8000-000000000001', true),
+            set_config('app.jwt.account_id', ${adminAccountId}, true),
+            set_config('app.jwt.account_role', 'ADMIN', true),
+            set_config('app.jwt.account_status', 'APPROVED', true),
+            set_config('app.jwt.request_id', ${adminRequestId}, true)
+        `);
+        await transaction.execute(sql.raw("set local role contente_app_user"));
+
+        const profile = await repository.loadApprovedProfile(
+          transaction,
+          targetAccountId,
+        );
+        if (!profile) {
+          throw new Error("Expected the seeded editable influencer profile.");
+        }
+
+        const result = await repository.updateApprovedProfile(
+          transaction,
+          targetAccountId,
+          {
+            ...profile,
+            displayName: `${profile.displayName} revisado`,
+            expectedVersion: profile.version,
+          },
+          adminRequestId,
+          "Ajuste administrativo confirmado durante a revisão.",
+          {
+            actorAccountId: adminAccountId,
+            actorRole: "ADMIN",
+            actorType: "ADMIN",
+            reason: "Ajuste administrativo confirmado durante a revisão.",
+            requestId: adminRequestId,
+            source: "BACKOFFICE",
+          },
+        );
+        if (result.kind !== "updated") {
+          throw new Error("Expected the administrative profile update.");
+        }
+
+        const [revision] = await transaction
+          .select({
+            actorAccountId: auditRevisions.actorAccountId,
+            actorRole: auditRevisions.actorRole,
+            actorType: auditRevisions.actorType,
+            reason: auditRevisions.reason,
+            source: auditRevisions.source,
+          })
+          .from(auditRevisions)
+          .where(
+            and(
+              eq(auditRevisions.requestId, adminRequestId),
+              eq(auditRevisions.entityTable, "creator_profiles"),
+            ),
+          )
+          .limit(1);
+
+        proof = revision;
+        throw rollback;
+      });
+    } catch (error) {
+      if (error !== rollback) {
+        throw error;
+      }
+    }
+
+    expect(proof).toEqual({
+      actorAccountId: adminAccountId,
+      actorRole: "ADMIN",
+      actorType: "ADMIN",
+      reason: "Ajuste administrativo confirmado durante a revisão.",
+      source: "BACKOFFICE",
+    });
+  });
 });

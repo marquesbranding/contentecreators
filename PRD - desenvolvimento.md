@@ -3,7 +3,7 @@
 **Status:** em desenvolvimento
 **Data-base do acompanhamento:** 24/07/2026
 **OpenSpec relacionado:** `mvp-contente-creators`
-**Progresso atual:** 158 de 252 entregas concluídas (62,7%); 94 entregas pendentes.
+**Progresso atual:** 165 de 252 entregas concluídas (65,5%); 87 entregas pendentes.
 
 ## 1. Objetivo do produto
 
@@ -303,13 +303,13 @@ O produto deve permitir que:
 
 > Como administrador, quero pesquisar contas, revisar histórico e acompanhar falhas operacionais para administrar a plataforma com rastreabilidade e privilégio mínimo.
 
-- [ ] `17.1` Criar busca/filtro paginado por papel, status e arquivamento, com filtros na URL, DTO seguro e hook testado.
-- [ ] `17.2` Criar páginas de lista/detalhe com perfil autorizado, status, completude, moderação, mídia, consentimento e metadados seguros.
-- [ ] `17.3` Permitir edição administrativa de perfil pelo mesmo pipeline de validação e auditoria do proprietário.
-- [ ] `17.4` Criar DTOs e filtros de auditoria por entidade, registro, ator, ação, origem e período.
-- [ ] `17.5` Criar histórico/diff de auditoria redigido e sem controles de mutação.
-- [ ] `17.6` Criar lista de e-mails pendentes/falhos, detalhe de tentativas e retry elegível.
-- [ ] `17.7` Provar que usuários normais não acessam gestão, auditoria, identidades bloqueadas ou outbox.
+- [x] `17.1` Criar busca/filtro paginado por papel, status e arquivamento, com filtros na URL, DTO seguro e hook testado.
+- [x] `17.2` Criar páginas de lista/detalhe com perfil autorizado, status, completude, moderação, mídia, consentimento e metadados seguros.
+- [x] `17.3` Permitir edição administrativa de perfil pelo mesmo pipeline de validação e auditoria do proprietário.
+- [x] `17.4` Criar DTOs e filtros de auditoria por entidade, registro, ator, ação, origem e período.
+- [x] `17.5` Criar histórico/diff de auditoria redigido e sem controles de mutação.
+- [x] `17.6` Criar lista de e-mails pendentes/falhos, detalhe de tentativas e retry elegível.
+- [x] `17.7` Provar que usuários normais não acessam gestão, auditoria, identidades bloqueadas ou outbox.
 
 ### HU-18 — Catálogo privado para contas aprovadas
 
