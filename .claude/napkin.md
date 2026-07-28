@@ -75,3 +75,6 @@
 
 3. **[2026-07-23] Remember that PostgreSQL `now()` is transaction-stable**
    Do instead: do not expect `updated_at` to differ between two writes in one transaction; use changed business/version fields for those assertions.
+
+4. **[2026-07-28] Avoid the Apple Git shim while the Xcode license is pending**
+   Do instead: use the bundled fallback Git at `/Users/feanorzin/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback/git`; `/usr/bin/git` currently exits before repository operations with the Xcode license prompt.
