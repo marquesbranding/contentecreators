@@ -61,7 +61,9 @@ export function getSafeSponsorshipExternalHref(href: string) {
   try {
     const url = new URL(href);
 
-    return url.protocol === "http:" || url.protocol === "https:"
+    return (url.protocol === "http:" || url.protocol === "https:") &&
+      !url.username &&
+      !url.password
       ? url.toString()
       : null;
   } catch {

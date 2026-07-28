@@ -137,6 +137,7 @@ export const ptBR = {
     footer: {
       tagline: "Creators e marcas, no mesmo ritmo.",
       privacy: "Política de Privacidade",
+      supportContact: "Contato de suporte e privacidade",
       terms: "Termos de Uso",
       copyright: "Contente Creators. Todos os direitos reservados.",
     },

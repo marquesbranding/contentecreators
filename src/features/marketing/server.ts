@@ -4,3 +4,9 @@ export {
   assertPublicSocialProofDisabled,
   publicSocialProofEnabled,
 } from "@/features/marketing/server/public-social-proof";
+export { loadPublicSupportContact } from "@/features/marketing/server/public-support-contact";
+export {
+  createServerPublicAggregateCountersService,
+  loadPublicAggregateCounters,
+} from "@/features/marketing/server/services/server-public-aggregate-counters.service";
+export { PublicAggregateCountersSlot } from "@/features/marketing/server/components/public-aggregate-counters-slot";

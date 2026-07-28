@@ -246,21 +246,21 @@
 - [x] 21.2 Distill approved brand assets/tokens and create the mobile-first marketing visual system without copying competitor branding or unsupported claims. `[marketing-site]`
 - [x] 21.3 Build header/hero with “Sou influencer”, “Sou empresa”, and “Entrar”, routing the untrusted intent to the matching combined registration variant. `[marketing-site]`
 - [x] 21.4 Build audience benefit/problem sections and a concise three- or four-step “Como funciona” sequence. `[marketing-site]`
-- [ ] 21.5 Add the optional generic public promotional slot with protected-profile suppression. `[marketing-site] [sponsorship-placements]`
-- [ ] 21.6 Build final CTA/footer with approved support/privacy contact, Terms, and Privacy routes. `[marketing-site] [audit-compliance]`
+- [x] 21.5 Add the optional generic public promotional slot with protected-profile suppression. `[marketing-site] [sponsorship-placements]`
+- [x] 21.6 Build final CTA/footer with approved support/privacy contact, Terms, and Privacy routes. `[marketing-site] [audit-compliance]`
 - [x] 21.7 Add page metadata, canonical, Open Graph image/assets, sitemap, robots, and protected-route noindex verification. `[marketing-site]`
 - [x] 21.8 Add an immutable server-side `publicSocialProofEnabled=false` configuration and tests proving no Beta backoffice toggle exists. `[marketing-site]`
 - [x] 21.9 Add responsive, keyboard, reduced-motion, axe, and screenshot tests at representative widths. `[marketing-site] [platform-delivery]`
-- [ ] 21.10 Implement privacy-safe optional aggregate counters with no participant identity, links, or catalog payload and hide empty/misleading values. `[marketing-site]`
+- [x] 21.10 Implement privacy-safe optional aggregate counters with no participant identity, links, or catalog payload and hide empty/misleading values. `[marketing-site]`
 - [x] 21.11 Implement/test a persistent accessible “Entrar” affordance for long/narrow landing layouts without obscuring content. `[marketing-site]`
 
 ## 22. Admin analytics dashboard
 
-- [ ] 22.1 Write failing metric-definition tests for totals by role/status, pending queue, new registrations by period, archive exclusion, and completion rate. `[backoffice-operations]`
-- [ ] 22.2 Implement indexed aggregate queries with explicit timezone/period boundaries and safe admin DTOs. `[backoffice-operations]`
-- [ ] 22.3 Build a dashboard query hook plus summary cards, role/status breakdown, URL-owned registration period, completion rate, and queue links. `[backoffice-operations]`
-- [ ] 22.4 Add loading/empty/error states and mobile card layout without dense desktop-only charts. `[backoffice-operations]`
-- [ ] 22.5 Verify dashboard values against seeded database queries and the shared completion service. `[backoffice-operations]`
+- [x] 22.1 Write failing metric-definition tests for totals by role/status, pending queue, new registrations by period, archive exclusion, and completion rate. `[backoffice-operations]`
+- [x] 22.2 Implement indexed aggregate queries with explicit timezone/period boundaries and safe admin DTOs. `[backoffice-operations]`
+- [x] 22.3 Build a dashboard query hook plus summary cards, role/status breakdown, URL-owned registration period, completion rate, and queue links. `[backoffice-operations]`
+- [x] 22.4 Add loading/empty/error states and mobile card layout without dense desktop-only charts. `[backoffice-operations]`
+- [x] 22.5 Verify dashboard values against seeded database queries and the shared completion service. `[backoffice-operations]`
 
 ## 23. LGPD, security, abuse prevention, and observability
 

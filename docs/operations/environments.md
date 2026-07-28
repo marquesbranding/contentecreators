@@ -18,6 +18,10 @@ Contente Creators uses three isolated stages. Never copy production data, users,
   non-production email labeling and must match the target resources.
 - Vercel and Supabase settings must be configured independently for development and production.
 - `PUBLIC_SOCIAL_PROOF_ENABLED` is fixed to `false` for this Beta. A public listing requires a reviewed OpenSpec change, consent review, and new tests.
+- `SUPPORT_CONTACT_EMAIL` controls the public footer contact. The committed
+  `.test` value is only a safe local placeholder; development and production
+  remain launch-blocked until the client/legal owner approves each environment's
+  real support/privacy address.
 - Missing or invalid values fail with key names only; diagnostics never include supplied values.
 
 ## Local setup

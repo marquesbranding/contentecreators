@@ -11,5 +11,9 @@ export {
 } from "./server/route-handlers/sponsorship-management.handler";
 export { createSponsorshipDeliveryService } from "./server/services/sponsorship-delivery.service";
 export { createServerSponsorshipDeliveryService } from "./server/services/server-sponsorship-delivery.service";
+export {
+  createPublicSponsorshipPromotionSlot,
+  PublicSponsorshipPromotionSlot,
+} from "./server/components/public-sponsorship-promotion-slot";
 export type { SponsorshipDeliveryQuery } from "./server/repositories/sponsorship-delivery.repository";
 export { createSponsorshipManagementViewService } from "./server/services/sponsorship-management-view.service";

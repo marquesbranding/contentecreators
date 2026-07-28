@@ -3,7 +3,7 @@
 **Status:** em desenvolvimento
 **Data-base do acompanhamento:** 28/07/2026
 **OpenSpec relacionado:** `mvp-contente-creators`
-**Progresso atual:** 191 de 252 entregas concluídas (75,8%); 61 entregas pendentes.
+**Progresso atual:** 199 de 252 entregas concluídas (79,0%); 53 entregas pendentes.
 
 ## 1. Objetivo do produto
 
@@ -360,23 +360,23 @@ O produto deve permitir que:
 - [x] `21.2` Aplicar ativos/tokens da marca em sistema visual mobile first sem copiar concorrentes ou criar afirmações não aprovadas.
 - [x] `21.3` Criar header/hero com “Sou influencer”, “Sou empresa” e “Entrar”, preservando a intenção no cadastro combinado.
 - [x] `21.4` Criar seções de benefícios/problemas e sequência curta de “Como funciona”.
-- [ ] `21.5` Criar slot promocional público genérico opcional com supressão de perfis protegidos.
-- [ ] `21.6` Criar CTA final/footer com contato aprovado e rotas de Termos e Privacidade.
+- [x] `21.5` Criar slot promocional público genérico opcional com supressão de perfis protegidos.
+- [x] `21.6` Criar CTA final/footer com contato aprovado e rotas de Termos e Privacidade.
 - [x] `21.7` Configurar metadata, canonical, Open Graph, sitemap, robots e `noindex` protegido.
 - [x] `21.8` Manter `publicSocialProofEnabled=false` imutável no servidor e sem toggle no backoffice Beta.
 - [x] `21.9` Testar responsividade, teclado, movimento reduzido, axe e screenshots em larguras representativas.
-- [ ] `21.10` Criar contadores agregados opcionais e seguros, ocultando valores vazios ou enganosos e sem identidade de participantes.
+- [x] `21.10` Criar contadores agregados opcionais e seguros, ocultando valores vazios ou enganosos e sem identidade de participantes.
 - [x] `21.11` Criar acesso persistente e acessível a “Entrar” em layouts longos/estreitos sem cobrir conteúdo.
 
 ### HU-22 — Dashboard administrativo
 
 > Como administrador, quero indicadores objetivos de contas e fila para acompanhar o Beta e chegar rapidamente às operações prioritárias.
 
-- [ ] `22.1` Testar definições de totais por papel/status, fila pendente, cadastros por período, exclusão de arquivados e completude.
-- [ ] `22.2` Criar agregações indexadas com período/timezone explícitos e DTOs seguros.
-- [ ] `22.3` Criar hook e dashboard com cards, distribuição, período na URL, completude e links para filas.
-- [ ] `22.4` Criar estados de loading, vazio e erro e layout mobile sem gráficos densos dependentes de desktop.
-- [ ] `22.5` Conferir métricas contra o banco semeado e o serviço compartilhado de completude.
+- [x] `22.1` Testar definições de totais por papel/status, fila pendente, cadastros por período, exclusão de arquivados e completude.
+- [x] `22.2` Criar agregações indexadas com período/timezone explícitos e DTOs seguros.
+- [x] `22.3` Criar hook e dashboard com cards, distribuição, período na URL, completude e links para filas.
+- [x] `22.4` Criar estados de loading, vazio e erro e layout mobile sem gráficos densos dependentes de desktop.
+- [x] `22.5` Conferir métricas contra o banco semeado e o serviço compartilhado de completude.
 
 ### HU-23 — LGPD, segurança, abuso e observabilidade
 

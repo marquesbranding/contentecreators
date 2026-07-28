@@ -58,6 +58,23 @@ describe("MarketingLanding", () => {
     );
   });
 
+  it("links the configured support/privacy contact from the footer", () => {
+    render(
+      <MarketingLanding supportContactEmail="privacidade@contentecreators.test" />,
+    );
+
+    expect(
+      screen.getByRole("link", { name: "Contato de suporte e privacidade" }),
+    ).toHaveAttribute("href", "mailto:privacidade@contentecreators.test");
+    expect(screen.getByRole("link", { name: "Termos de Uso" })).toHaveAttribute(
+      "href",
+      "/terms",
+    );
+    expect(
+      screen.getByRole("link", { name: "Política de Privacidade" }),
+    ).toHaveAttribute("href", "/privacy");
+  });
+
   it("uses the supplied brand asset without participant listings", () => {
     render(<MarketingLanding />);
 
@@ -66,6 +83,28 @@ describe("MarketingLanding", () => {
     ).toHaveAttribute("src", "/brand/official/contente-creators-blue.png");
     expect(screen.queryByTestId("creator-listing")).not.toBeInTheDocument();
     expect(screen.queryByTestId("company-listing")).not.toBeInTheDocument();
+  });
+
+  it("shows only optional aggregate counters supplied by the server", () => {
+    const { container } = render(
+      <MarketingLanding
+        aggregateCounters={{
+          approvedCompanies: 7,
+          approvedCreators: 24,
+        }}
+      />,
+    );
+
+    expect(screen.getByText("24")).toBeInTheDocument();
+    expect(screen.getByText("Creators aprovados")).toBeInTheDocument();
+    expect(screen.getByText("7")).toBeInTheDocument();
+    expect(screen.getByText("Empresas aprovadas")).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-testid="creator-listing"]'),
+    ).toBeNull();
+    expect(
+      container.querySelector('[data-testid="company-listing"]'),
+    ).toBeNull();
   });
 
   it("uses the approved marketing color treatment without emoji symbols", () => {

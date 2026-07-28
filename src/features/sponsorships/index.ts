@@ -26,6 +26,7 @@ export {
 } from "./components/sponsorship-presentation";
 export { SponsorshipSidePlacement } from "./components/sponsorship-side-placement";
 export { SponsorshipCarousel } from "./components/sponsorship-carousel.client";
+export { PublicSponsorshipPromotion } from "./components/public-sponsorship-promotion";
 export {
   SponsorshipFeaturedCreator,
   type SponsorshipFeaturedCreatorViewModel,

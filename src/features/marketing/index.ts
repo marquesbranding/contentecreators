@@ -5,3 +5,4 @@ export {
   isMarketingRegistrationIntent,
 } from "@/features/marketing/domain/registration-intent";
 export type { MarketingRegistrationIntent } from "@/features/marketing/types/marketing.types";
+export type { PublicAggregateCountersDto } from "@/features/marketing/types/public-aggregate-counters.types";

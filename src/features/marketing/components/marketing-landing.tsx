@@ -4,14 +4,17 @@ import {
   Building2,
   Check,
   CircleCheck,
+  Mail,
   Search,
   Sparkles,
   UserRoundSearch,
 } from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { MarketingHeader } from "@/features/marketing/components/marketing-header";
 import { buildRegistrationHref } from "@/features/marketing/domain/registration-intent";
+import type { PublicAggregateCountersDto } from "@/features/marketing/types/public-aggregate-counters.types";
 import { AuroraText } from "@/registry/magicui/aurora-text";
 import {
   ScrollVelocityContainer,
@@ -21,6 +24,8 @@ import { TextAnimate } from "@/registry/magicui/text-animate";
 import { buttonVariants } from "@/shared/components/ui/button";
 import { ptBR } from "@/shared/copy/pt-BR";
 import { cn } from "@/shared/lib/cn";
+
+import { PublicAggregateCounters } from "./public-aggregate-counters";
 
 const copy = ptBR.marketing;
 const influencerHref = buildRegistrationHref("INFLUENCER");
@@ -356,7 +361,11 @@ function FinalCallToAction() {
   );
 }
 
-function MarketingFooter() {
+function MarketingFooter({
+  supportContactEmail,
+}: {
+  supportContactEmail: string | null;
+}) {
   return (
     <footer className="bg-brand-night text-white">
       <div className="mx-auto grid w-full max-w-[90rem] gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[1fr_auto] lg:items-end lg:px-12">
@@ -382,6 +391,15 @@ function MarketingFooter() {
           >
             {copy.footer.privacy}
           </Link>
+          {supportContactEmail ? (
+            <a
+              className="inline-flex items-center gap-2 text-white/70 hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
+              href={`mailto:${supportContactEmail}`}
+            >
+              <Mail aria-hidden="true" className="size-4" />
+              {copy.footer.supportContact}
+            </a>
+          ) : null}
         </nav>
         <p className="border-t border-white/15 pt-6 text-xs text-white/60 lg:col-span-2">
           © {new Date().getFullYear()} {copy.footer.copyright}
@@ -391,7 +409,17 @@ function MarketingFooter() {
   );
 }
 
-export function MarketingLanding() {
+export function MarketingLanding({
+  aggregateCounters = null,
+  aggregateCountersSlot = null,
+  publicPromotion = null,
+  supportContactEmail = null,
+}: {
+  aggregateCounters?: PublicAggregateCountersDto | null;
+  aggregateCountersSlot?: ReactNode;
+  publicPromotion?: ReactNode;
+  supportContactEmail?: string | null;
+}) {
   return (
     <div className="min-h-screen overflow-x-clip bg-[#f7f6f2]">
       <MarketingHeader />
@@ -475,11 +503,19 @@ export function MarketingLanding() {
         </section>
 
         <MotionStrip />
+        {aggregateCountersSlot ?? (
+          <PublicAggregateCounters counters={aggregateCounters} />
+        )}
+        {publicPromotion ? (
+          <section aria-label="Conteúdo promocional" className="bg-[#f7f6f2]">
+            {publicPromotion}
+          </section>
+        ) : null}
         <AudienceSection />
         <StepsSection />
         <FinalCallToAction />
       </main>
-      <MarketingFooter />
+      <MarketingFooter supportContactEmail={supportContactEmail} />
     </div>
   );
 }

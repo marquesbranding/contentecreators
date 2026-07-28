@@ -1,5 +1,9 @@
 export { BackofficeActionFeedback } from "./components/backoffice-action-feedback";
 export { BackofficeShell } from "./components/backoffice-shell.client";
+export {
+  BackofficeAnalyticsDashboard,
+  BackofficeAnalyticsScreen,
+} from "./components/backoffice-analytics-dashboard.client";
 export { AccountDetail } from "./components/account-detail";
 export { AccountManagementResults } from "./components/account-management-results";
 export {
@@ -29,6 +33,10 @@ export {
   fetchManagedAccounts,
 } from "./api/account-management.api";
 export {
+  backofficeAnalyticsKeys,
+  fetchBackofficeAnalytics,
+} from "./api/backoffice-analytics.api";
+export {
   createUseModerationQueue,
   useModerationQueue,
 } from "./hooks/use-moderation-queue";
@@ -36,6 +44,17 @@ export {
   createUseAccountManagement,
   useAccountManagement,
 } from "./hooks/use-account-management";
+export {
+  createUseBackofficeAnalytics,
+  useBackofficeAnalytics,
+} from "./hooks/use-backoffice-analytics";
+export {
+  backofficeAnalyticsFiltersSchema,
+  backofficeAnalyticsPeriodDaysSchema,
+  backofficeAnalyticsResponseSchema,
+  parseBackofficeAnalyticsSearchParams,
+  serializeBackofficeAnalyticsFilters,
+} from "./schemas/backoffice-analytics.schema";
 export {
   moderationQueueFiltersSchema,
   parseModerationQueueSearchParams,
@@ -91,3 +110,11 @@ export type {
   BackofficeCompanyEditableProfileDto,
   BackofficeInfluencerEditableProfileDto,
 } from "./types/account-detail.types";
+export type {
+  BackofficeAnalyticsFilters,
+  BackofficeAnalyticsFiltersInput,
+  BackofficeAnalyticsPeriodDays,
+  BackofficeAnalyticsResponseDto,
+  BackofficeAnalyticsRoleSummaryDto,
+  BackofficeAnalyticsStatusCountsDto,
+} from "./types/backoffice-analytics.types";
