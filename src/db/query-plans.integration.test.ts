@@ -16,6 +16,8 @@ const requiredQueryIndexes = [
   "accounts_moderation_role_queue_idx",
   "audit_revisions_entity_period_idx",
   "audit_revisions_source_timeline_idx",
+  "creator_profiles_display_name_active_idx",
+  "creator_profiles_location_active_idx",
   "creator_profiles_search_active_trgm_idx",
   "email_outbox_due_claim_idx",
   "sponsorship_placements_delivery_idx",
@@ -154,6 +156,48 @@ describeLocalStack("representative database query plans", () => {
         `;
 
         await transaction`
+          insert into public.social_profiles (
+            owner_account_id,
+            platform,
+            normalized_url,
+            is_visible_in_catalog
+          )
+          select
+            creator.account_id,
+            case abs(hashtext(creator.id::text)) % 4
+              when 0 then 'INSTAGRAM'::public.social_platform
+              when 1 then 'TIKTOK'::public.social_platform
+              when 2 then 'YOUTUBE'::public.social_platform
+              else 'FACEBOOK'::public.social_platform
+            end,
+            format('https://example.test/query-plan/%s', creator.id),
+            true
+          from public.creator_profiles creator
+          join public.accounts account on account.id = creator.account_id
+          where account.operational_email like 'query-plan-%@contentecreators.test'
+        `;
+
+        await transaction`
+          insert into public.creator_niches (
+            creator_profile_id,
+            niche_id
+          )
+          select
+            creator.id,
+            selected_niche.id
+          from public.creator_profiles creator
+          join public.accounts account on account.id = creator.account_id
+          cross join lateral (
+            select niche.id
+            from public.niches niche
+            order by niche.sort_order, niche.id
+            offset (abs(hashtext(creator.id::text)) % 5)
+            limit 1
+          ) selected_niche
+          where account.operational_email like 'query-plan-%@contentecreators.test'
+        `;
+
+        await transaction`
           insert into public.sponsorship_placements (
             placement_type,
             audience,
@@ -243,12 +287,14 @@ describeLocalStack("representative database query plans", () => {
         await transaction.unsafe(`
           analyze public.accounts;
           analyze public.creator_profiles;
+          analyze public.creator_niches;
+          analyze public.social_profiles;
           analyze public.sponsorship_placements;
           analyze public.email_outbox;
           analyze public.audit_revisions;
         `);
 
-        const catalogLocationPlan = await transaction.unsafe<
+        const catalogDefaultPlan = await transaction.unsafe<
           Record<string, unknown>[]
         >(`
           explain (format json, costs off)
@@ -258,10 +304,19 @@ describeLocalStack("representative database query plans", () => {
           where account.status = 'APPROVED'
             and account.archived_at is null
             and creator.archived_at is null
-            and creator.creator_type = 'UGC'
+          order by creator.display_name, creator.id
+          limit 25
+        `);
+        const catalogLocationPlan = await transaction.unsafe<
+          Record<string, unknown>[]
+        >(`
+          explain (format json, costs off)
+          select creator.id
+          from public.creator_profiles creator
+          where creator.archived_at is null
             and creator.state = 'SP'
             and creator.city = 'Cidade 7'
-          order by creator.id
+          order by creator.display_name, creator.id
           limit 25
         `);
         const catalogSearchPlan = await transaction.unsafe<
@@ -272,6 +327,66 @@ describeLocalStack("representative database query plans", () => {
           from public.creator_profiles
           where archived_at is null
             and search_document like '%14222%'
+          limit 25
+        `);
+        const catalogNichePlan = await transaction.unsafe<
+          Record<string, unknown>[]
+        >(`
+          explain (format json, costs off)
+          select creator.id
+          from public.creator_profiles creator
+          join public.creator_niches creator_niche
+            on creator_niche.creator_profile_id = creator.id
+          where creator.archived_at is null
+            and creator_niche.niche_id = (
+              select niche.id
+              from public.niches niche
+              order by niche.sort_order, niche.id
+              limit 1
+            )
+          order by creator.display_name, creator.id
+          limit 25
+        `);
+        const catalogNetworkPlan = await transaction.unsafe<
+          Record<string, unknown>[]
+        >(`
+          explain (format json, costs off)
+          select creator.id
+          from public.creator_profiles creator
+          join public.social_profiles social
+            on social.owner_account_id = creator.account_id
+          where creator.archived_at is null
+            and social.archived_at is null
+            and social.is_visible_in_catalog
+            and social.platform = 'YOUTUBE'
+          order by creator.display_name, creator.id
+          limit 25
+        `);
+        const catalogCombinedPlan = await transaction.unsafe<
+          Record<string, unknown>[]
+        >(`
+          explain (format json, costs off)
+          select creator.id
+          from public.creator_profiles creator
+          join public.creator_niches creator_niche
+            on creator_niche.creator_profile_id = creator.id
+          join public.social_profiles social
+            on social.owner_account_id = creator.account_id
+          where creator.archived_at is null
+            and creator.creator_type = 'UGC'
+            and creator.state = 'SP'
+            and creator.city = 'Cidade 7'
+            and creator.search_document like '%criador plano%'
+            and creator_niche.niche_id = (
+              select niche.id
+              from public.niches niche
+              order by niche.sort_order, niche.id
+              limit 1
+            )
+            and social.archived_at is null
+            and social.is_visible_in_catalog
+            and social.platform = 'YOUTUBE'
+          order by creator.display_name, creator.id
           limit 25
         `);
         const moderationQueuePlan = await transaction.unsafe<
@@ -324,7 +439,11 @@ describeLocalStack("representative database query plans", () => {
 
         const usedIndexes = {
           audit: [...extractIndexNames(auditPlan)],
+          catalogCombined: [...extractIndexNames(catalogCombinedPlan)],
+          catalogDefault: [...extractIndexNames(catalogDefaultPlan)],
           catalogLocation: [...extractIndexNames(catalogLocationPlan)],
+          catalogNetwork: [...extractIndexNames(catalogNetworkPlan)],
+          catalogNiche: [...extractIndexNames(catalogNichePlan)],
           catalogSearch: [...extractIndexNames(catalogSearchPlan)],
           moderationQueue: [...extractIndexNames(moderationQueuePlan)],
           outbox: [...extractIndexNames(outboxPlan)],
@@ -333,8 +452,22 @@ describeLocalStack("representative database query plans", () => {
 
         expect(usedIndexes).toEqual({
           audit: expect.arrayContaining(["audit_revisions_entity_period_idx"]),
-          catalogLocation: expect.arrayContaining([
+          catalogCombined: expect.arrayContaining([
             "creator_profiles_catalog_idx",
+            "creator_niches_niche_creator_idx",
+            "social_profiles_platform_idx",
+          ]),
+          catalogDefault: expect.arrayContaining([
+            "creator_profiles_display_name_active_idx",
+          ]),
+          catalogLocation: expect.arrayContaining([
+            "creator_profiles_location_active_idx",
+          ]),
+          catalogNetwork: expect.arrayContaining([
+            "social_profiles_platform_idx",
+          ]),
+          catalogNiche: expect.arrayContaining([
+            "creator_niches_niche_creator_idx",
           ]),
           catalogSearch: expect.arrayContaining([
             expect.stringMatching(
@@ -357,5 +490,5 @@ describeLocalStack("representative database query plans", () => {
         throw error;
       }
     }
-  }, 20_000);
+  }, 30_000);
 });

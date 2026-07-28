@@ -207,15 +207,15 @@
 
 ## 18. Approved-only creator catalog data layer
 
-- [ ] 18.1 Write failing query/authorization tests for every account status, role, archive state, creator type, self-exclusion, and company-carousel privacy rule. `[private-catalog]`
-- [ ] 18.2 Implement accent/case-insensitive normalized creator name search backed by indexed PostgreSQL helpers. `[private-catalog]`
-- [ ] 18.3 Implement composable filters for niche, social network, city/UF, and exclusive creator type. `[private-catalog]`
-- [ ] 18.4 Implement stable bounded cursor pagination, default/max page limits, deterministic ordering, and invalid-cursor handling. `[private-catalog]`
-- [ ] 18.5 Implement creator card/detail DTOs that exclude raw account/moderation/audit/private fields. `[private-catalog]`
-- [ ] 18.6 Implement `COMPANY` contact DTOs/actions gated by `APPROVED` status and creator contact consent. `[private-catalog]`
-- [ ] 18.7 Implement `INFLUENCER` creator list excluding self and approved company-logo carousel without CNPJ/private contacts. `[private-catalog]`
-- [ ] 18.8 Implement catalog/detail cache invalidation or non-cache policy proving suspended/banned/archived profiles disappear immediately. `[private-catalog] [moderation-lifecycle]`
-- [ ] 18.9 Add representative-volume query-plan/performance tests for default, name, niche, city, network, and combined filters. `[private-catalog] [platform-delivery]`
+- [x] 18.1 Write failing query/authorization tests for every account status, role, archive state, creator type, self-exclusion, and company-carousel privacy rule. `[private-catalog]`
+- [x] 18.2 Implement accent/case-insensitive normalized creator name search backed by indexed PostgreSQL helpers. `[private-catalog]`
+- [x] 18.3 Implement composable filters for niche, social network, city/UF, and exclusive creator type. `[private-catalog]`
+- [x] 18.4 Implement stable bounded cursor pagination, default/max page limits, deterministic ordering, and invalid-cursor handling. `[private-catalog]`
+- [x] 18.5 Implement creator card/detail DTOs that exclude raw account/moderation/audit/private fields. `[private-catalog]`
+- [x] 18.6 Implement `COMPANY` contact DTOs/actions gated by `APPROVED` status and creator contact consent. `[private-catalog]`
+- [x] 18.7 Implement `INFLUENCER` creator list excluding self and approved company-logo carousel without CNPJ/private contacts. `[private-catalog]`
+- [x] 18.8 Implement catalog/detail cache invalidation or non-cache policy proving suspended/banned/archived profiles disappear immediately. `[private-catalog] [moderation-lifecycle]`
+- [x] 18.9 Add representative-volume query-plan/performance tests for default, name, niche, city, network, and combined filters. `[private-catalog] [platform-delivery]`
 
 ## 19. Catalog and profile user interface
 

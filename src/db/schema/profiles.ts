@@ -82,6 +82,12 @@ export const creatorProfiles = pgTable(
     index("creator_profiles_search_active_trgm_idx")
       .using("gin", table.searchDocument.op("gin_trgm_ops"))
       .where(sql`${table.archivedAt} is null`),
+    index("creator_profiles_display_name_active_idx")
+      .on(table.displayName, table.id)
+      .where(sql`${table.archivedAt} is null`),
+    index("creator_profiles_location_active_idx")
+      .on(table.state, table.city, table.displayName, table.id)
+      .where(sql`${table.archivedAt} is null`),
     check(
       "creator_profiles_state_check",
       sql`${table.state} is null or ${table.state} ~ '^[A-Z]{2}$'`,

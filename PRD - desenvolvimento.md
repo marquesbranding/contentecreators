@@ -315,15 +315,15 @@ O produto deve permitir que:
 
 > Como empresa aprovada, quero encontrar criadores elegíveis; como influencer aprovado, quero encontrar outros criadores e visualizar empresas aprovadas sem expor dados privados.
 
-- [ ] `18.1` Testar todos os status, papéis, arquivamento, tipos de criador, exclusão do próprio perfil e privacidade do carrossel.
-- [ ] `18.2` Criar busca de nome sem distinção de acento ou maiúsculas, apoiada por índice PostgreSQL.
-- [ ] `18.3` Criar filtros combináveis de nicho, rede, cidade/UF e tipo exclusivo de criador.
-- [ ] `18.4` Criar paginação por cursor estável, limites padrão/máximo, ordem determinística e tratamento de cursor inválido.
-- [ ] `18.5` Criar DTOs mínimos de card/detalhe sem conta bruta, moderação, auditoria ou campos privados.
-- [ ] `18.6` Liberar contatos a `COMPANY` aprovada somente quando houver consentimento do criador.
-- [ ] `18.7` Entregar a `INFLUENCER` lista sem o próprio perfil e carrossel de logos de empresas aprovadas, sem CNPJ ou contatos.
-- [ ] `18.8` Invalidar cache ou não cachear de modo que suspensos, banidos e arquivados desapareçam imediatamente.
-- [ ] `18.9` Testar planos/performance com volume representativo para consultas simples e filtros combinados.
+- [x] `18.1` Testar todos os status, papéis, arquivamento, tipos de criador, exclusão do próprio perfil e privacidade do carrossel.
+- [x] `18.2` Criar busca de nome sem distinção de acento ou maiúsculas, apoiada por índice PostgreSQL.
+- [x] `18.3` Criar filtros combináveis de nicho, rede, cidade/UF e tipo exclusivo de criador.
+- [x] `18.4` Criar paginação por cursor estável, limites padrão/máximo, ordem determinística e tratamento de cursor inválido.
+- [x] `18.5` Criar DTOs mínimos de card/detalhe sem conta bruta, moderação, auditoria ou campos privados.
+- [x] `18.6` Liberar contatos a `COMPANY` aprovada somente quando houver consentimento do criador.
+- [x] `18.7` Entregar a `INFLUENCER` lista sem o próprio perfil e carrossel de logos de empresas aprovadas, sem CNPJ ou contatos.
+- [x] `18.8` Invalidar cache ou não cachear de modo que suspensos, banidos e arquivados desapareçam imediatamente.
+- [x] `18.9` Testar planos/performance com volume representativo para consultas simples e filtros combinados.
 
 ### HU-19 — Interface do catálogo e detalhes
 

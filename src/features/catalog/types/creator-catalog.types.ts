@@ -1,0 +1,58 @@
+export type CatalogViewerRole = "COMPANY" | "INFLUENCER";
+export type CatalogCreatorType = "INFLUENCER" | "UGC";
+export type CatalogSocialPlatform =
+  "FACEBOOK" | "INSTAGRAM" | "LINKEDIN" | "OTHER" | "TIKTOK" | "X" | "YOUTUBE";
+
+export interface CreatorCatalogFilters {
+  city?: string;
+  creatorType?: CatalogCreatorType;
+  cursor?: string;
+  niche?: string;
+  pageSize: number;
+  platform?: CatalogSocialPlatform;
+  search?: string;
+  state?: string;
+}
+
+export interface CreatorCatalogCursor {
+  creatorProfileId: string;
+  displayName: string;
+}
+
+export interface CreatorCatalogQuery extends Omit<
+  CreatorCatalogFilters,
+  "cursor"
+> {
+  cursor: CreatorCatalogCursor | null;
+}
+
+export interface CatalogNicheDto {
+  name: string;
+  slug: string;
+}
+
+/**
+ * Deliberately narrow catalog-list projection. Contact, account, moderation,
+ * audit and storage records never belong to this transport type.
+ */
+export interface CreatorCatalogCardDto {
+  bioExcerpt: string | null;
+  city: string | null;
+  creatorId: string;
+  creatorType: CatalogCreatorType;
+  displayName: string;
+  niches: CatalogNicheDto[];
+  socialPlatforms: CatalogSocialPlatform[];
+  state: string | null;
+}
+
+export interface CreatorCatalogPageDto {
+  items: CreatorCatalogCardDto[];
+  nextCursor: string | null;
+  pageSize: number;
+}
+
+export interface CatalogViewer {
+  accountId: string;
+  role: CatalogViewerRole;
+}

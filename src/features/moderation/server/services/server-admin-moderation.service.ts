@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createServerEmailDeliveryProcessor } from "@/features/communications/server";
 import { createSupabaseAdminClient } from "@/shared/server/supabase/admin-client";
 
+import { invalidateCatalogEligibilityPaths } from "../policies/catalog-eligibility-invalidation.policy";
 import { createServerAdminModerationRepository } from "../repositories/drizzle-admin-moderation.repository";
 import { createAdminModerationService } from "./admin-moderation.service";
 import { createSupabaseModerationIdentityGateway } from "./supabase-moderation-identity.gateway";
@@ -21,7 +22,7 @@ export async function createServerAdminModerationService() {
     attemptEmailDelivery: (input) => emailDelivery.processOne(input),
     invalidateEligibility: () => {
       revalidatePath("/app");
-      revalidatePath("/app/catalog");
+      invalidateCatalogEligibilityPaths(revalidatePath);
       revalidatePath("/backoffice");
     },
     markAuthEffectFailed: (input) => repository.markAuthEffectFailed(input),
