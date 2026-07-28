@@ -3,7 +3,7 @@
 **Status:** em desenvolvimento
 **Data-base do acompanhamento:** 24/07/2026
 **OpenSpec relacionado:** `mvp-contente-creators`
-**Progresso atual:** 139 de 252 entregas concluídas (55,2%); 113 entregas pendentes.
+**Progresso atual:** 158 de 252 entregas concluídas (62,7%); 94 entregas pendentes.
 
 ## 1. Objetivo do produto
 
@@ -289,15 +289,15 @@ O produto deve permitir que:
 
 > Como administrador, quero um backoffice responsivo para localizar submissões, revisar todos os dados e executar decisões seguras sem depender de uma interface desktop.
 
-- [ ] `16.1` Testar autorização e navegação do backoffice, chamadas diretas, admin revogado e atribuição entre múltiplos admins.
-- [ ] `16.2` Criar shell responsivo com navegação mobile, breadcrumbs, loading/error boundaries e feedback acessível.
-- [ ] `16.3` Criar fila paginada no servidor com filtros de status, busca e ordenação na URL, contagens, autorização e cancelamento.
-- [ ] `16.4` Criar hook da fila, tabela desktop e lista/cards equivalentes no mobile sem duplicar resultados no Zustand.
-- [ ] `16.5` Criar revisão completa com perfil, mídia, consentimentos, aviso sobre CNPJ, completude, versão e histórico.
-- [ ] `16.6` Criar ações de aprovar/solicitar correções com confirmação, motivo obrigatório e proteção de revisão obsoleta.
-- [ ] `16.7` Criar ações de suspender, restaurar, banir, desbanir excepcionalmente e arquivar, com motivos e consequências explícitas.
-- [ ] `16.8` Testar revisão/decisão de influencer e empresa em mobile, teclado e leitor de tela.
-- [ ] `16.9` Garantir que o MVP não possua aprovação ou banimento em massa.
+- [x] `16.1` Testar autorização e navegação do backoffice, chamadas diretas, admin revogado e atribuição entre múltiplos admins.
+- [x] `16.2` Criar shell responsivo com navegação mobile, breadcrumbs, loading/error boundaries e feedback acessível.
+- [x] `16.3` Criar fila paginada no servidor com filtros de status, busca e ordenação na URL, contagens, autorização e cancelamento.
+- [x] `16.4` Criar hook da fila, tabela desktop e lista/cards equivalentes no mobile sem duplicar resultados no Zustand.
+- [x] `16.5` Criar revisão completa com perfil, mídia, consentimentos, aviso sobre CNPJ, completude, versão e histórico.
+- [x] `16.6` Criar ações de aprovar/solicitar correções com confirmação, motivo obrigatório e proteção de revisão obsoleta.
+- [x] `16.7` Criar ações de suspender, restaurar, banir, desbanir excepcionalmente e arquivar, com motivos e consequências explícitas.
+- [x] `16.8` Testar revisão/decisão de influencer e empresa em mobile, teclado e leitor de tela.
+- [x] `16.9` Garantir que o MVP não possua aprovação ou banimento em massa.
 
 ### HU-17 — Gestão administrativa, auditoria e operação
 

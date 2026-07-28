@@ -137,6 +137,11 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 - Protected backoffice pages use the night header, supplied logo, warm canvas, white product cards, and one visible sign-out action.
 - Privileged forms always explain required fields, collect a human-readable reason, show an inline success/error alert, and keep the destructive-looking consequence explicit in the submit label.
 - UI visibility is supplementary: every privileged page, action, and database operation revalidates the administrator role independently.
+- The authenticated shell keeps the night header fixed, uses a persistent desktop rail, switches to a shadcn Sheet on mobile, and marks future modules as disabled rather than linking to unfinished routes.
+- Moderation queues use URL-owned filters, compact count cards, a desktop table, and semantically equivalent mobile cards. Remote results stay in TanStack Query and never move into Zustand.
+- Review pages present identity/profile, private contact preferences, social data, media metadata, consent versions, completion/version markers, CNPJ-assistance context, and immutable history before the action panel.
+- Every moderation command opens an accessible confirmation dialog. Required reasons use the shared red asterisk/error pattern, and the consequence appears before submission. Stale-review feedback always offers a reload path.
+- Beta moderation is individual: queue rows/cards have one review link and never render selection checkboxes, bulk toolbars, bulk approval, or bulk ban controls.
 
 ## Marketing patterns
 

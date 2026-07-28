@@ -1,12 +1,7 @@
-import { LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, ShieldCheck } from "lucide-react";
 
 import { AdminProvisioningForm } from "@/features/identity";
-import {
-  provisionAdditionalAdminAction,
-  signOutAction,
-} from "@/features/identity/server";
-import { BrandLogo } from "@/shared/components/brand-logo";
-import { Button } from "@/shared/components/ui/button";
+import { provisionAdditionalAdminAction } from "@/features/identity/server";
 import {
   Card,
   CardContent,
@@ -17,29 +12,8 @@ import {
 
 export default function BackofficeHomePage() {
   return (
-    <main className="bg-brand-canvas min-h-screen">
-      <header className="bg-brand-night border-b border-white/10 text-white">
-        <div className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
-          <div className="flex min-w-0 items-center gap-4">
-            <BrandLogo className="h-11 w-32 shrink-0" />
-            <span className="truncate border-l border-white/20 pl-4 text-sm font-semibold">
-              Backoffice
-            </span>
-          </div>
-          <form action={signOutAction}>
-            <Button
-              className="border-white/25 bg-transparent text-white hover:bg-white/10 hover:text-white"
-              type="submit"
-              variant="outline"
-            >
-              <LogOut aria-hidden="true" />
-              Sair
-            </Button>
-          </form>
-        </div>
-      </header>
-
-      <section className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-12">
+    <>
+      <section>
         <div className="mb-8 max-w-2xl">
           <p className="text-brand-blue flex items-center gap-2 text-sm font-bold">
             <ShieldCheck aria-hidden="true" className="size-4" />
@@ -85,6 +59,6 @@ export default function BackofficeHomePage() {
           </Card>
         </div>
       </section>
-    </main>
+    </>
   );
 }

@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 
+import { BackofficeShell } from "@/features/backoffice";
 import { createServerBackofficeAuthService } from "@/features/identity/server";
+import { signOutAction } from "@/features/identity/server";
 
 export default async function ProtectedBackofficeLayout({
   children,
@@ -14,5 +16,7 @@ export default async function ProtectedBackofficeLayout({
     redirect("/backoffice/login?error=unauthorized");
   }
 
-  return children;
+  return (
+    <BackofficeShell signOutAction={signOutAction}>{children}</BackofficeShell>
+  );
 }

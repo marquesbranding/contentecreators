@@ -185,15 +185,15 @@
 
 ## 16. Backoffice shell and moderation operations
 
-- [ ] 16.1 Write failing authorization/component tests for backoffice navigation, direct reads/actions, revoked admin, and concurrent admin attribution. `[backoffice-operations]`
-- [ ] 16.2 Build the responsive backoffice shell with mobile navigation, breadcrumbs, loading/error boundaries, and accessible action feedback. `[backoffice-operations]`
-- [ ] 16.3 Implement server-paginated influencer/company moderation queue Route Handler/queries with status/search/order URL filters, stable query keys, queue counts, authorization, and cancellation. `[backoffice-operations]`
-- [ ] 16.4 Build a moderation-queue query hook, desktop table, and equivalent card/list controls on mobile without hiding required data or copying results into Zustand. `[backoffice-operations]`
-- [ ] 16.5 Implement full submission review DTO/page including profile/media, consent summary, CNPJ-assistance disclaimer, completion, current version, and moderation history. `[backoffice-operations]`
-- [ ] 16.6 Build approve/request-corrections actions with mandatory confirmation/reason and stale-review handling. `[backoffice-operations] [moderation-lifecycle]`
-- [ ] 16.7 Build suspend/restore/ban/exceptional-unban/archive actions with mandatory reasons and explicit consequences. `[backoffice-operations] [moderation-lifecycle]`
-- [ ] 16.8 Add mobile/keyboard/screen-reader tests for reviewing and deciding an influencer and company submission. `[backoffice-operations]`
-- [ ] 16.9 Verify no bulk approval/ban controls or endpoints exist while commands remain reusable for a future change. `[backoffice-operations]`
+- [x] 16.1 Write failing authorization/component tests for backoffice navigation, direct reads/actions, revoked admin, and concurrent admin attribution. `[backoffice-operations]`
+- [x] 16.2 Build the responsive backoffice shell with mobile navigation, breadcrumbs, loading/error boundaries, and accessible action feedback. `[backoffice-operations]`
+- [x] 16.3 Implement server-paginated influencer/company moderation queue Route Handler/queries with status/search/order URL filters, stable query keys, queue counts, authorization, and cancellation. `[backoffice-operations]`
+- [x] 16.4 Build a moderation-queue query hook, desktop table, and equivalent card/list controls on mobile without hiding required data or copying results into Zustand. `[backoffice-operations]`
+- [x] 16.5 Implement full submission review DTO/page including profile/media, consent summary, CNPJ-assistance disclaimer, completion, current version, and moderation history. `[backoffice-operations]`
+- [x] 16.6 Build approve/request-corrections actions with mandatory confirmation/reason and stale-review handling. `[backoffice-operations] [moderation-lifecycle]`
+- [x] 16.7 Build suspend/restore/ban/exceptional-unban/archive actions with mandatory reasons and explicit consequences. `[backoffice-operations] [moderation-lifecycle]`
+- [x] 16.8 Add mobile/keyboard/screen-reader tests for reviewing and deciding an influencer and company submission. `[backoffice-operations]`
+- [x] 16.9 Verify no bulk approval/ban controls or endpoints exist while commands remain reusable for a future change. `[backoffice-operations]`
 
 ## 17. Backoffice account management, audit, and operations
 
