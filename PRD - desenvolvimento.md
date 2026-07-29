@@ -3,7 +3,7 @@
 **Status:** em desenvolvimento
 **Data-base do acompanhamento:** 28/07/2026
 **OpenSpec relacionado:** `mvp-contente-creators`
-**Progresso atual:** 199 de 252 entregas concluídas (79,0%); 53 entregas pendentes.
+**Progresso atual:** 222 de 252 entregas concluídas (88,1%); 30 entregas pendentes.
 
 ## 1. Objetivo do produto
 
@@ -114,7 +114,7 @@ O produto deve permitir que:
 - [x] `3.2` Configurar URLs locais, callbacks, confirmação de e-mail, recuperação de senha, placeholders do Google, limites de Storage e captura de e-mails de Auth.
 - [x] `3.3` Configurar capturador SMTP local da aplicação separado do capturador de e-mails do Supabase Auth e documentar ambos.
 - [x] `3.4` Criar comandos determinísticos de start, stop, status e reset que nunca apontem implicitamente para projeto hospedado.
-- [x] `3.5` Criar seeds sintéticos para admin, influencer, UGC, empresa, todos os status, nichos, placements e auditoria.
+- [x] `3.5` Criar seeds sintéticos para admin, influencer, UGC, empresa, todos os status, nichos, placements e auditoria, incluindo allowlist configurável de administradores locais com credencial de desenvolvimento padronizada.
 - [x] `3.6` Testar reset limpo, aplicação de migrações/seeds e saúde de Auth, Postgres, Storage e capturadores de e-mail.
 - [x] `3.7` Documentar pré-requisitos, primeiro start, rotina diária, riscos do reset e callback local do Google OAuth.
 

@@ -26,7 +26,14 @@ select
   'authenticated',
   'authenticated',
   fixture.email,
-  extensions.crypt('LocalTest123!', extensions.gen_salt('bf')),
+  extensions.crypt(
+    case
+      when fixture.email = 'admin@contentecreators.test'
+        then 'ContenteCreators@01'
+      else 'LocalTest123!'
+    end,
+    extensions.gen_salt('bf')
+  ),
   now(),
   '{"provider":"email","providers":["email"]}'::jsonb,
   jsonb_build_object('display_name', fixture.display_name, 'fixture', true),

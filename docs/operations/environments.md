@@ -29,12 +29,35 @@ Contente Creators uses three isolated stages. Never copy production data, users,
 1. Install the pinned Node/npm versions from `.nvmrc` and `package.json`.
 2. Install Docker Desktop or another compatible Docker engine.
 3. Copy `.env.example` to `.env.local`.
-4. Run `npm run local:start`; this starts the pinned Mailpit application-email
-   catcher and the Supabase CLI stack.
-5. Replace the Supabase placeholders with values returned by
+4. Set `LOCAL_ADMIN_EMAILS` to a comma-, semicolon-, or newline-separated list
+   of up to 20 local administrator emails.
+5. Run `npm run local:start`; this starts the pinned Mailpit application-email
+   catcher and the Supabase CLI stack, then synchronizes the configured local
+   administrators.
+6. Replace the Supabase placeholders with values returned by
    `npm run db:status`.
-6. Run `npm run local:reset`, `npm run test:integration:local`, `npm run test`,
+7. Run `npm run local:reset`, `npm run test:integration:local`, `npm run test`,
    and `npm run dev`.
+
+### Local administrator access
+
+`LOCAL_ADMIN_EMAILS` is an allowlist used only by the local Supabase stack.
+Each listed email is created, confirmed, and assigned the approved `ADMIN`
+role. Existing identities without a selected role and existing administrators
+are synchronized idempotently. An email already attached to a company or
+influencer account is rejected to avoid silently corrupting local profile
+fixtures.
+
+The local-only default password is `ContenteCreators@01`. The committed
+`admin@contentecreators.test` fixture uses the same password. Run
+`npm run local:admins` after editing the allowlist, or use `npm run local:start`
+and `npm run local:reset`, which invoke the synchronization automatically.
+
+The command fails closed unless `APP_ENV=local`, the Supabase API is on
+loopback port `54321`, and Postgres is on loopback port `54322`.
+`LOCAL_ADMIN_EMAILS` is rejected by environment validation in development and
+production. The password and allowlist must never be used in either hosted
+stage.
 
 Useful local URLs:
 
@@ -69,6 +92,7 @@ until local Google credentials are exported as
 Daily commands:
 
 - `npm run local:start`: start application email plus Supabase.
+- `npm run local:admins`: synchronize the local administrator allowlist.
 - `npm run local:status`: print both stack statuses and local credentials.
 - `npm run local:stop`: stop Supabase and remove the Mailpit container while
   preserving its named local volume.
