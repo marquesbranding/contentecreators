@@ -1,0 +1,119 @@
+name: Database CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  APP_ENV: local
+  CI: "true"
+  CRON_SECRET: ci-only-placeholder-with-at-least-32-characters
+  DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+  DIRECT_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+  LOCAL_APPLICATION_MAILPIT_URL: http://127.0.0.1:8025
+  LOCAL_AUTH_MAILPIT_URL: http://127.0.0.1:54324
+  NEXT_PUBLIC_APP_URL: http://127.0.0.1:3000
+  PUBLIC_SOCIAL_PROOF_ENABLED: "false"
+  RUN_LOCAL_STACK_TESTS: "true"
+  SKIP_LOCAL_STACK_RESET: "true"
+  SMTP_FROM_EMAIL: no-reply@contentecreators.test
+  SMTP_FROM_NAME: Contente Creators CI
+  SMTP_HOST: 127.0.0.1
+  SMTP_PASSWORD: ci-local-only
+  SMTP_PORT: "1025"
+  SMTP_SECURE: "false"
+  SMTP_USER: ci-local-only
+
+jobs:
+  local-supabase:
+    name: Local Supabase migrations and integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out complete migration history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Use the pinned npm release
+        run: npm install --global npm@11.4.2
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Test migration and drift guards
+        run: >-
+          node --test
+          scripts/check-migration-history.test.mjs
+          scripts/check-local-database-drift.test.mjs
+
+      - name: Reject changed applied migration history in pull requests
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          MIGRATION_BASE_REVISION: ${{ github.event.pull_request.base.sha }}
+          MIGRATION_COMPARISON_MODE: merge-base
+          MIGRATION_HEAD_REVISION: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/check-migration-history.mjs
+
+      - name: Reject changed applied migration history in protected pushes
+        if: ${{ github.event_name == 'push' }}
+        env:
+          MIGRATION_BASE_REVISION: ${{ github.event.before }}
+          MIGRATION_COMPARISON_MODE: direct
+          MIGRATION_HEAD_REVISION: ${{ github.sha }}
+        run: node scripts/check-migration-history.mjs
+
+      - name: Start the local application email catcher
+        run: npm run mail:start
+
+      - name: Recreate Supabase from committed migrations and seed
+        run: |
+          npx supabase stop --no-backup --workdir . --yes
+          npx supabase start --workdir . --yes
+
+      - name: Lint the migrated public schema
+        run: >-
+          npx supabase db lint
+          --local
+          --schema public
+          --fail-on error
+          --workdir .
+
+      - name: Reject migration-to-database schema drift
+        run: node scripts/check-local-database-drift.mjs
+
+      - name: Verify schema, Drizzle, RLS, triggers, Storage, Auth hook, and seed
+        run: >-
+          npx vitest run --project integration
+          src/test/local-stack.integration.test.ts
+          src/db/core-schema.integration.test.ts
+          src/db/rls-policies.integration.test.ts
+          src/db/storage-policies.integration.test.ts
+          src/features/audit/server/audit-triggers.integration.test.ts
+          src/features/identity/server/services/before-user-created-hook.integration.test.ts
+
+      - name: Stop local Supabase
+        if: ${{ always() }}
+        run: npx supabase stop --no-backup --workdir .
+
+      - name: Stop the local application email catcher
+        if: ${{ always() }}
+        run: docker compose -f compose.local.yml down --volumes

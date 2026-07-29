@@ -24,3 +24,9 @@ may only be used to create disposable review output; generated SQL must be
 reviewed and incorporated into a Supabase migration rather than deployed
 directly. The committed Drizzle config deliberately contains no database
 credentials, so a default `drizzle-kit push` has no target and fails safely.
+
+Applied hosted migrations are immutable. Rollback uses a compatible application
+release and database correction uses a later reviewed migration. See the
+[migration and deployment runbook](../operations/deployment-runbook.md) for the
+expand/contract sequence, failed-migration stop procedure, and corrective
+roll-forward requirements.

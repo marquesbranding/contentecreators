@@ -13,7 +13,8 @@
     },
     "@hono/node-server": "2.0.11",
     "postcss": "8.5.22",
-    "sharp": "0.35.3"
+    "sharp": "0.35.3",
+    "tar": "7.5.22"
   },
   "scripts": {
     "admin:bootstrap": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/bootstrap-initial-admin.ts",
@@ -35,6 +36,7 @@
     "test:a11y": "playwright test --grep @a11y",
     "performance:budget": "tsx scripts/check-performance-budgets.ts",
     "performance:measure": "tsx scripts/measure-core-web-vitals.ts",
+    "deploy:verify": "tsx scripts/verify-deployment.ts",
     "db:start": "supabase start --workdir .",
     "db:stop": "supabase stop --workdir .",
     "db:status": "supabase status --workdir .",
@@ -105,6 +107,7 @@
     "tailwindcss": "^4",
     "tsx": "4.23.1",
     "typescript": "^5",
+    "vercel": "58.3.0",
     "vite": "8.1.5",
     "vitest": "4.1.10"
   }

@@ -286,16 +286,16 @@
 
 ## 25. Continuous integration and environment promotion
 
-- [ ] 25.1 Add CI caching and jobs for install/lockfile, format, lint, type-check, unit/component tests, dependency audit, and production build. `[platform-delivery]`
-- [ ] 25.2 Add Docker/local Supabase CI job for clean reset, seed, schema/RLS/trigger/Storage/Auth-hook integration tests. `[platform-delivery]`
-- [ ] 25.3 Add Playwright/axe CI smoke with artifacts on failure and no real external recipients/providers. `[platform-delivery]`
-- [ ] 25.4 Add migration lint/dry-run/drift checks and forbid changed applied migration history. `[platform-delivery]`
+- [x] 25.1 Add CI caching and jobs for install/lockfile, format, lint, type-check, unit/component tests, dependency audit, and production build. `[platform-delivery]`
+- [x] 25.2 Add Docker/local Supabase CI job for clean reset, seed, schema/RLS/trigger/Storage/Auth-hook integration tests. `[platform-delivery]`
+- [x] 25.3 Add Playwright/axe CI smoke with artifacts on failure and no real external recipients/providers. `[platform-delivery]`
+- [x] 25.4 Add migration lint/dry-run/drift checks and forbid changed applied migration history. `[platform-delivery]`
 - [ ] 25.5 Document/provision client-owned Supabase and Vercel projects named exactly `contente-creators-dev` and `contente-creators-prd`. `[platform-delivery]`
 - [ ] 25.6 Configure isolated environment variables, URLs, Auth redirects, Google OAuth clients/callbacks, Storage policies, SMTP senders, and scheduled secrets for development. `[platform-delivery]`
 - [ ] 25.7 Configure the equivalent isolated production resources without copying development data/secrets. `[platform-delivery]`
-- [ ] 25.8 Implement controlled `develop` → development and protected `main` → production migration/deployment workflows with approval before production. `[platform-delivery]`
-- [ ] 25.9 Add pre/post-deploy verification for schema version, Auth, Storage, CNPJ fallback, SMTP, protected catalog, backoffice, and health. `[platform-delivery]`
-- [ ] 25.10 Document expand/contract migrations, application rollback, corrective roll-forward, failed-migration stop procedure, and immutable migration history. `[platform-delivery]`
+- [x] 25.8 Implement controlled `develop` → development and protected `main` → production migration/deployment workflows with approval before production. `[platform-delivery]`
+- [x] 25.9 Add pre/post-deploy verification for schema version, Auth, Storage, CNPJ fallback, SMTP, protected catalog, backoffice, and health. `[platform-delivery]`
+- [x] 25.10 Document expand/contract migrations, application rollback, corrective roll-forward, failed-migration stop procedure, and immutable migration history. `[platform-delivery]`
 
 ## 26. End-to-end acceptance journeys
 
@@ -317,7 +317,7 @@
 - [ ] 27.1 Rewrite the project README with architecture, commands, TDD workflow, local services, environment matrix, migrations, and troubleshooting. `[platform-delivery]`
 - [ ] 27.2 Add a data dictionary/state-machine/RLS matrix covering every table, role, status, sensitive field, and audit policy. `[identity-access] [audit-compliance]`
 - [ ] 27.3 Add backoffice operating guide for moderation, correction wording, approval, suspension, ban/unban, archive, sponsorships, email retry, and audit review. `[backoffice-operations]`
-- [ ] 27.4 Add an environment provisioning checklist for client-owned Supabase/Vercel/Google/SMTP/DNS accounts and exact dev/prd names. `[platform-delivery]`
+- [x] 27.4 Add an environment provisioning checklist for client-owned Supabase/Vercel/Google/SMTP/DNS accounts and exact dev/prd names. `[platform-delivery]`
 - [ ] 27.5 Add backup/export/restore verification and free-tier capacity/upgrade trigger runbooks without claiming unavailable guarantees. `[platform-delivery]`
 - [ ] 27.6 Add incident response for auth compromise, privacy exposure, wrong moderation, SMTP outage, provider outage, blocked migration, and Storage leak. `[platform-delivery]`
 - [ ] 27.7 Obtain/record final brand assets, marketing copy, niche/employee-range seeds, initial admins, sponsorship creatives, domain, legal documents, support contact, consent wording, and audit retention from the client. `[marketing-site] [audit-compliance]`

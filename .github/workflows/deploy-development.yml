@@ -1,0 +1,208 @@
+name: Deploy development
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-development
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: Preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out the promoted commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Require the develop branch for manual runs
+        if: github.event_name == 'workflow_dispatch'
+        run: test "$GITHUB_REF" = "refs/heads/develop"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Use the pinned npm version
+        run: npm install --global npm@11.4.2
+
+      - name: Install the locked dependency graph
+        run: npm ci
+
+      - name: Reject changed applied migration history
+        env:
+          PUSH_BASE_SHA: ${{ github.event.before }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            base_sha="$PUSH_BASE_SHA"
+            comparison_mode="direct"
+          else
+            base_sha="$(git rev-parse HEAD^)"
+            comparison_mode="merge-base"
+          fi
+          node scripts/check-migration-history.mjs \
+            "$base_sha" \
+            HEAD \
+            "$comparison_mode"
+
+      - name: Run deployment quality gates
+        run: |
+          npm run format:check
+          npm run lint
+          npm run type-check
+          npm run test:unit
+          npm run test:component
+
+  migrate-build-deploy:
+    name: Migrate, build, deploy, and verify
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment:
+      name: contente-creators-dev
+      url: ${{ steps.deploy.outputs.deployment_url }}
+    env:
+      VERCEL_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Check out the promoted commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Use the pinned npm version
+        run: npm install --global npm@11.4.2
+
+      - name: Install the locked dependency graph
+        run: npm ci
+
+      - name: Pull the development Vercel project configuration
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          npx --no-install vercel pull \
+            --yes \
+            --no-color \
+            --environment=production \
+            --token="$VERCEL_TOKEN"
+          npx --no-install vercel env pull .env.deployment \
+            --yes \
+            --no-color \
+            --environment=production \
+            --token="$VERCEL_TOKEN"
+
+      - name: Verify isolated development configuration
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_PROJECT_NAME: contente-creators-dev
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_PROJECT_NAME: contente-creators-dev
+        run: |
+          node --env-file=.env.deployment --import tsx \
+            scripts/verify-deployment.ts \
+            --phase=pre \
+            --target=development
+
+      - name: Link the exact development Supabase project
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          npx --no-install supabase link \
+            --project-ref "$SUPABASE_PROJECT_REF" \
+            --password "$SUPABASE_DB_PASSWORD" \
+            --yes
+
+      - name: Dry-run development migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          npx --no-install supabase db push \
+            --linked \
+            --password "$SUPABASE_DB_PASSWORD" \
+            --dry-run \
+            --yes
+
+      - name: Build the development Vercel artifact
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          npx --no-install vercel build \
+            --prod \
+            --no-color \
+            --token="$VERCEL_TOKEN"
+
+      - name: Apply immutable development migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          npx --no-install supabase db push \
+            --linked \
+            --password "$SUPABASE_DB_PASSWORD" \
+            --yes
+          npx --no-install supabase migration list \
+            --linked \
+            --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Deploy the prebuilt development artifact
+        id: deploy
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          deployment_url="$(
+            npx --no-install vercel deploy \
+              --prebuilt \
+              --prod \
+              --archive=tgz \
+              --no-color \
+              --token="$VERCEL_TOKEN"
+          )"
+          if [[ ! "$deployment_url" =~ ^https://[a-z0-9-]+\.vercel\.app$ ]]; then
+            echo "Vercel did not return a safe deployment URL." >&2
+            exit 1
+          fi
+          printf 'deployment_url=%s\n' "$deployment_url" >> "$GITHUB_OUTPUT"
+
+      - name: Verify the development deployment
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment_url }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_PROJECT_NAME: contente-creators-dev
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_PROJECT_NAME: contente-creators-dev
+        run: |
+          node --env-file=.env.deployment --import tsx \
+            scripts/verify-deployment.ts \
+            --phase=post \
+            --target=development \
+            --base-url="$DEPLOYMENT_URL"

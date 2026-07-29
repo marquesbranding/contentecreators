@@ -102,3 +102,8 @@ the placeholders above before enabling each provider.
 The reset script uses the CLI's local-only `stop --no-backup` plus `start`
 sequence. Before running any Supabase command against hosted infrastructure,
 verify the linked project reference and target stage explicitly.
+
+Hosted accounts are intentionally not provisioned from local placeholders.
+Use the [client-owned provisioning checklist](./environment-provisioning.md)
+and the [migration/deployment runbook](./deployment-runbook.md) before enabling
+either remote workflow.

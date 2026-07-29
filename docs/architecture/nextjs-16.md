@@ -11,7 +11,9 @@ These notes record the repository-specific guidance reviewed before implementati
 - `01-app/01-getting-started/16-proxy.md`
 - `01-app/01-getting-started/17-deploying.md`
 - `01-app/02-guides/authentication.md`
+- `01-app/02-guides/ci-build-caching.md`
 - `01-app/02-guides/data-security.md`
+- `01-app/02-guides/production-checklist.md`
 - `01-app/02-guides/server-actions.md`
 
 ## Decisions applied to this repository
@@ -24,6 +26,7 @@ These notes record the repository-specific guidance reviewed before implementati
 6. Interactive browser requests use same-origin Route Handlers. Route Handlers are dynamic when they access cookies, request properties, or the database; no protected response is accidentally shared through public caching.
 7. Cache behavior is explicit. Personalized or authorization-sensitive data is not placed in a cross-user cache. Streaming uses focused `Suspense` boundaries rather than forcing the whole root layout to request time.
 8. Vercel deployment uses the standard Node.js runtime and the existing `build`/`start` scripts. Static export is not suitable because Auth, Route Handlers, Server Actions, and server-side database access require a server runtime.
+9. GitHub Actions persists `.next/cache` independently from the npm cache, keyed by the lockfile and source inputs. Every hosted deployment is preceded by the same production build gate used locally.
 
 ## Review gate
 

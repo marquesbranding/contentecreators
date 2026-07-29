@@ -21,8 +21,8 @@
 4. **[2026-07-23] Preserve the complete Supabase SSR refresh response**
    Do instead: in Next.js 16 `src/proxy.ts`, copy every refreshed cookie and the current `setAll` response headers onto redirects; keep Proxy limited to refresh plus optimistic routing and repeat authorization in the server DAL/action.
 
-5. **[2026-07-23] Restart Turbopack after adding browser runtime dependencies**
-   Do instead: restart `next dev` after installing packages such as `motion`; an already-running dev process can serve updated markup with a stale client bundle and leave entrance animation elements in their hidden initial state.
+5. **[2026-07-29] Keep client providers below server render-function boundaries**
+   Do instead: mount Query/Zustand providers inside leaf Client entry components; wrapping Server Component trees that pass render callbacks or rich children through a Client provider can make Next.js 16 serialize unsupported values and produce production-only 500 responses.
 
 6. **[2026-07-23] Keep Base UI value state controlled for the component lifetime**
    Do instead: initialize selection controls with `null`, never `undefined`, and remount mutually exclusive role-specific form subtrees with a stable role key so inputs do not switch between controlled and uncontrolled modes.

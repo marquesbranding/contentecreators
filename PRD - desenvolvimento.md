@@ -408,16 +408,16 @@ O produto deve permitir que:
 
 > Como equipe de entrega, quero pipelines e ambientes isolados para validar cada mudança e promover o mesmo esquema de forma controlada até produção.
 
-- [ ] `25.1` Criar CI para instalação, lockfile, format, lint, type-check, testes, auditoria de dependências e build.
-- [ ] `25.2` Criar job com Docker/Supabase local para reset, seed e testes de schema, RLS, triggers, Storage e hooks Auth.
-- [ ] `25.3` Criar smoke Playwright/axe em CI com artefatos de falha e sem provedores/destinatários reais.
-- [ ] `25.4` Criar lint, dry-run e drift de migrações e proibir alteração de histórico já aplicado.
+- [x] `25.1` Criar CI para instalação, lockfile, format, lint, type-check, testes, auditoria de dependências e build.
+- [x] `25.2` Criar job com Docker/Supabase local para reset, seed e testes de schema, RLS, triggers, Storage e hooks Auth.
+- [x] `25.3` Criar smoke Playwright/axe em CI com artefatos de falha e sem provedores/destinatários reais.
+- [x] `25.4` Criar lint, dry-run e drift de migrações e proibir alteração de histórico já aplicado.
 - [ ] `25.5` Provisionar/documentar Supabase e Vercel do cliente com nomes exatos `contente-creators-dev` e `contente-creators-prd`.
 - [ ] `25.6` Configurar variáveis, URLs, callbacks, Google OAuth, Storage, SMTP e segredos agendados isolados em desenvolvimento.
 - [ ] `25.7` Configurar recursos equivalentes e isolados em produção, sem copiar dados ou segredos de desenvolvimento.
-- [ ] `25.8` Implementar promoção controlada `develop` → desenvolvimento e `main` protegida → produção, com aprovação.
-- [ ] `25.9` Criar verificações antes/depois do deploy para schema, Auth, Storage, CNPJ, SMTP, catálogo, backoffice e health.
-- [ ] `25.10` Documentar expand/contract, rollback da aplicação, roll-forward corretivo, migração falha e histórico imutável.
+- [x] `25.8` Implementar promoção controlada `develop` → desenvolvimento e `main` protegida → produção, com aprovação.
+- [x] `25.9` Criar verificações antes/depois do deploy para schema, Auth, Storage, CNPJ, SMTP, catálogo, backoffice e health.
+- [x] `25.10` Documentar expand/contract, rollback da aplicação, roll-forward corretivo, migração falha e histórico imutável.
 
 ### HU-26 — Jornadas E2E de aceite
 
@@ -443,7 +443,7 @@ O produto deve permitir que:
 - [ ] `27.1` Reescrever README com arquitetura, comandos, TDD, serviços locais, ambientes, migrações e troubleshooting.
 - [ ] `27.2` Criar dicionário de dados, máquina de estados e matriz RLS para tabelas, papéis, status, campos sensíveis e auditoria.
 - [ ] `27.3` Criar guia do backoffice para correção, aprovação, suspensão, banimento/desbanimento, arquivamento, patrocínio, e-mail e auditoria.
-- [ ] `27.4` Criar checklist de provisionamento das contas do cliente em Supabase, Vercel, Google, SMTP e DNS.
+- [x] `27.4` Criar checklist de provisionamento das contas do cliente em Supabase, Vercel, Google, SMTP e DNS.
 - [ ] `27.5` Criar runbooks de exportação, backup/restore e gatilhos de upgrade dos planos gratuitos, sem prometer garantias inexistentes.
 - [ ] `27.6` Criar resposta a incidentes de Auth, privacidade, moderação incorreta, SMTP, provedor, migração e Storage.
 - [ ] `27.7` Obter e registrar ativos finais de marca, copy, nichos/faixas, admins, criativos, domínio, documentos legais, suporte, consentimento e retenção.
