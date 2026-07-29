@@ -46,7 +46,11 @@ export function OnboardingFormShell({
   const stepText = `Etapa ${safeCurrentStep} de ${safeTotalSteps}`;
 
   return (
-    <main className="bg-brand-canvas relative min-h-screen overflow-hidden px-4 py-5 sm:px-8 sm:py-9">
+    <main
+      className="bg-brand-canvas relative min-h-screen overflow-hidden px-4 py-5 sm:px-8 sm:py-9"
+      id="main-content"
+      tabIndex={-1}
+    >
       <div
         aria-hidden="true"
         className="bg-brand-blue/15 absolute -top-64 left-1/2 size-[38rem] -translate-x-1/2 rounded-full blur-3xl"

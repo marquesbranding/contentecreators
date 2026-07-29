@@ -56,6 +56,7 @@ export function PasswordField({
         <InputGroupAddon align="inline-end">
           <InputGroupButton
             aria-label={visible ? "Ocultar senha" : "Mostrar senha"}
+            className="size-11"
             onClick={() => setVisible((current) => !current)}
             size="icon-sm"
           >

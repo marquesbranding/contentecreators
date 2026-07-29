@@ -23,14 +23,11 @@ function createWrapper(client: QueryClient) {
 }
 
 describe("useCompanyCarousel", () => {
-  it("uses a stable bounded key and forwards cancellation", async () => {
+  it("hydrates without a duplicate request and keeps a stable key", () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
-    const fetchCarousel = vi.fn(async (_limit: number, signal: AbortSignal) => {
-      expect(signal).toBeInstanceOf(AbortSignal);
-      return initialData;
-    });
+    const fetchCarousel = vi.fn(async () => initialData);
     const useCompanyCarousel = createUseCompanyCarousel(fetchCarousel);
     const { result } = renderHook(() => useCompanyCarousel(12, initialData), {
       wrapper: createWrapper(queryClient),
@@ -42,6 +39,23 @@ describe("useCompanyCarousel", () => {
       "company-carousel",
       12,
     ]);
+    expect(fetchCarousel).not.toHaveBeenCalled();
+  });
+
+  it("forwards cancellation when server data is unavailable", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const fetchCarousel = vi.fn(async (_limit: number, signal: AbortSignal) => {
+      expect(signal).toBeInstanceOf(AbortSignal);
+      return initialData;
+    });
+    const useCompanyCarousel = createUseCompanyCarousel(fetchCarousel);
+
+    renderHook(() => useCompanyCarousel(12), {
+      wrapper: createWrapper(queryClient),
+    });
+
     await waitFor(() =>
       expect(fetchCarousel).toHaveBeenCalledWith(12, expect.any(AbortSignal)),
     );

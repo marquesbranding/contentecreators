@@ -148,6 +148,8 @@ describe("SubmissionReview", () => {
     expect(screen.getByText("contato@example.com")).toBeVisible();
     expect(screen.getByRole("link", { name: /@criadora/iu })).toBeVisible();
     expect(screen.getByText("Foto de perfil")).toBeVisible();
+    expect(screen.getByText("Ativa")).toBeVisible();
+    expect(screen.queryByText("ACTIVE")).not.toBeInTheDocument();
     expect(screen.getByText("Privacidade — versão 1.0")).toBeVisible();
     expect(screen.getByText("Envio para análise")).toBeVisible();
     expect(container).not.toHaveTextContent(/authUserId|token|password/iu);

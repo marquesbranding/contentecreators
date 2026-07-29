@@ -1,5 +1,6 @@
 export { ApprovedCatalogEntry } from "./components/approved-catalog-entry";
 export { CreatorCatalogView } from "./components/creator-catalog-view.client";
+export { HydratedCreatorCatalog } from "./components/hydrated-creator-catalog.client";
 export { CatalogDetailScreen } from "./components/catalog-detail-screen.client";
 export { CompanyCarouselScreen } from "./components/company-carousel-screen.client";
 export {

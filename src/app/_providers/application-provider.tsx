@@ -1,17 +1,9 @@
 "use client";
 
-import { QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
-import { getBrowserQueryClient } from "@/shared/query/browser-query-client";
-import { AppStoreProvider } from "@/shared/store/app-store-provider";
+import { BrowserQueryProvider } from "@/shared/query/browser-query-provider";
 
 export function ApplicationProvider({ children }: { children: ReactNode }) {
-  const queryClient = getBrowserQueryClient();
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <AppStoreProvider>{children}</AppStoreProvider>
-    </QueryClientProvider>
-  );
+  return <BrowserQueryProvider>{children}</BrowserQueryProvider>;
 }

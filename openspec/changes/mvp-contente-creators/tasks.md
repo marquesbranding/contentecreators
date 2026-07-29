@@ -276,13 +276,13 @@
 
 ## 24. Global responsive, accessibility, and performance hardening
 
-- [ ] 24.1 Audit every public/auth/onboarding/status/catalog/profile/backoffice route at 320, 390, 768, and 1440 px for overflow, hierarchy, touch targets, dialogs, tables, and fixed elements. `[platform-delivery]`
-- [ ] 24.2 Audit keyboard-only navigation, focus order/return, skip links, modal focus traps, error focus, and async announcements for every critical journey. `[platform-delivery]`
-- [ ] 24.3 Audit WCAG 2.2 AA contrast, semantics, labels, descriptions, alt text, reduced motion, and zoom/reflow. `[platform-delivery]`
-- [ ] 24.4 Optimize fonts, images, signed-media sizing, Server/Client component boundaries, TanStack Query hydration, Axios request waterfalls, Zustand subscription breadth, streaming, and bundle size. `[platform-delivery]`
-- [ ] 24.5 Measure representative Core Web Vitals/Lighthouse behavior, document budgets, and fix regressions before release. `[platform-delivery]`
-- [ ] 24.6 Run critical flows on Chromium and WebKit mobile/desktop and resolve browser-specific defects. `[platform-delivery]`
-- [ ] 24.7 Proofread all UI/email/legal-placeholder copy for correct Brazilian Portuguese and ensure no internal English enum leaks into user text. `[platform-delivery]`
+- [x] 24.1 Audit every public/auth/onboarding/status/catalog/profile/backoffice route at 320, 390, 768, and 1440 px for overflow, hierarchy, touch targets, dialogs, tables, and fixed elements. `[platform-delivery]`
+- [x] 24.2 Audit keyboard-only navigation, focus order/return, skip links, modal focus traps, error focus, and async announcements for every critical journey. `[platform-delivery]`
+- [x] 24.3 Audit WCAG 2.2 AA contrast, semantics, labels, descriptions, alt text, reduced motion, and zoom/reflow. `[platform-delivery]`
+- [x] 24.4 Optimize fonts, images, signed-media sizing, Server/Client component boundaries, TanStack Query hydration, Axios request waterfalls, Zustand subscription breadth, streaming, and bundle size. `[platform-delivery]`
+- [x] 24.5 Measure representative Core Web Vitals/Lighthouse behavior, document budgets, and fix regressions before release. `[platform-delivery]`
+- [x] 24.6 Run critical flows on Chromium and WebKit mobile/desktop and resolve browser-specific defects. `[platform-delivery]`
+- [x] 24.7 Proofread all UI/email/legal-placeholder copy for correct Brazilian Portuguese and ensure no internal English enum leaks into user text. `[platform-delivery]`
 
 ## 25. Continuous integration and environment promotion
 

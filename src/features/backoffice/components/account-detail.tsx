@@ -35,7 +35,10 @@ import {
   formatPhone,
 } from "@/shared/lib/formatting/formatters";
 
-import { getModerationStatusLabel } from "../domain/moderation-presentation";
+import {
+  getMediaStatusLabel,
+  getModerationStatusLabel,
+} from "../domain/moderation-presentation";
 import type {
   BackofficeAccountDetailDto,
   BackofficeAccountMediaDto,
@@ -385,7 +388,9 @@ function EvidenceCards({ detail }: { detail: BackofficeAccountDetailDto }) {
                 <li className="rounded-xl border p-4" key={media.id}>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="font-semibold">{mediaLabels[media.kind]}</p>
-                    <Badge variant="outline">{media.status}</Badge>
+                    <Badge variant="outline">
+                      {getMediaStatusLabel(media.status)}
+                    </Badge>
                   </div>
                   <p className="text-muted-foreground mt-1 text-sm">
                     {media.mimeType} — {formatNumber(media.sizeBytes)} bytes

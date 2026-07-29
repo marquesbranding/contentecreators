@@ -318,7 +318,13 @@ export function BackofficeShell({
           <div className="border-b bg-white px-5 py-3 sm:px-8">
             <BackofficeBreadcrumb />
           </div>
-          <main className="px-5 py-6 sm:px-8 sm:py-8">{children}</main>
+          <main
+            className="px-5 py-6 sm:px-8 sm:py-8"
+            id="main-content"
+            tabIndex={-1}
+          >
+            {children}
+          </main>
         </div>
       </div>
     </div>

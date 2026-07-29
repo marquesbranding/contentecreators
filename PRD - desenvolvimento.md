@@ -396,13 +396,13 @@ O produto deve permitir que:
 
 > Como pessoa usuária em qualquer dispositivo e com diferentes necessidades de acesso, quero concluir todas as jornadas com boa leitura, navegação, desempenho e compatibilidade.
 
-- [ ] `24.1` Auditar todas as rotas em 320, 390, 768 e 1440 px para overflow, hierarquia, toque, dialogs, tabelas e elementos fixos.
-- [ ] `24.2` Auditar teclado, ordem/retorno de foco, skip links, traps de modal, foco de erros e anúncios assíncronos.
-- [ ] `24.3` Auditar WCAG 2.2 AA para contraste, semântica, labels, descrições, alt text, movimento reduzido e zoom/reflow.
-- [ ] `24.4` Otimizar fontes, imagens, mídia assinada, fronteiras Server/Client, hidratação, waterfalls Axios, Zustand, streaming e bundle.
-- [ ] `24.5` Medir Core Web Vitals/Lighthouse, documentar budgets e corrigir regressões.
-- [ ] `24.6` Executar fluxos críticos em Chromium e WebKit mobile/desktop e corrigir diferenças.
-- [ ] `24.7` Revisar toda a interface, e-mails e placeholders legais em português correto, sem enums internos em inglês.
+- [x] `24.1` Auditar todas as rotas em 320, 390, 768 e 1440 px para overflow, hierarquia, toque, dialogs, tabelas e elementos fixos.
+- [x] `24.2` Auditar teclado, ordem/retorno de foco, skip links, traps de modal, foco de erros e anúncios assíncronos.
+- [x] `24.3` Auditar WCAG 2.2 AA para contraste, semântica, labels, descrições, alt text, movimento reduzido e zoom/reflow.
+- [x] `24.4` Otimizar fontes, imagens, mídia assinada, fronteiras Server/Client, hidratação, waterfalls Axios, Zustand, streaming e bundle.
+- [x] `24.5` Medir Core Web Vitals/Lighthouse, documentar budgets e corrigir regressões.
+- [x] `24.6` Executar fluxos críticos em Chromium e WebKit mobile/desktop e corrigir diferenças.
+- [x] `24.7` Revisar toda a interface, e-mails e placeholders legais em português correto, sem enums internos em inglês.
 
 ### HU-25 — CI, ambientes e promoção
 

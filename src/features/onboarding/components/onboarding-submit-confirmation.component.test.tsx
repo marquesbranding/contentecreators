@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -47,5 +47,36 @@ describe("onboarding submit confirmation", () => {
     await user.click(screen.getByRole("button", { name: "Confirmar envio" }));
 
     expect(onSubmit).toHaveBeenCalledOnce();
+  });
+
+  it("traps keyboard focus and restores it to the submit trigger", async () => {
+    const user = userEvent.setup();
+    render(<ConfirmationHarness onSubmit={vi.fn()} />);
+
+    const trigger = screen.getByRole("button", { name: "Enviar cadastro" });
+    trigger.focus();
+    await user.keyboard("{Enter}");
+
+    const dialog = screen.getByRole("dialog", {
+      name: "Enviar cadastro para análise?",
+    });
+    await waitFor(() =>
+      expect(dialog).toContainElement(document.activeElement as HTMLElement),
+    );
+
+    for (let index = 0; index < 5; index += 1) {
+      await user.tab();
+      await waitFor(() =>
+        expect(dialog).toContainElement(document.activeElement as HTMLElement),
+      );
+    }
+
+    await user.keyboard("{Escape}");
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Enviar cadastro para análise?" }),
+      ).not.toBeInTheDocument();
+      expect(trigger).toHaveFocus();
+    });
   });
 });

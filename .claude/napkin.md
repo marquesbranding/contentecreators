@@ -31,7 +31,7 @@
    Do instead: after the relevant validations pass, commit the finished scoped changes and push the current branch without waiting for a separate reminder.
 
 8. **[2026-07-24] Serialize local integration test files that share Supabase**
-   Do instead: keep the Vitest integration project on `fileParallelism: false` with Docker-tolerant test/hook timeouts, and never launch multiple reset-enabled Vitest processes. After one deterministic reset, use `SKIP_LOCAL_STACK_RESET=true` for targeted reruns; concurrent Docker prune/reset operations can tear down the shared stack.
+   Do instead: keep the Vitest integration project on `fileParallelism: false` with Docker-tolerant test/hook timeouts, isolate or archive synthetic records in teardown, and never launch multiple reset-enabled Vitest processes. After one deterministic reset, use `SKIP_LOCAL_STACK_RESET=true` for targeted reruns; concurrent Docker prune/reset operations can tear down the shared stack.
 
 9. **[2026-07-24] Treat Supabase Auth moderation as a post-commit effect**
    Do instead: commit account status, blocked identities, audit, outbox, and a retryable Auth-effect record atomically; then call `updateUserById` for ban/unban. Admin `signOut` requires the target JWT, so enforce immediate denial through database status/RLS and let the existing banned-session defense revoke a presented token.

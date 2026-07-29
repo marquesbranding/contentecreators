@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import {
   BackofficeAnalyticsScreen,
   parseBackofficeAnalyticsSearchParams,
@@ -11,6 +13,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "Visão geral do backoffice",
+};
 
 type DashboardPageSearchParams = Record<string, string | string[] | undefined>;
 

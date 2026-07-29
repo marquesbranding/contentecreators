@@ -1,5 +1,7 @@
 "use client";
 
+import { BrowserQueryProvider } from "@/shared/query/browser-query-provider";
+
 import { useCatalogDetail } from "../hooks/use-catalog-detail";
 import type { CatalogCreatorDetailViewDto } from "../types/catalog-detail-view.types";
 import { CatalogDetailView } from "./catalog-detail-view";
@@ -12,6 +14,26 @@ export function CatalogDetailScreen({
   creatorId: string;
   initialData: CatalogCreatorDetailViewDto | null;
   revalidate?: boolean;
+}) {
+  return (
+    <BrowserQueryProvider>
+      <CatalogDetailScreenContent
+        creatorId={creatorId}
+        initialData={initialData}
+        revalidate={revalidate}
+      />
+    </BrowserQueryProvider>
+  );
+}
+
+function CatalogDetailScreenContent({
+  creatorId,
+  initialData,
+  revalidate,
+}: {
+  creatorId: string;
+  initialData: CatalogCreatorDetailViewDto | null;
+  revalidate: boolean;
 }) {
   const query = useCatalogDetail(creatorId, initialData, revalidate);
 

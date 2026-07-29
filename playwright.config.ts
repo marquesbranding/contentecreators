@@ -41,6 +41,9 @@ export default defineConfig({
   ],
   webServer: {
     command: `npm run build && npm run start -- --hostname 127.0.0.1 --port ${port}`,
+    env: {
+      APP_ENV: process.env.APP_ENV ?? "local",
+    },
     url: `http://127.0.0.1:${port}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

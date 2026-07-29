@@ -21,6 +21,12 @@ describe("CnpjLookupFeedback", () => {
     );
 
     expect(screen.getByRole("alert")).toHaveTextContent(title);
+    expect(screen.getByRole("alert")).toHaveAttribute("aria-live", "polite");
+    if (status === "loading") {
+      expect(screen.getByRole("alert")).toHaveAttribute("aria-busy", "true");
+    } else {
+      expect(screen.getByRole("alert")).not.toHaveAttribute("aria-busy");
+    }
   });
 
   it("lets the user apply a successful editable proposal", async () => {

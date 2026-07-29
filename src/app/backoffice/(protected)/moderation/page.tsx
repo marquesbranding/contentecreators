@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
+
 import {
   ModerationQueueScreen,
   parseModerationQueueSearchParams,
 } from "@/features/backoffice";
+
+export const metadata: Metadata = {
+  title: "Fila de moderação",
+};
 
 type QueuePageSearchParams = Record<string, string | string[] | undefined>;
 

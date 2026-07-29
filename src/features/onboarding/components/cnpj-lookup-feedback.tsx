@@ -43,7 +43,7 @@ export function CnpjLookupFeedback({
 
   if (lookupStatus === "loading") {
     return (
-      <Alert aria-live="polite">
+      <Alert aria-busy="true" aria-live="polite">
         <LoaderCircle aria-hidden="true" className="animate-spin" />
         <AlertTitle>Consultando o CNPJ</AlertTitle>
         <AlertDescription>

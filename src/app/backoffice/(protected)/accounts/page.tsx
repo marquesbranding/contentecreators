@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
+
 import {
   AccountManagementScreen,
   parseAccountManagementSearchParams,
 } from "@/features/backoffice";
+
+export const metadata: Metadata = {
+  title: "Contas",
+};
 
 type AccountPageSearchParams = Record<string, string | string[] | undefined>;
 

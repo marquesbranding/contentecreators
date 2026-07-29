@@ -65,6 +65,11 @@ describe("audit history safe DTO", () => {
           },
           field: "profile",
         },
+        {
+          after: "Aprovado",
+          before: "Aguardando análise",
+          field: "status",
+        },
       ]),
     );
     expect(item.reason).toBe(

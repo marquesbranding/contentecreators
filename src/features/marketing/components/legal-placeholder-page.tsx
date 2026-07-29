@@ -33,7 +33,11 @@ export function LegalPlaceholderPage({
           </Link>
         </div>
       </header>
-      <main className="mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
+      <main
+        className="mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16"
+        id="main-content"
+        tabIndex={-1}
+      >
         <p className="text-sm font-extrabold tracking-[0.12em] text-[#0059db] uppercase">
           Documento legal
         </p>

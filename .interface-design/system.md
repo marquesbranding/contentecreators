@@ -78,6 +78,7 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 - Keep domain behavior in slice hooks, services, and stores; shadcn/ui components remain presentation primitives.
 - Add components as product flows require them rather than generating the entire catalog before use.
 - Marketing pages may use more bespoke compositions while still reusing shared shadcn/ui controls where appropriate.
+- The root layout owns one focus-visible “Pular para o conteúdo” link. Every route renders exactly one `main#main-content` with `tabIndex={-1}` so keyboard users can bypass repeated navigation consistently across marketing, Auth, product and backoffice surfaces.
 
 ### Primary button
 

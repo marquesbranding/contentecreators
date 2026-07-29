@@ -50,7 +50,8 @@ from (
     ('30000000-0000-4000-8000-000000000003'::uuid, 'company-changes@contentecreators.test', 'Empresa Correções'),
     ('30000000-0000-4000-8000-000000000004'::uuid, 'company-approved@contentecreators.test', 'Empresa Aprovada'),
     ('30000000-0000-4000-8000-000000000005'::uuid, 'company-suspended@contentecreators.test', 'Empresa Suspensa'),
-    ('30000000-0000-4000-8000-000000000006'::uuid, 'company-banned@contentecreators.test', 'Empresa Banida')
+    ('30000000-0000-4000-8000-000000000006'::uuid, 'company-banned@contentecreators.test', 'Empresa Banida'),
+    ('40000000-0000-4000-8000-000000000001'::uuid, 'role-choice-e2e@contentecreators.test', 'Perfil sem papel')
 ) as fixture(id, email, display_name);
 
 insert into auth.identities (

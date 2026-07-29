@@ -1,4 +1,5 @@
 import { ArrowLeft, ShieldCheck } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -25,6 +26,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "Editar perfil da conta",
+};
 
 const changeReason = {
   description:
@@ -82,7 +87,9 @@ export default async function BackofficeAccountProfileEditPage({
             Editar perfil pelo backoffice
           </h1>
           <Badge variant="outline">
-            {editableProfile.role === "INFLUENCER" ? "Creator" : "Empresa"}
+            {editableProfile.role === "INFLUENCER"
+              ? "Influenciador"
+              : "Empresa"}
           </Badge>
         </div>
         <p className="text-muted-foreground max-w-3xl">

@@ -14,6 +14,7 @@ import { Spinner } from "@/shared/components/ui/spinner";
 import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 import { useSubmitConfirmation } from "@/shared/hooks/use-submit-confirmation";
 import { useUnsavedChangesGuard } from "@/shared/hooks/use-unsaved-changes-guard";
+import { BrowserQueryProvider } from "@/shared/query/browser-query-provider";
 
 import { useOnboardingAutosave } from "../hooks/use-onboarding-autosave";
 import type { CorrectedProfileResubmissionCommand } from "../schemas/corrected-profile-resubmission-schema";
@@ -29,15 +30,7 @@ import { OnboardingAutosaveStatus } from "./onboarding-autosave-status";
 import { OnboardingSubmitConfirmation } from "./onboarding-submit-confirmation";
 import { ProfileFormFields } from "./profile-form-fields.client";
 
-export function ProfileOnboardingForm({
-  action,
-  correctionCommand,
-  draftAction,
-  initialDraft,
-  initialValues,
-  mediaFields,
-  role,
-}: {
+type ProfileOnboardingFormProps = {
   action: OnboardingAction;
   correctionCommand?: CorrectedProfileResubmissionCommand;
   draftAction: OnboardingDraftAction;
@@ -45,7 +38,25 @@ export function ProfileOnboardingForm({
   initialValues?: OnboardingDraftPayload;
   mediaFields?: React.ReactNode;
   role: "INFLUENCER" | "COMPANY";
-}) {
+};
+
+export function ProfileOnboardingForm(props: ProfileOnboardingFormProps) {
+  return (
+    <BrowserQueryProvider>
+      <ProfileOnboardingFormContent {...props} />
+    </BrowserQueryProvider>
+  );
+}
+
+function ProfileOnboardingFormContent({
+  action,
+  correctionCommand,
+  draftAction,
+  initialDraft,
+  initialValues,
+  mediaFields,
+  role,
+}: ProfileOnboardingFormProps) {
   const [state, formAction, pending] = useActionState(
     action,
     initialOnboardingActionState,

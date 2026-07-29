@@ -23,7 +23,11 @@ export function ApprovedCatalogEntry({
   signOutAction: () => Promise<void>;
 }) {
   return (
-    <main className="bg-brand-canvas min-h-screen px-4 py-6 sm:px-8 sm:py-10">
+    <main
+      className="bg-brand-canvas min-h-screen px-4 py-6 sm:px-8 sm:py-10"
+      id="main-content"
+      tabIndex={-1}
+    >
       <div className="mx-auto max-w-7xl">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <span className="bg-brand-night rounded-md">

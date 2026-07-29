@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import {
@@ -16,6 +17,10 @@ import {
   suspendAccountAction,
   unbanAccountAction,
 } from "@/features/moderation/server";
+
+export const metadata: Metadata = {
+  title: "Revisão de cadastro",
+};
 
 const moderationActions = {
   APPROVE: approveAccountAction,

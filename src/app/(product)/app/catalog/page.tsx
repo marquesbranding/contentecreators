@@ -8,8 +8,8 @@ import {
   ApprovedCatalogEntry,
   CompanyCarouselScreen,
   creatorCatalogKeys,
-  CreatorCatalogView,
   creatorCatalogFiltersSchema,
+  HydratedCreatorCatalog,
   type CreatorCatalogBrowserPageDto,
 } from "@/features/catalog";
 import { signOutAction } from "@/features/identity/server";
@@ -19,7 +19,6 @@ import {
 } from "@/features/catalog/server";
 import { getServerSignedMedia } from "@/features/media/server";
 import { AccountStatusBoundary } from "@/features/moderation/server";
-import { FeatureHydrationBoundary } from "@/shared/query/feature-hydration-boundary";
 import { getServerQueryClient } from "@/shared/server/query-client";
 
 import { CatalogSponsorshipSlots } from "@/app/_components/catalog-sponsorship-slots";
@@ -103,9 +102,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
                   <CompanyCarouselScreen initialData={companyCarousel} />
                 </div>
               ) : null}
-              <FeatureHydrationBoundary state={dehydrate(queryClient)}>
-                <CreatorCatalogView />
-              </FeatureHydrationBoundary>
+              <HydratedCreatorCatalog state={dehydrate(queryClient)} />
             </CatalogSponsorshipSlots>
           </ApprovedCatalogEntry>
         );

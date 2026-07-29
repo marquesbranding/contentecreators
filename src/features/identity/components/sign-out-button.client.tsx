@@ -1,18 +1,16 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
+import { getBrowserQueryClient } from "@/shared/query/browser-query-client";
 
 export function SignOutButton({ action }: { action: () => Promise<void> }) {
-  const queryClient = useQueryClient();
-
   return (
     <form
       action={action}
       onSubmit={() => {
-        queryClient.clear();
+        getBrowserQueryClient().clear();
       }}
     >
       <Button

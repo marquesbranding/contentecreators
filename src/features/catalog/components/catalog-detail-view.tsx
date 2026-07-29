@@ -61,13 +61,17 @@ const socialLabels = {
 function CatalogPrivateImage({
   alt,
   className,
+  fetchPriority = "auto",
   height,
+  loading = "lazy",
   src,
   width,
 }: {
   alt: string;
   className: string;
+  fetchPriority?: "auto" | "high" | "low";
   height: number | null;
+  loading?: "eager" | "lazy";
   src: string;
   width: number | null;
 }) {
@@ -77,7 +81,10 @@ function CatalogPrivateImage({
     <img
       alt={alt}
       className={className}
+      decoding="async"
+      fetchPriority={fetchPriority}
       height={height ?? 640}
+      loading={loading}
       referrerPolicy="no-referrer"
       src={src}
       width={width ?? 640}
@@ -105,7 +112,11 @@ function DetailLoading() {
 
 function DetailError({ onRetry }: { onRetry?: () => void }) {
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10 sm:px-8">
+    <main
+      className="mx-auto max-w-3xl px-4 py-10 sm:px-8"
+      id="main-content"
+      tabIndex={-1}
+    >
       <Alert variant="destructive">
         <AlertCircle aria-hidden="true" />
         <AlertTitle>Não foi possível carregar este perfil</AlertTitle>
@@ -129,7 +140,11 @@ function DetailError({ onRetry }: { onRetry?: () => void }) {
 
 function DetailUnavailable() {
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10 sm:px-8">
+    <main
+      className="mx-auto max-w-3xl px-4 py-10 sm:px-8"
+      id="main-content"
+      tabIndex={-1}
+    >
       <Alert>
         <UsersRound aria-hidden="true" />
         <AlertTitle>
@@ -290,7 +305,11 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
   const { detail } = props;
 
   return (
-    <main className="bg-brand-canvas min-h-screen">
+    <main
+      className="bg-brand-canvas min-h-screen"
+      id="main-content"
+      tabIndex={-1}
+    >
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-8 sm:py-10">
         <Link
           className={buttonVariants({ variant: "outline" })}
@@ -306,7 +325,9 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
               <CatalogPrivateImage
                 alt={detail.media.cover.alt}
                 className="aspect-[16/7] w-full object-cover"
+                fetchPriority="high"
                 height={detail.media.cover.height}
+                loading="eager"
                 src={detail.media.cover.url}
                 width={detail.media.cover.width}
               />

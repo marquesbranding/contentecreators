@@ -58,8 +58,16 @@ describe("AuditHistoryResults", () => {
       expect(within(presentation).getByText("Atualização")).toBeVisible();
       await user.click(within(presentation).getByText("Ver alterações (2)"));
       expect(within(presentation).getByText("Aprovação manual")).toBeVisible();
-      expect(within(presentation).getByText("PENDING_REVIEW")).toBeVisible();
-      expect(within(presentation).getByText("APPROVED")).toBeVisible();
+      expect(
+        within(presentation).getByText("Aguardando análise"),
+      ).toBeVisible();
+      expect(within(presentation).getByText("Aprovado")).toBeVisible();
+      expect(
+        within(presentation).queryByText("PENDING_REVIEW"),
+      ).not.toBeInTheDocument();
+      expect(
+        within(presentation).queryByText("APPROVED"),
+      ).not.toBeInTheDocument();
       expect(within(presentation).getAllByText("Dado protegido")).toHaveLength(
         2,
       );

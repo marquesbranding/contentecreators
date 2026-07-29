@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
+
 import {
   AdminEmailOutboxScreen,
   parseAdminEmailOutboxSearchParams,
 } from "@/features/communications";
 import { retryFailedEmailAction } from "@/features/communications/server";
+
+export const metadata: Metadata = {
+  title: "Operações de e-mail",
+};
 
 type EmailPageSearchParams = Record<string, string | string[] | undefined>;
 

@@ -22,7 +22,6 @@ import {
 } from "@/features/onboarding/server";
 
 import { CompanyProfileEditor, ProfileEditor } from "./profile-editor.client";
-
 export const metadata: Metadata = {
   title: "Meu perfil",
 };

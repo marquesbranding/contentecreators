@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
+
 import {
   AuditHistoryScreen,
   parseAuditHistorySearchParams,
 } from "@/features/audit";
+
+export const metadata: Metadata = {
+  title: "Histórico de auditoria",
+};
 
 type AuditPageSearchParams = Record<string, string | string[] | undefined>;
 

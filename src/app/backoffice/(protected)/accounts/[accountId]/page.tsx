@@ -1,10 +1,15 @@
 import { Pencil } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AccountDetail } from "@/features/backoffice";
 import { loadBackofficeAccountDetail } from "@/features/backoffice/server";
 import { buttonVariants } from "@/shared/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Detalhes da conta",
+};
 
 export default async function BackofficeAccountDetailPage({
   params,

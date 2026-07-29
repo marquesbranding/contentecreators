@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import {
   parseSponsorshipManagementSearchParams,
   SponsorshipManagementScreen,
@@ -7,6 +9,10 @@ import {
   finalizeMediaUploadAction,
   prepareMediaUploadAction,
 } from "@/features/media/server";
+
+export const metadata: Metadata = {
+  title: "Patrocínios",
+};
 
 type SponsorshipPageSearchParams = Record<
   string,

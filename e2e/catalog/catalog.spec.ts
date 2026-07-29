@@ -144,7 +144,11 @@ test.describe("approved private catalog", () => {
 
     await expect(page).toHaveURL(/\/app\/catalog\?.*search=Diego/u);
     await expect(searchBox).toHaveValue("Diego");
-    await expect(page.getByText("Diego Aprova", { exact: true })).toBeVisible();
+    await expect(
+      page
+        .getByRole("list", { name: "Lista de criadores" })
+        .getByRole("heading", { name: "Diego Aprova", exact: true }),
+    ).toBeVisible();
 
     const trigger = page.getByRole("button", {
       name: "Abrir filtros do catálogo",

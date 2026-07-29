@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
-import { ApplicationProvider } from "@/app/_providers/application-provider";
+import { SkipLink } from "@/shared/components/skip-link";
 
 import "./globals.css";
 
 const geistSans = Geist({
+  display: "optional",
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
+  display: "optional",
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
@@ -70,7 +72,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <ApplicationProvider>{children}</ApplicationProvider>
+        <SkipLink />
+        {children}
       </body>
     </html>
   );

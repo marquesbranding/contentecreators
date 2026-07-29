@@ -46,6 +46,24 @@ const entityLabels: Record<string, string> = {
   sponsorship_placements: "Patrocínios",
 };
 
+const valueLabels: Readonly<Record<string, string>> = {
+  ACTIVE: "Ativa",
+  ADMIN: "Administrador",
+  APPROVED: "Aprovado",
+  ARCHIVED: "Arquivada",
+  BANNED: "Banido",
+  CHANGES_REQUESTED: "Correções solicitadas",
+  COMPANY: "Empresa",
+  INFLUENCER: "Influenciador",
+  ONBOARDING: "Cadastro em andamento",
+  PENDING: "Pendente",
+  PENDING_REVIEW: "Aguardando análise",
+  REJECTED: "Rejeitada",
+  SELF_REPORTED: "Autodeclarada",
+  SUSPENDED: "Suspenso",
+  UGC: "UGC",
+};
+
 export function getAuditActionLabel(action: AuditOperation) {
   return actionLabels[action];
 }
@@ -60,6 +78,10 @@ export function getAuditSourceLabel(source: AuditSource) {
 
 export function getAuditEntityLabel(entity: string) {
   return entityLabels[entity] ?? entity;
+}
+
+export function getAuditValueLabel(value: string) {
+  return valueLabels[value] ?? value;
 }
 
 export function getAuditFieldLabel(field: string) {

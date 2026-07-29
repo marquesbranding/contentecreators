@@ -24,7 +24,11 @@ export function AuthPageShell({
   title,
 }: AuthPageShellProps) {
   return (
-    <main className="bg-brand-canvas grid min-h-screen lg:grid-cols-[0.9fr_1.1fr]">
+    <main
+      className="bg-brand-canvas grid min-h-screen lg:grid-cols-[0.9fr_1.1fr]"
+      id="main-content"
+      tabIndex={-1}
+    >
       <section className="bg-brand-night relative hidden overflow-hidden px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between xl:px-16">
         <div
           aria-hidden="true"

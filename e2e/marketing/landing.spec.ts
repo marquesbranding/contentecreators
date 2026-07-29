@@ -101,7 +101,7 @@ test.describe("public marketing landing", () => {
       const hero = page.getByTestId("marketing-hero");
       const criticalHeroElements = [
         hero.getByRole("heading", { level: 1 }),
-        hero.locator('[data-slot="text-animate"]').last(),
+        hero.locator("h1 + p"),
         ...(await hero.getByRole("link").all()),
       ];
 

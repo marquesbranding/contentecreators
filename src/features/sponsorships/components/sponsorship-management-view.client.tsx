@@ -259,7 +259,12 @@ function PlacementPreview({
         <img
           alt={placement.creative.alt}
           className="aspect-video w-full object-cover"
+          decoding="async"
+          height={placement.creative.height ?? 900}
+          loading="lazy"
+          referrerPolicy="no-referrer"
           src={placement.creative.url}
+          width={placement.creative.width ?? 1_600}
         />
       ) : null}
       <CardHeader>

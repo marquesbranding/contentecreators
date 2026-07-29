@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { ApplicationProvider } from "@/app/_providers/application-provider";
+
 export const metadata: Metadata = {
   robots: {
     index: false,
@@ -13,5 +15,5 @@ export default function AuthLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return children;
+  return <ApplicationProvider>{children}</ApplicationProvider>;
 }

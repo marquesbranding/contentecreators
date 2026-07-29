@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   getAvailableModerationActions,
+  getMediaStatusLabel,
   getModerationRoleLabel,
   getModerationStatusLabel,
 } from "./moderation-presentation";
@@ -23,6 +24,15 @@ describe("backoffice moderation presentation", () => {
     ["BANNED", "Banido"],
   ] as const)("translates status %s to pt-BR", (status, expected) => {
     expect(getModerationStatusLabel(status)).toBe(expected);
+  });
+
+  it.each([
+    ["ACTIVE", "Ativa"],
+    ["ARCHIVED", "Arquivada"],
+    ["PENDING", "Pendente"],
+    ["REJECTED", "Rejeitada"],
+  ] as const)("translates media status %s to pt-BR", (status, expected) => {
+    expect(getMediaStatusLabel(status)).toBe(expected);
   });
 
   it("offers only individual decisions allowed for a pending submission", () => {

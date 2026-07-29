@@ -116,7 +116,9 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
                   <img
                     alt={company.logo.alt}
                     className="max-h-full max-w-full object-contain"
+                    decoding="async"
                     height={company.logo.height ?? 320}
+                    loading="lazy"
                     referrerPolicy="no-referrer"
                     src={company.logo.url}
                     width={company.logo.width ?? 640}

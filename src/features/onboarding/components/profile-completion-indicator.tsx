@@ -7,11 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import {
-  Progress,
-  ProgressLabel,
-  ProgressValue,
-} from "@/shared/components/ui/progress";
+import { Progress, ProgressLabel } from "@/shared/components/ui/progress";
 
 import type {
   ProfileCompletionField,
@@ -101,7 +97,9 @@ export function ProfileCompletionIndicator({
           <ProgressLabel>
             {`Conclusão do perfil: ${completion.percentage}%`}
           </ProgressLabel>
-          <ProgressValue>{() => `${completion.percentage}%`}</ProgressValue>
+          <span className="text-muted-foreground ml-auto text-sm tabular-nums">
+            {completion.percentage}%
+          </span>
         </Progress>
 
         {!isComplete && completion.missingFields.length > 0 ? (

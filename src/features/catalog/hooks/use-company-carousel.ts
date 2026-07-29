@@ -13,6 +13,8 @@ type CompanyCarouselFetcher = (
   signal: AbortSignal,
 ) => Promise<CompanyCarouselViewResponseDto>;
 
+const HYDRATED_CAROUSEL_STALE_TIME_MS = 30_000;
+
 export function createUseCompanyCarousel(
   fetchCarousel: CompanyCarouselFetcher,
 ) {
@@ -24,7 +26,10 @@ export function createUseCompanyCarousel(
       initialData,
       queryFn: ({ signal }) => fetchCarousel(limit, signal),
       queryKey: companyCarouselKeys.list(limit),
-      staleTime: 0,
+      // The server already authorized this payload for the first render. This
+      // prevents a duplicate hydration request while staying well below the
+      // five-minute signed URL lifetime.
+      staleTime: HYDRATED_CAROUSEL_STALE_TIME_MS,
     });
   };
 }

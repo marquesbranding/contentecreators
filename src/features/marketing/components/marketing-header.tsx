@@ -10,12 +10,6 @@ const copy = ptBR.marketing;
 export function MarketingHeader() {
   return (
     <header className="bg-brand-night/95 sticky top-0 z-50 border-b border-white/10 text-white backdrop-blur-xl">
-      <a
-        className="sr-only rounded-md bg-white px-4 py-3 font-semibold text-black focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60]"
-        href="#main-content"
-      >
-        Pular para o conteúdo
-      </a>
       <div className="mx-auto flex h-[4.5rem] w-full max-w-[90rem] items-center justify-between gap-4 px-5 sm:h-20 sm:px-8 lg:px-12">
         <Link
           aria-label="Contente Creators — início"

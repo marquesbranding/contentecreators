@@ -19,7 +19,11 @@ export function RoleSelectionShell({
   signOutAction: () => Promise<void>;
 }) {
   return (
-    <main className="bg-brand-canvas relative min-h-screen overflow-hidden px-5 py-7 sm:px-8 sm:py-10">
+    <main
+      className="bg-brand-canvas relative min-h-screen overflow-hidden px-5 py-7 sm:px-8 sm:py-10"
+      id="main-content"
+      tabIndex={-1}
+    >
       <div
         aria-hidden="true"
         className="bg-brand-blue/15 absolute -top-48 left-1/2 size-[32rem] -translate-x-1/2 rounded-full blur-3xl"

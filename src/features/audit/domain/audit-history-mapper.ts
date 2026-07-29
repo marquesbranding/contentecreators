@@ -1,4 +1,5 @@
 import { redactAuditSnapshot, toSafeAuditRevision } from "./audit-redaction";
+import { getAuditValueLabel } from "./audit-history-presentation";
 import type {
   AuditDisplayValue,
   AuditHistoryItemDto,
@@ -37,7 +38,7 @@ function toDisplayValue(value: unknown): AuditDisplayValue {
   }
 
   if (typeof value === "string") {
-    return redactFreeText(value);
+    return getAuditValueLabel(redactFreeText(value));
   }
 
   if (Array.isArray(value)) {

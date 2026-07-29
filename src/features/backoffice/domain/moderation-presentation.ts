@@ -17,6 +17,9 @@ export type BackofficeModerationAction =
   | "UNBAN"
   | "ARCHIVE";
 
+export type BackofficeMediaStatus =
+  "ACTIVE" | "ARCHIVED" | "PENDING" | "REJECTED";
+
 const roleLabels: Record<BackofficeAccountRole, string> = {
   COMPANY: "Empresa",
   INFLUENCER: "Influenciador",
@@ -29,6 +32,13 @@ const statusLabels: Record<BackofficeAccountStatus, string> = {
   ONBOARDING: "Cadastro em andamento",
   PENDING_REVIEW: "Aguardando análise",
   SUSPENDED: "Suspenso",
+};
+
+const mediaStatusLabels: Record<BackofficeMediaStatus, string> = {
+  ACTIVE: "Ativa",
+  ARCHIVED: "Arquivada",
+  PENDING: "Pendente",
+  REJECTED: "Rejeitada",
 };
 
 const availableActions: Record<
@@ -49,6 +59,10 @@ export function getModerationRoleLabel(role: BackofficeAccountRole) {
 
 export function getModerationStatusLabel(status: BackofficeAccountStatus) {
   return statusLabels[status];
+}
+
+export function getMediaStatusLabel(status: BackofficeMediaStatus) {
+  return mediaStatusLabels[status];
 }
 
 export function getAvailableModerationActions(status: BackofficeAccountStatus) {

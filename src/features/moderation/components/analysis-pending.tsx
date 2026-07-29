@@ -17,7 +17,11 @@ export function AnalysisPending({
   signOutAction: () => Promise<void>;
 }) {
   return (
-    <main className="bg-brand-canvas relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-10">
+    <main
+      className="bg-brand-canvas relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-10"
+      id="main-content"
+      tabIndex={-1}
+    >
       <div
         aria-hidden="true"
         className="bg-brand-blue/15 absolute -top-40 left-1/2 size-[34rem] -translate-x-1/2 rounded-full blur-3xl"

@@ -26,6 +26,7 @@ import {
   getAuditEntityLabel,
   getAuditFieldLabel,
   getAuditSourceLabel,
+  getAuditValueLabel,
 } from "../domain/audit-history-presentation";
 import type {
   AuditDisplayValue,
@@ -68,7 +69,9 @@ function AuditValue({ value }: { value: AuditDisplayValue }) {
   }
 
   const serialized =
-    typeof value === "string" ? value : JSON.stringify(value, null, 2);
+    typeof value === "string"
+      ? getAuditValueLabel(value)
+      : JSON.stringify(value, null, 2);
 
   return (
     <pre className="font-mono text-xs leading-5 break-words whitespace-pre-wrap">

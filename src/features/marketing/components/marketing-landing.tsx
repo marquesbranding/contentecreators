@@ -140,8 +140,13 @@ function AudienceSection() {
     >
       <div className="mx-auto w-full max-w-[90rem] px-5 sm:px-8 lg:px-12">
         <div className="max-w-3xl">
-          <p className="text-brand-lime text-sm font-extrabold tracking-[0.12em] uppercase">
-            {copy.audience.eyebrow}
+          <p className="text-sm font-extrabold tracking-[0.12em] uppercase">
+            <AuroraText
+              colors={["#c5f500", "#1e9bf0", "#f5167e", "#c5f500"]}
+              speed={0.8}
+            >
+              {copy.audience.eyebrow}
+            </AuroraText>
           </p>
           <TextAnimate
             animation="blurInUp"
@@ -423,7 +428,7 @@ export function MarketingLanding({
   return (
     <div className="min-h-screen overflow-x-clip bg-[#f7f6f2]">
       <MarketingHeader />
-      <main id="main-content">
+      <main id="main-content" tabIndex={-1}>
         <section
           className="marketing-hero-surface relative overflow-hidden py-14 text-white sm:py-20 lg:py-24"
           data-testid="marketing-hero"
@@ -438,37 +443,14 @@ export function MarketingLanding({
                 aria-label={copy.hero.title}
                 className="mt-7 text-[clamp(2.9rem,8.5vw,6.7rem)] leading-[0.9] font-extrabold tracking-[-0.065em] text-white"
               >
-                <TextAnimate
-                  accessible={false}
-                  animation="blurInUp"
-                  as="span"
-                  by="word"
-                  className="block"
-                  duration={0.55}
-                  startOnView={false}
-                >
-                  Creators e marcas,
-                </TextAnimate>
-                <span className="mt-2 block">
-                  <AuroraText
-                    colors={["#1e9bf0", "#c5f500", "#f5167e", "#1e9bf0"]}
-                    speed={0.8}
-                  >
-                    no mesmo ritmo.
-                  </AuroraText>
+                <span className="block">Creators e marcas,</span>
+                <span className="mt-2 block bg-linear-to-r from-[#1e9bf0] via-[#c5f500] to-[#f5167e] bg-clip-text text-transparent">
+                  no mesmo ritmo.
                 </span>
               </h1>
-              <TextAnimate
-                animation="fadeIn"
-                as="p"
-                by="word"
-                className="mt-7 max-w-2xl text-lg leading-8 text-white/70 sm:text-xl sm:leading-9"
-                delay={0.35}
-                duration={0.6}
-                startOnView={false}
-              >
+              <p className="mt-7 max-w-2xl text-lg leading-8 text-white/70 sm:text-xl sm:leading-9">
                 {copy.hero.description}
-              </TextAnimate>
+              </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
                   className={cn(

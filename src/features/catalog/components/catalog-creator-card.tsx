@@ -82,6 +82,7 @@ function CreatorMedia({ creator }: { creator: CatalogCreatorCardViewModel }) {
       decoding="async"
       height="480"
       loading="lazy"
+      referrerPolicy="no-referrer"
       src={creator.media.src}
       width="640"
     />

@@ -33,6 +33,8 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:a11y": "playwright test --grep @a11y",
+    "performance:budget": "tsx scripts/check-performance-budgets.ts",
+    "performance:measure": "tsx scripts/measure-core-web-vitals.ts",
     "db:start": "supabase start --workdir .",
     "db:stop": "supabase stop --workdir .",
     "db:status": "supabase status --workdir .",
