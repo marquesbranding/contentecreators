@@ -57,7 +57,7 @@
    Do instead: plan Supabase Auth/Postgres/Storage, Vercel deployment, responsive mobile-first UI, and TDD unless the user explicitly changes the stack.
 
 6. **[2026-07-30] Keep the public landing static and free of participant data**
-   Do instead: keep `/` under a strict static-rendering contract with no request-time Auth, database, user, aggregate-counter, or sponsorship dependency; keep catalog records private to approved authenticated accounts until the client validates public social proof.
+   Do instead: keep the `/` shell under a strict static-rendering contract; load optional counters/promotions after hydration through separate credential-free, validated, fail-closed endpoints so only the affected section disappears, and keep catalog records private to approved authenticated accounts until the client validates public social proof.
 
 7. **[2026-07-25] Preserve the complete official logo set and use consistent interface iconography**
    Do instead: keep every PNG under `public/brand/official` byte-identical, select white/pink/blue/lime/royal-blue/black through the shared `BrandLogo`, never recolor the artwork, use Lucide icons for UI symbols, and avoid emoji.

@@ -273,9 +273,9 @@ const eslintConfig = defineConfig([
         {
           patterns: [
             {
-              regex: "^@/features/[^/]+/(?!server$).+",
+              regex: "^@/features/[^/]+/(?!(?:client|server)$).+",
               message:
-                "Compose a feature through its client-safe index.ts or guarded server.ts public API.",
+                "Compose a feature through its client-safe index.ts, focused client.ts, or guarded server.ts public API.",
             },
             {
               regex: "^@/db(?:/|$)",
@@ -288,7 +288,7 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    files: ["src/features/*/index.{ts,tsx}"],
+    files: ["src/features/*/{client,index}.{ts,tsx}"],
     rules: {
       "no-restricted-imports": [
         "error",

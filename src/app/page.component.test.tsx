@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import Home, { dynamic } from "@/app/page";
@@ -33,7 +33,11 @@ vi.mock("@/features/sponsorships/server", () => ({
 }));
 
 describe("Home", () => {
-  it("enforces static rendering without invoking backend-dependent slots", () => {
+  it("keeps the static shell visible when every optional enhancement fails", async () => {
+    const request = vi
+      .spyOn(globalThis, "fetch")
+      .mockRejectedValue(new Error("Backend unavailable"));
+
     expect(dynamic).toBe("error");
 
     render(<Home />);
@@ -44,5 +48,9 @@ describe("Home", () => {
         name: "Creators e marcas, no mesmo ritmo.",
       }),
     ).toBeInTheDocument();
+    await waitFor(() => expect(request).toHaveBeenCalledTimes(2));
+    expect(
+      screen.getAllByRole("link", { name: "Sou influencer" })[0],
+    ).toHaveAttribute("href", "/sign-up?intent=influencer");
   });
 });

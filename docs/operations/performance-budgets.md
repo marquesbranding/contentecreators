@@ -57,10 +57,12 @@ guard.
   mounted for auth and backoffice where the full route group consumes it; in
   product routes it starts only inside the client entry points that execute
   queries. Server render functions never cross the provider boundary.
-- The root landing exports a strict static-rendering contract and performs no
-  request-time Auth, database, user, aggregate-counter, or sponsorship read.
-  `next build` must report `/` as prerendered static content so the CDN-served
-  page remains available when application services are degraded.
+- The root landing exports a strict static-rendering contract and its shell
+  performs no server-render Auth, database, user, aggregate-counter, or
+  sponsorship read. Optional counters and promotion requests start only after
+  hydration, omit credentials, validate bounded payloads, and fail closed per
+  section. `next build` must report `/` as prerendered static content so the
+  CDN-served shell remains available when application services are degraded.
 - Catalog list hydration uses the server-prefetched infinite-query cache.
   Company carousel hydration keeps server data fresh for 30 seconds, preventing
   an immediate duplicate Axios request while remaining below signed-media TTL.
@@ -84,10 +86,10 @@ The 2026-07-29 production-build baseline passed the executable browser budgets:
 | Mobile 390   | 12.7 ms | 68 ms | 68 ms |   0 |
 | Desktop 1440 |    9 ms | 44 ms | 44 ms |   0 |
 
-The same build passed the static delivery guard with 82,333 B gzip of landing
-client JavaScript, a 71,045 B gzip largest client chunk, an 18,095 B gzip
-largest CSS chunk, 146,464 B of self-hosted fonts, and a 154,313 B largest
-official logo source.
+The 2026-07-30 static-shell resilience build passed the delivery guard with
+88,101 B gzip of landing client JavaScript, a 71,045 B gzip largest client
+chunk, an 18,215 B gzip largest CSS chunk, 146,464 B of self-hosted fonts, and
+a 154,313 B largest official logo source.
 
 A separate warmed Lighthouse 12.8.2 run scored 94 for Performance and 100 for
 Accessibility, Best Practices, and SEO. It reported FCP 1.208 s, CLS 0, and TBT

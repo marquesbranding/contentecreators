@@ -11,7 +11,7 @@ allowed.
 src/app routes and _providers
              |
              v
-feature index.ts or guarded server.ts
+feature index.ts, focused client.ts, or guarded server.ts
              |
              v
 same feature implementation
@@ -29,8 +29,10 @@ domain-neutral shared   db (server graph only)
 - Browser-safe graphs never import `server.ts`, `server/`, `db`, or
   `shared/server`.
 - Server graphs never import client hooks or Zustand modules.
-- `index.ts` is an explicit browser-safe/shared public API. `server.ts` begins
-  with `server-only` and explicitly exports the server API. Neither is a
+- `index.ts` is the general browser-safe/shared public API. A focused
+  `client.ts` may expose a narrow route-specific Client Component graph when
+  importing the general barrel would ship unrelated feature UI. `server.ts`
+  begins with `server-only` and explicitly exports the server API. None is a
   wildcard barrel.
 
 ESLint enforces the dependency direction, blocks deep feature imports from

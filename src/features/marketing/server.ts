@@ -10,3 +10,4 @@ export {
   loadPublicAggregateCounters,
 } from "@/features/marketing/server/services/server-public-aggregate-counters.service";
 export { PublicAggregateCountersSlot } from "@/features/marketing/server/components/public-aggregate-counters-slot";
+export { createPublicAggregateCountersRouteHandler } from "@/features/marketing/server/route-handlers/public-aggregate-counters.handler";

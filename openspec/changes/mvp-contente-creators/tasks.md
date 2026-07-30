@@ -253,7 +253,7 @@
 - [x] 21.9 Add responsive, keyboard, reduced-motion, axe, and screenshot tests at representative widths. `[marketing-site] [platform-delivery]`
 - [x] 21.10 Implement privacy-safe optional aggregate counters with no participant identity, links, or catalog payload and hide empty/misleading values. `[marketing-site]`
 - [x] 21.11 Implement/test a persistent accessible “Entrar” affordance for long/narrow landing layouts without obscuring content. `[marketing-site]`
-- [x] 21.12 Make the root landing a build-prerendered static route with no request-time Auth, database, user, aggregate-counter, or sponsorship dependency; enforce the contract with a route test and production build. `[marketing-site] [platform-delivery]`
+- [x] 21.12 Make the root landing a build-prerendered static shell with no server-render Auth, database, user, aggregate-counter, or sponsorship dependency; load optional counters/promotions through independent fail-closed client enhancements and enforce the contract with route/component tests and a production build. `[marketing-site] [platform-delivery]`
 
 ## 22. Admin analytics dashboard
 

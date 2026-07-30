@@ -14,7 +14,8 @@ The system SHALL provide a public Brazilian Portuguese landing page in the same 
 
 - **WHEN** Supabase Auth, Postgres, user provisioning, or another Next.js backend capability is unavailable
 - **THEN** the root landing page remains available as prerendered static content
-- **AND** rendering the landing page performs no request-time Auth, database, sponsorship, or user lookup
+- **AND** rendering the static shell performs no request-time Auth, database, sponsorship, or user lookup
+- **AND** optional aggregate or promotional client enhancements fail closed and independently without replacing the landing
 - **AND** native navigation links to registration and login remain visible and operable
 
 ### Requirement: Audience calls to action preserve registration intent
@@ -49,7 +50,7 @@ The system MUST NOT query, return, or render creator listings, creator cards, cr
 
 ### Requirement: Public counters are aggregate and non-identifying
 
-The landing page MAY show precomputed aggregate counts such as approved creators or companies, but it MUST NOT query them from the database at request time. Values SHALL come from a bounded aggregate DTO with no names, logos, cards, profile links, or drill-down. Empty, unavailable, misleading, or unapproved counters SHALL be hidden.
+The landing page MAY load aggregate counts such as approved creators or companies after the static shell is visible. Values SHALL come from an isolated optional public endpoint and a bounded aggregate DTO with no names, logos, cards, profile links, or drill-down. Empty, unavailable, misleading, invalid, or unapproved counters SHALL be hidden without affecting another landing section.
 
 #### Scenario: Approved aggregate counter is available
 
@@ -73,7 +74,7 @@ The system SHALL keep `publicSocialProofEnabled` false by default and SHALL NOT 
 
 ### Requirement: Public promotional placements respect privacy
 
-The landing page MAY render a precomputed generic top promotional placement, but it MUST NOT query sponsorship storage at request time, use private participant-derived fields, or bypass public social-proof restrictions.
+The landing page MAY load an active generic top promotional placement after the static shell is visible, but that isolated optional request MUST NOT use private participant-derived fields or bypass public social-proof restrictions. Failure to load the placement SHALL hide only that placement.
 
 #### Scenario: Eligible generic promotion is active
 
