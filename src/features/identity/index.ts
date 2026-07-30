@@ -1,5 +1,6 @@
 export { AuthPageShell } from "./components/auth-page-shell";
 export { AdminProvisioningForm } from "./components/admin-provisioning-form.client";
+export { AuthenticatedProductShell } from "./components/authenticated-product-shell.client";
 export { ConfirmEmailForm } from "./components/confirm-email-form.client";
 export { ForgotPasswordForm } from "./components/forgot-password-form.client";
 export { LoginForm } from "./components/login-form.client";

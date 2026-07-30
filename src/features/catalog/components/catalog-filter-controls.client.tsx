@@ -1,7 +1,7 @@
 "use client";
 
 import { Funnel, Search, SlidersHorizontal, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -296,7 +296,12 @@ export function CatalogFilterControls({
   onSearchSubmit,
   options,
 }: CatalogFilterControlsProps) {
+  const [hydrated, setHydrated] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   return (
     <section aria-label="Busca e filtros do catálogo" className="space-y-4">
@@ -343,6 +348,7 @@ export function CatalogFilterControls({
               <Button
                 aria-label="Abrir filtros do catálogo"
                 className="w-full justify-between"
+                disabled={!hydrated || isPending}
                 size="lg"
                 type="button"
                 variant="outline"

@@ -338,6 +338,7 @@ O produto deve permitir que:
 - [x] `19.7` Criar carrossel privado de logos de empresas somente para influencer aprovado.
 - [x] `19.8` Criar skeleton, vazio inicial, vazio filtrado, erro recuperável, limpeza após perda de autorização e retry em `pt-BR`.
 - [x] `19.9` Testar responsividade/acessibilidade em 320, 390, 768 e 1440 px, incluindo WebKit crítico.
+- [x] `19.10` Criar navegação autenticada compartilhada entre catálogo, detalhe e edição de perfil, com cabeçalho desktop, Sheet mobile, estado ativo e saída segura.
 
 ### HU-20 — Espaços de patrocínio
 

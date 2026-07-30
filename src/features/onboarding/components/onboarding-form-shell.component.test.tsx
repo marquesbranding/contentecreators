@@ -43,4 +43,23 @@ describe("onboarding form shell", () => {
       ),
     ).toBeInTheDocument();
   });
+
+  it("can defer the brand header to an authenticated product shell", () => {
+    render(
+      <OnboardingFormShell
+        description="Dados públicos do perfil."
+        showBrandHeader={false}
+        title="Edite seu perfil"
+      >
+        <p>Formulário</p>
+      </OnboardingFormShell>,
+    );
+
+    expect(
+      screen.queryByRole("img", { name: "Contente Creators" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Edite seu perfil" }),
+    ).toBeVisible();
+  });
 });

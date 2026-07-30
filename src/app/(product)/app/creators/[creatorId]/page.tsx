@@ -4,6 +4,8 @@ import {
   CatalogDetailScreen,
   catalogDetailQuerySchema,
 } from "@/features/catalog";
+import { AuthenticatedProductShell } from "@/features/identity";
+import { signOutAction } from "@/features/identity/server";
 import { AccountStatusBoundary } from "@/features/moderation/server";
 
 import { loadServerCatalogDetail } from "@/app/_server/catalog-detail.loader";
@@ -29,21 +31,25 @@ export default async function CreatorDetailPage({
 
         if (!query.success) {
           return (
-            <CatalogDetailScreen
-              creatorId={creatorId}
-              initialData={null}
-              revalidate={false}
-            />
+            <AuthenticatedProductShell signOutAction={signOutAction}>
+              <CatalogDetailScreen
+                creatorId={creatorId}
+                initialData={null}
+                revalidate={false}
+              />
+            </AuthenticatedProductShell>
           );
         }
 
         const initialData = await loadServerCatalogDetail(query.data);
 
         return (
-          <CatalogDetailScreen
-            creatorId={creatorId}
-            initialData={initialData}
-          />
+          <AuthenticatedProductShell signOutAction={signOutAction}>
+            <CatalogDetailScreen
+              creatorId={creatorId}
+              initialData={initialData}
+            />
+          </AuthenticatedProductShell>
         );
       }}
     />

@@ -9,7 +9,7 @@ import {
 import Link from "next/link";
 
 import { Badge } from "@/shared/components/ui/badge";
-import { Button } from "@/shared/components/ui/button";
+import { Button, buttonVariants } from "@/shared/components/ui/button";
 import {
   Card,
   CardContent,
@@ -68,19 +68,14 @@ function statusBadgeVariant(status: ManagedAccountSummaryDto["status"]) {
 
 function AccountLink({ item }: { item: ManagedAccountSummaryDto }) {
   return (
-    <Button
-      render={
-        <Link
-          aria-label={`Abrir ${item.displayName}`}
-          href={`/backoffice/accounts/${item.accountId}`}
-        >
-          Abrir
-          <SquareArrowOutUpRight aria-hidden="true" />
-        </Link>
-      }
-      size="sm"
-      variant="outline"
-    />
+    <Link
+      aria-label={`Abrir ${item.displayName}`}
+      className={buttonVariants({ size: "sm", variant: "outline" })}
+      href={`/backoffice/accounts/${item.accountId}`}
+    >
+      Abrir
+      <SquareArrowOutUpRight aria-hidden="true" />
+    </Link>
   );
 }
 

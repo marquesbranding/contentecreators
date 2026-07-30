@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, FileSearch } from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "@/shared/components/ui/badge";
-import { Button } from "@/shared/components/ui/button";
+import { Button, buttonVariants } from "@/shared/components/ui/button";
 import {
   Card,
   CardContent,
@@ -50,15 +50,12 @@ function statusBadgeVariant(status: ModerationQueueItemDto["status"]) {
 
 function ReviewLink({ item }: { item: ModerationQueueItemDto }) {
   return (
-    <Button
-      render={
-        <Link href={`/backoffice/moderation/${item.accountId}`}>
-          Revisar {item.displayName}
-        </Link>
-      }
-      size="sm"
-      variant="outline"
-    />
+    <Link
+      className={buttonVariants({ size: "sm", variant: "outline" })}
+      href={`/backoffice/moderation/${item.accountId}`}
+    >
+      Revisar {item.displayName}
+    </Link>
   );
 }
 

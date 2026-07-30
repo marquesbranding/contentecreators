@@ -1,13 +1,10 @@
-import { LogOut, SearchCheck, UserRoundPen } from "lucide-react";
-import Link from "next/link";
+import { FlaskConical, SearchCheck } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { BrandLogo } from "@/shared/components/brand-logo";
+import { AuthenticatedProductShell } from "@/features/identity";
 import { Badge } from "@/shared/components/ui/badge";
-import { Button, buttonVariants } from "@/shared/components/ui/button";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -15,69 +12,67 @@ import {
 
 export function ApprovedCatalogEntry({
   children,
-  showProfileLink = false,
   signOutAction,
 }: {
   children?: ReactNode;
-  showProfileLink?: boolean;
   signOutAction: () => Promise<void>;
 }) {
   return (
-    <main
-      className="bg-brand-canvas min-h-screen px-4 py-6 sm:px-8 sm:py-10"
-      id="main-content"
-      tabIndex={-1}
-    >
-      <div className="mx-auto max-w-7xl">
-        <header className="flex flex-wrap items-center justify-between gap-3">
-          <span className="bg-brand-night rounded-md">
-            <BrandLogo />
-          </span>
-          <div className="flex items-center gap-2">
-            {showProfileLink ? (
-              <Link
-                className={buttonVariants({
-                  className: "min-h-11",
-                  variant: "outline",
-                })}
-                href="/app/profile"
-              >
-                <UserRoundPen aria-hidden="true" />
-                Meu perfil
-              </Link>
-            ) : null}
-            <form action={signOutAction}>
-              <Button className="min-h-11" type="submit" variant="outline">
-                <LogOut aria-hidden="true" />
-                Sair
-              </Button>
-            </form>
+    <AuthenticatedProductShell signOutAction={signOutAction}>
+      <main
+        className="px-4 py-5 sm:px-8 sm:py-8"
+        id="main-content"
+        tabIndex={-1}
+      >
+        <div className="mx-auto max-w-7xl">
+          <div
+            className="border-brand-lime/25 bg-brand-night flex items-start gap-3 rounded-2xl border px-4 py-3 text-white sm:items-center sm:px-5"
+            role="status"
+          >
+            <FlaskConical
+              aria-hidden="true"
+              className="text-brand-lime mt-0.5 size-5 shrink-0 sm:mt-0"
+            />
+            <p className="text-sm leading-6 text-white/80">
+              <strong className="text-white">Você está no beta.</strong> O
+              catálogo evolui continuamente; mantenha seu perfil atualizado para
+              aproveitar melhor cada conexão.
+            </p>
           </div>
-        </header>
-        <Card className="mt-8 gap-0 overflow-hidden rounded-3xl py-0">
-          <CardHeader className="gap-4 border-b px-6 py-8 sm:px-9">
-            <Badge className="w-fit gap-2 rounded-full" variant="secondary">
-              <SearchCheck aria-hidden="true" />
-              Acesso aprovado
-            </Badge>
-            <CardTitle className="text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
-              <h1>Encontre creators para novas conexões</h1>
-            </CardTitle>
-            <CardDescription className="max-w-2xl text-base leading-7">
-              Explore somente perfis aprovados e use busca e filtros para
-              encontrar pessoas alinhadas ao seu objetivo.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="px-4 py-6 sm:px-9 sm:py-8">
+
+          <Card className="bg-brand-night relative mt-5 gap-0 overflow-hidden rounded-3xl border-white/10 py-0 text-white shadow-xl">
+            <div
+              aria-hidden="true"
+              className="bg-brand-blue/25 absolute -top-28 right-0 size-72 rounded-full blur-3xl"
+            />
+            <CardHeader className="relative gap-4 px-5 py-7 sm:px-8 sm:py-9">
+              <Badge
+                className="w-fit gap-2 rounded-full border-white/15 bg-white/10 text-white"
+                variant="outline"
+              >
+                <SearchCheck aria-hidden="true" />
+                Acesso aprovado
+              </Badge>
+              <CardTitle className="max-w-3xl text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
+                <h1>Encontre creators para novas conexões</h1>
+              </CardTitle>
+              <CardDescription className="max-w-2xl text-base leading-7 text-white/65">
+                Explore perfis aprovados e combine busca, nicho, localização e
+                redes sociais para encontrar pessoas alinhadas ao seu objetivo.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <div className="mt-8">
             {children ?? (
               <p className="text-muted-foreground text-sm leading-6">
                 A busca, os filtros e os perfis de creators respeitam as regras
                 de acesso, consentimento e situação cadastral.
               </p>
             )}
-          </CardContent>
-        </Card>
-      </div>
-    </main>
+          </div>
+        </div>
+      </main>
+    </AuthenticatedProductShell>
   );
 }

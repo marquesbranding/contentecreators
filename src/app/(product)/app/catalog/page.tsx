@@ -95,7 +95,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         ]);
 
         return (
-          <ApprovedCatalogEntry showProfileLink signOutAction={signOutAction}>
+          <ApprovedCatalogEntry signOutAction={signOutAction}>
             <CatalogSponsorshipSlots slots={sponsorshipSlots}>
               {companyCarousel ? (
                 <div className="mb-8">

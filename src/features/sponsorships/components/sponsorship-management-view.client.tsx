@@ -30,7 +30,7 @@ import {
   AlertTitle,
 } from "@/shared/components/ui/alert";
 import { Badge } from "@/shared/components/ui/badge";
-import { Button } from "@/shared/components/ui/button";
+import { Button, buttonVariants } from "@/shared/components/ui/button";
 import {
   Card,
   CardContent,
@@ -282,18 +282,14 @@ function PlacementPreview({
           {audienceLabels[placement.audience]}
         </span>
         {placement.linkUrl ? (
-          <Button
-            render={
-              <a
-                href={placement.linkUrl}
-                rel="noopener noreferrer"
-                target="_blank"
-              />
-            }
-            variant="outline"
+          <a
+            className={buttonVariants({ variant: "outline" })}
+            href={placement.linkUrl}
+            rel="noopener noreferrer"
+            target="_blank"
           >
             {placement.linkLabel ?? "Abrir link"}
-          </Button>
+          </a>
         ) : null}
       </CardContent>
     </Card>

@@ -35,6 +35,62 @@ async function expectNoHorizontalPageOverflow(page: Page, width: number) {
 }
 
 test.describe("approved private catalog", () => {
+  test("provides responsive product navigation without invalid button semantics", async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name !== "desktop-chromium",
+      "The navigation regression runs once with an explicit viewport matrix.",
+    );
+
+    const runtimeErrors: string[] = [];
+    page.on("console", (message) => {
+      if (message.type() === "error") {
+        runtimeErrors.push(message.text());
+      }
+    });
+    page.on("pageerror", (error) => {
+      runtimeErrors.push(error.message);
+    });
+
+    await page.setViewportSize({ height: 900, width: 1_440 });
+    await signInAsApprovedCompany(page);
+
+    const desktopNavigation = page.getByRole("navigation", {
+      name: "Navegação principal",
+    });
+    await expect(
+      desktopNavigation.getByRole("link", {
+        name: "Encontrar creators",
+      }),
+    ).toHaveAttribute("aria-current", "page");
+    await expect(
+      desktopNavigation.getByRole("link", { name: "Meu perfil" }),
+    ).toHaveAttribute("href", "/app/profile");
+
+    await page.setViewportSize({ height: 844, width: 390 });
+    await page.goto(CATALOG_PATH);
+    const menuTrigger = page.getByRole("button", {
+      name: "Abrir menu principal",
+    });
+    await expect(menuTrigger, runtimeErrors.join("\n")).toBeEnabled();
+    await menuTrigger.click();
+
+    const mobileNavigation = page.getByRole("dialog", {
+      name: "Navegação principal",
+    });
+    await expect(mobileNavigation).toBeVisible();
+    await expect(
+      mobileNavigation.getByRole("link", { name: "Meu perfil" }),
+    ).toHaveAttribute("href", "/app/profile");
+    await expectNoHorizontalPageOverflow(page, 390);
+    expect(
+      runtimeErrors.filter((message) =>
+        /native <button>|nativeButton prop/iu.test(message),
+      ),
+    ).toEqual([]);
+  });
+
   test("has no horizontal overflow at every supported width", async ({
     page,
   }, testInfo) => {

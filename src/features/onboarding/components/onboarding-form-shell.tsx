@@ -25,6 +25,7 @@ export function OnboardingFormShell({
   eyebrow = "Cadastro para análise",
   progress,
   progressLabel = "Dados do perfil",
+  showBrandHeader = true,
   title,
   totalSteps = 1,
 }: {
@@ -36,6 +37,7 @@ export function OnboardingFormShell({
   eyebrow?: string;
   progress?: number;
   progressLabel?: string;
+  showBrandHeader?: boolean;
   title: string;
   totalSteps?: number;
 }) {
@@ -56,17 +58,28 @@ export function OnboardingFormShell({
         className="bg-brand-blue/15 absolute -top-64 left-1/2 size-[38rem] -translate-x-1/2 rounded-full blur-3xl"
       />
       <div className="relative mx-auto max-w-5xl">
-        <header className="flex items-center justify-between gap-4">
-          <span className="bg-brand-night rounded-md">
-            <BrandLogo />
-          </span>
-          <Badge className="gap-1.5 rounded-full px-3 py-1.5" variant="outline">
-            <LockKeyhole aria-hidden="true" />
-            Dados protegidos
-          </Badge>
-        </header>
+        {showBrandHeader ? (
+          <header className="flex items-center justify-between gap-4">
+            <span className="bg-brand-night rounded-md">
+              <BrandLogo />
+            </span>
+            <Badge
+              className="gap-1.5 rounded-full px-3 py-1.5"
+              variant="outline"
+            >
+              <LockKeyhole aria-hidden="true" />
+              Dados protegidos
+            </Badge>
+          </header>
+        ) : null}
 
-        <Card className="mt-6 gap-0 overflow-hidden rounded-3xl py-0 shadow-[0_28px_80px_rgba(8,8,8,0.1)] sm:mt-9">
+        <Card
+          className={
+            showBrandHeader
+              ? "mt-6 gap-0 overflow-hidden rounded-3xl py-0 shadow-[0_28px_80px_rgba(8,8,8,0.1)] sm:mt-9"
+              : "gap-0 overflow-hidden rounded-3xl py-0 shadow-[0_28px_80px_rgba(8,8,8,0.1)]"
+          }
+        >
           <CardHeader className="gap-4 border-b px-5 py-6 sm:px-9 sm:py-8">
             <div className="flex items-center gap-2 text-xs font-extrabold tracking-[0.12em] text-[#0757d8] uppercase">
               <ShieldCheck aria-hidden="true" className="size-4" />
