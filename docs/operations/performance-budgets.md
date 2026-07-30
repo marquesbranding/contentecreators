@@ -57,6 +57,10 @@ guard.
   mounted for auth and backoffice where the full route group consumes it; in
   product routes it starts only inside the client entry points that execute
   queries. Server render functions never cross the provider boundary.
+- The root landing exports a strict static-rendering contract and performs no
+  request-time Auth, database, user, aggregate-counter, or sponsorship read.
+  `next build` must report `/` as prerendered static content so the CDN-served
+  page remains available when application services are degraded.
 - Catalog list hydration uses the server-prefetched infinite-query cache.
   Company carousel hydration keeps server data fresh for 30 seconds, preventing
   an immediate duplicate Axios request while remaining below signed-media TTL.

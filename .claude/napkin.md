@@ -56,8 +56,8 @@
 5. **[2026-07-22] Keep the MVP free-tier-first and mobile-first**
    Do instead: plan Supabase Auth/Postgres/Storage, Vercel deployment, responsive mobile-first UI, and TDD unless the user explicitly changes the stack.
 
-6. **[2026-07-22] Do not expose profiles or company logos on the public landing page yet**
-   Do instead: keep catalog records private to approved authenticated accounts until the client validates public social proof.
+6. **[2026-07-30] Keep the public landing static and free of participant data**
+   Do instead: keep `/` under a strict static-rendering contract with no request-time Auth, database, user, aggregate-counter, or sponsorship dependency; keep catalog records private to approved authenticated accounts until the client validates public social proof.
 
 7. **[2026-07-25] Preserve the complete official logo set and use consistent interface iconography**
    Do instead: keep every PNG under `public/brand/official` byte-identical, select white/pink/blue/lime/royal-blue/black through the shared `BrandLogo`, never recolor the artwork, use Lucide icons for UI symbols, and avoid emoji.

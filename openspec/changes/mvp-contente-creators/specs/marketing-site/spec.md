@@ -10,6 +10,13 @@ The system SHALL provide a public Brazilian Portuguese landing page in the same 
 - **THEN** the system renders the complete public landing page without requiring authentication
 - **AND** all visible product copy is polished `pt-BR`
 
+#### Scenario: Application services are unavailable
+
+- **WHEN** Supabase Auth, Postgres, user provisioning, or another Next.js backend capability is unavailable
+- **THEN** the root landing page remains available as prerendered static content
+- **AND** rendering the landing page performs no request-time Auth, database, sponsorship, or user lookup
+- **AND** native navigation links to registration and login remain visible and operable
+
 ### Requirement: Audience calls to action preserve registration intent
 
 The system SHALL provide “Sou influencer” and “Sou empresa” calls to action that lead to a combined email/password and role-specific profile registration form. The selected intent SHALL control the visible form variant but SHALL remain untrusted until the server validates it and successfully creates the Auth identity plus application profile.
@@ -42,7 +49,7 @@ The system MUST NOT query, return, or render creator listings, creator cards, cr
 
 ### Requirement: Public counters are aggregate and non-identifying
 
-The landing page MAY show configured aggregate counts such as approved creators or companies, but the values SHALL come from a bounded aggregate DTO with no names, logos, cards, profile links, or drill-down. Empty, misleading, or unapproved counters SHALL be hidden.
+The landing page MAY show precomputed aggregate counts such as approved creators or companies, but it MUST NOT query them from the database at request time. Values SHALL come from a bounded aggregate DTO with no names, logos, cards, profile links, or drill-down. Empty, unavailable, misleading, or unapproved counters SHALL be hidden.
 
 #### Scenario: Approved aggregate counter is available
 
@@ -66,7 +73,7 @@ The system SHALL keep `publicSocialProofEnabled` false by default and SHALL NOT 
 
 ### Requirement: Public promotional placements respect privacy
 
-The landing page MAY render an active generic top promotional placement, but it MUST NOT use private participant-derived fields or bypass public social-proof restrictions.
+The landing page MAY render a precomputed generic top promotional placement, but it MUST NOT query sponsorship storage at request time, use private participant-derived fields, or bypass public social-proof restrictions.
 
 #### Scenario: Eligible generic promotion is active
 

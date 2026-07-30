@@ -1,18 +1,10 @@
 import { MarketingLanding } from "@/features/marketing";
-import {
-  loadPublicSupportContact,
-  PublicAggregateCountersSlot,
-} from "@/features/marketing/server";
-import { PublicSponsorshipPromotionSlot } from "@/features/sponsorships/server";
+import { loadPublicSupportContact } from "@/features/marketing/server";
+
+export const dynamic = "error";
 
 export default function Home() {
   const supportContactEmail = loadPublicSupportContact();
 
-  return (
-    <MarketingLanding
-      aggregateCountersSlot={<PublicAggregateCountersSlot />}
-      publicPromotion={<PublicSponsorshipPromotionSlot />}
-      supportContactEmail={supportContactEmail}
-    />
-  );
+  return <MarketingLanding supportContactEmail={supportContactEmail} />;
 }

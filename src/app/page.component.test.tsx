@@ -1,0 +1,48 @@
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+
+import Home, { dynamic } from "@/app/page";
+
+vi.mock("next/image", () => ({
+  default: ({
+    alt,
+    priority: _priority,
+    ...props
+  }: React.ImgHTMLAttributes<HTMLImageElement> & { priority?: boolean }) => {
+    void _priority;
+
+    return (
+      // The mock verifies the accessible contract without Next.js optimization.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img alt={alt} {...props} />
+    );
+  },
+}));
+
+vi.mock("@/features/marketing/server", () => ({
+  loadPublicSupportContact: () => "privacidade@contentecreators.test",
+  PublicAggregateCountersSlot: () => {
+    throw new Error("The static landing must not query aggregate counters");
+  },
+}));
+
+vi.mock("@/features/sponsorships/server", () => ({
+  PublicSponsorshipPromotionSlot: () => {
+    throw new Error("The static landing must not query sponsorships");
+  },
+}));
+
+describe("Home", () => {
+  it("enforces static rendering without invoking backend-dependent slots", () => {
+    expect(dynamic).toBe("error");
+
+    render(<Home />);
+
+    expect(
+      screen.getByRole("heading", {
+        level: 1,
+        name: "Creators e marcas, no mesmo ritmo.",
+      }),
+    ).toBeInTheDocument();
+  });
+});

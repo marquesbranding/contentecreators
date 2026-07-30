@@ -384,12 +384,20 @@ Initial sections:
 - Header with brand navigation and “Entrar”.
 - Hero with proposition and “Sou influencer” / “Sou empresa” paths.
 - Benefits/problem framing for both audiences.
-- Optional privacy-safe aggregate counters (for example, approved creators and companies) with no names, logos, cards, or drill-down, rendered only when configured and meaningful.
+- Optional precomputed privacy-safe aggregate counters (for example, approved creators and companies) with no names, logos, cards, or drill-down, rendered only when configured and meaningful.
 - Three- or four-step “Como funciona”.
-- Optional generic top sponsorship creative managed by admin.
+- Optional precomputed generic top sponsorship creative managed by admin.
 - Final CTA and footer with privacy/terms/contact links.
 
 The page must not query or render creator cards, creator names, creator photos, creator metrics, company names, or company logos. A server-side feature flag `publicSocialProofEnabled` defaults to false and is not exposed as a Beta backoffice control. Enabling public profile/logo proof requires a later reviewed spec change and appropriate consent.
+
+The root page is prerendered as static content during the application build and
+has no request-time dependency on Supabase Auth, Postgres, user provisioning,
+aggregate counters, or sponsorship delivery. The route opts into a strict
+static-rendering contract so a future request-time API or uncached backend read
+fails the build instead of silently making the landing dependent on a healthy
+backend. Static native links continue to expose registration and login entry
+points even while those application capabilities are unavailable.
 
 Long/narrow landing layouts keep an accessible persistent “Entrar” affordance through the header and, where it does not obscure content or assistive interaction, a sticky/floating mobile treatment. The final position follows the brand/UX pass, but login entry must remain easy to find.
 

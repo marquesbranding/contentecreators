@@ -368,6 +368,7 @@ O produto deve permitir que:
 - [x] `21.9` Testar responsividade, teclado, movimento reduzido, axe e screenshots em larguras representativas.
 - [x] `21.10` Criar contadores agregados opcionais e seguros, ocultando valores vazios ou enganosos e sem identidade de participantes.
 - [x] `21.11` Criar acesso persistente e acessível a “Entrar” em layouts longos/estreitos sem cobrir conteúdo.
+- [x] `21.12` Manter a rota raiz pré-renderizada como conteúdo estático, sem consulta de Auth, banco, usuários, contadores ou patrocínios por requisição, para que a landing continue disponível quando o backend estiver indisponível.
 
 ### HU-22 — Dashboard administrativo
 
