@@ -65,8 +65,10 @@ async function main() {
       `${JSON.stringify(
         {
           mode: argumentsInput.execute ? "EXECUTE" : "DRY_RUN",
-          result,
-          supabaseUrl: environment.NEXT_PUBLIC_SUPABASE_URL,
+          result:
+            result.kind === "rejected"
+              ? { code: result.code, kind: result.kind }
+              : { kind: result.kind },
         },
         null,
         2,
