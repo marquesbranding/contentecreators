@@ -5,41 +5,46 @@ migrations through isolated projects:
 
 ```text
 develop -> contente-creators-dev
-main --manual approval--> contente-creators-prd
+main --Vercel production build--> contente-creators-prd
 ```
 
-The workflows are:
+The deployment entry points are:
 
 - `.github/workflows/deploy-development.yml`: automatic on `develop`, with a
   manual development rerun available only from that branch;
-- `.github/workflows/deploy-production.yml`: manual from `main`, requiring the
-  exact current main SHA, explicit confirmation, and approval through the
-  GitHub Environment `contente-creators-prd`.
+- `vercel.json` + `npm run vercel:build`: automatic production deployment from
+  `main` in the Vercel project `contente-creators-prd`, without GitHub
+  deployment secrets.
 
 Branch protection must require both `CI` and `Database CI`. The deployment
-workflows repeat a bounded code preflight so a later rerun cannot bypass basic
-format, lint, type, unit, or component gates. That preflight also compares the
-promoted commit with its trusted predecessor and fails closed if an existing
-migration was edited, renamed, copied, or removed.
+checks remain responsible for format, lint, types, tests, and immutable
+migration history before changes reach `main`. Vercel refuses hosted database
+mutations unless its system environment identifies a production build from
+that exact branch.
 
 ## Promotion sequence
 
-Each environment-bound deployment job runs these steps in order:
+The production Vercel build runs these steps in order:
 
-1. Pull the exact target Vercel project settings and encrypted environment.
-2. Fail closed if `APP_ENV`, project names, HTTPS origins, or the Beta privacy
-   guard do not match the target.
-3. Verify the Supabase Management API name/reference, database connection
-   identities, Vercel project ID/name, Auth, and Storage without printing
-   credentials.
-4. Link the exact Supabase project reference from the GitHub Environment.
-5. Run `supabase db push --dry-run` against that linked project.
-6. Build the application with `vercel build --prod` before mutating the hosted
-   database.
-7. Apply only pending committed migrations and inspect remote migration history.
-8. Upload only `.vercel/output` with `vercel deploy --prebuilt --prod`.
-9. Run the post-deploy checks. Any failure leaves the workflow failed and blocks
-   further promotion.
+1. Resolve the database and service-role aliases installed by the
+   Vercel/Supabase integration.
+2. Fail closed unless `VERCEL=1`, `VERCEL_ENV=production`,
+   `VERCEL_GIT_COMMIT_REF=main`, and `APP_ENV=production`.
+3. Derive the Supabase project reference from the HTTPS API origin and verify
+   both database URLs belong to that same project.
+4. Run `next build` before any hosted mutation.
+5. Run `supabase db push --db-url <DIRECT_URL> --dry-run` without linking a
+   Supabase account or requiring a management access token.
+6. Apply only pending committed migrations through that same direct/session
+   connection.
+7. Compare the complete ordered hosted migration ledger with the committed
+   migration directory.
+8. Idempotently invite or promote `thomas@marquesbranding.com` as the first
+   approved production `ADMIN`, with a system audit revision.
+9. Return the completed Next.js artifact to Vercel for publication.
+
+Preview and local executions of `npm run vercel:build` run only `next build`.
+They never receive a production migration plan.
 
 No seed is applied to hosted projects by the deployment workflow. Production
 data is never copied into development.
@@ -112,8 +117,8 @@ If the application deployment or smoke fails after an additive migration:
 3. Confirm the last known-good application is compatible with the expanded
    schema.
 4. Create and review a revert commit on `main` that restores the known-good
-   application code while preserving compatible migrations, then promote that
-   new tip through the same production workflow. A Vercel dashboard rollback
+   application code while preserving compatible migrations, then let Vercel
+   build that new tip. A Vercel dashboard rollback
    is allowed only when the operator records the deployment and compatibility
    evidence.
 5. Re-run every post-deploy check.
@@ -124,8 +129,9 @@ Application rollback does not delete or rewrite a migration.
 
 If dry-run, link, database connection, or migration application fails:
 
-1. Stop the workflow before deployment. A prebuilt artifact may already exist,
-   but it must not be promoted after a failed migration.
+1. Let the Vercel build fail before publication. A Next.js artifact may already
+   exist inside the isolated build VM, but Vercel must not publish it after a
+   failed migration.
 2. Do not use `migration repair`, dashboard SQL, or direct DDL as an immediate
    workaround.
 3. Determine whether the migration committed no change, committed fully, or
@@ -166,6 +172,6 @@ After a migration is applied to either hosted project:
 - require CI to reject changed applied migration files and drift;
 - keep SQL migrations and the Drizzle runtime schema synchronized.
 
-The migration ledger, workflow run, commit SHA, approving operator, and smoke
-result form the release evidence. Evidence must remain metadata-only and must
-not contain credentials or participant data.
+The migration ledger, Vercel deployment, commit SHA, publishing operator, and
+smoke result form the release evidence. Evidence must remain metadata-only and
+must not contain credentials or participant data.

@@ -6,7 +6,7 @@ item as blocking.
 
 - [ ] Final production domain
 - [ ] Client-owned and isolated Supabase, Vercel, Google OAuth, SMTP, DNS, and
-      GitHub Environment resources pass the
+      repository deployment controls pass the
       [hosted environment provisioning checklist](./operations/environment-provisioning.md)
 - [ ] Public support and privacy contact
 - [ ] Versioned Terms of Use approved by the legal owner

@@ -17,10 +17,8 @@ export { updateProxyAuthSession } from "./server/services/proxy-auth-session";
 export { createServerIdentityAuthService } from "./server/services/server-identity-auth.service";
 export { createServerBackofficeAuthService } from "./server/services/server-backoffice-auth.service";
 export { createServerBannedAccountDefenseService } from "./server/services/server-banned-account-defense.service";
-export {
-  createInitialAdminBootstrapService,
-  createServerAdminProvisioningService,
-} from "./server/services/server-admin-provisioning.service";
+export { createInitialAdminBootstrapService } from "./server/services/initial-admin-bootstrap.service";
+export { createServerAdminProvisioningService } from "./server/services/server-admin-provisioning.service";
 export { createServerRoleSelectionService } from "./server/services/server-role-selection.service";
 export {
   getServerCurrentAccount,

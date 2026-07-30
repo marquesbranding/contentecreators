@@ -68,8 +68,8 @@
 9. **[2026-07-28] Keep operational telemetry metadata-only**
    Do instead: use the central safe request-ID and operational logger primitives; log only bounded categories/durations and scan outputs for email, phone, CNPJ, tokens, signed URLs, SMTP secrets, and provider payloads.
 
-10. **[2026-07-30] Promote hosted environments only through migration-aware workflows**
-    Do instead: accept the Vercel/Supabase aliases `POSTGRES_URL`, `POSTGRES_URL_NON_POOLING`, and `SUPABASE_SECRET_KEY` at the environment boundary; keep `main`/`develop` automatic Git deployments disabled, and bootstrap `thomas@marquesbranding.com` as the idempotent first approved production `ADMIN` after migrations.
+10. **[2026-07-30] Keep production promotion migration-aware without GitHub deployment secrets**
+    Do instead: accept `POSTGRES_URL`, `POSTGRES_URL_NON_POOLING`, and `SUPABASE_SECRET_KEY` at the environment boundary; let only the Vercel production build from `main` dry-run/apply/verify migrations after `next build`, then idempotently bootstrap `thomas@marquesbranding.com` as the first approved production `ADMIN`.
 
 ## Shell & Command Reliability
 

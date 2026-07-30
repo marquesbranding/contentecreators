@@ -10,7 +10,7 @@ client, or SMTP sender has already been created.
 | --------------------- | --------------------------------------------- | ----------------------------------------- |
 | Vercel project        | `contente-creators-dev`                       | `contente-creators-prd`                   |
 | Supabase project      | `contente-creators-dev`                       | `contente-creators-prd`                   |
-| GitHub Environment    | `contente-creators-dev`                       | `contente-creators-prd`                   |
+| Deployment executor   | Environment-bound development workflow        | Vercel production build from `main`       |
 | Application data      | Disposable synthetic QA data only             | Client production data only               |
 | Google OAuth          | Dedicated non-production client               | Dedicated production client               |
 | Marques Branding SMTP | Dedicated non-production sender/configuration | Dedicated production sender/configuration |
@@ -36,34 +36,24 @@ containing values into issues or logs.
 - [ ] Production data or credentials have never been copied into development.
 - [ ] The initial administrators are separately approved for each stage.
 
-### GitHub deployment environments
+### Repository and deployment controls
 
-- [ ] GitHub Environment `contente-creators-dev` contains only development
-      deployment secrets.
-- [ ] GitHub Environment `contente-creators-prd` contains only production
-      deployment secrets and has required reviewers who are not the workflow
-      author.
+- [ ] Vercel production branch is exactly `main`.
+- [ ] `vercel.json` keeps production Git deployments enabled only for `main`.
+- [ ] Vercel's **Automatically expose System Environment Variables** option is
+      enabled so the build can fail closed on `VERCEL_ENV` and
+      `VERCEL_GIT_COMMIT_REF`.
 - [ ] `develop` branch protection requires the `CI` and `Database CI` checks.
 - [ ] `main` branch protection requires the `CI` and `Database CI` checks,
       review, and no direct unreviewed pushes.
-- [ ] Environment secrets use the following names and are different between
-      environments:
+- [ ] The Vercel project has the Supabase integration variables scoped to
+      Production and does not expose production values to Preview or
+      Development.
 
-| Secret                  | Purpose                                                 |
-| ----------------------- | ------------------------------------------------------- |
-| `SUPABASE_ACCESS_TOKEN` | Supabase CLI authorization; environment-scoped          |
-| `SUPABASE_DB_PASSWORD`  | Linked target database migration password               |
-| `SUPABASE_PROJECT_REF`  | Exact target project reference                          |
-| `VERCEL_TOKEN`          | Vercel CLI authorization with the minimum project scope |
-| `VERCEL_ORG_ID`         | Client Vercel team/account ID                           |
-| `VERCEL_PROJECT_ID`     | Exact target Vercel project ID                          |
-
-The workflows declare `contents: read` only. Deployment secrets become
-available only to the individual steps that need each provider; dependency
-installation and application quality gates receive no hosted credentials.
-Production also requires manual dispatch, an exact main SHA, the phrase
-`deploy contente-creators-prd`, and required-reviewer approval on GitHub
-Environment `contente-creators-prd`.
+Production does not require GitHub Environment secrets. `scripts/vercel-build.ts`
+uses the direct/session URL already installed in Vercel and never prints that
+URL. Supabase migrations remain ledger-based and the initial administrator
+bootstrap remains idempotent.
 
 ## Vercel application configuration
 
@@ -125,8 +115,10 @@ For each Supabase project:
 
 For each Vercel project:
 
-- [ ] Confirm automatic Git deployments are disabled for `main` and `develop`;
-      only the environment-bound workflows may migrate and promote them.
+- [ ] Confirm production automatic Git deployment is enabled only for the
+      intended production branch; `contente-creators-prd` uses `main`.
+- [ ] Confirm the Vercel Build Command resolves to `npm run vercel:build` from
+      `vercel.json` and has no conflicting dashboard override.
 - [ ] Confirm the `/api/cron/email-outbox` schedule from `vercel.json`.
 - [ ] Confirm Vercel sends `Authorization: Bearer <CRON_SECRET>` and the
       endpoint rejects a missing or wrong signature.

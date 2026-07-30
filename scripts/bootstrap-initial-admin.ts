@@ -1,5 +1,5 @@
 import { parseServerEnv } from "../src/shared/lib/env/server-env-schema";
-import { createInitialAdminBootstrapService } from "../src/features/identity/server/services/server-admin-provisioning.service";
+import { createInitialAdminBootstrapService } from "../src/features/identity/server/services/initial-admin-bootstrap.service";
 
 interface BootstrapArguments {
   approvalReference: string;

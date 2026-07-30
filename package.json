@@ -22,6 +22,7 @@
     "format:check": "prettier --check .",
     "dev": "next dev",
     "build": "next build",
+    "vercel:build": "node --import tsx scripts/vercel-build.ts",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "type-check": "tsc --noEmit",

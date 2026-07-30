@@ -11,11 +11,10 @@ import { accounts } from "@/db/schema";
 import {
   applyVerifiedAuditContext,
   createAuditedTransactionRunner,
-  type VerifiedAuditContext,
-} from "@/features/audit/server";
+} from "@/features/audit/server/services/audited-transaction";
+import type { VerifiedAuditContext } from "@/features/audit/schemas/audit-context-schema";
 
 import type { VerifiedAccountTransactionRunner } from "../services/verified-account-transaction";
-import { createServerVerifiedAccountTransactionRunner } from "../services/verified-account-transaction";
 import type {
   AdminIdentity,
   AdminProvisioningOutcome,
@@ -350,6 +349,9 @@ export function createDrizzleAdminProvisioningRepository(
 }
 
 export async function createServerAdminProvisioningRepository() {
+  const { createServerVerifiedAccountTransactionRunner } =
+    await import("../services/verified-account-transaction");
+
   return createDrizzleAdminProvisioningRepository({
     runVerifiedAccountTransaction:
       await createServerVerifiedAccountTransactionRunner(),
