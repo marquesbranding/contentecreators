@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Contente Creators
 
-## Getting Started
+Plataforma B2C que conecta empresas e criadores de conteúdo. A aplicação
+pública, os fluxos autenticados e o backoffice fazem parte do mesmo projeto
+Next.js.
 
-First, run the development server:
+## Produção
+
+- Site público: [https://contentecreators.com](https://contentecreators.com)
+- Origem canônica atual: `https://www.contentecreators.com`
+- Deploy e execução do Next.js: Vercel, projeto `contente-creators-prd`
+- Autenticação, PostgreSQL e Storage: Supabase, projeto
+  `contente-creators-prd`
+- Branch publicada em produção: `main`
+
+O domínio sem `www` pertence ao mesmo ambiente de produção e atualmente é
+redirecionado pela Vercel para a origem canônica com `www`. URLs temporárias
+`*.vercel.app` são identificadores de deployment e não devem ser usadas como
+URL pública, origem de autenticação ou valor de `NEXT_PUBLIC_APP_URL`.
+
+## Responsabilidades da infraestrutura
+
+| Responsabilidade                   | Serviço                                          |
+| ---------------------------------- | ------------------------------------------------ |
+| Build, deploy, CDN, domínio e cron | Vercel                                           |
+| Aplicação web e APIs               | Next.js executado na Vercel                      |
+| Cadastro, login, sessão e Google   | Supabase Auth                                    |
+| Dados relacionais                  | Supabase Postgres, acessado com Drizzle ORM      |
+| Fotos, logos e mídias privadas     | Supabase Storage                                 |
+| E-mails de autenticação            | Supabase Auth com SMTP da Marques Branding       |
+| E-mails transacionais da aplicação | Next.js/Vercel com SMTP da Marques Branding      |
+| Evolução do banco                  | Migrations versionadas em `supabase/migrations/` |
+
+A integração Supabase/Vercel injeta as credenciais do projeto Supabase no
+projeto Vercel. Variáveis próprias da aplicação, como domínio, ambiente, SMTP,
+cron e contato de suporte, continuam sendo configuradas manualmente na Vercel.
+O guia completo e a tabela de mapeamento estão em
+[Integração Vercel, Supabase e variáveis de ambiente](docs/operations/vercel-supabase-integration.md).
+
+## Ambientes
+
+| Ambiente    | Aplicação/Vercel        | Supabase                | URL pública                    |
+| ----------- | ----------------------- | ----------------------- | ------------------------------ |
+| Local       | `localhost:3000`        | Supabase CLI/Docker     | `http://localhost:3000`        |
+| Development | `contente-creators-dev` | `contente-creators-dev` | domínio DEV isolado            |
+| Production  | `contente-creators-prd` | `contente-creators-prd` | `https://contentecreators.com` |
+
+DEV e PRD possuem projetos, bancos, usuários, objetos, chaves, OAuth e
+credenciais SMTP independentes. Nunca copie segredos ou dados de produção para
+outro ambiente.
+
+## Desenvolvimento local
+
+Pré-requisitos: Node.js 24, npm 11, Docker e Git.
 
 ```bash
+cp .env.example .env.local
+npm install
+npm run local:start
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+A aplicação estará em [http://localhost:3000](http://localhost:3000). O
+Supabase Studio local estará em `http://127.0.0.1:54323`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Comandos principais:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run local:start
+npm run local:reset
+npm run local:stop
+npm run test:integration:local
+npm run ci
+```
 
-## Learn More
+Consulte [Configuração dos ambientes](docs/operations/environments.md) para
+credenciais locais, administradores de teste, callbacks e serviços auxiliares.
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Produção é publicada pela Vercel a partir de `main`. O comando oficial,
+declarado em `vercel.json`, é:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run vercel:build
+```
 
-## Deploy on Vercel
+Em um build Vercel de produção autorizado, esse comando:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. gera e valida o build Next.js;
+2. valida se Vercel, branch, ambiente e Supabase apontam para PRD;
+3. aplica somente migrations pendentes usando a conexão não agrupada;
+4. verifica o ledger de migrations;
+5. provisiona idempotentemente o administrador inicial aprovado;
+6. entrega o artefato para publicação pela Vercel.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Não execute `drizzle-kit push` e não aplique alterações de schema manualmente
+no dashboard. Consulte o
+[runbook de deploy e migrations](docs/operations/deployment-runbook.md).
+
+## Documentação operacional
+
+- [Integração Vercel, Supabase e envs](docs/operations/vercel-supabase-integration.md)
+- [Configuração dos ambientes](docs/operations/environments.md)
+- [Provisionamento dos ambientes hospedados](docs/operations/environment-provisioning.md)
+- [Deploy e migrations](docs/operations/deployment-runbook.md)
+- [Provisionamento de administradores](docs/operations/admin-provisioning.md)
+- [Entrega de e-mails](docs/operations/email-delivery.md)

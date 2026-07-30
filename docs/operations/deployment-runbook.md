@@ -8,6 +8,12 @@ develop -> contente-creators-dev
 main --Vercel production build--> contente-creators-prd
 ```
 
+Vercel is the application deployment platform. Supabase provides Auth,
+Postgres, and Storage; connecting Supabase does not deploy the Next.js
+application. The published production domain is
+[`https://contentecreators.com`](https://contentecreators.com), currently
+redirected to the canonical origin `https://www.contentecreators.com`.
+
 The deployment entry points are:
 
 - `.github/workflows/deploy-development.yml`: automatic on `develop`, with a
@@ -15,6 +21,10 @@ The deployment entry points are:
 - `vercel.json` + `npm run vercel:build`: automatic production deployment from
   `main` in the Vercel project `contente-creators-prd`, without GitHub
   deployment secrets.
+
+See the
+[Vercel/Supabase integration and environment-variable guide](./vercel-supabase-integration.md)
+before provisioning or changing hosted configuration.
 
 Branch protection must require both `CI` and `Database CI`. The deployment
 checks remain responsible for format, lint, types, tests, and immutable

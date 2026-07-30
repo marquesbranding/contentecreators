@@ -8,6 +8,13 @@ Contente Creators uses three isolated stages. Never copy production data, users,
 | Development | Vercel `contente-creators-dev` | Supabase `contente-creators-dev` | Disposable QA data and isolated Marques Branding non-production SMTP configuration |
 | Production  | Vercel `contente-creators-prd` | Supabase `contente-creators-prd` | Client production data and production Marques Branding SMTP configuration          |
 
+The official production domain is
+[`https://contentecreators.com`](https://contentecreators.com). Vercel
+currently redirects it to the canonical origin
+`https://www.contentecreators.com`, which is the production value for
+`NEXT_PUBLIC_APP_URL` and the Supabase Auth Site URL. Temporary
+`*.vercel.app` deployment URLs are not production application origins.
+
 ## Rules
 
 - Copy `.env.example` to `.env.local`; never commit `.env.local` or real credentials.
@@ -23,6 +30,9 @@ Contente Creators uses three isolated stages. Never copy production data, users,
   remain launch-blocked until the client/legal owner approves each environment's
   real support/privacy address.
 - Missing or invalid values fail with key names only; diagnostics never include supplied values.
+- Follow the
+  [Vercel/Supabase integration guide](./vercel-supabase-integration.md) for the
+  authoritative automatic-versus-manual environment-variable mapping.
 
 ## Local setup
 
@@ -112,16 +122,17 @@ or Supabase project in production.
 | ----------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | Local       | `http://localhost:3000/auth/callback` and the exact `127.0.0.1` equivalent | `http://127.0.0.1:54321/auth/v1/callback`                          |
 | Development | `https://<contente-creators-dev-domain>/auth/callback`                     | `https://<contente-creators-dev-ref>.supabase.co/auth/v1/callback` |
-| Production  | `https://<contente-creators-prd-domain>/auth/callback`                     | `https://<contente-creators-prd-ref>.supabase.co/auth/v1/callback` |
+| Production  | `https://www.contentecreators.com/auth/callback`                           | `https://<contente-creators-prd-ref>.supabase.co/auth/v1/callback` |
 
 For each Vercel project, `NEXT_PUBLIC_APP_URL` must be the exact application
 origin represented in its Supabase allowlist. The application callback accepts
 only internal destinations under `/app`, `/onboarding`, `/backoffice`, or
 `/reset-password`; external and protocol-relative return paths fall back to
 `/onboarding/role`. Production must use exact origins—no wildcard preview URLs.
-The real development/production domains, Supabase project references, and
-Google credentials remain client-owned launch configuration and must replace
-the placeholders above before enabling each provider.
+The development domain, both Supabase project references, and Google
+credentials remain client-owned configuration. Production application links
+must use `https://www.contentecreators.com` while that remains Vercel's
+canonical origin.
 
 The reset script uses the CLI's local-only `stop --no-backup` plus `start`
 sequence. Before running any Supabase command against hosted infrastructure,

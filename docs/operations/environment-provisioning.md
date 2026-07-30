@@ -6,14 +6,19 @@ client, or SMTP sender has already been created.
 
 ## Required isolated resources
 
-| Concern               | Development                                   | Production                                |
-| --------------------- | --------------------------------------------- | ----------------------------------------- |
-| Vercel project        | `contente-creators-dev`                       | `contente-creators-prd`                   |
-| Supabase project      | `contente-creators-dev`                       | `contente-creators-prd`                   |
-| Deployment executor   | Environment-bound development workflow        | Vercel production build from `main`       |
-| Application data      | Disposable synthetic QA data only             | Client production data only               |
-| Google OAuth          | Dedicated non-production client               | Dedicated production client               |
-| Marques Branding SMTP | Dedicated non-production sender/configuration | Dedicated production sender/configuration |
+| Concern                | Development                                   | Production                                |
+| ---------------------- | --------------------------------------------- | ----------------------------------------- |
+| Vercel project         | `contente-creators-dev`                       | `contente-creators-prd`                   |
+| Supabase project       | `contente-creators-dev`                       | `contente-creators-prd`                   |
+| Deployment executor    | Environment-bound development workflow        | Vercel production build from `main`       |
+| Application data       | Disposable synthetic QA data only             | Client production data only               |
+| Google OAuth           | Dedicated non-production client               | Dedicated production client               |
+| Marques Branding SMTP  | Dedicated non-production sender/configuration | Dedicated production sender/configuration |
+| Public application URL | Isolated development domain                   | `https://contentecreators.com`            |
+
+The current final production origin is `https://www.contentecreators.com`;
+Vercel redirects `https://contentecreators.com` to it. Use the final origin for
+`NEXT_PUBLIC_APP_URL`, Supabase Auth Site URL, and exact application callbacks.
 
 Both Vercel projects deploy their own Vercel `production` target. The projects
 remain separate; production is never implemented as another environment inside
@@ -63,7 +68,7 @@ not cross environments.
 | Variable                                | Development                                 | Production                               |
 | --------------------------------------- | ------------------------------------------- | ---------------------------------------- |
 | `APP_ENV`                               | `development`                               | `production`                             |
-| `NEXT_PUBLIC_APP_URL`                   | Exact development origin                    | Exact production origin                  |
+| `NEXT_PUBLIC_APP_URL`                   | Exact development origin                    | `https://www.contentecreators.com`       |
 | `NEXT_PUBLIC_SUPABASE_URL`              | Development Supabase API URL                | Production Supabase API URL              |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`  | Development publishable key                 | Production publishable key               |
 | `DATABASE_URL`                          | Development Supavisor transaction pooler    | Production Supavisor transaction pooler  |
@@ -93,6 +98,11 @@ TLS, and credential encoding configuration.
 `NEXT_PUBLIC_*` values are frozen into the browser bundle during
 `vercel build`; therefore the workflow pulls and builds against the target
 project instead of promoting one prebuilt artifact across projects.
+
+The complete distinction between variables installed by the Supabase/Vercel
+integration, manually managed Vercel values, and Supabase Dashboard
+configuration is documented in the
+[integration guide](./vercel-supabase-integration.md).
 
 ## Supabase Auth, Storage, and scheduled work
 

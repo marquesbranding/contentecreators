@@ -68,8 +68,8 @@
 9. **[2026-07-28] Keep operational telemetry metadata-only**
    Do instead: use the central safe request-ID and operational logger primitives; log only bounded categories/durations and scan outputs for email, phone, CNPJ, tokens, signed URLs, SMTP secrets, and provider payloads.
 
-10. **[2026-07-30] Keep production promotion migration-aware without GitHub deployment secrets**
-    Do instead: accept `POSTGRES_URL`, `POSTGRES_URL_NON_POOLING`, and `SUPABASE_SECRET_KEY` at the environment boundary; let only the Vercel production build from `main` dry-run/apply/verify migrations after `next build`, then idempotently bootstrap `thomas@marquesbranding.com` as the first approved production `ADMIN`.
+10. **[2026-07-30] Keep the production hosting and integration contract explicit**
+    Do instead: treat Vercel `contente-creators-prd` as the Next.js deployment platform and Supabase `contente-creators-prd` as Auth/Postgres/Storage; publish `contentecreators.com` with `https://www.contentecreators.com` as the current final origin, accept the integration aliases `POSTGRES_URL`, `POSTGRES_URL_NON_POOLING`, and `SUPABASE_SECRET_KEY`, and let only the Vercel production build from `main` migrate and bootstrap the first admin.
 
 ## Shell & Command Reliability
 
