@@ -4,7 +4,7 @@ import { Building2, CircleAlert, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useActionState, useState } from "react";
 
-import { GoogleAuthOption } from "@/features/identity/client";
+import { GoogleAuthOption, PasswordField } from "@/features/identity/client";
 import {
   Alert,
   AlertDescription,
@@ -150,6 +150,7 @@ export function CombinedRegistrationForm({
         action={formAction}
         className="space-y-9"
         noValidate
+        onBlur={formValidation.formValidationProps.onBlur}
         onInput={(event) => {
           setHasUnsavedChanges(true);
           formValidation.formValidationProps.onInput(event);
@@ -288,53 +289,23 @@ export function CombinedRegistrationForm({
                 ))}
               </FieldError>
             </Field>
-            <Field data-invalid={Boolean(passwordErrors?.length)}>
-              <FieldLabel htmlFor="registration-password" required>
-                Senha
-              </FieldLabel>
-              <Input
-                aria-describedby="registration-password-description registration-password-error"
-                aria-invalid={Boolean(passwordErrors?.length)}
-                autoComplete="new-password"
-                className="h-12 rounded-xl"
-                id="registration-password"
-                name="password"
-                required
-                type="password"
-              />
-              <FieldDescription id="registration-password-description">
-                Use 8 caracteres, maiúscula, minúscula e número.
-              </FieldDescription>
-              <FieldError id="registration-password-error">
-                {passwordErrors?.map((message) => (
-                  <span className="block" key={message}>
-                    {message}
-                  </span>
-                ))}
-              </FieldError>
-            </Field>
-            <Field data-invalid={Boolean(passwordConfirmationErrors?.length)}>
-              <FieldLabel htmlFor="registration-password-confirmation" required>
-                Confirmar senha
-              </FieldLabel>
-              <Input
-                aria-describedby="registration-password-confirmation-error"
-                aria-invalid={Boolean(passwordConfirmationErrors?.length)}
-                autoComplete="new-password"
-                className="h-12 rounded-xl"
-                id="registration-password-confirmation"
-                name="passwordConfirmation"
-                required
-                type="password"
-              />
-              <FieldError id="registration-password-confirmation-error">
-                {passwordConfirmationErrors?.map((message) => (
-                  <span className="block" key={message}>
-                    {message}
-                  </span>
-                ))}
-              </FieldError>
-            </Field>
+            <PasswordField
+              autoComplete="new-password"
+              description="Use 8 caracteres, maiúscula, minúscula e número."
+              error={passwordErrors}
+              id="registration-password"
+              label="Senha"
+              name="password"
+            />
+            <PasswordField
+              autoComplete="new-password"
+              error={passwordConfirmationErrors}
+              id="registration-password-confirmation"
+              label="Confirmar senha"
+              matchFieldName="password"
+              matchMessage="As senhas precisam ser iguais."
+              name="passwordConfirmation"
+            />
           </FieldGroup>
         </FieldSet>
 

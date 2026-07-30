@@ -88,6 +88,7 @@ export function CompanyProfileEditForm({
       aria-label={formLabel}
       className="space-y-9"
       noValidate
+      onBlur={formValidation.formValidationProps.onBlur}
       onInput={(event) => {
         setHasUnsavedChanges(true);
         formValidation.formValidationProps.onInput(event);

@@ -342,6 +342,7 @@ function PlacementFormDialog({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const form = useForm<PlacementFormValues>({
     defaultValues: formDefaults(placement),
+    mode: "onTouched",
     resolver: zodResolver(placementFormSchema),
   });
   const placementType = useWatch({

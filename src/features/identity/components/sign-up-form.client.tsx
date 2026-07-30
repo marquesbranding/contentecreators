@@ -162,6 +162,8 @@ export function SignUpForm({
             error={passwordConfirmationErrors}
             id="signup-password-confirmation"
             label="Confirmar senha"
+            matchFieldName="password"
+            matchMessage="As senhas não coincidem."
             name="passwordConfirmation"
           />
 

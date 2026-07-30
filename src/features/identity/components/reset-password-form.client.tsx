@@ -64,6 +64,8 @@ export function ResetPasswordForm({ action }: { action: AuthFormAction }) {
             error={passwordConfirmationErrors}
             id="reset-password-confirmation"
             label="Confirmar nova senha"
+            matchFieldName="password"
+            matchMessage="As senhas não coincidem."
             name="passwordConfirmation"
           />
           <AuthSubmitButton pending={pending} pendingLabel="Atualizando...">

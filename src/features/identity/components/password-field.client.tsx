@@ -22,6 +22,8 @@ interface PasswordFieldProps {
   error?: string[];
   id: string;
   label: string;
+  matchFieldName?: string;
+  matchMessage?: string;
   name: string;
 }
 
@@ -31,9 +33,13 @@ export function PasswordField({
   error,
   id,
   label,
+  matchFieldName,
+  matchMessage,
   name,
 }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
+  const enforcesPasswordStrength =
+    autoComplete === "new-password" && !matchFieldName;
   const descriptionId = description ? `${id}-description` : undefined;
   const errorId = error?.length ? `${id}-error` : undefined;
   const describedBy = [descriptionId, errorId].filter(Boolean).join(" ");
@@ -43,27 +49,46 @@ export function PasswordField({
       <FieldLabel htmlFor={id} required>
         {label}
       </FieldLabel>
-      <InputGroup className="h-12 rounded-xl">
+      <InputGroup className="h-12 overflow-visible rounded-xl">
         <InputGroupInput
           aria-describedby={describedBy || undefined}
           aria-invalid={Boolean(error?.length)}
           autoComplete={autoComplete}
+          className="min-w-0 pr-14!"
+          data-match-field={matchFieldName}
+          data-match-message={matchMessage}
+          data-validation-message={
+            enforcesPasswordStrength
+              ? "Use pelo menos 8 caracteres, com letras maiúsculas, minúsculas e um número."
+              : undefined
+          }
           id={id}
+          minLength={enforcesPasswordStrength ? 8 : undefined}
           name={name}
+          pattern={
+            enforcesPasswordStrength
+              ? "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}"
+              : undefined
+          }
           required
           type={visible ? "text" : "password"}
         />
-        <InputGroupAddon align="inline-end">
+        <InputGroupAddon
+          align="inline-end"
+          className="absolute inset-y-0 right-1 z-10 shrink-0 p-0"
+        >
           <InputGroupButton
             aria-label={visible ? "Ocultar senha" : "Mostrar senha"}
-            className="size-11"
+            aria-pressed={visible}
+            className="text-foreground min-h-11 min-w-11 shrink-0 touch-manipulation opacity-100"
+            data-slot="password-visibility-toggle"
             onClick={() => setVisible((current) => !current)}
             size="icon-sm"
           >
             {visible ? (
-              <EyeOff aria-hidden="true" />
+              <EyeOff aria-hidden="true" className="size-5" />
             ) : (
-              <Eye aria-hidden="true" />
+              <Eye aria-hidden="true" className="size-5" />
             )}
           </InputGroupButton>
         </InputGroupAddon>

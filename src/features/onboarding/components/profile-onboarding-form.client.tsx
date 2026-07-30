@@ -80,6 +80,7 @@ function ProfileOnboardingFormContent({
         action={formAction}
         className="space-y-9"
         noValidate
+        onBlur={formValidation.formValidationProps.onBlur}
         onInput={(event) => {
           formValidation.formValidationProps.onInput(event);
           autosave.onFormInput(event);

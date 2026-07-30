@@ -186,7 +186,7 @@ O produto deve permitir que:
 - [x] `8.1` Testar cadastro, confirmação, erros sem enumeração, logout, recuperação, callback e retorno de intenção do Google.
 - [x] `8.2` Implementar clientes Supabase SSR/browser com cookies corretos e sem vazar service role.
 - [x] `8.3` Implementar `src/proxy.ts` do Next.js 16 para refresh de cookies e redirects baratos de rotas protegidas.
-- [x] `8.4` Implementar cadastro combinado de credenciais, papel e perfil específico, com validação compartilhada e estados acessíveis em `pt-BR`.
+- [x] `8.4` Implementar cadastro combinado de credenciais, papel e perfil específico, com validação compartilhada no primeiro `blur`, revalidação durante a correção, confirmação direta de senhas e estados acessíveis em `pt-BR`.
 - [x] `8.5` Implementar início/callback do Google OAuth com destinos de retorno permitidos e configuração local/dev/prd.
 - [x] `8.6` Implementar tela de confirmação pendente, reenvio e bloqueio de submissão antes da confirmação.
 - [x] `8.7` Implementar páginas de esqueci/redefinir senha e tratamento de token único, inválido ou expirado.

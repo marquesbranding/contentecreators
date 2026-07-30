@@ -115,6 +115,45 @@ describe("combined registration form", () => {
     ).toBeInTheDocument();
   });
 
+  it("uses touch-friendly visibility controls and validates matching passwords before submission", async () => {
+    const user = userEvent.setup();
+    const action = vi.fn();
+
+    renderRegistration({
+      action,
+      googleAction: vi.fn(),
+      initialRole: "INFLUENCER",
+      resendAction: vi.fn(),
+    });
+
+    const password = screen.getByLabelText("Senha");
+    const confirmation = screen.getByLabelText("Confirmar senha");
+    const visibilityButtons = screen.getAllByRole("button", {
+      name: "Mostrar senha",
+    });
+
+    expect(visibilityButtons).toHaveLength(2);
+    expect(visibilityButtons[0]).toHaveClass("min-h-11", "min-w-11");
+
+    await user.click(visibilityButtons[0]!);
+    expect(password).toHaveAttribute("type", "text");
+
+    await user.type(password, "SenhaForte1");
+    await user.type(confirmation, "SenhaForte2");
+    await user.click(screen.getByLabelText("E-mail"));
+
+    expect(action).not.toHaveBeenCalled();
+    expect(confirmation).toHaveAttribute("aria-invalid", "true");
+    expect(
+      screen.getByText("As senhas precisam ser iguais."),
+    ).toBeInTheDocument();
+
+    await user.clear(confirmation);
+    await user.type(confirmation, "SenhaForte1");
+
+    expect(confirmation).toHaveAttribute("aria-invalid", "false");
+  });
+
   it("blocks an empty submission and identifies the required role", async () => {
     const user = userEvent.setup();
     const action = vi.fn();

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -100,6 +100,114 @@ describe("identity auth forms", () => {
 
     expect(password).toHaveAttribute("type", "text");
     expect(password).toHaveAttribute("name", "password");
+  });
+
+  it("validates a field after the first blur and clears the error while correcting it", async () => {
+    const user = userEvent.setup();
+    const signInAction = vi.fn();
+
+    render(
+      <LoginForm
+        googleAction={vi.fn()}
+        initialNextPath="/onboarding/role"
+        signInAction={signInAction}
+      />,
+    );
+
+    const email = screen.getByLabelText("E-mail");
+    const password = screen.getByLabelText("Senha");
+
+    await user.click(email);
+    await user.click(password);
+
+    expect(signInAction).not.toHaveBeenCalled();
+    expect(email).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByText("Preencha este campo.")).toBeInTheDocument();
+
+    await user.type(email, "pessoa@exemplo.com");
+
+    expect(email).toHaveAttribute("aria-invalid", "false");
+    expect(
+      within(email.closest('[data-slot="field"]')!).queryByText(
+        "Preencha este campo.",
+      ),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows an invalid e-mail error on blur before submission", async () => {
+    const user = userEvent.setup();
+    const signInAction = vi.fn();
+
+    render(
+      <LoginForm
+        googleAction={vi.fn()}
+        initialNextPath="/onboarding/role"
+        signInAction={signInAction}
+      />,
+    );
+
+    const email = screen.getByLabelText("E-mail");
+    await user.type(email, "email-invalido");
+    await user.click(screen.getByLabelText("Senha"));
+
+    expect(signInAction).not.toHaveBeenCalled();
+    expect(email).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByText("Informe um e-mail válido.")).toBeInTheDocument();
+  });
+
+  it("compares sign-up passwords as soon as confirmation loses focus", async () => {
+    const user = userEvent.setup();
+    const signUpAction = vi.fn();
+
+    render(
+      <SignUpForm
+        googleAction={vi.fn()}
+        initialIntent="INFLUENCER"
+        signUpAction={signUpAction}
+      />,
+    );
+
+    const password = screen.getByLabelText("Senha");
+    const confirmation = screen.getByLabelText("Confirmar senha");
+
+    await user.type(password, "SenhaForte1");
+    await user.type(confirmation, "SenhaForte2");
+    await user.click(screen.getByLabelText("E-mail"));
+
+    expect(signUpAction).not.toHaveBeenCalled();
+    expect(confirmation).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByText("As senhas não coincidem.")).toBeInTheDocument();
+
+    await user.clear(confirmation);
+    await user.type(confirmation, "SenhaForte1");
+
+    expect(confirmation).toHaveAttribute("aria-invalid", "false");
+    expect(
+      screen.queryByText("As senhas não coincidem."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("validates password strength on blur before sign-up submission", async () => {
+    const user = userEvent.setup();
+    const signUpAction = vi.fn();
+
+    render(
+      <SignUpForm
+        googleAction={vi.fn()}
+        initialIntent="INFLUENCER"
+        signUpAction={signUpAction}
+      />,
+    );
+
+    const password = screen.getByLabelText("Senha");
+    await user.type(password, "fraca");
+    await user.click(screen.getByLabelText("Confirmar senha"));
+
+    expect(signUpAction).not.toHaveBeenCalled();
+    expect(password).toHaveAttribute("aria-invalid", "true");
+    expect(document.querySelector("#signup-password-error")).toHaveTextContent(
+      "Use pelo menos 8 caracteres, com letras maiúsculas, minúsculas e um número.",
+    );
   });
 
   it("marks empty required fields before calling the login action", async () => {

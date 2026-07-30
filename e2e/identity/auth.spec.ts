@@ -80,6 +80,47 @@ test.describe("identity and first-access routes", () => {
     );
   });
 
+  test("validates touched fields and keeps password controls usable on mobile", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/login");
+
+    const email = page.getByLabel("E-mail");
+    const password = page.getByRole("textbox", {
+      name: "Senha",
+      exact: true,
+    });
+    const visibilityButton = page.getByRole("button", {
+      name: "Mostrar senha",
+    });
+
+    await email.focus();
+    await password.focus();
+
+    await expect(email).toHaveAttribute("aria-invalid", "true");
+    await expect(page.locator("#login-email-error")).toHaveText(
+      "Preencha este campo.",
+    );
+    await expect(visibilityButton).toBeVisible();
+
+    const buttonBox = await visibilityButton.boundingBox();
+    expect(buttonBox?.width).toBeGreaterThanOrEqual(44);
+    expect(buttonBox?.height).toBeGreaterThanOrEqual(44);
+
+    await visibilityButton.click();
+    await expect(password).toHaveAttribute("type", "text");
+
+    await page.goto("/sign-up?intent=influencer");
+    const registrationVisibilityButtons = page.getByRole("button", {
+      name: "Mostrar senha",
+    });
+
+    await expect(registrationVisibilityButtons).toHaveCount(2);
+    await expect(registrationVisibilityButtons.first()).toBeVisible();
+    await expect(registrationVisibilityButtons.last()).toBeVisible();
+  });
+
   test("opens the complete company variant from landing intent", async ({
     page,
   }) => {
