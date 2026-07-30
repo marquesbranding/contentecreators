@@ -50,6 +50,67 @@ describe("environment parsing", () => {
     expect(parsed.PUBLIC_SOCIAL_PROOF_ENABLED).toBe(false);
   });
 
+  it("accepts the hosted Supabase integration variable names", () => {
+    const parsed = parseServerEnv({
+      ...validPublicEnv,
+      APP_ENV: "production",
+      CRON_SECRET: "production-cron-secret-at-least-32-characters",
+      POSTGRES_URL:
+        "postgresql://postgres.project-ref:password@pooler.supabase.com:6543/postgres",
+      POSTGRES_URL_NON_POOLING:
+        "postgresql://postgres.project-ref:password@pooler.supabase.com:5432/postgres",
+      PUBLIC_SOCIAL_PROOF_ENABLED: "false",
+      SMTP_FROM_EMAIL: "no-reply@contentecreators.com.br",
+      SMTP_FROM_NAME: "Contente Creators",
+      SMTP_HOST: "smtp.gmail.com",
+      SMTP_PASSWORD: "application-password",
+      SMTP_PORT: "465",
+      SMTP_SECURE: "true",
+      SMTP_USER: "no-reply@contentecreators.com.br",
+      SUPABASE_SECRET_KEY: "sb_secret_hosted_test",
+    });
+
+    expect(parsed.DATABASE_URL).toBe(
+      "postgresql://postgres.project-ref:password@pooler.supabase.com:6543/postgres",
+    );
+    expect(parsed.DIRECT_URL).toBe(
+      "postgresql://postgres.project-ref:password@pooler.supabase.com:5432/postgres",
+    );
+    expect(parsed.SUPABASE_SERVICE_ROLE_KEY).toBe("sb_secret_hosted_test");
+  });
+
+  it("prefers explicit canonical variables over hosted aliases", () => {
+    const parsed = parseServerEnv({
+      ...validPublicEnv,
+      APP_ENV: "local",
+      CRON_SECRET: "local-cron-secret-at-least-32-characters",
+      DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres",
+      DIRECT_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres",
+      POSTGRES_URL:
+        "postgresql://postgres.project-ref:password@pooler.supabase.com:6543/postgres",
+      POSTGRES_URL_NON_POOLING:
+        "postgresql://postgres.project-ref:password@pooler.supabase.com:5432/postgres",
+      PUBLIC_SOCIAL_PROOF_ENABLED: "false",
+      SMTP_FROM_EMAIL: "no-reply@contentecreators.test",
+      SMTP_FROM_NAME: "Contente Creators",
+      SMTP_HOST: "127.0.0.1",
+      SMTP_PASSWORD: "local-password",
+      SMTP_PORT: "1025",
+      SMTP_SECURE: "false",
+      SMTP_USER: "local-user",
+      SUPABASE_SECRET_KEY: "sb_secret_hosted_test",
+      SUPABASE_SERVICE_ROLE_KEY: "service-role-local-test",
+    });
+
+    expect(parsed.DATABASE_URL).toBe(
+      "postgresql://postgres:postgres@127.0.0.1:54322/postgres",
+    );
+    expect(parsed.DIRECT_URL).toBe(
+      "postgresql://postgres:postgres@127.0.0.1:54322/postgres",
+    );
+    expect(parsed.SUPABASE_SERVICE_ROLE_KEY).toBe("service-role-local-test");
+  });
+
   it("normalizes a bounded local administrator email allowlist", () => {
     const parsed = parseServerEnv({
       ...validPublicEnv,

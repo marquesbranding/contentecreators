@@ -3,7 +3,7 @@
 import { LogOut, Menu, Search, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { BrandLogo } from "@/shared/components/brand-logo";
 import { Button, buttonVariants } from "@/shared/components/ui/button";
@@ -16,6 +16,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/components/ui/sheet";
+import { useHydrated } from "@/shared/hooks/use-hydrated";
 import { cn } from "@/shared/lib/cn";
 import { getBrowserQueryClient } from "@/shared/query/browser-query-client";
 
@@ -125,12 +126,8 @@ export function AuthenticatedProductShell({
   signOutAction: () => Promise<void>;
 }) {
   const pathname = usePathname();
-  const [hydrated, setHydrated] = useState(false);
+  const hydrated = useHydrated();
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
-
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
 
   return (
     <div className="bg-brand-canvas min-h-screen">

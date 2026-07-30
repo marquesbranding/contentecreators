@@ -1,7 +1,7 @@
 "use client";
 
 import { Funnel, Search, SlidersHorizontal, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -24,6 +24,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/components/ui/sheet";
+import { useHydrated } from "@/shared/hooks/use-hydrated";
 
 import type {
   CatalogCreatorType,
@@ -296,12 +297,8 @@ export function CatalogFilterControls({
   onSearchSubmit,
   options,
 }: CatalogFilterControlsProps) {
-  const [hydrated, setHydrated] = useState(false);
+  const hydrated = useHydrated();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
 
   return (
     <section aria-label="Busca e filtros do catálogo" className="space-y-4">

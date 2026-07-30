@@ -44,6 +44,14 @@ The service-role credential and direct connection string remain server-only.
 Never paste command output containing local environment values into public
 channels.
 
+The production deployment workflow runs the same idempotent bootstrap after
+the committed migrations and before promotion. The approved initial identity
+is `thomas@marquesbranding.com`, with audit reference
+`CLIENTE-ADMIN-THOMAS-2026-07-30`. A missing identity receives an invitation;
+an already-provisioned matching administrator makes the step succeed without
+creating another account. A conflicting initial administrator stops the
+deployment.
+
 ## Additional administrators
 
 An approved administrator uses the protected backoffice form. The server:

@@ -173,6 +173,22 @@ jobs:
             --linked \
             --password "$SUPABASE_DB_PASSWORD"
 
+      - name: Bootstrap the approved initial production administrator
+        env:
+          INITIAL_ADMIN_APPROVAL_REFERENCE: CLIENTE-ADMIN-THOMAS-2026-07-30
+          INITIAL_ADMIN_EMAIL: thomas@marquesbranding.com
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          node \
+            --env-file=.env.deployment \
+            --conditions=react-server \
+            --import tsx \
+            scripts/bootstrap-initial-admin.ts \
+            --email "$INITIAL_ADMIN_EMAIL" \
+            --approval-reference "$INITIAL_ADMIN_APPROVAL_REFERENCE" \
+            --confirm-supabase-url "https://${SUPABASE_PROJECT_REF}.supabase.co" \
+            --execute
+
       - name: Deploy the prebuilt production artifact
         id: deploy
         env:

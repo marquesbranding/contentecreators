@@ -86,6 +86,20 @@ not cross environments.
 | `PUBLIC_SOCIAL_PROOF_ENABLED`           | `false`                                     | `false`                                  |
 | `SUPPORT_CONTACT_EMAIL`                 | Client-approved non-production contact      | Client/legal-approved production contact |
 
+The hosted runtime and deployment verifier also accept the variables installed
+by the Vercel/Supabase integration. Canonical application names remain
+preferred when both are configured:
+
+| Canonical application name  | Hosted integration alias   |
+| --------------------------- | -------------------------- |
+| `DATABASE_URL`              | `POSTGRES_URL`             |
+| `DIRECT_URL`                | `POSTGRES_URL_NON_POOLING` |
+| `SUPABASE_SERVICE_ROLE_KEY` | `SUPABASE_SECRET_KEY`      |
+
+Do not reconstruct PostgreSQL URLs from the separate host, user, password, and
+database variables. The integration URLs preserve the reviewed pooler, port,
+TLS, and credential encoding configuration.
+
 `NEXT_PUBLIC_*` values are frozen into the browser bundle during
 `vercel build`; therefore the workflow pulls and builds against the target
 project instead of promoting one prebuilt artifact across projects.
@@ -111,6 +125,8 @@ For each Supabase project:
 
 For each Vercel project:
 
+- [ ] Confirm automatic Git deployments are disabled for `main` and `develop`;
+      only the environment-bound workflows may migrate and promote them.
 - [ ] Confirm the `/api/cron/email-outbox` schedule from `vercel.json`.
 - [ ] Confirm Vercel sends `Authorization: Bearer <CRON_SECRET>` and the
       endpoint rejects a missing or wrong signature.

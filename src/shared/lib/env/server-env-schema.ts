@@ -20,6 +20,35 @@ const localAdminEmails = z
   ])
   .pipe(z.array(z.email()).max(20));
 
+const hostedIntegrationAliases = {
+  DATABASE_URL: "POSTGRES_URL",
+  DIRECT_URL: "POSTGRES_URL_NON_POOLING",
+  SUPABASE_SERVICE_ROLE_KEY: "SUPABASE_SECRET_KEY",
+} as const;
+
+function isConfigured(value: unknown) {
+  return typeof value === "string" ? value.trim().length > 0 : value != null;
+}
+
+export function resolveServerEnvAliases(
+  input: Record<string, unknown>,
+): Record<string, unknown> {
+  const resolved = { ...input };
+
+  for (const [canonicalName, integrationName] of Object.entries(
+    hostedIntegrationAliases,
+  )) {
+    if (
+      !isConfigured(resolved[canonicalName]) &&
+      isConfigured(input[integrationName])
+    ) {
+      resolved[canonicalName] = input[integrationName];
+    }
+  }
+
+  return resolved;
+}
+
 const serverEnvSchema = z
   .object({
     APP_ENV: z.enum(["local", "development", "production"]),
@@ -56,7 +85,7 @@ const serverEnvSchema = z
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
 
 export function parseServerEnv(input: Record<string, unknown>): ServerEnv {
-  const result = serverEnvSchema.safeParse(input);
+  const result = serverEnvSchema.safeParse(resolveServerEnvAliases(input));
 
   if (!result.success) {
     throw createEnvironmentError("server", result.error);

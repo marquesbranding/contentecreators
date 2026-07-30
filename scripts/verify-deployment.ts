@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import nodemailer from "nodemailer";
 import postgres from "postgres";
 
+import { resolveServerEnvAliases } from "../src/shared/lib/env/server-env-schema";
 import {
   assertDatabaseConnectionTargets,
   assertHostedDeploymentConfiguration,
@@ -33,6 +34,7 @@ const REQUIRED_RLS_TABLES = [
   "creator_profiles",
   "media_assets",
 ];
+const deploymentEnvironment = resolveServerEnvAliases(process.env);
 
 function argumentValue(argumentsInput: string[], name: string) {
   const inlinePrefix = `--${name}=`;
@@ -68,7 +70,9 @@ function parseArguments(argumentsInput: string[]): Arguments {
 }
 
 function requiredEnvironment(name: string) {
-  const value = process.env[name]?.trim();
+  const configuredValue = deploymentEnvironment[name];
+  const value =
+    typeof configuredValue === "string" ? configuredValue.trim() : undefined;
 
   if (!value) {
     throw new Error(`Missing deployment configuration: ${name}`);
@@ -193,9 +197,9 @@ async function verifyVercelProjectIdentity(expectedProjectName: string) {
 
 function verifyDatabaseProjectIdentity() {
   assertDatabaseConnectionTargets(
-    process.env.SUPABASE_PROJECT_REF,
-    process.env.DATABASE_URL,
-    process.env.DIRECT_URL,
+    requiredEnvironment("SUPABASE_PROJECT_REF"),
+    requiredEnvironment("DATABASE_URL"),
+    requiredEnvironment("DIRECT_URL"),
   );
 }
 
@@ -276,8 +280,14 @@ async function verifyDatabaseState() {
 }
 
 async function verifyOptionalSyntheticStorageRead(supabaseUrl: string) {
-  const objectPath = process.env.DEPLOY_SMOKE_STORAGE_OBJECT_PATH?.trim();
-  const userToken = process.env.DEPLOY_SMOKE_USER_JWT?.trim();
+  const objectPath =
+    typeof deploymentEnvironment.DEPLOY_SMOKE_STORAGE_OBJECT_PATH === "string"
+      ? deploymentEnvironment.DEPLOY_SMOKE_STORAGE_OBJECT_PATH.trim()
+      : undefined;
+  const userToken =
+    typeof deploymentEnvironment.DEPLOY_SMOKE_USER_JWT === "string"
+      ? deploymentEnvironment.DEPLOY_SMOKE_USER_JWT.trim()
+      : undefined;
 
   if (!objectPath && !userToken) {
     return "not_configured";
@@ -408,12 +418,14 @@ async function run() {
   const configuration = assertHostedDeploymentConfiguration(
     argumentsInput.target,
     {
-      appEnv: process.env.APP_ENV,
-      appUrl: process.env.NEXT_PUBLIC_APP_URL,
-      publicSocialProofEnabled: process.env.PUBLIC_SOCIAL_PROOF_ENABLED,
-      supabaseProjectName: process.env.SUPABASE_PROJECT_NAME,
-      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-      vercelProjectName: process.env.VERCEL_PROJECT_NAME,
+      appEnv: requiredEnvironment("APP_ENV"),
+      appUrl: requiredEnvironment("NEXT_PUBLIC_APP_URL"),
+      publicSocialProofEnabled: requiredEnvironment(
+        "PUBLIC_SOCIAL_PROOF_ENABLED",
+      ),
+      supabaseProjectName: requiredEnvironment("SUPABASE_PROJECT_NAME"),
+      supabaseUrl: requiredEnvironment("NEXT_PUBLIC_SUPABASE_URL"),
+      vercelProjectName: requiredEnvironment("VERCEL_PROJECT_NAME"),
     },
   );
 
