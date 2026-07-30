@@ -157,6 +157,7 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 
 - Use only the supplied official white, pink, blue, lime, royal-blue, and black PNG variants; never recolor, reconstruct with CSS, or replace them with a wordmark.
 - Keep every official square source intact. Crop only its transparent canvas at presentation time through the shared `BrandLogo` component.
+- Deliver official logo PNGs directly through `BrandLogo` instead of the runtime image optimizer; the supplied files are already compact, and the mark must remain available on Auth, onboarding, product, and backoffice surfaces even when optimizer delivery is transient.
 - The white variant receives a night background automatically, the black variant receives a light background, and colored variants remain transparent unless the composition explicitly overrides the semantic surface.
 - Hero composition uses one dominant statement, two audience CTAs, and an illustrative product preview without public creator/company listings.
 - Static radial light washes may add depth to the hero. A darkened pink-to-royal gradient is reserved for prominent marketing CTA surfaces.
@@ -166,13 +167,14 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 
 ## Decisions
 
-| Decision                                        | Rationale                                                                                                    | Date       |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ---------- |
-| Electric blue + ink + warm canvas               | Preserves the supplied logo's energy while keeping long product journeys comfortable and trustworthy         | 2026-07-23 |
-| One variable typeface                           | Reduces font/network cost and keeps product and marketing surfaces coherent                                  | 2026-07-23 |
-| Soft product geometry, bolder marketing framing | Supports mobile form usability while reflecting the playful speech-bubble logo on acquisition surfaces       | 2026-07-23 |
-| Minimal client boundaries                       | Protects Server Component performance and prevents the entire design system from entering the browser bundle | 2026-07-23 |
-| Supporting marketing spectrum                   | Brings the approved mock's energy into acquisition pages without weakening blue's role in the SaaS product   | 2026-07-23 |
-| shadcn/ui-first product surfaces                | Keeps complex forms and backoffice interactions accessible, consistent, and fast to evolve                   | 2026-07-23 |
-| Untouched official logo variants                | Preserves the supplied brand artwork while the shared component handles safe responsive framing and contrast | 2026-07-25 |
-| Shared approved-product navigation              | Keeps creator discovery, detail and profile editing oriented on phones without duplicating route behavior    | 2026-07-29 |
+| Decision                                        | Rationale                                                                                                      | Date       |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------- |
+| Electric blue + ink + warm canvas               | Preserves the supplied logo's energy while keeping long product journeys comfortable and trustworthy           | 2026-07-23 |
+| One variable typeface                           | Reduces font/network cost and keeps product and marketing surfaces coherent                                    | 2026-07-23 |
+| Soft product geometry, bolder marketing framing | Supports mobile form usability while reflecting the playful speech-bubble logo on acquisition surfaces         | 2026-07-23 |
+| Minimal client boundaries                       | Protects Server Component performance and prevents the entire design system from entering the browser bundle   | 2026-07-23 |
+| Supporting marketing spectrum                   | Brings the approved mock's energy into acquisition pages without weakening blue's role in the SaaS product     | 2026-07-23 |
+| shadcn/ui-first product surfaces                | Keeps complex forms and backoffice interactions accessible, consistent, and fast to evolve                     | 2026-07-23 |
+| Untouched official logo variants                | Preserves the supplied brand artwork while the shared component handles safe responsive framing and contrast   | 2026-07-25 |
+| Shared approved-product navigation              | Keeps creator discovery, detail and profile editing oriented on phones without duplicating route behavior      | 2026-07-29 |
+| Direct official-logo delivery                   | Removes a runtime optimizer dependency from the brand mark while preserving the supplied artwork byte-for-byte | 2026-07-30 |

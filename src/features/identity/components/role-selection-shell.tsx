@@ -31,7 +31,7 @@ export function RoleSelectionShell({
       <div className="relative mx-auto max-w-4xl">
         <header className="flex items-center justify-between">
           <span className="bg-brand-night rounded-md">
-            <BrandLogo />
+            <BrandLogo preload />
           </span>
           <div className="flex items-center gap-2">
             <Badge

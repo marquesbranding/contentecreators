@@ -105,6 +105,14 @@ describe("combined registration form", () => {
     expect(
       container.querySelector('form input[name="email"]'),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("separator", { name: "Outras formas de acesso" }),
+    ).toHaveTextContent("ou continue com");
+    expect(
+      screen
+        .getByRole("button", { name: "Continuar com o Google" })
+        .querySelector('[data-slot="google-auth-icon"]'),
+    ).toBeInTheDocument();
   });
 
   it("blocks an empty submission and identifies the required role", async () => {

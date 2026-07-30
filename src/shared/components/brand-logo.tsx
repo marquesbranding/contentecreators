@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 import { cn } from "@/shared/lib/cn";
 
 export const brandLogoVariants = {
@@ -48,7 +46,6 @@ interface BrandLogoProps {
   background?: BrandLogoBackground;
   className?: string;
   preload?: boolean;
-  sizes?: string;
   variant?: BrandLogoVariant;
 }
 
@@ -62,7 +59,6 @@ export function BrandLogo({
   background = "auto",
   className,
   preload = false,
-  sizes = "(max-width: 640px) 150px, 171px",
   variant = "blue",
 }: BrandLogoProps) {
   const artwork = brandLogoVariants[variant];
@@ -85,12 +81,18 @@ export function BrandLogo({
       data-brand-background={resolvedBackground}
       data-brand-variant={variant}
     >
-      <Image
+      {/* The supplied artwork is already a compact production PNG. Serving it
+          directly avoids making the shared brand mark depend on the runtime
+          image optimizer across Auth, onboarding, product, and backoffice. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         alt="Contente Creators"
         className="absolute h-auto max-w-none select-none"
+        data-brand-delivery="direct"
+        decoding="async"
+        fetchPriority={preload ? "high" : "auto"}
         height={3_334}
-        preload={preload}
-        sizes={sizes}
+        loading={preload ? "eager" : "lazy"}
         src={artwork.src}
         style={{
           left: artwork.offsetLeft,

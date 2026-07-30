@@ -9,7 +9,6 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
   RequiredFieldsNotice,
 } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
@@ -23,7 +22,7 @@ import type {
 import { initialAuthActionState } from "../types/auth.types";
 import { AuthFeedback } from "./auth-feedback";
 import { AuthSubmitButton } from "./auth-submit-button";
-import { GoogleAuthButton } from "./google-auth-button";
+import { GoogleAuthOption } from "./google-auth-option.client";
 import { PasswordField } from "./password-field.client";
 
 interface SignUpFormProps {
@@ -177,12 +176,9 @@ export function SignUpForm({
         </FieldGroup>
       </form>
 
-      <FieldSeparator>ou</FieldSeparator>
-
-      <form action={googleAction}>
+      <GoogleAuthOption action={googleAction}>
         <input name="intent" type="hidden" value={initialIntent ?? ""} />
-        <GoogleAuthButton />
-      </form>
+      </GoogleAuthOption>
 
       <p className="text-muted-foreground text-center text-sm">
         Já tem uma conta?{" "}

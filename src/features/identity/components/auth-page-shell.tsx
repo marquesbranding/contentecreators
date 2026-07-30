@@ -43,7 +43,7 @@ export function AuthPageShell({
           className="relative w-fit rounded-md focus-visible:ring-3 focus-visible:ring-white/80 focus-visible:outline-none"
           href="/"
         >
-          <BrandLogo className="h-[4.2rem] w-[12.5rem]" />
+          <BrandLogo className="h-[4.2rem] w-[12.5rem]" preload />
         </Link>
 
         <div className="relative max-w-lg">
@@ -82,7 +82,7 @@ export function AuthPageShell({
               className="bg-brand-night focus-visible:ring-brand-blue/50 rounded-md focus-visible:ring-3 focus-visible:outline-none"
               href="/"
             >
-              <BrandLogo />
+              <BrandLogo preload />
             </Link>
             <Link
               className="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold focus-visible:ring-3 focus-visible:outline-none"

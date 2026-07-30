@@ -14,7 +14,6 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
   RequiredFieldsNotice,
 } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
@@ -24,7 +23,7 @@ import type { AuthFormAction, AuthRedirectAction } from "../types/auth.types";
 import { initialAuthActionState } from "../types/auth.types";
 import { AuthFeedback } from "./auth-feedback";
 import { AuthSubmitButton } from "./auth-submit-button";
-import { GoogleAuthButton } from "./google-auth-button";
+import { GoogleAuthOption } from "./google-auth-option.client";
 import { PasswordField } from "./password-field.client";
 
 interface LoginFormProps {
@@ -133,12 +132,9 @@ export function LoginForm({
         </FieldGroup>
       </form>
 
-      <FieldSeparator>ou</FieldSeparator>
-
-      <form action={googleAction}>
+      <GoogleAuthOption action={googleAction}>
         <input name="nextPath" type="hidden" value={initialNextPath} />
-        <GoogleAuthButton />
-      </form>
+      </GoogleAuthOption>
 
       {mode === "member" ? (
         <p className="text-muted-foreground text-center text-sm">

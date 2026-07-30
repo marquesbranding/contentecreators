@@ -61,7 +61,7 @@ export function OnboardingFormShell({
         {showBrandHeader ? (
           <header className="flex items-center justify-between gap-4">
             <span className="bg-brand-night rounded-md">
-              <BrandLogo />
+              <BrandLogo preload />
             </span>
             <Badge
               className="gap-1.5 rounded-full px-3 py-1.5"

@@ -19,6 +19,27 @@ test.describe("identity and first-access routes", () => {
       page.getByRole("button", { name: "Continuar com o Google" }),
     ).toBeVisible();
     await expect(
+      page.getByRole("separator", { name: "Outras formas de acesso" }),
+    ).toContainText("ou continue com");
+    await expect(
+      page
+        .getByRole("button", { name: "Continuar com o Google" })
+        .locator('[data-slot="google-auth-icon"]'),
+    ).toBeVisible();
+
+    const brandLogo = page
+      .getByRole("img", { name: "Contente Creators" })
+      .first();
+
+    await expect(brandLogo).toHaveAttribute("data-brand-delivery", "direct");
+    await expect
+      .poll(() =>
+        brandLogo.evaluate(
+          (image: HTMLImageElement) => image.complete && image.naturalWidth > 0,
+        ),
+      )
+      .toBe(true);
+    await expect(
       page.getByRole("link", { name: "Esqueci minha senha" }),
     ).toHaveAttribute("href", "/forgot-password");
     await expect(page.getByText(/instagram/iu)).toHaveCount(0);

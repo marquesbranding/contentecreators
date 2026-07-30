@@ -36,9 +36,22 @@ describe("BrandLogo", () => {
     const container = image.parentElement;
 
     expect(image).toHaveAttribute("src", expectedSources.blue);
+    expect(image).toHaveAttribute("data-brand-delivery", "direct");
+    expect(image).toHaveAttribute("loading", "lazy");
     expect(container).toHaveAttribute("data-brand-variant", "blue");
     expect(container).toHaveAttribute("data-brand-background", "transparent");
     expect(container).toHaveClass("h-20", "w-60");
+  });
+
+  it("eagerly delivers a preloaded logo without the Next.js image optimizer", () => {
+    render(<BrandLogo preload />);
+
+    const image = screen.getByRole("img", { name: "Contente Creators" });
+
+    expect(image).toHaveAttribute("src", expectedSources.blue);
+    expect(image).toHaveAttribute("data-brand-delivery", "direct");
+    expect(image).toHaveAttribute("fetchpriority", "high");
+    expect(image).toHaveAttribute("loading", "eager");
   });
 
   it.each(Object.entries(expectedSources))(

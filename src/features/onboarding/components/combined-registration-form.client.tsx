@@ -4,6 +4,7 @@ import { Building2, CircleAlert, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useActionState, useState } from "react";
 
+import { GoogleAuthOption } from "@/features/identity/client";
 import {
   Alert,
   AlertDescription,
@@ -17,7 +18,6 @@ import {
   FieldGroup,
   FieldLabel,
   FieldLegend,
-  FieldSeparator,
   FieldSet,
   RequiredFieldsNotice,
 } from "@/shared/components/ui/field";
@@ -367,13 +367,7 @@ export function CombinedRegistrationForm({
         open={submitConfirmation.open}
       />
 
-      <FieldSeparator>ou entre com</FieldSeparator>
-
-      <form action={googleAction}>
-        <Button className="w-full" size="lg" type="submit" variant="outline">
-          Continuar com o Google
-        </Button>
-      </form>
+      <GoogleAuthOption action={googleAction} />
 
       <p className="text-muted-foreground text-center text-sm">
         Já tem uma conta?{" "}

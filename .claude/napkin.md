@@ -60,7 +60,7 @@
    Do instead: keep the `/` shell under a strict static-rendering contract; load optional counters/promotions after hydration through separate credential-free, validated, fail-closed endpoints so only the affected section disappears, and keep catalog records private to approved authenticated accounts until the client validates public social proof.
 
 7. **[2026-07-25] Preserve the complete official logo set and use consistent interface iconography**
-   Do instead: keep every PNG under `public/brand/official` byte-identical, select white/pink/blue/lime/royal-blue/black through the shared `BrandLogo`, never recolor the artwork, use Lucide icons for UI symbols, and avoid emoji.
+   Do instead: keep every PNG under `public/brand/official` byte-identical, select white/pink/blue/lime/royal-blue/black through the shared `BrandLogo`, serve these compact assets directly instead of through the runtime image optimizer, never recolor the artwork, use Lucide icons for UI symbols, and avoid emoji.
 
 8. **[2026-07-23] Make required-field behavior consistent and accessible**
    Do instead: use the shared red required indicator and form notice, preserve native `required` semantics, validate custom shadcn/Base UI controls through `useRequiredFieldValidation`, show adjacent `pt-BR` errors with `aria-invalid`, and focus the first invalid field before dispatching a Server Action.

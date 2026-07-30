@@ -29,8 +29,16 @@ describe("identity auth forms", () => {
 
     expect(screen.getByLabelText("E-mail")).toHaveAttribute("type", "email");
     expect(screen.getByLabelText("Senha")).toHaveAttribute("type", "password");
+    const googleButton = screen.getByRole("button", {
+      name: "Continuar com o Google",
+    });
+
+    expect(googleButton).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Continuar com o Google" }),
+      screen.getByRole("separator", { name: "Outras formas de acesso" }),
+    ).toHaveTextContent("ou continue com");
+    expect(
+      googleButton.querySelector('[data-slot="google-auth-icon"]'),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Esqueci minha senha" }),
