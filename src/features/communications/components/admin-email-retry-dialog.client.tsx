@@ -5,6 +5,7 @@ import { RefreshCw, ShieldCheck } from "lucide-react";
 import { useActionState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
 
+import { ActionSubmitButton } from "@/shared/components/action-submit-button";
 import {
   Alert,
   AlertDescription,
@@ -28,6 +29,7 @@ import {
   RequiredFieldsNotice,
 } from "@/shared/components/ui/field";
 import { Textarea } from "@/shared/components/ui/textarea";
+import { useActionSuccessToast } from "@/shared/hooks/use-action-success-toast";
 
 import { adminEmailOutboxKeys } from "../api/admin-email-outbox.api";
 
@@ -47,10 +49,13 @@ function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <Button disabled={pending} type="submit">
-      <ShieldCheck aria-hidden="true" />
-      {pending ? "Processando..." : "Confirmar nova tentativa"}
-    </Button>
+    <ActionSubmitButton
+      idleIcon={<ShieldCheck aria-hidden="true" />}
+      pending={pending}
+      pendingLabel="Programando tentativa..."
+    >
+      Confirmar nova tentativa
+    </ActionSubmitButton>
   );
 }
 
@@ -65,6 +70,9 @@ export function AdminEmailRetryDialog({
 }) {
   const queryClient = useQueryClient();
   const [state, formAction] = useActionState(action, initialState);
+  useActionSuccessToast(state, {
+    title: "Nova tentativa programada",
+  });
 
   useEffect(() => {
     if (state.status !== "success") {

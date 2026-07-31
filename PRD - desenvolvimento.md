@@ -3,7 +3,7 @@
 **Status:** em desenvolvimento
 **Data-base do acompanhamento:** 28/07/2026
 **OpenSpec relacionado:** `mvp-contente-creators`
-**Progresso atual:** 222 de 252 entregas concluídas (88,1%); 30 entregas pendentes.
+**Progresso atual:** 238 de 253 entregas concluídas (94,1%); 15 entregas pendentes.
 
 ## 1. Objetivo do produto
 
@@ -65,6 +65,7 @@ O produto deve permitir que:
 - Arquitetura por slices verticais, com componentes, hooks, domínio, schemas, tipos, APIs e camadas server-side somente quando necessários.
 - Código, identificadores e objetos técnicos em inglês; textos visíveis ao usuário em português do Brasil.
 - Mobile first, responsivo desde 320 px, acessível e desenvolvido com TDD.
+- Submits de mutação exibem a logo oficial pulsando durante o processamento e uma confirmação moderna de sucesso pelo toaster global, preservando feedback inline quando houver próximos passos obrigatórios.
 - SMTP da Marques Branding para e-mails transacionais nos ambientes hospedados.
 - Ambientes hospedados exatamente `contente-creators-dev` e `contente-creators-prd`.
 

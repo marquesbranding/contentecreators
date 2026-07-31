@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { ActionSubmitButton } from "@/shared/components/action-submit-button";
 import { Button } from "@/shared/components/ui/button";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import {
@@ -33,6 +34,7 @@ import {
   RequiredFieldsNotice,
 } from "@/shared/components/ui/field";
 import { Textarea } from "@/shared/components/ui/textarea";
+import { useActionSuccessToast } from "@/shared/hooks/use-action-success-toast";
 
 import { moderationQueueKeys } from "../api/moderation-queue.api";
 import {
@@ -159,10 +161,13 @@ function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
 
   return (
-    <Button disabled={pending} type="submit">
-      <ShieldCheck aria-hidden="true" />
-      {pending ? "Processando..." : label}
-    </Button>
+    <ActionSubmitButton
+      idleIcon={<ShieldCheck aria-hidden="true" />}
+      pending={pending}
+      pendingLabel="Aplicando decisão..."
+    >
+      {label}
+    </ActionSubmitButton>
   );
 }
 
@@ -189,6 +194,9 @@ function ActionDialog({
     () => `moderation:${action.toLowerCase()}:${crypto.randomUUID()}`,
   );
   const [state, formAction] = useActionState(serverAction, initialState);
+  useActionSuccessToast(state, {
+    title: "Decisão aplicada",
+  });
   const reasonErrors = state.fieldErrors?.reason;
   const confirmationErrors = state.fieldErrors?.confirmation;
 

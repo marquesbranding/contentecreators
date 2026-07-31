@@ -3,14 +3,14 @@
 import { CircleAlert } from "lucide-react";
 import { useActionState } from "react";
 
+import { ActionSubmitButton } from "@/shared/components/action-submit-button";
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from "@/shared/components/ui/alert";
-import { Button } from "@/shared/components/ui/button";
 import { RequiredFieldsNotice } from "@/shared/components/ui/field";
-import { Spinner } from "@/shared/components/ui/spinner";
+import { useActionSuccessToast } from "@/shared/hooks/use-action-success-toast";
 import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 import { useSubmitConfirmation } from "@/shared/hooks/use-submit-confirmation";
 import { useUnsavedChangesGuard } from "@/shared/hooks/use-unsaved-changes-guard";
@@ -73,6 +73,9 @@ function ProfileOnboardingFormContent({
     formValidation.clientFieldErrors,
     state.fieldErrors,
   );
+  useActionSuccessToast(state, {
+    title: correctionCommand ? "Correções reenviadas" : "Perfil enviado",
+  });
 
   return (
     <>
@@ -133,10 +136,14 @@ function ProfileOnboardingFormContent({
           role={role}
         />
         {mediaFields}
-        <Button className="w-full" disabled={pending} size="lg" type="submit">
-          {pending ? <Spinner aria-label="Enviando perfil" /> : null}
-          {pending ? "Enviando para análise..." : "Enviar perfil para análise"}
-        </Button>
+        <ActionSubmitButton
+          className="w-full"
+          pending={pending}
+          pendingLabel="Enviando para análise..."
+          size="lg"
+        >
+          Enviar perfil para análise
+        </ActionSubmitButton>
       </form>
       <OnboardingSubmitConfirmation
         onConfirm={submitConfirmation.confirmSubmission}

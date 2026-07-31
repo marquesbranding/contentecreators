@@ -21,9 +21,11 @@ import {
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { MediaUploadField, type MediaUploadActions } from "@/features/media";
+import { ActionSubmitButton } from "@/shared/components/action-submit-button";
 import {
   Alert,
   AlertDescription,
@@ -378,6 +380,11 @@ function PlacementFormDialog({
       } else {
         await mutation.create(command);
       }
+      toast.success(placement ? "Patrocínio atualizado" : "Rascunho criado", {
+        description: placement
+          ? "As alterações foram salvas e já aparecem no backoffice."
+          : "O patrocínio foi salvo como rascunho e ainda não está publicado.",
+      });
       setOpen(false);
       form.reset(formDefaults());
     } catch {
@@ -692,13 +699,12 @@ function PlacementFormDialog({
           ) : null}
 
           <DialogFooter showCloseButton>
-            <Button disabled={form.formState.isSubmitting} type="submit">
-              {form.formState.isSubmitting
-                ? "Salvando..."
-                : placement
-                  ? "Salvar alterações"
-                  : "Salvar rascunho"}
-            </Button>
+            <ActionSubmitButton
+              pending={form.formState.isSubmitting}
+              pendingLabel="Salvando patrocínio..."
+            >
+              {placement ? "Salvar alterações" : "Salvar rascunho"}
+            </ActionSubmitButton>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -741,6 +747,10 @@ function PlacementCommandDialog({
         expectedVersion: placement.version,
         reason: reason.trim(),
         sortOrder,
+      });
+      toast.success(`${label} concluído`, {
+        description:
+          "A operação foi aplicada e registrada no histórico de auditoria.",
       });
       setOpen(false);
       setReason("");
@@ -813,16 +823,16 @@ function PlacementCommandDialog({
             </Alert>
           ) : null}
           <DialogFooter showCloseButton>
-            <Button
+            <ActionSubmitButton
               disabled={
-                pending ||
-                (action === "ACTIVATE" && placement.activationIssues.length > 0)
+                action === "ACTIVATE" && placement.activationIssues.length > 0
               }
-              type="submit"
+              pending={pending}
+              pendingLabel="Aplicando operação..."
               variant={variant}
             >
-              {pending ? "Processando..." : `Confirmar: ${label.toLowerCase()}`}
-            </Button>
+              {`Confirmar: ${label.toLowerCase()}`}
+            </ActionSubmitButton>
           </DialogFooter>
         </form>
       </DialogContent>

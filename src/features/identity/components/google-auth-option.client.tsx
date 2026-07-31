@@ -3,31 +3,28 @@
 import { KeyRound } from "lucide-react";
 import { useFormStatus } from "react-dom";
 
-import { Button } from "@/shared/components/ui/button";
-import { Spinner } from "@/shared/components/ui/spinner";
+import { ActionSubmitButton } from "@/shared/components/action-submit-button";
 
 function GoogleProviderButton() {
   const { pending } = useFormStatus();
 
   return (
-    <Button
+    <ActionSubmitButton
       className="group/google border-foreground/15 hover:border-brand-blue/40 hover:bg-brand-blue-soft/55 relative h-14 w-full overflow-hidden bg-white px-14 shadow-[0_1px_0_rgba(8,8,8,0.04)]"
-      disabled={pending}
-      type="submit"
+      idleIcon={
+        <span
+          className="bg-brand-blue-soft text-brand-blue group-hover/google:bg-brand-blue absolute left-3 flex size-8 items-center justify-center rounded-lg transition-colors group-hover/google:text-white"
+          data-slot="google-auth-icon"
+        >
+          <KeyRound aria-hidden="true" className="size-4" />
+        </span>
+      }
+      pending={pending}
+      pendingLabel="Conectando..."
       variant="outline"
     >
-      <span
-        className="bg-brand-blue-soft text-brand-blue group-hover/google:bg-brand-blue absolute left-3 flex size-8 items-center justify-center rounded-lg transition-colors group-hover/google:text-white"
-        data-slot="google-auth-icon"
-      >
-        {pending ? (
-          <Spinner aria-label="Conectando com o Google" className="size-4" />
-        ) : (
-          <KeyRound aria-hidden="true" className="size-4" />
-        )}
-      </span>
-      <span>{pending ? "Conectando..." : "Continuar com o Google"}</span>
-    </Button>
+      Continuar com o Google
+    </ActionSubmitButton>
   );
 }
 

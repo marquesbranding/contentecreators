@@ -1,7 +1,6 @@
 "use client";
 
-import { Button } from "@/shared/components/ui/button";
-import { Spinner } from "@/shared/components/ui/spinner";
+import { ActionSubmitButton } from "@/shared/components/action-submit-button";
 
 interface AuthSubmitButtonProps {
   children: React.ReactNode;
@@ -15,9 +14,13 @@ export function AuthSubmitButton({
   pendingLabel,
 }: AuthSubmitButtonProps) {
   return (
-    <Button className="w-full" disabled={pending} size="lg" type="submit">
-      {pending ? <Spinner aria-label={pendingLabel} /> : null}
-      {pending ? pendingLabel : children}
-    </Button>
+    <ActionSubmitButton
+      className="w-full"
+      pending={pending}
+      pendingLabel={pendingLabel}
+      size="lg"
+    >
+      {children}
+    </ActionSubmitButton>
   );
 }

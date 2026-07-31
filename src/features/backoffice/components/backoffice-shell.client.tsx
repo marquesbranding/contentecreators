@@ -19,6 +19,7 @@ import { usePathname } from "next/navigation";
 import { Fragment, useState } from "react";
 
 import { BrandLogo } from "@/shared/components/brand-logo";
+import { FormStatusSubmitButton } from "@/shared/components/form-status-submit-button";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -224,15 +225,16 @@ function BackofficeSignOutButton({ action }: { action: () => Promise<void> }) {
         queryClient.clear();
       }}
     >
-      <Button
+      <FormStatusSubmitButton
         aria-label="Sair"
         className="border-white/25 bg-transparent text-white hover:bg-white/10 hover:text-white"
-        type="submit"
+        idleIcon={<LogOut aria-hidden="true" />}
+        pendingLabel="Saindo..."
+        pendingLogoVariant="white"
         variant="outline"
       >
-        <LogOut aria-hidden="true" />
         <span>Sair</span>
-      </Button>
+      </FormStatusSubmitButton>
     </form>
   );
 }

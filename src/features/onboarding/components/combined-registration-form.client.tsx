@@ -5,12 +5,13 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 
 import { GoogleAuthOption, PasswordField } from "@/features/identity/client";
+import { ActionSubmitButton } from "@/shared/components/action-submit-button";
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from "@/shared/components/ui/alert";
-import { Button, buttonVariants } from "@/shared/components/ui/button";
+import { buttonVariants } from "@/shared/components/ui/button";
 import {
   Field,
   FieldDescription,
@@ -23,7 +24,7 @@ import {
 } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
-import { Spinner } from "@/shared/components/ui/spinner";
+import { useActionSuccessToast } from "@/shared/hooks/use-action-success-toast";
 import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 import { useSubmitConfirmation } from "@/shared/hooks/use-submit-confirmation";
 import { useUnsavedChangesGuard } from "@/shared/hooks/use-unsaved-changes-guard";
@@ -75,6 +76,16 @@ export function CombinedRegistrationForm({
   );
   const formValidation = useRequiredFieldValidation();
   const submitConfirmation = useSubmitConfirmation();
+  useActionSuccessToast(state, {
+    successStatuses: ["success", "confirmation_required"],
+    title:
+      state.status === "confirmation_required"
+        ? "Cadastro enviado"
+        : "Cadastro concluído",
+  });
+  useActionSuccessToast(resendState, {
+    title: "Confirmação reenviada",
+  });
   useUnsavedChangesGuard(
     hasUnsavedChanges && !pending && state.status !== "confirmation_required",
   );
@@ -119,15 +130,15 @@ export function CombinedRegistrationForm({
               {resendState.message}
             </p>
           ) : null}
-          <Button
+          <ActionSubmitButton
             className="w-full"
-            disabled={resendPending}
+            pending={resendPending}
+            pendingLabel="Reenviando confirmação..."
             size="lg"
-            type="submit"
             variant="outline"
           >
-            {resendPending ? "Reenviando..." : "Reenviar confirmação"}
-          </Button>
+            Reenviar confirmação
+          </ActionSubmitButton>
         </form>
         <Link className={buttonVariants({ variant: "link" })} href="/login">
           Voltar para o login
@@ -327,10 +338,14 @@ export function CombinedRegistrationForm({
           </Alert>
         )}
 
-        <Button className="w-full" disabled={pending} size="lg" type="submit">
-          {pending ? <Spinner aria-label="Criando cadastro" /> : null}
-          {pending ? "Criando cadastro..." : "Criar conta e enviar perfil"}
-        </Button>
+        <ActionSubmitButton
+          className="w-full"
+          pending={pending}
+          pendingLabel="Criando cadastro..."
+          size="lg"
+        >
+          Criar conta e enviar perfil
+        </ActionSubmitButton>
       </form>
       <OnboardingSubmitConfirmation
         onConfirm={submitConfirmation.confirmSubmission}

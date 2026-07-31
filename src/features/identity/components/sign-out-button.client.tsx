@@ -2,7 +2,7 @@
 
 import { LogOut } from "lucide-react";
 
-import { Button } from "@/shared/components/ui/button";
+import { FormStatusSubmitButton } from "@/shared/components/form-status-submit-button";
 import { getBrowserQueryClient } from "@/shared/query/browser-query-client";
 
 export function SignOutButton({ action }: { action: () => Promise<void> }) {
@@ -13,14 +13,14 @@ export function SignOutButton({ action }: { action: () => Promise<void> }) {
         getBrowserQueryClient().clear();
       }}
     >
-      <Button
+      <FormStatusSubmitButton
         aria-label="Sair da conta"
+        compactPending
+        idleIcon={<LogOut aria-hidden="true" />}
+        pendingLabel="Saindo da conta..."
         size="icon"
-        type="submit"
         variant="ghost"
-      >
-        <LogOut aria-hidden="true" />
-      </Button>
+      />
     </form>
   );
 }

@@ -48,7 +48,7 @@
    Do instead: keep domain code inside feature slices with explicit folder contracts and runtime-safe public APIs; create only the folders a slice needs, isolate reusable client orchestration in custom hooks, reserve server services for application use cases, use Axios + TanStack Query for remote interactive state, and use Zustand only for truly global client state instead of proliferating providers.
 
 3. **[2026-07-23] Build authenticated and backoffice surfaces on shadcn/ui**
-   Do instead: compose shadcn/ui primitives heavily for forms, dialogs, sheets, menus, tables, tabs, filters, pagination, skeletons, alerts, toasts, and empty states; centralize visual variants and keep domain behavior in slice hooks, services, and stores.
+   Do instead: compose shadcn/ui primitives heavily for forms, dialogs, sheets, menus, tables, tabs, filters, pagination, skeletons, alerts, toasts, and empty states; route mutation submits through the shared branded pending button and successful outcomes through the single Sonner toaster; centralize visual variants and keep domain behavior in slice hooks, services, and stores.
 
 4. **[2026-07-22] Keep source code in English and product copy in Brazilian Portuguese**
    Do instead: use English identifiers, paths, schemas, tests, and comments while writing polished, correctly accented `pt-BR` interface text.

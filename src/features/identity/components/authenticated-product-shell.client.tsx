@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import { BrandLogo } from "@/shared/components/brand-logo";
+import { FormStatusSubmitButton } from "@/shared/components/form-status-submit-button";
 import { Button, buttonVariants } from "@/shared/components/ui/button";
 import {
   Sheet,
@@ -101,19 +102,20 @@ function ProductSignOut({
         getBrowserQueryClient().clear();
       }}
     >
-      <Button
+      <FormStatusSubmitButton
         aria-label="Sair da conta"
         className={cn(
           presentation === "desktop"
             ? "border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white"
             : "h-12 w-full justify-start",
         )}
-        type="submit"
+        idleIcon={<LogOut aria-hidden="true" />}
+        pendingLabel="Saindo da conta..."
+        pendingLogoVariant={presentation === "desktop" ? "white" : "blue"}
         variant="outline"
       >
-        <LogOut aria-hidden="true" />
         Sair
-      </Button>
+      </FormStatusSubmitButton>
     </form>
   );
 }

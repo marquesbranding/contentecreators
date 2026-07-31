@@ -124,6 +124,14 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 - Icon/color reinforce text but never replace it
 - Pending review uses calm blue, correction requests use warning, suspension/ban use danger
 
+### Submit feedback
+
+- Mutation submit buttons preserve their dimensions and replace the idle icon with the untouched official logo plus concise progress copy while pending.
+- The logo uses a restrained pulse with reduced-motion fallback; buttons expose `aria-busy`, remain disabled during the request, and keep a specific `pt-BR` progress label.
+- Successful mutations use the single root Sonner toaster: elevated white surface, subtle green treatment, Lucide confirmation icon, title, and short action-specific description.
+- Keep inline success feedback when it contains durable next steps. The toast confirms completion without becoming the only source of required information.
+- Search, filtering, pagination, and other navigation-only forms do not show mutation success toasts.
+
 ### Media upload surface
 
 - Use a product card with a persistent required label, file constraints, preview, and one primary upload action.
@@ -180,3 +188,4 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 | Untouched official logo variants                | Preserves the supplied brand artwork while the shared component handles safe responsive framing and contrast   | 2026-07-25 |
 | Shared approved-product navigation              | Keeps creator discovery, detail and profile editing oriented on phones without duplicating route behavior      | 2026-07-29 |
 | Direct official-logo delivery                   | Removes a runtime optimizer dependency from the brand mark while preserving the supplied artwork byte-for-byte | 2026-07-30 |
+| Branded mutation feedback                       | Makes long-running submits and completion unmistakable without adding blocking modal steps                     | 2026-07-30 |

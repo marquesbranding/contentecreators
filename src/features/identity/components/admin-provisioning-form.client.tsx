@@ -17,6 +17,7 @@ import {
 } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
+import { useActionSuccessToast } from "@/shared/hooks/use-action-success-toast";
 import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 
 import type { AdminProvisioningAction } from "../types/admin-provisioning.types";
@@ -32,6 +33,9 @@ export function AdminProvisioningForm({
     action,
     initialAdminProvisioningActionState,
   );
+  useActionSuccessToast(state, {
+    title: "Administrador provisionado",
+  });
   const validation = useRequiredFieldValidation();
   const emailErrors = validation.getFieldErrors(
     "email",

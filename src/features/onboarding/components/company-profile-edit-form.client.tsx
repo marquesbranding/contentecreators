@@ -4,12 +4,13 @@ import { CheckCircle2, CircleAlert, Save } from "lucide-react";
 import Link from "next/link";
 import { useActionState, useCallback, useState } from "react";
 
+import { ActionSubmitButton } from "@/shared/components/action-submit-button";
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from "@/shared/components/ui/alert";
-import { Button, buttonVariants } from "@/shared/components/ui/button";
+import { buttonVariants } from "@/shared/components/ui/button";
 import {
   Field,
   FieldDescription,
@@ -17,8 +18,8 @@ import {
   FieldLabel,
   RequiredFieldsNotice,
 } from "@/shared/components/ui/field";
-import { Spinner } from "@/shared/components/ui/spinner";
 import { Textarea } from "@/shared/components/ui/textarea";
+import { useActionSuccessToast } from "@/shared/hooks/use-action-success-toast";
 import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 import { useUnsavedChangesGuard } from "@/shared/hooks/use-unsaved-changes-guard";
 
@@ -80,6 +81,9 @@ export function CompanyProfileEditForm({
     formValidation.clientFieldErrors,
     state.fieldErrors,
   );
+  useActionSuccessToast(state, {
+    title: "Alterações publicadas",
+  });
   useUnsavedChangesGuard(hasUnsavedChanges && !pending);
 
   return (
@@ -166,14 +170,14 @@ export function CompanyProfileEditForm({
         >
           {backLabel}
         </Link>
-        <Button disabled={pending} size="lg" type="submit">
-          {pending ? (
-            <Spinner aria-label="Salvando alterações" />
-          ) : (
-            <Save aria-hidden="true" />
-          )}
-          {pending ? "Salvando..." : submitLabel}
-        </Button>
+        <ActionSubmitButton
+          idleIcon={<Save aria-hidden="true" />}
+          pending={pending}
+          pendingLabel="Salvando alterações..."
+          size="lg"
+        >
+          {submitLabel}
+        </ActionSubmitButton>
       </div>
     </form>
   );

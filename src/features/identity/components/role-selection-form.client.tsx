@@ -3,12 +3,12 @@
 import { Building2, CircleAlert, UserRound } from "lucide-react";
 import { useActionState, useState } from "react";
 
+import { ActionSubmitButton } from "@/shared/components/action-submit-button";
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from "@/shared/components/ui/alert";
-import { Button } from "@/shared/components/ui/button";
 import {
   Field,
   FieldDescription,
@@ -17,7 +17,6 @@ import {
   RequiredFieldsNotice,
 } from "@/shared/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
-import { Spinner } from "@/shared/components/ui/spinner";
 import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 import { cn } from "@/shared/lib/cn";
 
@@ -167,10 +166,14 @@ export function RoleSelectionForm({
         </FieldDescription>
       </Field>
 
-      <Button className="w-full" disabled={pending} size="lg" type="submit">
-        {pending ? <Spinner aria-label="Confirmando perfil" /> : null}
-        {pending ? "Confirmando..." : "Confirmar tipo de perfil"}
-      </Button>
+      <ActionSubmitButton
+        className="w-full"
+        pending={pending}
+        pendingLabel="Confirmando perfil..."
+        size="lg"
+      >
+        Confirmar tipo de perfil
+      </ActionSubmitButton>
     </form>
   );
 }

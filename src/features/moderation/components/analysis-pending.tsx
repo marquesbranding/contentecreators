@@ -2,7 +2,7 @@ import { CheckCircle2, Clock3, FileSearch, LogOut } from "lucide-react";
 
 import { BrandLogo } from "@/shared/components/brand-logo";
 import { Badge } from "@/shared/components/ui/badge";
-import { Button } from "@/shared/components/ui/button";
+import { FormStatusSubmitButton } from "@/shared/components/form-status-submit-button";
 import {
   Card,
   CardContent,
@@ -76,10 +76,13 @@ export function AnalysisPending({
             orientações.
           </p>
           <form action={signOutAction}>
-            <Button type="submit" variant="outline">
-              <LogOut aria-hidden="true" />
+            <FormStatusSubmitButton
+              idleIcon={<LogOut aria-hidden="true" />}
+              pendingLabel="Saindo da conta..."
+              variant="outline"
+            >
               Sair da conta
-            </Button>
+            </FormStatusSubmitButton>
           </form>
         </CardContent>
       </Card>

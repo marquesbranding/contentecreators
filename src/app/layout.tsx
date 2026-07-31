@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { SkipLink } from "@/shared/components/skip-link";
+import { AppToaster } from "@/shared/components/ui/sonner";
 
 import "./globals.css";
 
@@ -74,6 +75,7 @@ export default function RootLayout({
       <body className="flex min-h-full flex-col">
         <SkipLink />
         {children}
+        <AppToaster />
       </body>
     </html>
   );

@@ -179,6 +179,24 @@
 }
 
 @layer components {
+  .submit-brand-pulse {
+    animation: submit-brand-pulse 1.25s ease-in-out infinite;
+    filter: drop-shadow(0 0 0.45rem rgb(255 255 255 / 28%));
+    transform-origin: center;
+  }
+
+  @keyframes submit-brand-pulse {
+    0%,
+    100% {
+      opacity: 0.78;
+      transform: scale(0.96);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.04);
+    }
+  }
+
   .marketing-hero-surface {
     background:
       radial-gradient(
@@ -216,6 +234,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .submit-brand-pulse {
+    animation: none;
+  }
+
   html {
     scroll-behavior: auto;
   }
