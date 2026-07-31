@@ -37,7 +37,12 @@ describe("CatalogResults", () => {
     expect(screen.getByText("1 creator nesta página")).toBeVisible();
     expect(
       screen.getByRole("list", { name: "Lista de criadores" }),
-    ).toHaveClass("grid-cols-1", "sm:grid-cols-2", "xl:grid-cols-3");
+    ).toHaveClass(
+      "grid-cols-1",
+      "sm:grid-cols-2",
+      "lg:grid-cols-3",
+      "xl:grid-cols-4",
+    );
     await user.click(screen.getByRole("button", { name: "Carregar mais" }));
     expect(onLoadMore).toHaveBeenCalledOnce();
 

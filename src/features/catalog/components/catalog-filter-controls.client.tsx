@@ -1,13 +1,12 @@
 "use client";
 
-import { Funnel, Search, SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal, X } from "lucide-react";
+import type { ReactNode } from "react";
 import { useState } from "react";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent } from "@/shared/components/ui/card";
 import { Field, FieldLabel } from "@/shared/components/ui/field";
-import { Input } from "@/shared/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -57,8 +56,8 @@ interface CatalogFilterControlsProps {
     patch: Partial<Omit<CreatorCatalogFilters, "cursor">>,
   ) => void;
   onRemoveFilter: (key: CatalogActiveFilter["key"]) => void;
-  onSearchSubmit: (search: string) => void;
   options: CatalogFilterOptions;
+  quickFilters?: ReactNode;
 }
 
 const platformLabels: Record<CatalogSocialPlatform, string> = {
@@ -294,73 +293,43 @@ export function CatalogFilterControls({
   onClearFilters,
   onFiltersChange,
   onRemoveFilter,
-  onSearchSubmit,
   options,
+  quickFilters,
 }: CatalogFilterControlsProps) {
   const hydrated = useHydrated();
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   return (
-    <section aria-label="Busca e filtros do catálogo" className="space-y-4">
-      <form
-        className="flex flex-col gap-3 sm:flex-row"
-        key={filters.search ?? ""}
-        onSubmit={(event) => {
-          event.preventDefault();
-          const formData = new FormData(event.currentTarget);
-          onSearchSubmit(String(formData.get("search") ?? "").trim());
-        }}
-        role="search"
-      >
-        <Field className="flex-1">
-          <FieldLabel className="sr-only" htmlFor="catalog-search">
-            Buscar criadores
-          </FieldLabel>
-          <div className="relative">
-            <Search
-              aria-hidden="true"
-              className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2"
-            />
-            <Input
-              className="h-12 rounded-xl bg-white pr-4 pl-12"
-              disabled={isPending}
-              defaultValue={filters.search ?? ""}
-              id="catalog-search"
-              name="search"
-              placeholder="Busque pelo nome do criador"
-              type="search"
-            />
-          </div>
-        </Field>
-        <Button disabled={isPending} size="lg" type="submit">
-          <Search aria-hidden="true" />
-          Buscar
-        </Button>
-      </form>
-
-      <div className="md:hidden">
-        <Sheet onOpenChange={setMobileFiltersOpen} open={mobileFiltersOpen}>
+    <section aria-label="Filtros do catálogo" className="space-y-3">
+      <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+        <Sheet onOpenChange={setFiltersOpen} open={filtersOpen}>
           <SheetTrigger
             render={
               <Button
                 aria-label="Abrir filtros do catálogo"
-                className="w-full justify-between"
+                className="min-h-11 shrink-0 gap-2 rounded-full bg-white px-4 shadow-sm"
                 disabled={!hydrated || isPending}
-                size="lg"
+                size="sm"
                 type="button"
                 variant="outline"
               />
             }
           >
-            <span className="flex items-center gap-2">
-              <Funnel aria-hidden="true" />
-              Filtros
-            </span>
+            <SlidersHorizontal aria-hidden="true" className="size-4" />
+            Filtros
             {activeFilters.length > 0 ? (
-              <Badge variant="default">{activeFilters.length}</Badge>
+              <Badge
+                className="min-w-6 justify-center px-1.5"
+                variant="default"
+              >
+                {activeFilters.length}
+              </Badge>
             ) : null}
           </SheetTrigger>
-          <SheetContent className="overflow-y-auto" side="bottom">
+          <SheetContent
+            className="max-h-[88svh] overflow-y-auto sm:rounded-t-3xl"
+            side="bottom"
+          >
             <SheetHeader className="border-b">
               <SheetTitle>Filtrar criadores</SheetTitle>
               <SheetDescription>
@@ -387,7 +356,7 @@ export function CatalogFilterControls({
                 </Button>
               ) : null}
               <Button
-                onClick={() => setMobileFiltersOpen(false)}
+                onClick={() => setFiltersOpen(false)}
                 size="lg"
                 type="button"
               >
@@ -396,26 +365,8 @@ export function CatalogFilterControls({
             </SheetFooter>
           </SheetContent>
         </Sheet>
+        {quickFilters}
       </div>
-
-      <Card className="hidden rounded-2xl border bg-white shadow-sm md:flex">
-        <CardContent className="px-5 py-1">
-          <div className="mb-4 flex items-center gap-2">
-            <SlidersHorizontal
-              aria-hidden="true"
-              className="text-brand-blue size-5"
-            />
-            <h2 className="font-semibold">Refine sua busca</h2>
-          </div>
-          <FilterFields
-            filters={filters}
-            idPrefix="desktop-catalog"
-            isPending={isPending}
-            onFiltersChange={onFiltersChange}
-            options={options}
-          />
-        </CardContent>
-      </Card>
 
       <ActiveFilters
         activeFilters={activeFilters}

@@ -19,11 +19,10 @@ const options: CatalogFilterOptions = {
 };
 
 describe("CatalogFilterControls", () => {
-  it("submits the search, exposes active filters and clears them", async () => {
+  it("exposes active filters and clears them", async () => {
     const user = userEvent.setup();
     const onClearFilters = vi.fn();
     const onRemoveFilter = vi.fn();
-    const onSearchSubmit = vi.fn();
 
     render(
       <CatalogFilterControls
@@ -40,19 +39,10 @@ describe("CatalogFilterControls", () => {
         onClearFilters={onClearFilters}
         onFiltersChange={vi.fn()}
         onRemoveFilter={onRemoveFilter}
-        onSearchSubmit={onSearchSubmit}
         options={options}
       />,
     );
 
-    const search = screen.getByRole("searchbox", {
-      name: "Buscar criadores",
-    });
-    await user.clear(search);
-    await user.type(search, "conteúdo");
-    await user.click(screen.getByRole("button", { name: "Buscar" }));
-
-    expect(onSearchSubmit).toHaveBeenCalledWith("conteúdo");
     expect(screen.getByText("Nicho: Beleza")).toBeVisible();
     await user.click(
       screen.getByRole("button", { name: "Remover filtro Nicho: Beleza" }),
@@ -75,7 +65,6 @@ describe("CatalogFilterControls", () => {
         onClearFilters={vi.fn()}
         onFiltersChange={vi.fn()}
         onRemoveFilter={vi.fn()}
-        onSearchSubmit={vi.fn()}
         options={options}
       />,
     );
@@ -112,7 +101,6 @@ describe("CatalogFilterControls", () => {
         onClearFilters={vi.fn()}
         onFiltersChange={vi.fn()}
         onRemoveFilter={vi.fn()}
-        onSearchSubmit={vi.fn()}
         options={options}
       />,
     );

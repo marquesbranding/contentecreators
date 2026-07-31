@@ -119,7 +119,7 @@ export function CatalogCreatorCard({
 
   return (
     <Card
-      className="h-full gap-0 overflow-hidden rounded-2xl border-white/10 bg-white/[0.055] py-0 text-white shadow-none transition-transform duration-200 hover:-translate-y-0.5 hover:border-white/20"
+      className="bg-brand-night-surface h-full gap-0 overflow-hidden rounded-2xl border-white/10 py-0 text-white shadow-md transition-transform duration-200 hover:-translate-y-0.5 hover:border-white/20"
       role="article"
     >
       <CreatorMedia creator={creator} />

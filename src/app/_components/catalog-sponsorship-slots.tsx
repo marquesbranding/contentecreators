@@ -86,7 +86,7 @@ export function CatalogSponsorshipSlots({
 
   return (
     <div
-      className="w-full min-w-0 space-y-7"
+      className="w-full min-w-0 space-y-4 sm:space-y-6"
       data-slot="catalog-sponsorship-layout"
     >
       {top ? (

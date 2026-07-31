@@ -40,7 +40,7 @@ export function CatalogLoadingSkeleton({ count = 6 }: { count?: number }) {
     <div aria-live="polite" className="space-y-4" role="status">
       <span className="sr-only">Carregando criadores</span>
       <Skeleton className="h-5 w-44" />
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: count }, (_, index) => (
           <Card
             aria-hidden="true"
@@ -158,20 +158,17 @@ export function CatalogResults({
   }
 
   return (
-    <section
-      aria-label="Criadores encontrados"
-      className="bg-brand-night space-y-5 rounded-3xl border border-white/10 px-4 py-6 shadow-xl sm:px-6 sm:py-7"
-    >
+    <section aria-label="Criadores encontrados" className="space-y-4">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-brand-lime text-xs font-bold tracking-[0.16em] uppercase">
+          <p className="text-xs font-bold tracking-[0.16em] text-[var(--brand-blue-hover)] uppercase">
             Seleção aprovada
           </p>
-          <h2 className="mt-1 text-2xl font-bold tracking-[-0.03em] text-white">
+          <h2 className="text-foreground mt-1 text-2xl font-bold tracking-[-0.03em]">
             Creators para conhecer
           </h2>
         </div>
-        <p aria-live="polite" className="text-sm text-white/55">
+        <p aria-live="polite" className="text-muted-foreground text-sm">
           {items.length}{" "}
           {items.length === 1
             ? "creator nesta página"
@@ -181,7 +178,7 @@ export function CatalogResults({
 
       <ul
         aria-label="Lista de criadores"
-        className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
       >
         {items.map((creator) => (
           <li className="min-w-0" key={creator.creatorId}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldX, Sparkles } from "lucide-react";
+import { ShieldX } from "lucide-react";
 import { useMemo, useTransition } from "react";
 
 import {
@@ -224,88 +224,7 @@ export function CreatorCatalogView({
   }
 
   return (
-    <div className="space-y-7">
-      {viewerRole === "COMPANY" ? (
-        <section
-          aria-labelledby="catalog-discovery-title"
-          className="bg-brand-night overflow-hidden rounded-3xl border border-white/10 px-5 py-6 text-white shadow-lg sm:px-7"
-        >
-          <div className="flex items-start gap-3">
-            <span className="bg-brand-blue/20 text-brand-blue mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl">
-              <Sparkles aria-hidden="true" className="size-5" />
-            </span>
-            <div className="min-w-0">
-              <h2
-                className="text-xl font-bold tracking-[-0.02em]"
-                id="catalog-discovery-title"
-              >
-                Explore por interesse
-              </h2>
-              <p className="mt-1 text-sm leading-6 text-white/60">
-                Use um atalho ou combine os filtros para encontrar o perfil
-                certo para a sua marca.
-              </p>
-            </div>
-          </div>
-          <div
-            aria-label="Atalhos de descoberta"
-            className="-mx-5 mt-5 flex gap-2 overflow-x-auto px-5 pb-1 sm:-mx-7 sm:px-7"
-            role="group"
-          >
-            <Button
-              aria-pressed={!filters.niche && !filters.platform}
-              className={
-                !filters.niche && !filters.platform
-                  ? "min-h-11 shrink-0 rounded-full bg-white px-4 text-[var(--brand-night)] hover:bg-white/90"
-                  : "min-h-11 shrink-0 rounded-full border-white/15 bg-white/5 px-4 text-white/75 hover:bg-white/10 hover:text-white"
-              }
-              onClick={() =>
-                navigate({ niche: undefined, platform: undefined })
-              }
-              size="sm"
-              type="button"
-              variant={
-                !filters.niche && !filters.platform ? "default" : "outline"
-              }
-            >
-              Todos
-            </Button>
-            {companyDiscoveryShortcuts.map((shortcut) => {
-              const active = filters[shortcut.key] === shortcut.value;
-
-              return (
-                <Button
-                  aria-pressed={active}
-                  className={
-                    active
-                      ? "bg-brand-blue min-h-11 shrink-0 rounded-full border-transparent px-4 text-white"
-                      : "min-h-11 shrink-0 rounded-full border-white/15 bg-white/5 px-4 text-white/75 hover:bg-white/10 hover:text-white"
-                  }
-                  key={`${shortcut.key}-${shortcut.value}`}
-                  onClick={() => {
-                    if (shortcut.key === "niche") {
-                      navigate({ niche: active ? undefined : shortcut.value });
-                      return;
-                    }
-
-                    navigate({
-                      platform: active
-                        ? undefined
-                        : (shortcut.value as CatalogSocialPlatform),
-                    });
-                  }}
-                  size="sm"
-                  type="button"
-                  variant={active ? "default" : "outline"}
-                >
-                  {shortcut.label}
-                </Button>
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
-
+    <div className="space-y-5">
       <CatalogFilterControls
         activeFilters={activeFilters}
         filters={filters}
@@ -316,8 +235,69 @@ export function CreatorCatalogView({
         onClearFilters={() => navigate("clear")}
         onFiltersChange={(patch) => navigate(patch)}
         onRemoveFilter={(key) => navigate({ [key]: undefined })}
-        onSearchSubmit={(search) => navigate({ search: search || undefined })}
         options={options}
+        quickFilters={
+          viewerRole === "COMPANY" ? (
+            <div
+              aria-label="Atalhos de descoberta"
+              className="contents"
+              role="group"
+            >
+              <Button
+                aria-pressed={!filters.niche && !filters.platform}
+                className={
+                  !filters.niche && !filters.platform
+                    ? "bg-brand-night min-h-11 shrink-0 rounded-full px-4 text-white hover:bg-black"
+                    : "min-h-11 shrink-0 rounded-full bg-white px-4 shadow-sm"
+                }
+                onClick={() =>
+                  navigate({ niche: undefined, platform: undefined })
+                }
+                size="sm"
+                type="button"
+                variant={
+                  !filters.niche && !filters.platform ? "default" : "outline"
+                }
+              >
+                Todos
+              </Button>
+              {companyDiscoveryShortcuts.map((shortcut) => {
+                const active = filters[shortcut.key] === shortcut.value;
+
+                return (
+                  <Button
+                    aria-pressed={active}
+                    className={
+                      active
+                        ? "bg-brand-blue min-h-11 shrink-0 rounded-full border-transparent px-4 text-white"
+                        : "min-h-11 shrink-0 rounded-full bg-white px-4 shadow-sm"
+                    }
+                    key={`${shortcut.key}-${shortcut.value}`}
+                    onClick={() => {
+                      if (shortcut.key === "niche") {
+                        navigate({
+                          niche: active ? undefined : shortcut.value,
+                        });
+                        return;
+                      }
+
+                      navigate({
+                        platform: active
+                          ? undefined
+                          : (shortcut.value as CatalogSocialPlatform),
+                      });
+                    }}
+                    size="sm"
+                    type="button"
+                    variant={active ? "default" : "outline"}
+                  >
+                    {shortcut.label}
+                  </Button>
+                );
+              })}
+            </div>
+          ) : undefined
+        }
       />
 
       <p aria-live="polite" className="sr-only" role="status">

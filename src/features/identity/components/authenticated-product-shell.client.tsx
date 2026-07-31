@@ -2,12 +2,13 @@
 
 import { LogOut, Menu, Search, UserRound } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState, useTransition } from "react";
 
 import { BrandLogo } from "@/shared/components/brand-logo";
 import { FormStatusSubmitButton } from "@/shared/components/form-status-submit-button";
 import { Button, buttonVariants } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -37,6 +38,64 @@ const navigationItems = [
   },
 ] as const;
 
+function CatalogHeaderSearch() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+  const currentSearch = searchParams.get("search") ?? "";
+
+  return (
+    <form
+      aria-label="Buscar creators no catálogo"
+      className="relative w-full"
+      onSubmit={(event) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        const nextParams = new URLSearchParams(searchParams.toString());
+        const normalizedSearch = String(formData.get("search") ?? "").trim();
+
+        if (normalizedSearch) {
+          nextParams.set("search", normalizedSearch);
+        } else {
+          nextParams.delete("search");
+        }
+
+        nextParams.delete("cursor");
+        startTransition(() => {
+          const query = nextParams.toString();
+          router.push(query ? `/app/catalog?${query}` : "/app/catalog");
+        });
+      }}
+      role="search"
+    >
+      <Search
+        aria-hidden="true"
+        className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-white/55"
+      />
+      <Input
+        aria-label="Buscar criadores"
+        className="h-11 rounded-full border-white/15 bg-white/[0.07] pr-11 pl-10 text-white placeholder:text-white/45 focus-visible:border-white/30 focus-visible:ring-white/25"
+        defaultValue={currentSearch}
+        disabled={isPending}
+        key={currentSearch}
+        name="search"
+        placeholder="Buscar creator por nome ou nicho"
+        type="search"
+      />
+      <Button
+        aria-label="Buscar no catálogo"
+        className="absolute top-1/2 right-1 size-9 -translate-y-1/2 rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+        disabled={isPending}
+        size="icon"
+        type="submit"
+        variant="ghost"
+      >
+        <Search aria-hidden="true" className="size-4" />
+      </Button>
+    </form>
+  );
+}
+
 function ProductNavigation({
   onNavigate,
   pathname,
@@ -51,7 +110,7 @@ function ProductNavigation({
       aria-label="Navegação principal"
       className={cn(
         presentation === "desktop"
-          ? "hidden items-center gap-1 md:flex"
+          ? "hidden items-center gap-1 lg:flex"
           : "grid gap-2",
       )}
     >
@@ -130,14 +189,18 @@ export function AuthenticatedProductShell({
   const pathname = usePathname();
   const hydrated = useHydrated();
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
+  const catalogRoute = pathname === "/app/catalog";
 
   return (
     <div className="bg-brand-canvas min-h-screen">
       <header className="bg-brand-night sticky top-0 z-40 border-b border-white/10 text-white">
-        <div className="mx-auto flex min-h-18 max-w-7xl items-center gap-3 px-5 sm:px-8">
+        <div className="mx-auto flex min-h-18 max-w-7xl flex-wrap items-center gap-3 px-4 py-3 sm:px-8 lg:flex-nowrap lg:py-0">
           <Link
             aria-label="Ir para o catálogo"
-            className="focus-visible:ring-brand-blue mr-auto rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-night)]"
+            className={cn(
+              "focus-visible:ring-brand-blue rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-night)]",
+              !catalogRoute && "mr-auto",
+            )}
             href="/app/catalog"
           >
             <BrandLogo
@@ -148,9 +211,15 @@ export function AuthenticatedProductShell({
             />
           </Link>
 
+          {catalogRoute ? (
+            <div className="order-last w-full lg:order-none lg:max-w-md lg:min-w-52 lg:flex-1">
+              <CatalogHeaderSearch />
+            </div>
+          ) : null}
+
           <ProductNavigation pathname={pathname} presentation="desktop" />
 
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             <ProductSignOut action={signOutAction} presentation="desktop" />
           </div>
 
@@ -162,7 +231,7 @@ export function AuthenticatedProductShell({
               render={
                 <Button
                   aria-label="Abrir menu principal"
-                  className="border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white md:hidden"
+                  className="border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white lg:hidden"
                   disabled={!hydrated}
                   size="icon"
                   type="button"

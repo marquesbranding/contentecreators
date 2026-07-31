@@ -93,24 +93,24 @@ export function SponsorshipFeaturedCreator({
 
   return (
     <article aria-label={`Creator em destaque: ${creator.displayName}`}>
-      <Card className="border-brand-blue/20 grid gap-0 overflow-hidden rounded-2xl bg-white py-0 shadow-sm sm:grid-cols-[10rem_minmax(0,1fr)]">
+      <Card className="border-brand-blue/20 grid grid-cols-[7rem_minmax(0,1fr)] gap-0 overflow-hidden rounded-2xl bg-white py-0 shadow-sm sm:grid-cols-[10rem_minmax(0,1fr)]">
         {creator.media ? (
           <SponsorshipMedia
-            className="aspect-[16/9] h-full max-h-64 border-b sm:aspect-auto sm:border-r sm:border-b-0"
+            className="h-full min-h-full border-r sm:max-h-64"
             media={creator.media}
           />
         ) : (
           <div
             aria-label={`${creator.displayName} está sem foto de perfil`}
-            className="bg-brand-blue-soft text-brand-blue flex aspect-[16/9] items-center justify-center border-b sm:aspect-auto sm:border-r sm:border-b-0"
+            className="bg-brand-blue-soft text-brand-blue flex h-full min-h-full items-center justify-center border-r"
             role="img"
           >
             <UsersRound aria-hidden="true" className="size-10" />
           </div>
         )}
 
-        <div className="min-w-0 py-5">
-          <CardHeader className="gap-3 px-5">
+        <div className="min-w-0 py-4 sm:py-5">
+          <CardHeader className="gap-2 px-4 sm:gap-3 sm:px-5">
             <SponsorshipLabels
               advertiserLabel={creative.advertiserLabel}
               previewMode={creative.previewMode}
@@ -120,7 +120,7 @@ export function SponsorshipFeaturedCreator({
               <Badge variant="outline">{creator.creatorTypeLabel}</Badge>
             </div>
             <CardTitle>
-              <h2 className="text-2xl font-bold tracking-[-0.03em]">
+              <h2 className="text-xl font-bold tracking-[-0.03em] sm:text-2xl">
                 {creator.displayName}
               </h2>
             </CardTitle>
@@ -131,7 +131,7 @@ export function SponsorshipFeaturedCreator({
               </CardDescription>
             ) : null}
           </CardHeader>
-          <CardContent className="space-y-4 px-5">
+          <CardContent className="space-y-3 px-4 sm:space-y-4 sm:px-5">
             {creator.bioExcerpt ? (
               <p className="text-muted-foreground line-clamp-3 leading-6">
                 {creator.bioExcerpt}

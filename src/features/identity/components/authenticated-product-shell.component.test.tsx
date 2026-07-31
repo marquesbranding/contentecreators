@@ -8,9 +8,13 @@ import { getBlockingComponentAccessibilityViolations } from "@/test/component-ac
 import { AuthenticatedProductShell } from "./authenticated-product-shell.client";
 
 const usePathnameMock = vi.fn(() => "/app/catalog");
+const routerPushMock = vi.fn();
+const useSearchParamsMock = vi.fn(() => new URLSearchParams());
 
 vi.mock("next/navigation", () => ({
   usePathname: () => usePathnameMock(),
+  useRouter: () => ({ push: routerPushMock }),
+  useSearchParams: () => useSearchParamsMock(),
 }));
 
 vi.mock("next/image", () => ({
@@ -48,6 +52,9 @@ describe("AuthenticatedProductShell", () => {
   afterEach(() => {
     usePathnameMock.mockReset();
     usePathnameMock.mockReturnValue("/app/catalog");
+    routerPushMock.mockReset();
+    useSearchParamsMock.mockReset();
+    useSearchParamsMock.mockReturnValue(new URLSearchParams());
   });
 
   it("renders a persistent product navigation and marks creator discovery active", async () => {
@@ -86,6 +93,24 @@ describe("AuthenticatedProductShell", () => {
         current: "page",
       }),
     ).toHaveAttribute("href", "/app/profile");
+  });
+
+  it("keeps catalog search in the product header and preserves filters", async () => {
+    const user = userEvent.setup();
+    useSearchParamsMock.mockReturnValue(
+      new URLSearchParams("niche=moda&cursor=next-page"),
+    );
+    renderShell("/app/catalog");
+
+    const search = screen.getByRole("searchbox", {
+      name: "Buscar criadores",
+    });
+    await user.type(search, "Marina");
+    await user.keyboard("{Enter}");
+
+    expect(routerPushMock).toHaveBeenCalledWith(
+      "/app/catalog?niche=moda&search=Marina",
+    );
   });
 
   it("opens and closes the mobile navigation sheet", async () => {
