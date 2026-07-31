@@ -2,6 +2,7 @@ import {
   BarChart3,
   ImageOff,
   MapPin,
+  ShieldCheck,
   SquareArrowOutUpRight,
 } from "lucide-react";
 import Link from "next/link";
@@ -64,10 +65,12 @@ function CreatorMedia({ creator }: { creator: CatalogCreatorCardViewModel }) {
     return (
       <div
         aria-label={`${creator.displayName} está sem foto de perfil`}
-        className="bg-brand-blue-soft text-brand-blue flex aspect-[4/3] items-center justify-center border-b"
+        className="from-brand-blue/35 to-brand-night text-brand-blue flex aspect-[16/9] items-center justify-center border-b border-white/10 bg-gradient-to-br"
         role="img"
       >
-        <ImageOff aria-hidden="true" className="size-10" />
+        <span className="flex size-16 items-center justify-center rounded-2xl border border-white/10 bg-white/10">
+          <ImageOff aria-hidden="true" className="size-8" />
+        </span>
       </div>
     );
   }
@@ -78,7 +81,7 @@ function CreatorMedia({ creator }: { creator: CatalogCreatorCardViewModel }) {
     // eslint-disable-next-line @next/next/no-img-element
     <img
       alt={creator.media.alt}
-      className="aspect-[4/3] w-full object-cover"
+      className="aspect-[16/9] w-full object-cover"
       decoding="async"
       height="480"
       loading="lazy"
@@ -100,7 +103,7 @@ function CreatorLocation({
   }
 
   return (
-    <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
+    <p className="flex items-center gap-1.5 text-sm text-white/55">
       <MapPin aria-hidden="true" className="size-4 shrink-0" />
       {location}
     </p>
@@ -116,7 +119,7 @@ export function CatalogCreatorCard({
 
   return (
     <Card
-      className="h-full gap-0 overflow-hidden rounded-2xl border bg-white py-0 shadow-sm transition-shadow hover:shadow-md"
+      className="h-full gap-0 overflow-hidden rounded-2xl border-white/10 bg-white/[0.055] py-0 text-white shadow-none transition-transform duration-200 hover:-translate-y-0.5 hover:border-white/20"
       role="article"
     >
       <CreatorMedia creator={creator} />
@@ -124,22 +127,26 @@ export function CatalogCreatorCard({
       <CardHeader className="gap-3 px-5 pt-5">
         <div className="flex flex-wrap items-center gap-2">
           <Badge
-            className="bg-brand-blue-soft text-[var(--brand-blue-hover)]"
+            className="bg-brand-blue/30 border-transparent text-white"
             variant="ghost"
           >
             {creatorTypeLabel(creator.creatorType)}
           </Badge>
           {creator.socialPlatforms.map((platform) => (
-            <Badge key={platform} variant="outline">
+            <Badge
+              className="border-white/15 bg-white/5 text-white/70"
+              key={platform}
+              variant="outline"
+            >
               {socialPlatformLabels[platform]}
             </Badge>
           ))}
         </div>
         <div className="space-y-1.5">
           <CardTitle>
-            <h2 className="text-xl font-bold tracking-[-0.02em]">
+            <h3 className="text-xl font-bold tracking-[-0.02em]">
               {creator.displayName}
-            </h2>
+            </h3>
           </CardTitle>
           <CreatorLocation city={creator.city} state={creator.state} />
         </div>
@@ -147,7 +154,7 @@ export function CatalogCreatorCard({
 
       <CardContent className="flex flex-1 flex-col gap-4 px-5 py-4">
         {creator.bioExcerpt ? (
-          <p className="text-muted-foreground line-clamp-3 leading-6">
+          <p className="line-clamp-3 leading-6 text-white/60">
             {creator.bioExcerpt}
           </p>
         ) : null}
@@ -156,28 +163,35 @@ export function CatalogCreatorCard({
           <ul aria-label="Nichos" className="flex flex-wrap gap-2">
             {creator.niches.map((niche) => (
               <li key={niche.slug}>
-                <Badge variant="secondary">{niche.name}</Badge>
+                <Badge
+                  className="bg-white/10 text-white/70"
+                  variant="secondary"
+                >
+                  {niche.name}
+                </Badge>
               </li>
             ))}
           </ul>
         ) : null}
 
         {metrics.length > 0 ? (
-          <div className="mt-auto rounded-xl border bg-[var(--brand-canvas)] p-3">
-            <p className="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs font-semibold">
+          <div className="mt-auto rounded-xl border border-white/10 bg-black/10 p-3">
+            <p className="mb-3 flex items-center gap-1.5 text-xs font-semibold text-white/50">
               <BarChart3 aria-hidden="true" className="size-4" />
               Informado pelo criador
             </p>
-            <dl className="grid gap-2">
+            <dl className="grid grid-cols-2 gap-3">
               {metrics.map((metric) => (
                 <div
-                  className="flex items-baseline justify-between gap-3"
+                  className="min-w-0"
                   key={`${metric.label}-${metric.value}`}
                 >
-                  <dt className="text-muted-foreground text-xs">
+                  <dd className="text-lg font-bold text-white">
+                    {metric.value}
+                  </dd>
+                  <dt className="mt-0.5 truncate text-xs text-white/60">
                     {metric.label}
                   </dt>
-                  <dd className="text-sm font-bold">{metric.value}</dd>
                 </div>
               ))}
             </dl>
@@ -185,13 +199,17 @@ export function CatalogCreatorCard({
         ) : null}
       </CardContent>
 
-      <CardFooter className="border-t bg-white px-5 py-4">
+      <CardFooter className="border-t border-white/10 bg-transparent px-5 py-4">
         <Link
           aria-label={`Ver perfil de ${creator.displayName}`}
-          className={buttonVariants({ className: "w-full", size: "lg" })}
+          className={buttonVariants({
+            className: "w-full",
+            size: "lg",
+          })}
           href={creator.detailHref}
         >
-          Ver perfil
+          <ShieldCheck aria-hidden="true" />
+          Conhecer creator
           <SquareArrowOutUpRight aria-hidden="true" />
         </Link>
       </CardFooter>

@@ -34,7 +34,7 @@ describe("CatalogResults", () => {
       />,
     );
 
-    expect(screen.getByText("1 criador nesta página")).toBeVisible();
+    expect(screen.getByText("1 creator nesta página")).toBeVisible();
     expect(
       screen.getByRole("list", { name: "Lista de criadores" }),
     ).toHaveClass("grid-cols-1", "sm:grid-cols-2", "xl:grid-cols-3");
@@ -63,7 +63,7 @@ describe("CatalogResults", () => {
     const onClearFilters = vi.fn();
     const { rerender } = render(<CatalogResults items={[]} status="success" />);
 
-    expect(screen.getByText("O catálogo está começando")).toBeVisible();
+    expect(screen.getByText("Ainda não há creators aprovados")).toBeVisible();
     expect(
       screen.queryByRole("button", { name: "Limpar filtros" }),
     ).not.toBeInTheDocument();

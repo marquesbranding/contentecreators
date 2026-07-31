@@ -1,4 +1,4 @@
-import { FlaskConical, SearchCheck } from "lucide-react";
+import { BadgeCheck, FlaskConical, Search } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { AuthenticatedProductShell } from "@/features/identity";
@@ -13,10 +13,14 @@ import {
 export function ApprovedCatalogEntry({
   children,
   signOutAction,
+  viewerRole,
 }: {
   children?: ReactNode;
   signOutAction: () => Promise<void>;
+  viewerRole: "COMPANY" | "INFLUENCER";
 }) {
+  const companyViewer = viewerRole === "COMPANY";
+
   return (
     <AuthenticatedProductShell signOutAction={signOutAction}>
       <main
@@ -50,15 +54,26 @@ export function ApprovedCatalogEntry({
                 className="w-fit gap-2 rounded-full border-white/15 bg-white/10 text-white"
                 variant="outline"
               >
-                <SearchCheck aria-hidden="true" />
-                Acesso aprovado
+                {companyViewer ? (
+                  <Search aria-hidden="true" />
+                ) : (
+                  <BadgeCheck aria-hidden="true" />
+                )}
+                {companyViewer
+                  ? "Descoberta de creators"
+                  : "Comunidade aprovada"}
               </Badge>
               <CardTitle className="max-w-3xl text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
-                <h1>Encontre creators para novas conexões</h1>
+                <h1>
+                  {companyViewer
+                    ? "Encontre creators para sua próxima campanha"
+                    : "Conheça creators e marcas da comunidade"}
+                </h1>
               </CardTitle>
               <CardDescription className="max-w-2xl text-base leading-7 text-white/65">
-                Explore perfis aprovados e combine busca, nicho, localização e
-                redes sociais para encontrar pessoas alinhadas ao seu objetivo.
+                {companyViewer
+                  ? "Descubra perfis aprovados, compare nichos e métricas informadas e encontre creators alinhados à sua marca."
+                  : "Explore perfis aprovados, encontre outros creators e conheça as empresas que fazem parte da plataforma."}
               </CardDescription>
             </CardHeader>
           </Card>

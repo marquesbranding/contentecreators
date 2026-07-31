@@ -91,14 +91,16 @@ function CatalogError({ onRetry }: Pick<CatalogResultsProps, "onRetry">) {
 
 function FirstCatalogEmpty() {
   return (
-    <Card className="items-center rounded-2xl border bg-white px-5 py-12 text-center shadow-sm">
-      <UsersRound aria-hidden="true" className="text-brand-blue size-10" />
+    <Card className="bg-brand-night items-center rounded-3xl border-white/10 px-5 py-14 text-center text-white shadow-lg">
+      <span className="bg-brand-blue/20 text-brand-blue flex size-14 items-center justify-center rounded-2xl">
+        <UsersRound aria-hidden="true" className="size-7" />
+      </span>
       <CardTitle>
-        <h2 className="text-xl font-bold">O catálogo está começando</h2>
+        <h2 className="text-xl font-bold">Ainda não há creators aprovados</h2>
       </CardTitle>
-      <p className="text-muted-foreground max-w-lg leading-6">
-        Novos perfis aprovados aparecerão aqui. Volte em breve para descobrir
-        criadores disponíveis na plataforma.
+      <p className="max-w-lg leading-6 text-white/60">
+        Cadastros em análise não aparecem na busca. Assim que a equipe aprovar o
+        primeiro perfil, ele será exibido aqui automaticamente.
       </p>
     </Card>
   );
@@ -156,15 +158,30 @@ export function CatalogResults({
   }
 
   return (
-    <section aria-label="Criadores encontrados" className="space-y-5">
-      <p aria-live="polite" className="text-muted-foreground text-sm">
-        {items.length}{" "}
-        {items.length === 1 ? "criador nesta página" : "criadores nesta página"}
-      </p>
+    <section
+      aria-label="Criadores encontrados"
+      className="bg-brand-night space-y-5 rounded-3xl border border-white/10 px-4 py-6 shadow-xl sm:px-6 sm:py-7"
+    >
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-brand-lime text-xs font-bold tracking-[0.16em] uppercase">
+            Seleção aprovada
+          </p>
+          <h2 className="mt-1 text-2xl font-bold tracking-[-0.03em] text-white">
+            Creators para conhecer
+          </h2>
+        </div>
+        <p aria-live="polite" className="text-sm text-white/55">
+          {items.length}{" "}
+          {items.length === 1
+            ? "creator nesta página"
+            : "creators nesta página"}
+        </p>
+      </div>
 
       <ul
         aria-label="Lista de criadores"
-        className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
       >
         {items.map((creator) => (
           <li className="min-w-0" key={creator.creatorId}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldX } from "lucide-react";
+import { ShieldX, Sparkles } from "lucide-react";
 import { useMemo, useTransition } from "react";
 
 import {
@@ -8,6 +8,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/shared/components/ui/alert";
+import { Button } from "@/shared/components/ui/button";
 
 import type { CreatorCatalogBrowserCardDto } from "../api/creator-catalog.contract";
 import {
@@ -29,10 +30,26 @@ import { CatalogResults } from "./catalog-results";
 
 const nicheOptions = [
   { label: "Beleza", value: "beleza" },
-  { label: "Fitness", value: "fitness" },
+  { label: "Gastronomia", value: "gastronomia" },
   { label: "Moda", value: "moda" },
   { label: "Tecnologia", value: "tecnologia" },
+  { label: "Viagem", value: "viagem" },
 ];
+
+const companyDiscoveryShortcuts = [
+  { key: "niche" as const, label: "Beleza", value: "beleza" },
+  { key: "niche" as const, label: "Gastronomia", value: "gastronomia" },
+  { key: "niche" as const, label: "Moda", value: "moda" },
+  { key: "niche" as const, label: "Tecnologia", value: "tecnologia" },
+  { key: "niche" as const, label: "Viagem", value: "viagem" },
+  { key: "platform" as const, label: "Instagram", value: "INSTAGRAM" },
+  { key: "platform" as const, label: "TikTok", value: "TIKTOK" },
+  { key: "platform" as const, label: "YouTube", value: "YOUTUBE" },
+] satisfies ReadonlyArray<{
+  key: "niche" | "platform";
+  label: string;
+  value: string;
+}>;
 
 const brazilianStates = [
   "AC",
@@ -149,7 +166,11 @@ function activeFilterLabels(
   );
 }
 
-export function CreatorCatalogView() {
+export function CreatorCatalogView({
+  viewerRole,
+}: {
+  viewerRole: "COMPANY" | "INFLUENCER";
+}) {
   const { clearFilters, filters, updateFilters } = useCreatorCatalogUrlState();
   const [isNavigationPending, startTransition] = useTransition();
   const catalog = useCreatorCatalog({ filters });
@@ -204,6 +225,87 @@ export function CreatorCatalogView() {
 
   return (
     <div className="space-y-7">
+      {viewerRole === "COMPANY" ? (
+        <section
+          aria-labelledby="catalog-discovery-title"
+          className="bg-brand-night overflow-hidden rounded-3xl border border-white/10 px-5 py-6 text-white shadow-lg sm:px-7"
+        >
+          <div className="flex items-start gap-3">
+            <span className="bg-brand-blue/20 text-brand-blue mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl">
+              <Sparkles aria-hidden="true" className="size-5" />
+            </span>
+            <div className="min-w-0">
+              <h2
+                className="text-xl font-bold tracking-[-0.02em]"
+                id="catalog-discovery-title"
+              >
+                Explore por interesse
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-white/60">
+                Use um atalho ou combine os filtros para encontrar o perfil
+                certo para a sua marca.
+              </p>
+            </div>
+          </div>
+          <div
+            aria-label="Atalhos de descoberta"
+            className="-mx-5 mt-5 flex gap-2 overflow-x-auto px-5 pb-1 sm:-mx-7 sm:px-7"
+            role="group"
+          >
+            <Button
+              aria-pressed={!filters.niche && !filters.platform}
+              className={
+                !filters.niche && !filters.platform
+                  ? "min-h-11 shrink-0 rounded-full bg-white px-4 text-[var(--brand-night)] hover:bg-white/90"
+                  : "min-h-11 shrink-0 rounded-full border-white/15 bg-white/5 px-4 text-white/75 hover:bg-white/10 hover:text-white"
+              }
+              onClick={() =>
+                navigate({ niche: undefined, platform: undefined })
+              }
+              size="sm"
+              type="button"
+              variant={
+                !filters.niche && !filters.platform ? "default" : "outline"
+              }
+            >
+              Todos
+            </Button>
+            {companyDiscoveryShortcuts.map((shortcut) => {
+              const active = filters[shortcut.key] === shortcut.value;
+
+              return (
+                <Button
+                  aria-pressed={active}
+                  className={
+                    active
+                      ? "bg-brand-blue min-h-11 shrink-0 rounded-full border-transparent px-4 text-white"
+                      : "min-h-11 shrink-0 rounded-full border-white/15 bg-white/5 px-4 text-white/75 hover:bg-white/10 hover:text-white"
+                  }
+                  key={`${shortcut.key}-${shortcut.value}`}
+                  onClick={() => {
+                    if (shortcut.key === "niche") {
+                      navigate({ niche: active ? undefined : shortcut.value });
+                      return;
+                    }
+
+                    navigate({
+                      platform: active
+                        ? undefined
+                        : (shortcut.value as CatalogSocialPlatform),
+                    });
+                  }}
+                  size="sm"
+                  type="button"
+                  variant={active ? "default" : "outline"}
+                >
+                  {shortcut.label}
+                </Button>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+
       <CatalogFilterControls
         activeFilters={activeFilters}
         filters={filters}

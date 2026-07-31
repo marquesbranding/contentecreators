@@ -45,7 +45,7 @@ describeLocalStack("Drizzle creator catalog repository", () => {
     await client.client.end({ timeout: 2 });
   });
 
-  it("composes normalized filters, excludes self and paginates minimal approved cards", async () => {
+  it("lists approved display-ready creators without requiring optional profile enrichment", async () => {
     let proof:
       | {
           combinedResult: Awaited<
@@ -104,7 +104,7 @@ describeLocalStack("Drizzle creator catalog repository", () => {
         await transaction.insert(accounts).values({
           approvedAt: new Date(),
           authUserId: fixtureAuthUserId,
-          completionPercentage: 100,
+          completionPercentage: 69,
           id: fixtureAccountId,
           operationalEmail: "creator-catalog-fixture@contentecreators.test",
           role: "INFLUENCER",

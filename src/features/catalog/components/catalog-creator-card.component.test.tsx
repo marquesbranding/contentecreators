@@ -39,7 +39,7 @@ describe("CatalogCreatorCard", () => {
     render(<CatalogCreatorCard creator={creator} />);
 
     expect(
-      screen.getByRole("heading", { name: "Marina Conteúdo" }),
+      screen.getByRole("heading", { name: "Marina Conteúdo", level: 3 }),
     ).toBeVisible();
     expect(screen.getByText("Criador UGC")).toBeVisible();
     expect(screen.getByText("São Paulo, SP")).toBeVisible();

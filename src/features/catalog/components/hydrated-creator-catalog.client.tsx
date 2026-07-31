@@ -6,11 +6,17 @@ import { BrowserQueryProvider } from "@/shared/query/browser-query-provider";
 
 import { CreatorCatalogView } from "./creator-catalog-view.client";
 
-export function HydratedCreatorCatalog({ state }: { state: DehydratedState }) {
+export function HydratedCreatorCatalog({
+  state,
+  viewerRole,
+}: {
+  state: DehydratedState;
+  viewerRole: "COMPANY" | "INFLUENCER";
+}) {
   return (
     <BrowserQueryProvider>
       <HydrationBoundary state={state}>
-        <CreatorCatalogView />
+        <CreatorCatalogView viewerRole={viewerRole} />
       </HydrationBoundary>
     </BrowserQueryProvider>
   );
