@@ -19,6 +19,7 @@ function profileFormPayload(formData: FormData) {
     followers: formData.get("followers"),
     legalName: formData.get("legalName"),
     nicheSlugs: formData.getAll("nicheSlugs"),
+    otherNiche: formData.get("otherNiche"),
     socialPlatform: formData.get("socialPlatform"),
     socialUrl: formData.get("socialUrl"),
     state: formData.get("state"),

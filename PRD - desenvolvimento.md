@@ -223,7 +223,7 @@ O produto deve permitir que:
 
 - [x] `11.1` Testar campos obrigatórios de análise e escolha exclusiva de tipo `INFLUENCER | UGC`.
 - [x] `11.2` Definir e semear taxonomia inicial de nichos e plataformas sociais, mantendo pendências de validação do cliente visíveis.
-- [x] `11.3` Implementar schema/actions para nome, WhatsApp, tipo, cidade/UF, nichos, bio e perfis sociais.
+- [x] `11.3` Implementar schema/actions para nome, WhatsApp, tipo, cidade/UF, nichos (incluindo “Outros” com descrição personalizada), bio e perfis sociais.
 - [x] `11.4` Implementar snapshots datados de seguidores/engajamento autodeclarados e seus rótulos.
 - [x] `11.5` Integrar upload e substituição de avatar/capa ao formulário.
 - [x] `11.6` Construir etapas responsivas com loading, validação, salvar, restaurar, vazio e falha.
@@ -239,7 +239,7 @@ O produto deve permitir que:
 - [x] `12.3` Aplicar rate limit por conta ou rede anonimizada e cache limitado de respostas bem-sucedidas.
 - [x] `12.4` Testar contrato da BrasilAPI para sucesso, não encontrado, resposta inválida, timeout, limite e indisponibilidade.
 - [x] `12.5` Implementar `/api/company-registry/cnpj/[cnpj]` com checksum, autorização/exceção controlada, mapeamento seguro e logs sem CNPJ.
-- [x] `12.6` Implementar schema/actions para razão social, nome fantasia, CNPJ, faixa de funcionários, segmento, WhatsApp, descrição, site/redes e versão otimista.
+- [x] `12.6` Implementar schema/actions para razão social, nome fantasia, CNPJ, faixa de funcionários, segmento (incluindo “Outros” com descrição personalizada), WhatsApp, descrição, site/redes e versão otimista.
 - [x] `12.7` Implementar múltiplos endereços com exatamente um principal e sugestões editáveis da BrasilAPI.
 - [x] `12.8` Integrar upload e substituição de logo/capa.
 - [x] `12.9` Criar hook CNPJ com Axios/TanStack Query e estados acessíveis de carregando, sucesso, não encontrado, indisponível, timeout e entrada manual.

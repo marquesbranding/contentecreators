@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { isValidCnpj, normalizeCnpj } from "../domain/cnpj";
+import { OTHER_NICHE_SLUG } from "../domain/profile-segments";
 
 const requiredMessage = "Preencha este campo.";
 const acceptedConsent = z
@@ -107,36 +108,72 @@ const companyLocationSchema = z.object({
   street: z.string().trim().min(3, requiredMessage).max(180),
 });
 
-export const influencerProfileFieldsSchema = z.object({
-  avatarAssetId: z.uuid("A foto de perfil enviada não é válida.").optional(),
-  bio: z
-    .string()
-    .trim()
-    .min(30, "Conte um pouco mais sobre seu trabalho.")
-    .max(2_000),
-  city,
-  contactVisibilityAccepted: optionalConsent,
-  coverAssetId: z.uuid("A capa enviada não é válida.").optional(),
-  creatorType: z.enum(["INFLUENCER", "UGC"], {
-    error: "Escolha um tipo de creator.",
-  }),
-  displayName: z.string().trim().min(2, requiredMessage).max(120),
-  engagementRate: z.coerce.number("Informe uma taxa válida.").min(0).max(100),
-  followers: z.coerce
-    .number("Informe uma quantidade válida.")
-    .int()
-    .min(0)
-    .max(Number.MAX_SAFE_INTEGER),
-  legalName,
-  nicheSlugs: z
-    .array(z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u))
-    .min(1, "Escolha pelo menos um nicho.")
-    .max(5, "Escolha no máximo cinco nichos."),
-  socialPlatform,
-  socialUrl: url,
-  state: brazilianState,
-  whatsapp,
-});
+function validateOtherNiche(
+  value: {
+    nicheSlugs?: string[];
+    otherNiche?: string;
+    role?: "COMPANY" | "INFLUENCER";
+  },
+  context: z.RefinementCtx,
+) {
+  if (value.role === "COMPANY") {
+    return;
+  }
+
+  if (
+    value.nicheSlugs?.includes(OTHER_NICHE_SLUG) &&
+    !value.otherNiche?.trim()
+  ) {
+    context.addIssue({
+      code: "custom",
+      message: "Informe qual é o outro nicho.",
+      path: ["otherNiche"],
+    });
+  }
+}
+
+export const influencerProfileFieldsSchema = z
+  .object({
+    avatarAssetId: z.uuid("A foto de perfil enviada não é válida.").optional(),
+    bio: z
+      .string()
+      .trim()
+      .min(30, "Conte um pouco mais sobre seu trabalho.")
+      .max(2_000),
+    city,
+    contactVisibilityAccepted: optionalConsent,
+    coverAssetId: z.uuid("A capa enviada não é válida.").optional(),
+    creatorType: z.enum(["INFLUENCER", "UGC"], {
+      error: "Escolha um tipo de creator.",
+    }),
+    displayName: z.string().trim().min(2, requiredMessage).max(120),
+    engagementRate: z.coerce.number("Informe uma taxa válida.").min(0).max(100),
+    followers: z.coerce
+      .number("Informe uma quantidade válida.")
+      .int()
+      .min(0)
+      .max(Number.MAX_SAFE_INTEGER),
+    legalName,
+    nicheSlugs: z
+      .array(z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u))
+      .min(1, "Escolha pelo menos um nicho.")
+      .max(5, "Escolha no máximo cinco nichos."),
+    otherNiche: z.preprocess(
+      (value) => (value === null || value === "" ? undefined : value),
+      z
+        .string()
+        .trim()
+        .min(2, "Informe qual é o outro nicho.")
+        .max(120)
+        .regex(/[\p{L}\p{N}]/u, "Use letras ou números para descrever o nicho.")
+        .optional(),
+    ),
+    socialPlatform,
+    socialUrl: url,
+    state: brazilianState,
+    whatsapp,
+  })
+  .superRefine(validateOtherNiche);
 
 const creatorProfileShape = {
   ...consentShape,
@@ -210,6 +247,7 @@ const creatorEmailRegistrationSchema = z
     passwordConfirmation: z.string(),
     role: z.literal("INFLUENCER"),
   })
+  .superRefine(validateOtherNiche)
   .superRefine(validateMatchingPasswords);
 
 const companyEmailRegistrationSchema = z
@@ -266,7 +304,8 @@ export const googleProfileSchema = z
       role: z.literal("COMPANY"),
     }),
   ])
-  .superRefine(validateCompanySocialPair);
+  .superRefine(validateCompanySocialPair)
+  .superRefine(validateOtherNiche);
 
 export type EmailRegistrationInput = z.infer<typeof emailRegistrationSchema>;
 export type GoogleProfileInput = z.infer<typeof googleProfileSchema>;

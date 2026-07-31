@@ -100,6 +100,9 @@ function collectCreatorPayload(formData: FormData) {
       .getAll("nicheSlugs")
       .filter((value): value is string => typeof value === "string");
   }
+  if (formData.has("otherNiche")) {
+    payload.otherNiche = readText(formData, "otherNiche");
+  }
   if (socialPlatforms.has(socialPlatform)) {
     payload.socialPlatform =
       socialPlatform as CreatorOnboardingDraftPayload["socialPlatform"];

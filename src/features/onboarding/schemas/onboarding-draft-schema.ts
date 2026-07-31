@@ -47,6 +47,7 @@ export const creatorOnboardingDraftPayloadSchema = z
     followers: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
     legalName: draftText(160),
     nicheSlugs: z.array(z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u)).max(5),
+    otherNiche: draftText(120),
     socialPlatform,
     socialUrl: draftUrl,
     state: draftState,

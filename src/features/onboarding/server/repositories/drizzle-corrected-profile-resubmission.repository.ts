@@ -41,6 +41,7 @@ function creatorEditInput(
     followers: profile.followers,
     legalName: profile.legalName,
     nicheSlugs: profile.nicheSlugs,
+    otherNiche: profile.otherNiche,
     socialPlatform: profile.socialPlatform,
     socialUrl: profile.socialUrl,
     state: profile.state,

@@ -23,6 +23,7 @@ const fieldLabels: Record<string, string> = {
   additionalLocations: "Localidades adicionais",
   neighborhood: "Bairro",
   nicheSlugs: "Principais nichos",
+  otherNiche: "Outro nicho",
   number: "Número",
   password: "Senha",
   passwordConfirmation: "Confirmar senha",

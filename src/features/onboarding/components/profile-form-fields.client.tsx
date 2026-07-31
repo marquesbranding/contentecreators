@@ -34,20 +34,18 @@ import {
 import { Textarea } from "@/shared/components/ui/textarea";
 
 import { useCnpjLookup } from "../hooks/use-cnpj-lookup";
+import {
+  companySegmentOptions,
+  creatorNicheOptions,
+  isPredefinedCompanySegment,
+  OTHER_NICHE_SLUG,
+} from "../domain/profile-segments";
 import type {
   CompanyOnboardingDraftPayload,
   CreatorOnboardingDraftPayload,
 } from "../schemas/onboarding-draft-schema";
 import type { OnboardingDraftPayload } from "../types/onboarding-draft.types";
 import { CnpjLookupFeedback } from "./cnpj-lookup-feedback";
-
-const niches = [
-  ["beleza", "Beleza"],
-  ["gastronomia", "Gastronomia"],
-  ["moda", "Moda"],
-  ["tecnologia", "Tecnologia"],
-  ["viagem", "Viagem"],
-] as const;
 
 const states = [
   "AC",
@@ -184,6 +182,7 @@ function ControlledSelect({
   onFieldChange,
   onValueChange,
   required = true,
+  validationName,
 }: {
   errors?: string[];
   id: string;
@@ -196,6 +195,7 @@ function ControlledSelect({
   onFieldChange?: (fieldName: string) => void;
   onValueChange?: (value: string) => void;
   required?: boolean;
+  validationName?: string;
 }) {
   const [internalValue, setInternalValue] = useState<string | null>(
     initialValue || null,
@@ -215,7 +215,7 @@ function ControlledSelect({
         onValueChange={(nextValue) => {
           setInternalValue(nextValue);
           onValueChange?.(nextValue ?? "");
-          onFieldChange?.(name);
+          onFieldChange?.(validationName ?? name);
         }}
         value={value}
       >
@@ -224,7 +224,7 @@ function ControlledSelect({
           aria-invalid={Boolean(errors?.length)}
           aria-required={required}
           className="h-12 w-full rounded-xl"
-          data-field-name={name}
+          data-field-name={validationName ?? name}
           data-field-value={value ?? ""}
           data-required-field={required}
           data-required-message="Selecione uma opção."
@@ -284,6 +284,22 @@ export function ProfileFormFields({
     street: companyInitialValues?.street ?? "",
     tradeName: companyInitialValues?.tradeName ?? "",
   }));
+  const [companySegmentChoice, setCompanySegmentChoice] = useState(() => {
+    const segment = companyInitialValues?.segment ?? "";
+
+    if (!segment) {
+      return "";
+    }
+
+    return isPredefinedCompanySegment(segment) ? segment : "OTHER";
+  });
+  const [selectedNicheSlugs, setSelectedNicheSlugs] = useState(
+    () => new Set(creatorInitialValues?.nicheSlugs ?? []),
+  );
+  const otherNicheSelected = selectedNicheSlugs.has(OTHER_NICHE_SLUG);
+  const [otherNiche, setOtherNiche] = useState(
+    creatorInitialValues?.otherNiche ?? "",
+  );
   const nextLocationId = useRef(
     companyInitialValues?.additionalLocations?.length ?? 0,
   );
@@ -320,6 +336,11 @@ export function ProfileFormFields({
       ...result.data,
       cnpj: current.cnpj,
     }));
+    setCompanySegmentChoice(
+      isPredefinedCompanySegment(result.data.segment)
+        ? result.data.segment
+        : "OTHER",
+    );
   }
 
   function updateCompanyField(
@@ -423,15 +444,45 @@ export function ProfileFormFields({
                   }}
                 />
               </div>
-              <TextField
-                errors={resolveFieldErrors("segment")}
-                id="company-segment"
+              <ControlledSelect
+                errors={
+                  companySegmentChoice === "OTHER"
+                    ? undefined
+                    : resolveFieldErrors("segment")
+                }
+                id="company-segment-choice"
                 label="Segmento"
-                name="segment"
-                placeholder="Ex.: Tecnologia"
-                value={companyFields.segment}
-                onChange={updateCompanyField("segment")}
+                name="segmentChoice"
+                onFieldChange={onFieldChange}
+                onValueChange={(value) => {
+                  setCompanySegmentChoice(value);
+                  setCompanyFields((current) => ({
+                    ...current,
+                    segment: value === "OTHER" ? "" : value,
+                  }));
+                }}
+                options={companySegmentOptions}
+                placeholder="Selecione o segmento"
+                selectedValue={companySegmentChoice}
+                validationName="segment"
               />
+              {companySegmentChoice === "OTHER" ? (
+                <TextField
+                  errors={resolveFieldErrors("segment")}
+                  id="company-other-segment"
+                  label="Qual é o segmento?"
+                  name="segment"
+                  onChange={updateCompanyField("segment")}
+                  placeholder="Ex.: Economia criativa"
+                  value={companyFields.segment}
+                />
+              ) : (
+                <input
+                  name="segment"
+                  type="hidden"
+                  value={companyFields.segment}
+                />
+              )}
               <ControlledSelect
                 errors={resolveFieldErrors("employeeRange")}
                 id="company-employee-range"
@@ -657,7 +708,7 @@ export function ProfileFormFields({
               data-required-message="Escolha pelo menos um nicho."
               role="group"
             >
-              {niches.map(([value, label]) => (
+              {creatorNicheOptions.map(([value, label]) => (
                 <label
                   className="bg-card hover:border-brand-blue/40 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors"
                   key={value}
@@ -667,11 +718,26 @@ export function ProfileFormFields({
                     aria-invalid={Boolean(
                       resolveFieldErrors("nicheSlugs")?.length,
                     )}
-                    defaultChecked={creatorInitialValues?.nicheSlugs?.includes(
-                      value,
-                    )}
+                    checked={selectedNicheSlugs.has(value)}
                     name="nicheSlugs"
-                    onCheckedChange={() => onFieldChange?.("nicheSlugs")}
+                    onCheckedChange={(checked) => {
+                      setSelectedNicheSlugs((current) => {
+                        const next = new Set(current);
+                        if (checked) {
+                          next.add(value);
+                        } else {
+                          next.delete(value);
+                        }
+                        return next;
+                      });
+                      if (value === OTHER_NICHE_SLUG) {
+                        if (!checked) {
+                          setOtherNiche("");
+                          onFieldChange?.("otherNiche");
+                        }
+                      }
+                      onFieldChange?.("nicheSlugs");
+                    }}
                     value={value}
                   />
                   {label}
@@ -683,6 +749,20 @@ export function ProfileFormFields({
               id="creator-niches-error"
             />
           </Field>
+          {otherNicheSelected ? (
+            <TextField
+              errors={resolveFieldErrors("otherNiche")}
+              id="creator-other-niche"
+              label="Qual é o outro nicho?"
+              name="otherNiche"
+              onChange={(event) => {
+                setOtherNiche(event.target.value);
+                onFieldChange?.("otherNiche");
+              }}
+              placeholder="Ex.: Artesanato sustentável"
+              value={otherNiche}
+            />
+          ) : null}
         </FieldSet>
       ) : (
         <FieldSet>

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   emailRegistrationSchema,
   googleProfileSchema,
+  influencerProfileFieldsSchema,
 } from "./onboarding-form-schema";
 
 const commonProfile = {
@@ -15,6 +16,31 @@ const commonProfile = {
 };
 
 describe("onboarding form contracts", () => {
+  it("requires a description when Outros is the creator niche", () => {
+    const profile = {
+      ...commonProfile,
+      bio: "Crio conteúdo sobre projetos autorais e economia criativa.",
+      creatorType: "INFLUENCER",
+      displayName: "Joana Cria",
+      engagementRate: "4.25",
+      followers: "12500",
+      nicheSlugs: ["outros"],
+      socialPlatform: "INSTAGRAM",
+      socialUrl: "https://instagram.com/joanacria",
+    };
+    const missingDescription = influencerProfileFieldsSchema.safeParse(profile);
+    const customDescription = influencerProfileFieldsSchema.safeParse({
+      ...profile,
+      otherNiche: "Artesanato sustentável",
+    });
+
+    expect(missingDescription.success).toBe(false);
+    expect(
+      missingDescription.error?.flatten().fieldErrors.otherNiche,
+    ).toContain("Informe qual é o outro nicho.");
+    expect(customDescription.success).toBe(true);
+  });
+
   it("accepts one complete influencer registration payload", () => {
     const result = emailRegistrationSchema.safeParse({
       ...commonProfile,

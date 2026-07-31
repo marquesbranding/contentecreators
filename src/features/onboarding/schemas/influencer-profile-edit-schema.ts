@@ -2,7 +2,8 @@ import { z } from "zod";
 
 import { influencerProfileFieldsSchema } from "./onboarding-form-schema";
 
-export const influencerProfileEditSchema = influencerProfileFieldsSchema
+export const influencerProfileEditSchema = z
+  .object(influencerProfileFieldsSchema.shape)
   .omit({
     avatarAssetId: true,
     contactVisibilityAccepted: true,
@@ -13,6 +14,15 @@ export const influencerProfileEditSchema = influencerProfileFieldsSchema
       .number("A versão do perfil não é válida.")
       .int()
       .positive(),
+  })
+  .superRefine((value, context) => {
+    if (value.nicheSlugs.includes("outros") && !value.otherNiche?.trim()) {
+      context.addIssue({
+        code: "custom",
+        message: "Informe qual é o outro nicho.",
+        path: ["otherNiche"],
+      });
+    }
   });
 
 export type InfluencerProfileEditInput = z.infer<

@@ -16,6 +16,10 @@ import type { InfluencerProfileEditInput } from "../../schemas/influencer-profil
 import type { InfluencerProfileDto } from "../../types/influencer-profile.types";
 import type { InfluencerProfileRepository } from "../services/influencer-profile.service";
 import { persistCurrentAccountProfileCompletion } from "./drizzle-profile-completion.repository";
+import {
+  mapCreatorNicheSelection,
+  resolveCreatorNiches,
+} from "./creator-niche.repository";
 
 function normalizeWhatsapp(value: string) {
   const digits = value.replace(/\D/gu, "");
@@ -69,7 +73,7 @@ async function loadProfile(
     )
     .limit(1);
   const selectedNiches = await transaction
-    .select({ slug: niches.slug })
+    .select({ id: niches.id, name: niches.name, slug: niches.slug })
     .from(creatorNiches)
     .innerJoin(niches, eq(niches.id, creatorNiches.nicheId))
     .where(eq(creatorNiches.creatorProfileId, profile.id))
@@ -78,6 +82,8 @@ async function loadProfile(
   if (!socialProfile || !metric) {
     return null;
   }
+
+  const nicheSelection = mapCreatorNicheSelection(selectedNiches);
 
   return {
     avatarAssetId: profile.avatarAssetId,
@@ -89,7 +95,8 @@ async function loadProfile(
     engagementRate: Number(metric.engagementRate ?? 0),
     followers: metric.followerCount ?? 0,
     legalName: profile.legalName,
-    nicheSlugs: selectedNiches.map((niche) => niche.slug),
+    nicheSlugs: nicheSelection.nicheSlugs,
+    otherNiche: nicheSelection.otherNiche,
     socialPlatform: socialProfile.platform,
     socialUrl: socialProfile.normalizedUrl,
     state: profile.state ?? "",
@@ -102,17 +109,13 @@ async function updateNiches(
   transaction: ApplicationTransaction,
   profileId: string,
   requestedSlugs: string[],
+  otherNiche?: string,
 ) {
-  const availableNiches = await transaction
-    .select({ id: niches.id, slug: niches.slug })
-    .from(niches)
-    .where(
-      and(inArray(niches.slug, requestedSlugs), eq(niches.isActive, true)),
-    );
-
-  if (availableNiches.length !== requestedSlugs.length) {
-    throw new Error("One or more selected niches are unavailable.");
-  }
+  const availableNiches = await resolveCreatorNiches(
+    transaction,
+    requestedSlugs,
+    otherNiche,
+  );
 
   const currentLinks = await transaction
     .select({ nicheId: creatorNiches.nicheId })
@@ -296,7 +299,12 @@ export function createDrizzleInfluencerProfileRepository(): InfluencerProfileRep
         };
       }
 
-      await updateNiches(transaction, currentProfile.id, input.nicheSlugs);
+      await updateNiches(
+        transaction,
+        currentProfile.id,
+        input.nicheSlugs,
+        input.otherNiche,
+      );
       await updateSocialAndMetric(
         transaction,
         accountId,

@@ -141,6 +141,65 @@ describe("ProfileFormFields company CNPJ experience", () => {
     ).not.toBeChecked();
   });
 
+  it("shows a required custom niche field when the creator selects Outros", async () => {
+    const user = userEvent.setup();
+    render(<ProfileFormFields role="INFLUENCER" />);
+
+    expect(
+      screen.queryByLabelText("Qual é o outro nicho?"),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("checkbox", { name: "Outros" }));
+
+    const otherNiche = screen.getByLabelText("Qual é o outro nicho?");
+    expect(otherNiche).toBeRequired();
+    await user.type(otherNiche, "Artesanato sustentável");
+    expect(otherNiche).toHaveValue("Artesanato sustentável");
+  });
+
+  it("offers predefined company segments and reveals a required text field for Outros", async () => {
+    const user = userEvent.setup();
+    render(<ProfileFormFields role="COMPANY" />);
+
+    await user.click(screen.getByLabelText("Segmento"));
+    await user.click(screen.getByRole("option", { name: "Outros" }));
+
+    const otherSegment = screen.getByLabelText("Qual é o segmento?");
+    expect(otherSegment).toBeRequired();
+    await user.type(otherSegment, "Economia criativa");
+    expect(otherSegment).toHaveValue("Economia criativa");
+  });
+
+  it("restores custom creator and company segments in the Outros fields", () => {
+    const { unmount } = render(
+      <ProfileFormFields
+        initialValues={{
+          nicheSlugs: ["outros"],
+          otherNiche: "Cultura geek",
+        }}
+        role="INFLUENCER"
+      />,
+    );
+
+    expect(screen.getByRole("checkbox", { name: "Outros" })).toBeChecked();
+    expect(screen.getByLabelText("Qual é o outro nicho?")).toHaveValue(
+      "Cultura geek",
+    );
+
+    unmount();
+    render(
+      <ProfileFormFields
+        initialValues={{ segment: "Economia criativa" }}
+        role="COMPANY"
+      />,
+    );
+
+    expect(screen.getByLabelText("Segmento")).toHaveTextContent("Outros");
+    expect(screen.getByLabelText("Qual é o segmento?")).toHaveValue(
+      "Economia criativa",
+    );
+  });
+
   it("omits registration consents when an approved influencer edits the profile", () => {
     render(<ProfileFormFields role="INFLUENCER" showLegalConsents={false} />);
 

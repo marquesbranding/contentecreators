@@ -21,7 +21,6 @@ import {
   mediaAssets,
   moderationCases,
   moderationEvents,
-  niches,
   socialProfiles,
 } from "@/db/schema";
 import {
@@ -35,6 +34,7 @@ import type {
   GoogleProfileInput,
 } from "../../schemas/onboarding-form-schema";
 import { calculateProfileCompletionForAccount } from "./drizzle-profile-completion.repository";
+import { resolveCreatorNiches } from "./creator-niche.repository";
 import type { OnboardingRegistrationRepository } from "../services/onboarding-registration.service";
 
 type ProfileInput = EmailRegistrationInput | GoogleProfileInput;
@@ -286,16 +286,11 @@ async function insertRoleProfile(
     socialProfileId: socialProfile?.id,
   });
 
-  const selectedNiches = await transaction
-    .select({ id: niches.id })
-    .from(niches)
-    .where(
-      and(inArray(niches.slug, input.nicheSlugs), eq(niches.isActive, true)),
-    );
-
-  if (selectedNiches.length !== input.nicheSlugs.length) {
-    throw new Error("One or more selected niches are unavailable.");
-  }
+  const selectedNiches = await resolveCreatorNiches(
+    transaction,
+    input.nicheSlugs,
+    input.otherNiche,
+  );
 
   await transaction.insert(creatorNiches).values(
     selectedNiches.map((niche) => ({

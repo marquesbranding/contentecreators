@@ -38,6 +38,7 @@ function formPayload(formData: FormData) {
     logoAssetId: formData.get("logoAssetId") || undefined,
     neighborhood: formData.get("neighborhood"),
     nicheSlugs: formData.getAll("nicheSlugs"),
+    otherNiche: formData.get("otherNiche"),
     number: formData.get("number"),
     password: formData.get("password"),
     passwordConfirmation: formData.get("passwordConfirmation"),
