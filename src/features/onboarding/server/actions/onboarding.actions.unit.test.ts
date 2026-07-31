@@ -132,7 +132,6 @@ describe("onboarding actions", () => {
       destination: "/app/status/analysis",
     });
     mockedCreateRegistrationService.mockResolvedValue({
-      finalizePreparedRegistration: vi.fn(),
       registerWithEmail: vi.fn(),
       submitGoogleProfile,
     });
@@ -221,7 +220,6 @@ describe("onboarding actions", () => {
       message: "Confirme seu e-mail.",
     });
     mockedCreateRegistrationService.mockResolvedValue({
-      finalizePreparedRegistration: vi.fn(),
       registerWithEmail,
       submitGoogleProfile: vi.fn(),
     });

@@ -119,11 +119,16 @@ export function CombinedRegistrationForm({
         <p className="text-muted-foreground text-sm leading-6">
           Enviamos o link para{" "}
           <strong className="text-foreground">{state.values.email}</strong>. O
-          perfil já foi preparado e entrará na fila de análise após a
-          confirmação.
+          perfil já foi salvo. Após confirmar, você poderá revisar os dados e
+          completar as imagens antes de enviá-lo para análise.
         </p>
         <form action={resendFormAction} className="space-y-3">
           <input name="email" type="hidden" value={state.values.email} />
+          <input
+            name="role"
+            type="hidden"
+            value={state.values.role ?? "INFLUENCER"}
+          />
           {resendState.message ? (
             <p aria-live="polite" className="text-muted-foreground text-sm">
               {resendState.message}

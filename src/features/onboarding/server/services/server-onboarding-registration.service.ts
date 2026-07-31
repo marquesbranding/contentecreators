@@ -17,16 +17,21 @@ export async function createServerOnboardingRegistrationService() {
   const adminClient = createSupabaseAdminClient();
   const emailDelivery = createServerEmailDeliveryProcessor();
   const rateLimits = createServerRateLimitService();
-  const callbackUrl = new URL(
-    "/auth/callback",
-    environment.NEXT_PUBLIC_APP_URL,
-  );
-  callbackUrl.searchParams.set("next", "/app/status/analysis");
+  function callbackUrl(destination: string) {
+    const url = new URL("/auth/callback", environment.NEXT_PUBLIC_APP_URL);
+    url.searchParams.set("next", destination);
+    return url.toString();
+  }
 
   return createOnboardingRegistrationService(
     createSupabaseRegistrationIdentityGateway(authClient, adminClient),
     createDrizzleOnboardingRegistrationRepository(),
-    { callbackUrl: callbackUrl.toString() },
+    {
+      callbackUrls: {
+        COMPANY: callbackUrl("/onboarding/company"),
+        INFLUENCER: callbackUrl("/onboarding/influencer"),
+      },
+    },
     emailDelivery,
     {
       consume: (email) =>

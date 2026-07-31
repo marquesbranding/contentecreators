@@ -234,6 +234,7 @@ export function createDrizzleInfluencerProfileRepository(): InfluencerProfileRep
       requestId,
       auditReason = "Update approved influencer profile",
       auditContext,
+      persistCompletion = true,
     ) {
       const [currentProfile] = await transaction
         .select({
@@ -311,11 +312,13 @@ export function createDrizzleInfluencerProfileRepository(): InfluencerProfileRep
         currentProfile.id,
         input,
       );
-      await persistCurrentAccountProfileCompletion(
-        transaction,
-        accountId,
-        "INFLUENCER",
-      );
+      if (persistCompletion) {
+        await persistCurrentAccountProfileCompletion(
+          transaction,
+          accountId,
+          "INFLUENCER",
+        );
+      }
 
       const profile = await loadProfile(transaction, accountId);
       if (!profile) {

@@ -34,6 +34,8 @@ import type {
   GoogleProfileInput,
 } from "../../schemas/onboarding-form-schema";
 import { calculateProfileCompletionForAccount } from "./drizzle-profile-completion.repository";
+import { createDrizzleCompanyProfileRepository } from "./drizzle-company-profile.repository";
+import { createDrizzleInfluencerProfileRepository } from "./drizzle-influencer-profile.repository";
 import { resolveCreatorNiches } from "./creator-niche.repository";
 import type { OnboardingRegistrationRepository } from "../services/onboarding-registration.service";
 
@@ -346,6 +348,106 @@ async function hasPreparedProfile(
   return Boolean(profile);
 }
 
+async function updatePreparedRoleProfile(
+  transaction: ApplicationTransaction,
+  account: { id: string; role: "INFLUENCER" | "COMPANY" },
+  input: GoogleProfileInput,
+  requestId: string,
+) {
+  if (input.role === "COMPANY" && account.role === "COMPANY") {
+    const repository = createDrizzleCompanyProfileRepository();
+    const current = await repository.loadApprovedProfile(
+      transaction,
+      account.id,
+    );
+    if (!current) {
+      throw new Error("Prepared company profile was not found.");
+    }
+
+    const requestedMedia = requestedCompanyMedia(input).filter(
+      (media) =>
+        media.id !== current.logoAssetId && media.id !== current.coverAssetId,
+    );
+    await lockInitialProfileMedia(transaction, account.id, requestedMedia);
+    const result = await repository.updateApprovedProfile(
+      transaction,
+      account.id,
+      { ...input, expectedVersion: current.version },
+      requestId,
+      "Review prepared company profile before moderation",
+      auditContext(requestId, "Review prepared company profile", account),
+      false,
+    );
+    if (result.kind !== "updated") {
+      throw new Error("Prepared company profile changed during review.");
+    }
+
+    await transaction
+      .update(companyProfiles)
+      .set({
+        coverAssetId: input.coverAssetId ?? result.profile.coverAssetId,
+        logoAssetId: input.logoAssetId ?? result.profile.logoAssetId,
+      })
+      .where(eq(companyProfiles.accountId, account.id));
+    await activateInitialProfileMedia(transaction, account.id, requestedMedia);
+    return;
+  }
+
+  if (input.role === "INFLUENCER" && account.role === "INFLUENCER") {
+    const repository = createDrizzleInfluencerProfileRepository();
+    const current = await repository.loadApprovedProfile(
+      transaction,
+      account.id,
+    );
+    if (!current) {
+      throw new Error("Prepared creator profile was not found.");
+    }
+
+    const requestedMedia = requestedCreatorMedia(input).filter(
+      (media) =>
+        media.id !== current.avatarAssetId && media.id !== current.coverAssetId,
+    );
+    await lockInitialProfileMedia(transaction, account.id, requestedMedia);
+    const result = await repository.updateApprovedProfile(
+      transaction,
+      account.id,
+      { ...input, expectedVersion: current.version },
+      requestId,
+      "Review prepared creator profile before moderation",
+      auditContext(requestId, "Review prepared creator profile", account),
+      false,
+    );
+    if (result.kind !== "updated") {
+      throw new Error("Prepared creator profile changed during review.");
+    }
+
+    await transaction
+      .update(creatorProfiles)
+      .set({
+        avatarAssetId: input.avatarAssetId ?? result.profile.avatarAssetId,
+        coverAssetId: input.coverAssetId ?? result.profile.coverAssetId,
+      })
+      .where(eq(creatorProfiles.accountId, account.id));
+    await transaction
+      .update(accountContactPreferences)
+      .set({
+        emailVisibleToApprovedCompanies: input.contactVisibilityAccepted,
+        socialVisibleToApprovedCompanies: input.contactVisibilityAccepted,
+        whatsappVisibleToApprovedCompanies: input.contactVisibilityAccepted,
+      })
+      .where(
+        and(
+          eq(accountContactPreferences.accountId, account.id),
+          isNull(accountContactPreferences.archivedAt),
+        ),
+      );
+    await activateInitialProfileMedia(transaction, account.id, requestedMedia);
+    return;
+  }
+
+  throw new Error("Prepared profile role does not match the account.");
+}
+
 async function submitPreparedAccount(
   transaction: ApplicationTransaction,
   account: {
@@ -601,7 +703,21 @@ export function createDrizzleOnboardingRegistrationRepository(
             throw new Error("Account cannot submit this profile.");
           }
 
-          await insertRoleProfile(transaction, account.id, input);
+          if (
+            await hasPreparedProfile(transaction, {
+              id: account.id,
+              role: input.role,
+            })
+          ) {
+            await updatePreparedRoleProfile(
+              transaction,
+              { id: account.id, role: input.role },
+              input,
+              requestId,
+            );
+          } else {
+            await insertRoleProfile(transaction, account.id, input);
+          }
           const result = await submitPreparedAccount(
             transaction,
             {

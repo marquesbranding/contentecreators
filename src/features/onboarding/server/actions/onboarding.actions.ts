@@ -200,6 +200,7 @@ export async function resendPreparedRegistrationConfirmationAction(
   const email = String(formData.get("email") ?? "")
     .trim()
     .toLowerCase();
+  const role = formData.get("role");
 
   if (!email) {
     return {
@@ -213,7 +214,10 @@ export async function resendPreparedRegistrationConfirmationAction(
     "/auth/callback",
     environment.NEXT_PUBLIC_APP_URL,
   );
-  callbackUrl.searchParams.set("next", "/app/status/analysis");
+  callbackUrl.searchParams.set(
+    "next",
+    role === "COMPANY" ? "/onboarding/company" : "/onboarding/influencer",
+  );
   const authClient = await createServerSupabaseClient();
   await authClient.auth.resend({
     email,

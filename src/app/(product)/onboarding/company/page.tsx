@@ -15,6 +15,7 @@ import {
 } from "@/features/onboarding";
 import {
   loadCurrentOnboardingDraft,
+  loadCurrentPreparedCompanyProfile,
   loadCurrentCorrectionContext,
   saveOnboardingDraftAction,
   submitGoogleProfileAction,
@@ -36,9 +37,10 @@ export default async function CompanyOnboardingPage() {
   if (decision.destination !== "/onboarding/company" && !correctionRequested) {
     redirect(decision.destination);
   }
-  const [initialDraft, initialMediaState] = await Promise.all([
+  const [initialDraft, initialMediaState, preparedProfile] = await Promise.all([
     loadCurrentOnboardingDraft(),
     loadCurrentCompanyMediaFormState(),
+    loadCurrentPreparedCompanyProfile(),
   ]);
   const correctionContext = correctionRequested
     ? await loadCurrentCorrectionContext()
@@ -63,7 +65,12 @@ export default async function CompanyOnboardingPage() {
         correctionCommand={correctionContext?.command}
         draftAction={saveOnboardingDraftAction}
         initialDraft={initialDraft}
-        initialValues={correctionContext?.initialValues}
+        initialValues={
+          correctionContext?.initialValues ??
+          (initialDraft?.role === "COMPANY"
+            ? undefined
+            : (preparedProfile ?? undefined))
+        }
         mediaFields={
           <CompanyMediaFields
             actions={{

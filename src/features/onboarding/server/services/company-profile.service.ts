@@ -28,6 +28,7 @@ export interface CompanyProfileRepository {
     requestId: string,
     auditReason?: string,
     auditContext?: VerifiedAuditContext,
+    persistCompletion?: boolean,
   ): Promise<CompanyProfileUpdateResult>;
 }
 

@@ -84,7 +84,7 @@ describeLocalStack("onboarding registration repository", () => {
     await drizzleClient.client.end({ timeout: 2 });
   });
 
-  it("persists one combined email/company registration and submits it after verification", async () => {
+  it("persists a combined company registration and updates it during verified review", async () => {
     const identityId = "91000000-0000-4000-8000-000000000001";
     const email = "combined-company@contentecreators.test";
     await insertConfirmedIdentity(identityId, email);
@@ -143,7 +143,17 @@ describeLocalStack("onboarding registration repository", () => {
       requestId: "combined-email-prepare",
     });
     await expect(
-      repository.finalizePreparedRegistration(identityId),
+      repository.submitGoogleProfile({
+        email,
+        identityId,
+        input: {
+          ...input,
+          description:
+            "Empresa revisada que busca creators para campanhas institucionais.",
+          tradeName: "Combined Company Revisada",
+        },
+        requestId: "combined-email-review",
+      }),
     ).resolves.toEqual({
       kind: "submitted",
       outboxId: expect.any(String),
@@ -160,6 +170,7 @@ describeLocalStack("onboarding registration repository", () => {
         role: string;
         social_count: number;
         status: string;
+        trade_name: string;
       }[]
     >`
       select
@@ -168,6 +179,7 @@ describeLocalStack("onboarding registration repository", () => {
         account.completion_percentage,
         account.completion_version,
         profile.cnpj,
+        profile.trade_name,
         (
           select count(*)::integer
           from public.social_profiles social
@@ -179,6 +191,7 @@ describeLocalStack("onboarding registration repository", () => {
           select count(*)::integer
           from public.company_locations location
           where location.company_profile_id = profile.id
+            and location.archived_at is null
         ) as location_count,
         (
           select count(*)::integer
@@ -210,6 +223,7 @@ describeLocalStack("onboarding registration repository", () => {
       role: "COMPANY",
       social_count: 1,
       status: "PENDING_REVIEW",
+      trade_name: "Combined Company Revisada",
     });
   });
 

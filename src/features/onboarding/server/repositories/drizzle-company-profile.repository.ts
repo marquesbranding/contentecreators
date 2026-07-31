@@ -191,6 +191,7 @@ export function createDrizzleCompanyProfileRepository(): CompanyProfileRepositor
       requestId,
       auditReason = "Update approved company profile",
       auditContext,
+      persistCompletion = true,
     ) {
       const [currentProfile] = await transaction
         .select({
@@ -288,11 +289,13 @@ export function createDrizzleCompanyProfileRepository(): CompanyProfileRepositor
         .where(eq(companyLocations.id, primaryLocation.id));
       await replaceAdditionalLocations(transaction, currentProfile.id, input);
       await updateCompanySocial(transaction, accountId, input);
-      await persistCurrentAccountProfileCompletion(
-        transaction,
-        accountId,
-        "COMPANY",
-      );
+      if (persistCompletion) {
+        await persistCurrentAccountProfileCompletion(
+          transaction,
+          accountId,
+          "COMPANY",
+        );
+      }
 
       const profile = await loadProfile(transaction, accountId);
       if (!profile) {

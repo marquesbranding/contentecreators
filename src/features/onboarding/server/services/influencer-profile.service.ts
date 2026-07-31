@@ -28,6 +28,7 @@ export interface InfluencerProfileRepository {
     requestId: string,
     auditReason?: string,
     auditContext?: VerifiedAuditContext,
+    persistCompletion?: boolean,
   ): Promise<InfluencerProfileUpdateResult>;
 }
 

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -63,6 +63,49 @@ describe("ProfileFormFields company CNPJ experience", () => {
     ).toBeNull();
     expect(screen.getByLabelText("Razão social")).toBeRequired();
     expect(screen.getByLabelText("Site (opcional)")).not.toBeRequired();
+  });
+
+  it("starts company data with the CNPJ lookup before the editable registry fields", () => {
+    render(<ProfileFormFields role="COMPANY" />);
+
+    const cnpj = screen.getByLabelText("CNPJ");
+    const legalName = screen.getByLabelText("Razão social");
+
+    expect(screen.getByText("Comece pelo CNPJ")).toBeInTheDocument();
+    expect(
+      cnpj.compareDocumentPosition(legalName) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("keeps the persisted company values when the saved CNPJ is reviewed", () => {
+    useCnpjLookupMock.mockReturnValue({
+      data: {
+        data: {
+          legalName: "Nome retornado pela API Ltda.",
+          tradeName: "Nome da API",
+        },
+        status: "success",
+      },
+      lookupStatus: "success",
+      refetch: vi.fn(),
+    });
+
+    render(
+      <ProfileFormFields
+        initialValues={{
+          cnpj: "11444777000161",
+          legalName: "Nome salvo no cadastro Ltda.",
+          tradeName: "Nome salvo",
+        }}
+        role="COMPANY"
+      />,
+    );
+
+    expect(screen.getByLabelText("Razão social")).toHaveValue(
+      "Nome salvo no cadastro Ltda.",
+    );
+    expect(screen.getByLabelText("Nome fantasia")).toHaveValue("Nome salvo");
   });
 
   it("starts every applicable consent unchecked and keeps contact sharing optional", async () => {
@@ -234,18 +277,21 @@ describe("ProfileFormFields company CNPJ experience", () => {
     });
 
     render(<ProfileFormFields role="COMPANY" />);
+    await user.type(screen.getByLabelText("CNPJ"), "11444777000161");
 
-    await user.click(
-      screen.getByRole("button", { name: "Preencher dados encontrados" }),
-    );
-
-    expect(screen.getByLabelText("Razão social")).toHaveValue(
-      "Empresa Proposta Ltda.",
-    );
+    await waitFor(() => {
+      expect(screen.getByLabelText("Razão social")).toHaveValue(
+        "Empresa Proposta Ltda.",
+      );
+    });
     expect(screen.getByLabelText("Nome fantasia")).toHaveValue(
       "Empresa Proposta",
     );
     expect(screen.getByLabelText("Logradouro")).toHaveValue("Praça da Sé");
+
+    await user.click(
+      screen.getByRole("button", { name: "Preencher novamente" }),
+    );
 
     await user.clear(screen.getByLabelText("Nome fantasia"));
     await user.type(screen.getByLabelText("Nome fantasia"), "Nome revisado");

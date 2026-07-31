@@ -1,8 +1,8 @@
 "use client";
 
-import { MapPin, Plus, Trash2 } from "lucide-react";
+import { MapPin, Plus, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -372,11 +372,14 @@ export function ProfileFormFields({
   const cnpjLookup = useCnpjLookup(
     role === "COMPANY" ? companyFields.cnpj : "",
   );
+  const automaticallyAppliedCnpj = useRef(
+    companyInitialValues?.cnpj?.replace(/\D/gu, "") ?? "",
+  );
   const resolveFieldErrors = (fieldName: string) =>
     getFieldErrors?.(fieldName, fieldErrors?.[fieldName]) ??
     fieldErrors?.[fieldName];
 
-  function applyCompanyLookup() {
+  const applyCompanyLookup = useCallback(() => {
     const result = cnpjLookup.data;
 
     if (result?.status !== "success") {
@@ -397,7 +400,24 @@ export function ProfileFormFields({
         ? result.data.segment
         : "OTHER",
     );
-  }
+  }, [cnpjLookup.data, onFieldChange]);
+
+  useEffect(() => {
+    if (cnpjLookup.data?.status !== "success") {
+      return;
+    }
+
+    const normalizedCnpj = companyFields.cnpj.replace(/\D/gu, "");
+    if (
+      !normalizedCnpj ||
+      automaticallyAppliedCnpj.current === normalizedCnpj
+    ) {
+      return;
+    }
+
+    automaticallyAppliedCnpj.current = normalizedCnpj;
+    applyCompanyLookup();
+  }, [applyCompanyLookup, cnpjLookup.data, companyFields.cnpj]);
 
   function updateCompanyField(
     field: keyof typeof companyFields,
@@ -454,6 +474,52 @@ export function ProfileFormFields({
           catálogo.
         </FieldDescription>
         <FieldGroup className="grid gap-5 md:grid-cols-2">
+          {role === "COMPANY" ? (
+            <Card className="border-brand-blue/25 bg-brand-blue-soft/35 gap-4 py-5 md:col-span-2">
+              <CardHeader className="gap-2 px-5">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Search
+                    aria-hidden="true"
+                    className="text-brand-blue size-4"
+                  />
+                  Comece pelo CNPJ
+                </CardTitle>
+                <FieldDescription>
+                  Buscaremos os dados oficiais para preencher razão social, nome
+                  fantasia e endereço. Você poderá revisar tudo depois.
+                </FieldDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 px-5">
+                <TextField
+                  description="Informe os 14 dígitos do CNPJ."
+                  errors={resolveFieldErrors("cnpj")}
+                  id="company-cnpj"
+                  inputMode="numeric"
+                  label="CNPJ"
+                  name="cnpj"
+                  maxLength={18}
+                  minLength={14}
+                  pattern="(?:[0-9]{14}|[0-9]{2}\\.[0-9]{3}\\.[0-9]{3}/[0-9]{4}-[0-9]{2})"
+                  placeholder="00.000.000/0000-00"
+                  value={companyFields.cnpj}
+                  onChange={updateCompanyField("cnpj")}
+                  validate={(value) =>
+                    value && !isValidCnpj(value)
+                      ? "Informe um CNPJ válido."
+                      : null
+                  }
+                  validationMessage="Informe um CNPJ válido com 14 dígitos."
+                />
+                <CnpjLookupFeedback
+                  lookupStatus={cnpjLookup.lookupStatus}
+                  onApply={applyCompanyLookup}
+                  onRetry={() => {
+                    void cnpjLookup.refetch();
+                  }}
+                />
+              </CardContent>
+            </Card>
+          ) : null}
           <TextField
             autoComplete="name"
             description="Mínimo de 3 caracteres."
@@ -489,35 +555,6 @@ export function ProfileFormFields({
                 onChange={updateCompanyField("tradeName")}
                 validationMessage="Use pelo menos 2 caracteres."
               />
-              <TextField
-                description="Informe os 14 dígitos do CNPJ."
-                errors={resolveFieldErrors("cnpj")}
-                id="company-cnpj"
-                inputMode="numeric"
-                label="CNPJ"
-                name="cnpj"
-                maxLength={18}
-                minLength={14}
-                pattern="(?:[0-9]{14}|[0-9]{2}\\.[0-9]{3}\\.[0-9]{3}/[0-9]{4}-[0-9]{2})"
-                placeholder="00.000.000/0000-00"
-                value={companyFields.cnpj}
-                onChange={updateCompanyField("cnpj")}
-                validate={(value) =>
-                  value && !isValidCnpj(value)
-                    ? "Informe um CNPJ válido."
-                    : null
-                }
-                validationMessage="Informe um CNPJ válido com 14 dígitos."
-              />
-              <div className="md:col-span-2">
-                <CnpjLookupFeedback
-                  lookupStatus={cnpjLookup.lookupStatus}
-                  onApply={applyCompanyLookup}
-                  onRetry={() => {
-                    void cnpjLookup.refetch();
-                  }}
-                />
-              </div>
               <ControlledSelect
                 errors={
                   companySegmentChoice === "OTHER"

@@ -42,11 +42,13 @@ describe("CnpjLookupFeedback", () => {
     );
 
     await user.click(
-      screen.getByRole("button", { name: "Preencher dados encontrados" }),
+      screen.getByRole("button", { name: "Preencher novamente" }),
     );
 
     expect(onApply).toHaveBeenCalledOnce();
-    expect(screen.getByRole("alert")).toHaveTextContent("Dados encontrados");
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Dados preenchidos automaticamente",
+    );
   });
 
   it("offers a retry after timeout and keeps manual completion explicit", async () => {

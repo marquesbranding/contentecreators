@@ -5,7 +5,6 @@ import {
   createServerBannedAccountDefenseService,
   createServerIdentityAuthService,
 } from "@/features/identity/server";
-import { createServerOnboardingRegistrationService } from "@/features/onboarding/server";
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code") ?? "";
@@ -30,12 +29,6 @@ export async function GET(request: NextRequest) {
 
   if (access.kind === "blocked") {
     return NextResponse.redirect(new URL(access.destination, request.url));
-  }
-
-  const identity = await service.requireVerifiedIdentity();
-  if (identity.kind === "verified") {
-    const onboardingService = await createServerOnboardingRegistrationService();
-    await onboardingService.finalizePreparedRegistration(identity.identityId);
   }
 
   return NextResponse.redirect(new URL(destination, request.url));

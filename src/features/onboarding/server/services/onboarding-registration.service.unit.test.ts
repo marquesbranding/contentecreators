@@ -43,8 +43,12 @@ describe("onboarding registration service", () => {
       identity,
       repository,
       {
-        callbackUrl:
-          "http://localhost:3000/auth/callback?next=/app/status/analysis",
+        callbackUrls: {
+          COMPANY:
+            "http://localhost:3000/auth/callback?next=/onboarding/company",
+          INFLUENCER:
+            "http://localhost:3000/auth/callback?next=/onboarding/influencer",
+        },
       },
       undefined,
       abuseProtection,
@@ -76,15 +80,18 @@ describe("onboarding registration service", () => {
       submitGoogleProfile: vi.fn(),
     };
     const service = createOnboardingRegistrationService(identity, repository, {
-      callbackUrl:
-        "http://localhost:3000/auth/callback?next=/app/status/analysis",
+      callbackUrls: {
+        COMPANY: "http://localhost:3000/auth/callback?next=/onboarding/company",
+        INFLUENCER:
+          "http://localhost:3000/auth/callback?next=/onboarding/influencer",
+      },
     });
 
     const result = await service.registerWithEmail(influencerInput);
 
     expect(identity.signUp).toHaveBeenCalledWith({
       callbackUrl:
-        "http://localhost:3000/auth/callback?next=/app/status/analysis",
+        "http://localhost:3000/auth/callback?next=/onboarding/influencer",
       email: "joana@example.com",
       password: "StrongPass1",
     });
@@ -113,8 +120,11 @@ describe("onboarding registration service", () => {
       submitGoogleProfile: vi.fn(),
     };
     const service = createOnboardingRegistrationService(identity, repository, {
-      callbackUrl:
-        "http://localhost:3000/auth/callback?next=/app/status/analysis",
+      callbackUrls: {
+        COMPANY: "http://localhost:3000/auth/callback?next=/onboarding/company",
+        INFLUENCER:
+          "http://localhost:3000/auth/callback?next=/onboarding/influencer",
+      },
     });
 
     const result = await service.registerWithEmail(influencerInput);
@@ -127,7 +137,7 @@ describe("onboarding registration service", () => {
     });
   });
 
-  it("finalizes immediately when local Auth returns an active session", async () => {
+  it("opens the saved profile for review when Auth returns an active session", async () => {
     const identity = {
       deleteIdentity: vi.fn(),
       signUp: vi.fn().mockResolvedValue({
@@ -151,23 +161,22 @@ describe("onboarding registration service", () => {
       identity,
       repository,
       {
-        callbackUrl:
-          "http://localhost:3000/auth/callback?next=/app/status/analysis",
+        callbackUrls: {
+          COMPANY:
+            "http://localhost:3000/auth/callback?next=/onboarding/company",
+          INFLUENCER:
+            "http://localhost:3000/auth/callback?next=/onboarding/influencer",
+        },
       },
       { processOne },
     );
 
     const result = await service.registerWithEmail(influencerInput);
 
-    expect(repository.finalizePreparedRegistration).toHaveBeenCalledWith(
-      "identity-3",
-    );
-    expect(processOne).toHaveBeenCalledWith({
-      outboxId: "e0000000-0000-4000-8000-000000000001",
-      workerId: expect.stringMatching(/^onboarding:/),
-    });
+    expect(repository.finalizePreparedRegistration).not.toHaveBeenCalled();
+    expect(processOne).not.toHaveBeenCalled();
     expect(result).toEqual({
-      destination: "/app/status/analysis",
+      destination: "/onboarding/influencer",
       kind: "redirect",
     });
   });

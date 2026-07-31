@@ -45,7 +45,7 @@ interface OnboardingRegistrationRepository {
 }
 
 interface OnboardingRegistrationConfiguration {
-  callbackUrl: string;
+  callbackUrls: Record<"COMPANY" | "INFLUENCER", string>;
 }
 
 interface OnboardingRegistrationEmailDelivery {
@@ -115,7 +115,7 @@ export function createOnboardingRegistrationService(
       }
 
       const identityResult = await identity.signUp({
-        callbackUrl: configuration.callbackUrl,
+        callbackUrl: configuration.callbackUrls[input.role],
         email: input.email,
         password: input.password,
       });
@@ -147,16 +147,15 @@ export function createOnboardingRegistrationService(
         return {
           kind: "confirmation_required" as const,
           message:
-            "Seu perfil foi salvo. Confirme seu e-mail para enviá-lo à análise.",
+            "Seu perfil foi salvo. Confirme seu e-mail para revisar os dados e enviá-los à análise.",
         };
       }
 
-      await submitWithImmediateEmail(() =>
-        repository.finalizePreparedRegistration(identityResult.identityId),
-      );
-
       return {
-        destination: "/app/status/analysis",
+        destination:
+          input.role === "COMPANY"
+            ? "/onboarding/company"
+            : "/onboarding/influencer",
         kind: "redirect" as const,
       };
     },
@@ -179,12 +178,6 @@ export function createOnboardingRegistrationService(
         destination: "/app/status/analysis",
         kind: "redirect" as const,
       };
-    },
-
-    async finalizePreparedRegistration(identityId: string) {
-      return submitWithImmediateEmail(() =>
-        repository.finalizePreparedRegistration(identityId),
-      );
     },
   };
 }

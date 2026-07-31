@@ -10,6 +10,7 @@ export {
 export { loadCurrentOnboardingDraft } from "./server/queries/onboarding-draft.queries";
 export { loadCurrentInfluencerProfile } from "./server/queries/influencer-profile.queries";
 export { loadCurrentCompanyProfile } from "./server/queries/company-profile.queries";
+export { loadCurrentPreparedCompanyProfile } from "./server/queries/prepared-company-profile.queries";
 export { loadCurrentProfileCompletion } from "./server/queries/profile-completion.queries";
 export { loadCurrentCorrectionContext } from "./server/queries/corrected-profile-resubmission.queries";
 export { createServerCorrectedProfileResubmissionService } from "./server/services/server-corrected-profile-resubmission.service";
