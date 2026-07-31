@@ -60,6 +60,7 @@ browser and must not be used for ordinary product reads.
 | Table                         | Anonymous  | Owner                                                         | Approved influencer                   | Approved company                                    | Admin                       | Suspended         | Banned         |
 | ----------------------------- | ---------- | ------------------------------------------------------------- | ------------------------------------- | --------------------------------------------------- | --------------------------- | ----------------- | -------------- |
 | `accounts`                    | —          | `R-own`; status/role changes are server commands              | `R-approved` account skeletons        | `R-approved` creator account skeletons              | `R-all`, `W-all`            | `R-status` own    | `R-status` own |
+| `onboarding_drafts`           | —          | `R-own`; `W-own` in onboarding/corrections                    | —                                     | —                                                   | `R-all` for support         | —                 | —              |
 | `creator_profiles`            | —          | `R-own`; `W-own` in onboarding/corrections/approved           | `R-approved`, excluding self in DAL   | `R-approved`                                        | `R-all`, `W-all`            | —                 | —              |
 | `company_profiles`            | —          | Company `R-own`; `W-own` in onboarding/corrections/approved   | `R-approved` presentation rows        | — except own                                        | `R-all`, `W-all`            | —                 | —              |
 | `company_locations`           | —          | Company `R-own`; `W-own` in onboarding/corrections/approved   | —                                     | — except own                                        | `R-all`, `W-all`            | —                 | —              |
@@ -77,7 +78,14 @@ browser and must not be used for ordinary product reads.
 | `account_consents`            | —          | `R-own`; append only through consent/submission command       | —                                     | —                                                   | `R-all`; no edit            | —                 | —              |
 | `account_contact_preferences` | —          | Creator `R-own`; `W-own` through validated preference command | —                                     | Consent result only through creator contact DTO     | `R-all`, `W-all`            | —                 | —              |
 | `blocked_identities`          | —          | —                                                             | —                                     | —                                                   | `R-all`, `W-all`            | —                 | —              |
+| `identity_auth_effects`       | —          | —                                                             | —                                     | —                                                   | `R-all`; system writes      | —                 | —              |
 | `audit_revisions`             | —          | —                                                             | —                                     | —                                                   | `R-all`; immutable          | —                 | —              |
+| `rate_limit_buckets`          | —          | —                                                             | —                                     | —                                                   | —                           | —                 | —              |
+
+`rate_limit_buckets` is system-only and has no application-user read policy.
+Supabase-managed `auth.users` and `storage.objects` are governed by their own
+provider schema/policies and are covered by Auth/Storage integration tests,
+not by application-table grants.
 
 ## Row predicates by capability
 

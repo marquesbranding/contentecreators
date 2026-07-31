@@ -50,6 +50,8 @@ const editableCreatorContext: AppContext = {
   status: "CHANGES_REQUESTED",
 };
 const approvedCreatorProfileId = "d0000000-0000-4000-8000-000000000004";
+const contactHiddenCreatorAccountId = "b0000000-0000-4000-8000-000000000007";
+const contactHiddenCreatorProfileId = "d0000000-0000-4000-8000-000000000007";
 
 const nonApprovedContexts: AppContext[] = [
   {
@@ -181,6 +183,10 @@ describeLocalStack("business table row-level security", () => {
           id: approvedCreatorProfileId,
           account_id: approvedCreatorContext.accountId,
         },
+        {
+          id: contactHiddenCreatorProfileId,
+          account_id: contactHiddenCreatorAccountId,
+        },
       ]);
       expect(otherCompanies).toHaveLength(0);
     });
@@ -201,7 +207,10 @@ describeLocalStack("business table row-level security", () => {
         order by account_id
       `;
 
-      expect(creators.map(({ id }) => id)).toEqual([approvedCreatorProfileId]);
+      expect(creators.map(({ id }) => id)).toEqual([
+        approvedCreatorProfileId,
+        contactHiddenCreatorProfileId,
+      ]);
       expect(companies).toEqual([
         {
           account_id: approvedCompanyContext.accountId,

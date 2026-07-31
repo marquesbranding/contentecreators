@@ -304,23 +304,23 @@
 - [ ] 26.2 Write E2E for Google callback substitute → blocking company-role modal → successful CNPJ autofill → editable company onboarding → pending fallback. `[identity-access] [onboarding-profiles]`
 - [ ] 26.3 Write E2E for BrasilAPI timeout/unavailable → manual company completion → successful submission. `[onboarding-profiles]`
 - [ ] 26.4 Write E2E for admin queue → full review → changes request with reason → user correction/resubmission → approval → email outbox. `[moderation-lifecycle] [backoffice-operations]`
-- [ ] 26.5 Write E2E proving pending/changes-requested/suspended/banned direct catalog requests receive no listing/detail data. `[moderation-lifecycle] [private-catalog]`
-- [ ] 26.6 Write E2E for approved company search/filter/detail/contact and contact-consent denial. `[private-catalog]`
-- [ ] 26.7 Write E2E for approved influencer other-creator catalog, self-exclusion, company-logo carousel, and private-contact omission. `[private-catalog]`
+- [x] 26.5 Write E2E proving pending/changes-requested/suspended/banned direct catalog requests receive no listing/detail data. `[moderation-lifecycle] [private-catalog]`
+- [x] 26.6 Write E2E for approved company search/filter/detail/contact and contact-consent denial. `[private-catalog]`
+- [x] 26.7 Write E2E for approved influencer other-creator catalog, self-exclusion, company-logo carousel, and private-contact omission. `[private-catalog]`
 - [ ] 26.8 Write E2E for approved profile immediate edit, visible update, unchanged approval, and audit revision. `[onboarding-profiles] [audit-compliance]`
 - [ ] 26.9 Write E2E for suspend/restore and ban, immediate listing removal, session/access changes, known-identity recreation denial, and exceptional audited unban. `[moderation-lifecycle] [identity-access]`
 - [ ] 26.10 Write E2E for sponsorship create/schedule/reorder/render/expire and referenced-profile suppression without any payment flow. `[sponsorship-placements]`
 - [ ] 26.11 Write E2E for multi-admin access, revoked-admin denial, account archive, audit filters, dashboard metrics, and failed-email retry. `[backoffice-operations]`
-- [ ] 26.12 Write E2E/data inspection proving no public route/metadata/creative exposes participant listing data while social proof is disabled. `[marketing-site]`
+- [x] 26.12 Write E2E/data inspection proving no public route/metadata/creative exposes participant listing data while social proof is disabled. `[marketing-site]`
 
 ## 27. Operational documentation and production readiness
 
-- [ ] 27.1 Rewrite the project README with architecture, commands, TDD workflow, local services, environment matrix, migrations, and troubleshooting. `[platform-delivery]`
-- [ ] 27.2 Add a data dictionary/state-machine/RLS matrix covering every table, role, status, sensitive field, and audit policy. `[identity-access] [audit-compliance]`
-- [ ] 27.3 Add backoffice operating guide for moderation, correction wording, approval, suspension, ban/unban, archive, sponsorships, email retry, and audit review. `[backoffice-operations]`
+- [x] 27.1 Rewrite the project README with architecture, commands, TDD workflow, local services, environment matrix, migrations, and troubleshooting. `[platform-delivery]`
+- [x] 27.2 Add a data dictionary/state-machine/RLS matrix covering every table, role, status, sensitive field, and audit policy. `[identity-access] [audit-compliance]`
+- [x] 27.3 Add backoffice operating guide for moderation, correction wording, approval, suspension, ban/unban, archive, sponsorships, email retry, and audit review. `[backoffice-operations]`
 - [x] 27.4 Add an environment provisioning checklist for client-owned Supabase/Vercel/Google/SMTP/DNS accounts and exact dev/prd names. `[platform-delivery]`
-- [ ] 27.5 Add backup/export/restore verification and free-tier capacity/upgrade trigger runbooks without claiming unavailable guarantees. `[platform-delivery]`
-- [ ] 27.6 Add incident response for auth compromise, privacy exposure, wrong moderation, SMTP outage, provider outage, blocked migration, and Storage leak. `[platform-delivery]`
+- [x] 27.5 Add backup/export/restore verification and free-tier capacity/upgrade trigger runbooks without claiming unavailable guarantees. `[platform-delivery]`
+- [x] 27.6 Add incident response for auth compromise, privacy exposure, wrong moderation, SMTP outage, provider outage, blocked migration, and Storage leak. `[platform-delivery]`
 - [ ] 27.7 Obtain/record final brand assets, marketing copy, niche/employee-range seeds, initial admins, sponsorship creatives, domain, legal documents, support contact, consent wording, and audit retention from the client. `[marketing-site] [audit-compliance]`
 - [ ] 27.8 Verify Google consent-screen branding, production callback/domain, SMTP sender identity, SPF/DKIM/DMARC, rate limits, and deliverability. `[identity-access] [transactional-communications]`
 - [ ] 27.9 Execute development UAT across both roles and backoffice, record defects against spec scenarios, and close release blockers. `[platform-delivery]`
@@ -328,9 +328,9 @@
 
 ## 28. Explicit Beta scope guard
 
-- [ ] 28.1 Review schema, UI, routes, dependencies, and copy to confirm no payments, commissions, split, escrow, pricing ledger, checkout, or invoicing were introduced. `[sponsorship-placements]`
-- [ ] 28.2 Confirm no internal chat/messages, proposals/campaigns, content delivery, digital contracts, agency accounts, ratings/reputation, or native app work was introduced. `[platform-delivery]`
-- [ ] 28.3 Confirm CNPJ lookup is labeled form assistance and no automatic antifraud/verification assertion or automated approval exists. `[onboarding-profiles] [moderation-lifecycle]`
-- [ ] 28.4 Confirm the removed DOCX five-star default and Instagram login do not exist in schema, UI, copy, tests, or seeds. `[identity-access] [platform-delivery]`
-- [ ] 28.5 Confirm public creator/company profile and logo listings remain absent and protected by tests/configuration. `[marketing-site]`
-- [ ] 28.6 Confirm slice folder responsibilities and dependency directions are respected: no empty speculative folders, catch-all `service/types/helpers` files, mixed runtime barrels, feature-business Context proliferation, TanStack Query data mirrored into Zustand, RSC store access, or duplicate Server Action/Route Handler command transports. `[platform-delivery]`
+- [x] 28.1 Review schema, UI, routes, dependencies, and copy to confirm no payments, commissions, split, escrow, pricing ledger, checkout, or invoicing were introduced. `[sponsorship-placements]`
+- [x] 28.2 Confirm no internal chat/messages, proposals/campaigns, content delivery, digital contracts, agency accounts, ratings/reputation, or native app work was introduced. `[platform-delivery]`
+- [x] 28.3 Confirm CNPJ lookup is labeled form assistance and no automatic antifraud/verification assertion or automated approval exists. `[onboarding-profiles] [moderation-lifecycle]`
+- [x] 28.4 Confirm the removed DOCX five-star default and Instagram login do not exist in schema, UI, copy, tests, or seeds. `[identity-access] [platform-delivery]`
+- [x] 28.5 Confirm public creator/company profile and logo listings remain absent and protected by tests/configuration. `[marketing-site]`
+- [x] 28.6 Confirm slice folder responsibilities and dependency directions are respected: no empty speculative folders, catch-all `service/types/helpers` files, mixed runtime barrels, feature-business Context proliferation, TanStack Query data mirrored into Zustand, RSC store access, or duplicate Server Action/Route Handler command transports. `[platform-delivery]`

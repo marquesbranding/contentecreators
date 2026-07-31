@@ -1,5 +1,5 @@
+import { asc, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
-import { sql } from "drizzle-orm";
 import postgres from "postgres";
 import { afterAll, describe, expect, it, vi } from "vitest";
 
@@ -15,6 +15,7 @@ const describeLocalStack = localStackEnabled ? describe : describe.skip;
 const databaseUrl = "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
 const approvedCreatorAuthUserId = "20000000-0000-4000-8000-000000000004";
 const approvedCreatorAccountId = "b0000000-0000-4000-8000-000000000004";
+const contactHiddenCreatorAccountId = "b0000000-0000-4000-8000-000000000007";
 const sqlClient = postgres(databaseUrl, {
   connect_timeout: 5,
   idle_timeout: 1,
@@ -84,7 +85,8 @@ describeLocalStack("verified account transaction", () => {
         );
         const visibleProfiles = await transaction
           .select({ accountId: schema.creatorProfiles.accountId })
-          .from(schema.creatorProfiles);
+          .from(schema.creatorProfiles)
+          .orderBy(asc(schema.creatorProfiles.accountId));
 
         return {
           accountContext,
@@ -112,6 +114,9 @@ describeLocalStack("verified account transaction", () => {
     expect(result.visibleProfiles).toEqual([
       {
         accountId: approvedCreatorAccountId,
+      },
+      {
+        accountId: contactHiddenCreatorAccountId,
       },
     ]);
 

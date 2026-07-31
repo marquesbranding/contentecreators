@@ -47,10 +47,12 @@
     "mail:stop": "docker compose -f compose.local.yml down",
     "mail:status": "docker compose -f compose.local.yml ps",
     "local:admins": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/sync-local-admins.ts",
-    "local:start": "npm run mail:start && npm run db:start && npm run local:admins",
+    "local:env": "node --import tsx scripts/sync-local-env.ts",
+    "local:storage": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/seed-local-storage.ts",
+    "local:start": "npm run mail:start && npm run db:start && npm run local:env && npm run local:storage && npm run local:admins",
     "local:stop": "npm run db:stop && npm run mail:stop",
     "local:status": "npm run db:status && npm run mail:status",
-    "local:reset": "npm run db:reset && npm run local:admins",
+    "local:reset": "npm run db:reset && npm run local:env && npm run local:storage && npm run local:admins",
     "ci": "npm run format:check && npm run lint && npm run type-check && npm run test && npm run build"
   },
   "dependencies": {

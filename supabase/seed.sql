@@ -52,6 +52,7 @@ from (
     ('20000000-0000-4000-8000-000000000004'::uuid, 'creator-approved@contentecreators.test', 'Criador Aprovado'),
     ('20000000-0000-4000-8000-000000000005'::uuid, 'creator-suspended@contentecreators.test', 'Criadora Suspensa'),
     ('20000000-0000-4000-8000-000000000006'::uuid, 'ugc-banned@contentecreators.test', 'UGC Banido'),
+    ('20000000-0000-4000-8000-000000000007'::uuid, 'creator-approved-private@contentecreators.test', 'Creator Aprovada sem contato'),
     ('30000000-0000-4000-8000-000000000001'::uuid, 'company-onboarding@contentecreators.test', 'Empresa Onboarding'),
     ('30000000-0000-4000-8000-000000000002'::uuid, 'company-pending@contentecreators.test', 'Empresa Pendente'),
     ('30000000-0000-4000-8000-000000000003'::uuid, 'company-changes@contentecreators.test', 'Empresa Correções'),
@@ -106,6 +107,7 @@ values
   ('b0000000-0000-4000-8000-000000000004', '20000000-0000-4000-8000-000000000004', 'INFLUENCER', 'APPROVED', 'creator-approved@contentecreators.test', now() - interval '20 days', now() - interval '19 days', null, null, 100),
   ('b0000000-0000-4000-8000-000000000005', '20000000-0000-4000-8000-000000000005', 'INFLUENCER', 'SUSPENDED', 'creator-suspended@contentecreators.test', now() - interval '30 days', now() - interval '29 days', now() - interval '1 day', null, 95),
   ('b0000000-0000-4000-8000-000000000006', '20000000-0000-4000-8000-000000000006', 'INFLUENCER', 'BANNED', 'ugc-banned@contentecreators.test', now() - interval '12 days', null, null, now() - interval '10 days', 85),
+  ('b0000000-0000-4000-8000-000000000007', '20000000-0000-4000-8000-000000000007', 'INFLUENCER', 'APPROVED', 'creator-approved-private@contentecreators.test', now() - interval '18 days', now() - interval '17 days', null, null, 100),
   ('c0000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000001', 'COMPANY', 'ONBOARDING', 'company-onboarding@contentecreators.test', null, null, null, null, 25),
   ('c0000000-0000-4000-8000-000000000002', '30000000-0000-4000-8000-000000000002', 'COMPANY', 'PENDING_REVIEW', 'company-pending@contentecreators.test', now() - interval '3 days', null, null, null, 80),
   ('c0000000-0000-4000-8000-000000000003', '30000000-0000-4000-8000-000000000003', 'COMPANY', 'CHANGES_REQUESTED', 'company-changes@contentecreators.test', now() - interval '7 days', null, null, null, 70),
@@ -142,7 +144,8 @@ join (
     ('b0000000-0000-4000-8000-000000000003'::uuid, 'Carla Exemplo', 'Carla em Cena', 'Perfil sintético com correções solicitadas.', 'INFLUENCER', 'Curitiba', 'PR'),
     ('b0000000-0000-4000-8000-000000000004'::uuid, 'Diego Exemplo', 'Diego Aprova', 'Perfil sintético aprovado para testes do catálogo.', 'INFLUENCER', 'Rio de Janeiro', 'RJ'),
     ('b0000000-0000-4000-8000-000000000005'::uuid, 'Elisa Exemplo', 'Elisa Pausada', 'Perfil sintético suspenso.', 'INFLUENCER', 'Belo Horizonte', 'MG'),
-    ('b0000000-0000-4000-8000-000000000006'::uuid, 'Fábio Exemplo', 'Fábio UGC', 'Perfil UGC sintético e bloqueado.', 'UGC', 'Salvador', 'BA')
+    ('b0000000-0000-4000-8000-000000000006'::uuid, 'Fábio Exemplo', 'Fábio UGC', 'Perfil UGC sintético e bloqueado.', 'UGC', 'Salvador', 'BA'),
+    ('b0000000-0000-4000-8000-000000000007'::uuid, 'Gabriela Exemplo', 'Gabi Conecta', 'Perfil sintético aprovado sem compartilhamento de contato.', 'UGC', 'Florianópolis', 'SC')
 ) as fixture(account_id, legal_name, display_name, bio, creator_type, city, state)
   on fixture.account_id = account.id;
 
@@ -249,6 +252,35 @@ select
   0
 from public.accounts account
 where account.role = 'INFLUENCER';
+
+insert into public.media_assets (
+  id,
+  owner_account_id,
+  bucket_name,
+  object_path,
+  kind,
+  mime_type,
+  size_bytes,
+  width,
+  height,
+  status
+)
+values (
+  '72000000-0000-4000-8000-000000000004',
+  'c0000000-0000-4000-8000-000000000004',
+  'profile-media',
+  'c0000000-0000-4000-8000-000000000004/logo/72000000-0000-4000-8000-000000000004.png',
+  'LOGO',
+  'image/png',
+  1024,
+  256,
+  256,
+  'ACTIVE'
+);
+
+update public.company_profiles
+set logo_asset_id = '72000000-0000-4000-8000-000000000004'
+where account_id = 'c0000000-0000-4000-8000-000000000004';
 
 insert into public.creator_metric_snapshots (
   id,
@@ -387,11 +419,15 @@ select
   gen_random_uuid(),
   account.id,
   'f5000000-0000-4000-8000-000000000003',
-  account.status = 'APPROVED',
-  account.status = 'APPROVED',
   account.status = 'APPROVED'
+    and account.id <> 'b0000000-0000-4000-8000-000000000007',
+  account.status = 'APPROVED'
+    and account.id <> 'b0000000-0000-4000-8000-000000000007',
+  account.status = 'APPROVED'
+    and account.id <> 'b0000000-0000-4000-8000-000000000007'
 from public.accounts account
-where account.role = 'INFLUENCER';
+where account.role = 'INFLUENCER'
+  and account.id <> 'b0000000-0000-4000-8000-000000000007';
 
 insert into public.blocked_identities (
   id,

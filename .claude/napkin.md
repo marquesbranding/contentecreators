@@ -84,3 +84,6 @@
 
 4. **[2026-07-28] Avoid the Apple Git shim while the Xcode license is pending**
    Do instead: use the bundled fallback Git at `/Users/feanorzin/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback/git`; `/usr/bin/git` currently exits before repository operations with the Xcode license prompt.
+
+5. **[2026-07-30] Remove generated Playwright reports before repository-wide lint**
+   Do instead: delete the ignored `playwright-report` and `test-results` artifacts after local E2E runs; the current ESLint traversal still inspects generated report bundles and can report false repository failures.

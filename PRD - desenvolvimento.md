@@ -429,25 +429,25 @@ O produto deve permitir que:
 - [ ] `26.2` Testar callback Google → modal de empresa → CNPJ → onboarding editável → análise pendente.
 - [ ] `26.3` Testar timeout da BrasilAPI → preenchimento manual → submissão bem-sucedida.
 - [ ] `26.4` Testar fila admin → revisão → solicitação de correção → ajuste/reenvio → aprovação → outbox.
-- [ ] `26.5` Provar que pendente, correção, suspenso e banido não recebem listagem/detalhe em chamadas diretas.
-- [ ] `26.6` Testar empresa aprovada pesquisando, filtrando, abrindo detalhe/contato e respeitando negativa de consentimento.
-- [ ] `26.7` Testar influencer aprovado vendo outros criadores, excluindo a si, vendo carrossel de empresas e sem contatos privados.
+- [x] `26.5` Provar que pendente, correção, suspenso e banido não recebem listagem/detalhe em chamadas diretas.
+- [x] `26.6` Testar empresa aprovada pesquisando, filtrando, abrindo detalhe/contato e respeitando negativa de consentimento.
+- [x] `26.7` Testar influencer aprovado vendo outros criadores, excluindo a si, vendo carrossel de empresas e sem contatos privados.
 - [ ] `26.8` Testar edição imediata de perfil aprovado, atualização visível, status preservado e revisão auditada.
 - [ ] `26.9` Testar suspensão/restauração e banimento, remoção imediata, sessão, recriação conhecida negada e desbanimento auditado.
 - [ ] `26.10` Testar criação, agenda, ordem, renderização, expiração e supressão de patrocínio sem pagamento.
 - [ ] `26.11` Testar múltiplos admins, admin revogado, arquivamento, filtros de auditoria, métricas e retry de e-mail.
-- [ ] `26.12` Provar por E2E/inspeção que nenhuma rota, metadata ou criativo público expõe participantes com social proof desativado.
+- [x] `26.12` Provar por E2E/inspeção que nenhuma rota, metadata ou criativo público expõe participantes com social proof desativado.
 
 ### HU-27 — Operação e prontidão de produção
 
 > Como equipe responsável pelo lançamento, quero documentação, entradas do cliente, runbooks e validações de produção para operar e recuperar o MVP com segurança.
 
-- [ ] `27.1` Reescrever README com arquitetura, comandos, TDD, serviços locais, ambientes, migrações e troubleshooting.
-- [ ] `27.2` Criar dicionário de dados, máquina de estados e matriz RLS para tabelas, papéis, status, campos sensíveis e auditoria.
-- [ ] `27.3` Criar guia do backoffice para correção, aprovação, suspensão, banimento/desbanimento, arquivamento, patrocínio, e-mail e auditoria.
+- [x] `27.1` Reescrever README com arquitetura, comandos, TDD, serviços locais, ambientes, migrações e troubleshooting.
+- [x] `27.2` Criar dicionário de dados, máquina de estados e matriz RLS para tabelas, papéis, status, campos sensíveis e auditoria.
+- [x] `27.3` Criar guia do backoffice para correção, aprovação, suspensão, banimento/desbanimento, arquivamento, patrocínio, e-mail e auditoria.
 - [x] `27.4` Criar checklist de provisionamento das contas do cliente em Supabase, Vercel, Google, SMTP e DNS.
-- [ ] `27.5` Criar runbooks de exportação, backup/restore e gatilhos de upgrade dos planos gratuitos, sem prometer garantias inexistentes.
-- [ ] `27.6` Criar resposta a incidentes de Auth, privacidade, moderação incorreta, SMTP, provedor, migração e Storage.
+- [x] `27.5` Criar runbooks de exportação, backup/restore e gatilhos de upgrade dos planos gratuitos, sem prometer garantias inexistentes.
+- [x] `27.6` Criar resposta a incidentes de Auth, privacidade, moderação incorreta, SMTP, provedor, migração e Storage.
 - [ ] `27.7` Obter e registrar ativos finais de marca, copy, nichos/faixas, admins, criativos, domínio, documentos legais, suporte, consentimento e retenção.
 - [ ] `27.8` Verificar tela de consentimento Google, callback/domínio de produção, identidade SMTP, SPF/DKIM/DMARC, limites e entrega.
 - [ ] `27.9` Executar UAT em desenvolvimento para os dois papéis e backoffice, registrar defeitos e fechar bloqueadores.
@@ -457,12 +457,12 @@ O produto deve permitir que:
 
 > Como responsável pelo produto, quero impedir a entrada silenciosa de funcionalidades fora do Beta para manter custo, prazo e complexidade sob controle.
 
-- [ ] `28.1` Confirmar ausência de pagamentos, comissões, split, escrow, ledger de preço, checkout e faturamento.
-- [ ] `28.2` Confirmar ausência de chat, mensagens, propostas/campanhas, entrega de conteúdo, contrato digital, agência, avaliações e app nativo.
-- [ ] `28.3` Confirmar que CNPJ é apenas assistência de formulário, sem antifraude, verificação ou aprovação automática.
-- [ ] `28.4` Confirmar ausência da avaliação padrão de cinco estrelas do DOCX e de login pelo Instagram.
-- [ ] `28.5` Confirmar ausência de listagens públicas de perfis/logos e manter testes/configuração de proteção.
-- [ ] `28.6` Confirmar arquitetura por slices sem pastas especulativas, arquivos genéricos catch-all, barrels mistos, Context de negócio, dados Query no Zustand, store em RSC ou transportes duplicados.
+- [x] `28.1` Confirmar ausência de pagamentos, comissões, split, escrow, ledger de preço, checkout e faturamento.
+- [x] `28.2` Confirmar ausência de chat, mensagens, propostas/campanhas, entrega de conteúdo, contrato digital, agência, avaliações e app nativo.
+- [x] `28.3` Confirmar que CNPJ é apenas assistência de formulário, sem antifraude, verificação ou aprovação automática.
+- [x] `28.4` Confirmar ausência da avaliação padrão de cinco estrelas do DOCX e de login pelo Instagram.
+- [x] `28.5` Confirmar ausência de listagens públicas de perfis/logos e manter testes/configuração de proteção.
+- [x] `28.6` Confirmar arquitetura por slices sem pastas especulativas, arquivos genéricos catch-all, barrels mistos, Context de negócio, dados Query no Zustand, store em RSC ou transportes duplicados.
 
 ## 5. Fora do escopo do MVP
 
