@@ -62,8 +62,9 @@ granted `ADMIN`.
 The Supabase Auth identity receives private application metadata after the
 one-time password setup. Later deploys verify that marker and never reset the
 administrator's password. Repeating the bootstrap remains idempotent for both
-Auth and the application account. A conflicting influencer, company, archived,
-suspended, or banned account stops the deployment.
+Auth and the application account. Because the set is explicitly approved and
+closed in source, an existing active influencer or company account is promoted
+to `ADMIN`. Archived, suspended, or banned accounts still stop the deployment.
 
 The password value must never be committed, passed as a command-line argument,
 or printed in build logs. Administrators should change the initial password

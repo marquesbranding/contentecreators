@@ -24,6 +24,7 @@ const targetIdentity = {
   email: "admin-second@contentecreators.test",
   id: "21000000-0000-4000-8000-000000000009",
 };
+const targetAccountId = "b1000000-0000-4000-8000-000000000009";
 const rollback = new Error("rollback admin provisioning repository");
 
 describeLocalStack("Drizzle admin provisioning repository", () => {
@@ -236,6 +237,24 @@ describeLocalStack("Drizzle admin provisioning repository", () => {
             ''
           )
         `);
+        await applyVerifiedAuditContext(transaction, {
+          actorAccountId: null,
+          actorRole: null,
+          actorType: "SYSTEM",
+          reason: "Synthetic production admin promotion setup",
+          requestId: "admin-production-setup",
+          source: "SCRIPT",
+        });
+        await transaction.insert(accounts).values({
+          approvedAt: new Date(),
+          authUserId: targetIdentity.id,
+          completionPercentage: 100,
+          id: targetAccountId,
+          operationalEmail: targetIdentity.email,
+          role: "INFLUENCER",
+          status: "APPROVED",
+          submittedAt: new Date(),
+        });
         const repository = createDrizzleAdminProvisioningRepository({
           database: transaction,
           runBootstrapTransaction: async (context, work) => {
@@ -300,7 +319,7 @@ describeLocalStack("Drizzle admin provisioning repository", () => {
       auditRows: [
         {
           actorType: "SYSTEM",
-          operation: "INSERT",
+          operation: "UPDATE",
           reason:
             "Approved production administrator bootstrap: CLIENTE-ADMIN-PRODUCTION-2026-07-31",
           source: "SCRIPT",

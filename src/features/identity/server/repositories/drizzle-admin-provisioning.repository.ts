@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, notInArray, sql } from "drizzle-orm";
 
 import {
   getDatabaseClient,
@@ -136,7 +136,7 @@ export function createDrizzleAdminProvisioningRepository(
 
           if (
             targetAccount &&
-            (targetAccount.role !== null ||
+            ((!input.allowExistingAdmins && targetAccount.role !== null) ||
               targetAccount.archivedAt !== null ||
               targetAccount.status === "SUSPENDED" ||
               targetAccount.status === "BANNED")
@@ -161,7 +161,16 @@ export function createDrizzleAdminProvisioningRepository(
                 suspendedAt: null,
               })
               .where(
-                and(eq(accounts.id, targetAccount.id), isNull(accounts.role)),
+                input.allowExistingAdmins
+                  ? and(
+                      eq(accounts.id, targetAccount.id),
+                      isNull(accounts.archivedAt),
+                      notInArray(accounts.status, ["SUSPENDED", "BANNED"]),
+                    )
+                  : and(
+                      eq(accounts.id, targetAccount.id),
+                      isNull(accounts.role),
+                    ),
               )
               .returning({ id: accounts.id });
 
