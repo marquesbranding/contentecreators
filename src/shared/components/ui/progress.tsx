@@ -74,10 +74,23 @@ function ProgressValue({ className, ...props }: ProgressPrimitive.Value.Props) {
   );
 }
 
+function ProgressPercentageValue({
+  className,
+  value,
+}: {
+  className?: string;
+  value: number;
+}) {
+  return (
+    <ProgressValue className={className}>{() => `${value}%`}</ProgressValue>
+  );
+}
+
 export {
   Progress,
   ProgressTrack,
   ProgressIndicator,
   ProgressLabel,
+  ProgressPercentageValue,
   ProgressValue,
 };

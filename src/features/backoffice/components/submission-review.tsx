@@ -25,7 +25,7 @@ import {
 import {
   Progress,
   ProgressLabel,
-  ProgressValue,
+  ProgressPercentageValue,
 } from "@/shared/components/ui/progress";
 import {
   formatCnpj,
@@ -514,9 +514,9 @@ export function SubmissionReview({
           value={review.account.completion.percentage}
         >
           <ProgressLabel>Completude</ProgressLabel>
-          <ProgressValue>
-            {() => `${review.account.completion.percentage}%`}
-          </ProgressValue>
+          <ProgressPercentageValue
+            value={review.account.completion.percentage}
+          />
         </Progress>
       </div>
 

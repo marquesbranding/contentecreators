@@ -124,9 +124,12 @@ function TextField({
   id,
   inputMode,
   label,
+  max,
+  min,
   name,
   placeholder,
   required = true,
+  step,
   type = "text",
   value,
   onChange,
@@ -137,9 +140,12 @@ function TextField({
   id: string;
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   label: string;
+  max?: number | string;
+  min?: number | string;
   name: string;
   placeholder?: string;
   required?: boolean;
+  step?: number | string;
   type?: React.HTMLInputTypeAttribute;
   value?: string;
   onChange?: React.ChangeEventHandler<HTMLInputElement>;
@@ -158,9 +164,12 @@ function TextField({
         className="h-12 rounded-xl"
         id={id}
         inputMode={inputMode}
+        max={max}
+        min={min}
         name={name}
         placeholder={placeholder}
         required={required}
+        step={step}
         type={type}
         onChange={onChange}
         {...(value === undefined ? { defaultValue } : { value })}
@@ -539,8 +548,11 @@ export function ProfileFormFields({
                 id="creator-engagement"
                 inputMode="decimal"
                 label="Taxa de engajamento (%)"
+                max={100}
+                min={0}
                 name="engagementRate"
                 placeholder="Ex.: 4,25"
+                step="0.01"
                 type="number"
               />
             </>

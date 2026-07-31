@@ -162,7 +162,7 @@ describe("ProfileFormFields company CNPJ experience", () => {
     render(<ProfileFormFields role="COMPANY" />);
 
     await user.click(screen.getByLabelText("Segmento"));
-    await user.click(screen.getByRole("option", { name: "Outros" }));
+    await user.click(await screen.findByRole("option", { name: "Outros" }));
 
     const otherSegment = screen.getByLabelText("Qual é o segmento?");
     expect(otherSegment).toBeRequired();

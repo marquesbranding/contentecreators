@@ -300,17 +300,17 @@
 
 ## 26. End-to-end acceptance journeys
 
-- [ ] 26.1 Write E2E for public landing → influencer intent → one combined email/creator registration request → confirmation → pending analysis fallback, with no second role-selection step. `[marketing-site] [identity-access] [onboarding-profiles]`
-- [ ] 26.2 Write E2E for Google callback substitute → blocking company-role modal → successful CNPJ autofill → editable company onboarding → pending fallback. `[identity-access] [onboarding-profiles]`
-- [ ] 26.3 Write E2E for BrasilAPI timeout/unavailable → manual company completion → successful submission. `[onboarding-profiles]`
-- [ ] 26.4 Write E2E for admin queue → full review → changes request with reason → user correction/resubmission → approval → email outbox. `[moderation-lifecycle] [backoffice-operations]`
+- [x] 26.1 Write E2E for public landing → influencer intent → one combined email/creator registration request → confirmation → pending analysis fallback, with no second role-selection step. `[marketing-site] [identity-access] [onboarding-profiles]`
+- [x] 26.2 Write E2E for Google callback substitute → blocking company-role modal → successful CNPJ autofill → editable company onboarding → pending fallback. `[identity-access] [onboarding-profiles]`
+- [x] 26.3 Write E2E for BrasilAPI timeout/unavailable → manual company completion → successful submission. `[onboarding-profiles]`
+- [x] 26.4 Write E2E for admin queue → full review → changes request with reason → user correction/resubmission → approval → email outbox. `[moderation-lifecycle] [backoffice-operations]`
 - [x] 26.5 Write E2E proving pending/changes-requested/suspended/banned direct catalog requests receive no listing/detail data. `[moderation-lifecycle] [private-catalog]`
 - [x] 26.6 Write E2E for approved company search/filter/detail/contact and contact-consent denial. `[private-catalog]`
 - [x] 26.7 Write E2E for approved influencer other-creator catalog, self-exclusion, company-logo carousel, and private-contact omission. `[private-catalog]`
-- [ ] 26.8 Write E2E for approved profile immediate edit, visible update, unchanged approval, and audit revision. `[onboarding-profiles] [audit-compliance]`
-- [ ] 26.9 Write E2E for suspend/restore and ban, immediate listing removal, session/access changes, known-identity recreation denial, and exceptional audited unban. `[moderation-lifecycle] [identity-access]`
-- [ ] 26.10 Write E2E for sponsorship create/schedule/reorder/render/expire and referenced-profile suppression without any payment flow. `[sponsorship-placements]`
-- [ ] 26.11 Write E2E for multi-admin access, revoked-admin denial, account archive, audit filters, dashboard metrics, and failed-email retry. `[backoffice-operations]`
+- [x] 26.8 Write E2E for approved profile immediate edit, visible update, unchanged approval, and audit revision. `[onboarding-profiles] [audit-compliance]`
+- [x] 26.9 Write E2E for suspend/restore and ban, immediate listing removal, session/access changes, known-identity recreation denial, and exceptional audited unban. `[moderation-lifecycle] [identity-access]`
+- [x] 26.10 Write E2E for sponsorship create/schedule/reorder/render/expire and referenced-profile suppression without any payment flow. `[sponsorship-placements]`
+- [x] 26.11 Write E2E for multi-admin access, revoked-admin denial, account archive, audit filters, dashboard metrics, and failed-email retry. `[backoffice-operations]`
 - [x] 26.12 Write E2E/data inspection proving no public route/metadata/creative exposes participant listing data while social proof is disabled. `[marketing-site]`
 
 ## 27. Operational documentation and production readiness

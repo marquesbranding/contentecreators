@@ -26,7 +26,7 @@ import {
 import {
   Progress,
   ProgressLabel,
-  ProgressValue,
+  ProgressPercentageValue,
 } from "@/shared/components/ui/progress";
 import {
   formatCnpj,
@@ -627,9 +627,9 @@ export function AccountDetail({
             value={detail.account.completion.percentage}
           >
             <ProgressLabel>Completude do perfil</ProgressLabel>
-            <ProgressValue>
-              {() => `${detail.account.completion.percentage}%`}
-            </ProgressValue>
+            <ProgressPercentageValue
+              value={detail.account.completion.percentage}
+            />
           </Progress>
         </CardContent>
       </Card>

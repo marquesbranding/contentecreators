@@ -1,9 +1,9 @@
 # PRD — Desenvolvimento do MVP Contente Creators
 
 **Status:** em desenvolvimento
-**Data-base do acompanhamento:** 28/07/2026
+**Data-base do acompanhamento:** 30/07/2026
 **OpenSpec relacionado:** `mvp-contente-creators`
-**Progresso atual:** 238 de 253 entregas concluídas (94,1%); 15 entregas pendentes.
+**Progresso atual:** 246 de 253 entregas concluídas (97,2%); 7 entregas pendentes.
 
 ## 1. Objetivo do produto
 
@@ -426,17 +426,17 @@ O produto deve permitir que:
 
 > Como responsável pelo aceite do MVP, quero validar os fluxos completos e suas negativas de segurança para garantir que as histórias funcionem juntas antes do lançamento.
 
-- [ ] `26.1` Testar landing → intenção influencer → cadastro único → confirmação → análise pendente, sem segunda escolha de papel.
-- [ ] `26.2` Testar callback Google → modal de empresa → CNPJ → onboarding editável → análise pendente.
-- [ ] `26.3` Testar timeout da BrasilAPI → preenchimento manual → submissão bem-sucedida.
-- [ ] `26.4` Testar fila admin → revisão → solicitação de correção → ajuste/reenvio → aprovação → outbox.
+- [x] `26.1` Testar landing → intenção influencer → cadastro único → confirmação → análise pendente, sem segunda escolha de papel.
+- [x] `26.2` Testar callback Google → modal de empresa → CNPJ → onboarding editável → análise pendente.
+- [x] `26.3` Testar timeout da BrasilAPI → preenchimento manual → submissão bem-sucedida.
+- [x] `26.4` Testar fila admin → revisão → solicitação de correção → ajuste/reenvio → aprovação → outbox.
 - [x] `26.5` Provar que pendente, correção, suspenso e banido não recebem listagem/detalhe em chamadas diretas.
 - [x] `26.6` Testar empresa aprovada pesquisando, filtrando, abrindo detalhe/contato e respeitando negativa de consentimento.
 - [x] `26.7` Testar influencer aprovado vendo outros criadores, excluindo a si, vendo carrossel de empresas e sem contatos privados.
-- [ ] `26.8` Testar edição imediata de perfil aprovado, atualização visível, status preservado e revisão auditada.
-- [ ] `26.9` Testar suspensão/restauração e banimento, remoção imediata, sessão, recriação conhecida negada e desbanimento auditado.
-- [ ] `26.10` Testar criação, agenda, ordem, renderização, expiração e supressão de patrocínio sem pagamento.
-- [ ] `26.11` Testar múltiplos admins, admin revogado, arquivamento, filtros de auditoria, métricas e retry de e-mail.
+- [x] `26.8` Testar edição imediata de perfil aprovado, atualização visível, status preservado e revisão auditada.
+- [x] `26.9` Testar suspensão/restauração e banimento, remoção imediata, sessão, recriação conhecida negada e desbanimento auditado.
+- [x] `26.10` Testar criação, agenda, ordem, renderização, expiração e supressão de patrocínio sem pagamento.
+- [x] `26.11` Testar múltiplos admins, admin revogado, arquivamento, filtros de auditoria, métricas e retry de e-mail.
 - [x] `26.12` Provar por E2E/inspeção que nenhuma rota, metadata ou criativo público expõe participantes com social proof desativado.
 
 ### HU-27 — Operação e prontidão de produção
