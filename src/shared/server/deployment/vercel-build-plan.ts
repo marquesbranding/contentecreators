@@ -2,10 +2,20 @@ import { resolveServerEnvAliases } from "@/shared/lib/env/server-env-schema";
 
 import { assertDatabaseConnectionTargets } from "./hosted-deployment-target";
 
-export const PRODUCTION_INITIAL_ADMIN = {
-  approvalReference: "CLIENTE-ADMIN-THOMAS-2026-07-30",
-  email: "thomas@marquesbranding.com",
-} as const;
+export const PRODUCTION_INITIAL_ADMINS = [
+  {
+    approvalReference: "CLIENTE-ADMIN-THOMAS-2026-07-30",
+    email: "thomas@marquesbranding.com",
+  },
+  {
+    approvalReference: "CLIENTE-ADMIN-IGOR-2026-07-31",
+    email: "coronaigor@gmail.com",
+  },
+  {
+    approvalReference: "CLIENTE-ADMIN-WILLIAN-2026-07-31",
+    email: "willian.willalex@gmail.com",
+  },
+] as const;
 
 export type VercelBuildPlan =
   | {
@@ -14,7 +24,7 @@ export type VercelBuildPlan =
   | {
       databaseUrl: string;
       directUrl: string;
-      initialAdmin: typeof PRODUCTION_INITIAL_ADMIN;
+      initialAdmins: typeof PRODUCTION_INITIAL_ADMINS;
       mode: "PRODUCTION_DEPLOY";
       projectRef: string;
       supabaseUrl: string;
@@ -32,6 +42,21 @@ function requiredValue(
   }
 
   return value;
+}
+
+function requireProductionAdminPassword(
+  environment: Record<string, unknown>,
+): void {
+  const password = requiredValue(
+    environment,
+    "PRODUCTION_ADMIN_INITIAL_PASSWORD",
+  );
+
+  if (password.length < 12 || password.length > 128) {
+    throw new Error(
+      "Invalid Vercel production configuration: PRODUCTION_ADMIN_INITIAL_PASSWORD",
+    );
+  }
 }
 
 function productionSupabaseTarget(environment: Record<string, unknown>): {
@@ -104,12 +129,13 @@ export function createVercelBuildPlan(
   const directUrl = requiredValue(environment, "DIRECT_URL");
   const target = productionSupabaseTarget(environment);
 
+  requireProductionAdminPassword(environment);
   assertDatabaseConnectionTargets(target.projectRef, databaseUrl, directUrl);
 
   return {
     databaseUrl,
     directUrl,
-    initialAdmin: PRODUCTION_INITIAL_ADMIN,
+    initialAdmins: PRODUCTION_INITIAL_ADMINS,
     mode: "PRODUCTION_DEPLOY",
     projectRef: target.projectRef,
     supabaseUrl: target.supabaseUrl,

@@ -44,13 +44,30 @@ The service-role credential and direct connection string remain server-only.
 Never paste command output containing local environment values into public
 channels.
 
-The production deployment workflow runs the same idempotent bootstrap after
-the committed migrations and before promotion. The approved initial identity
-is `thomas@marquesbranding.com`, with audit reference
-`CLIENTE-ADMIN-THOMAS-2026-07-30`. A missing identity receives an invitation;
-an already-provisioned matching administrator makes the step succeed without
-creating another account. A conflicting initial administrator stops the
-deployment.
+The production deployment workflow uses a separate, closed bootstrap after the
+committed migrations and before promotion. Only this approved set is accepted:
+
+| Email                        | Audit reference                    |
+| ---------------------------- | ---------------------------------- |
+| `thomas@marquesbranding.com` | `CLIENTE-ADMIN-THOMAS-2026-07-30`  |
+| `coronaigor@gmail.com`       | `CLIENTE-ADMIN-IGOR-2026-07-31`    |
+| `willian.willalex@gmail.com` | `CLIENTE-ADMIN-WILLIAN-2026-07-31` |
+
+Vercel must provide `PRODUCTION_ADMIN_INITIAL_PASSWORD` only in the
+**Production** scope. A missing Supabase Auth identity is created with its
+email confirmed and that initial password. An existing approved identity
+receives the password only after its application account is successfully
+granted `ADMIN`.
+
+The Supabase Auth identity receives private application metadata after the
+one-time password setup. Later deploys verify that marker and never reset the
+administrator's password. Repeating the bootstrap remains idempotent for both
+Auth and the application account. A conflicting influencer, company, archived,
+suspended, or banned account stops the deployment.
+
+The password value must never be committed, passed as a command-line argument,
+or printed in build logs. Administrators should change the initial password
+after their first successful login.
 
 ## Additional administrators
 

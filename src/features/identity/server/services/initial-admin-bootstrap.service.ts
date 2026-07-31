@@ -8,6 +8,7 @@ import { createSupabaseAdminClient } from "@/shared/server/supabase/admin-client
 
 import { createDrizzleAdminProvisioningRepository } from "../repositories/drizzle-admin-provisioning.repository";
 import { createAdminProvisioningService } from "./admin-provisioning.service";
+import { createProductionAdminBootstrapService } from "./production-admin-bootstrap.service";
 import { createSupabaseAdminIdentityGateway } from "./supabase-admin-identity.gateway";
 
 export function createAdminIdentityGateway() {
@@ -48,9 +49,20 @@ export function createInitialAdminBootstrapService() {
       );
     },
   });
+  const productionService = createProductionAdminBootstrapService({
+    bootstrapApprovedAdmin: (input) =>
+      repository.bootstrapInitialAdmin({
+        ...input,
+        allowExistingAdmins: true,
+      }),
+    findIdentityByEmail: (email) => repository.findIdentityByEmail(email),
+    preparePasswordIdentity: (input) => identity.preparePasswordIdentity(input),
+    seedExistingPassword: (input) => identity.seedExistingPassword(input),
+  });
 
   return {
     close: () => directClient.client.end({ timeout: 2 }),
+    productionService,
     service,
   };
 }

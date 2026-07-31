@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   createVercelBuildPlan,
-  PRODUCTION_INITIAL_ADMIN,
+  PRODUCTION_INITIAL_ADMINS,
 } from "./vercel-build-plan";
 
 const productionEnvironment = {
@@ -12,6 +12,7 @@ const productionEnvironment = {
   DIRECT_URL:
     "postgresql://postgres:secret@db.production-ref.supabase.co:5432/postgres",
   NEXT_PUBLIC_SUPABASE_URL: "https://production-ref.supabase.co",
+  PRODUCTION_ADMIN_INITIAL_PASSWORD: "example-only-production-password",
   VERCEL: "1",
   VERCEL_ENV: "production",
   VERCEL_GIT_COMMIT_REF: "main",
@@ -46,7 +47,7 @@ describe("Vercel build plan", () => {
     ).toEqual({
       databaseUrl: productionEnvironment.DATABASE_URL,
       directUrl: productionEnvironment.DIRECT_URL,
-      initialAdmin: PRODUCTION_INITIAL_ADMIN,
+      initialAdmins: PRODUCTION_INITIAL_ADMINS,
       mode: "PRODUCTION_DEPLOY",
       projectRef: "production-ref",
       supabaseUrl: "https://production-ref.supabase.co",
@@ -61,6 +62,14 @@ describe("Vercel build plan", () => {
     ["production configuration in Preview", { VERCEL_ENV: "preview" }],
     ["wrong application environment", { APP_ENV: "development" }],
     ["wrong production branch", { VERCEL_GIT_COMMIT_REF: "develop" }],
+    [
+      "missing initial administrator password",
+      { PRODUCTION_ADMIN_INITIAL_PASSWORD: undefined },
+    ],
+    [
+      "weak initial administrator password",
+      { PRODUCTION_ADMIN_INITIAL_PASSWORD: "short" },
+    ],
     [
       "cross-project database",
       {

@@ -72,6 +72,7 @@ export function createDrizzleAdminProvisioningRepository(
 
   return {
     async bootstrapInitialAdmin(input: {
+      allowExistingAdmins?: boolean;
       approvalReference: string;
       email: string;
       identityId: string;
@@ -86,7 +87,11 @@ export function createDrizzleAdminProvisioningRepository(
           actorAccountId: null,
           actorRole: null,
           actorType: "SYSTEM",
-          reason: `Initial administrator bootstrap: ${input.approvalReference}`,
+          reason: `${
+            input.allowExistingAdmins
+              ? "Approved production administrator bootstrap"
+              : "Initial administrator bootstrap"
+          }: ${input.approvalReference}`,
           requestId: input.requestId,
           source: "SCRIPT",
         },
@@ -122,7 +127,7 @@ export function createDrizzleAdminProvisioningRepository(
             };
           }
 
-          if (activeAdmins.length > 0) {
+          if (activeAdmins.length > 0 && !input.allowExistingAdmins) {
             return {
               code: "INITIAL_ADMIN_ALREADY_EXISTS" as const,
               kind: "rejected" as const,

@@ -58,22 +58,12 @@ async function verifyMigrationLedger(directUrl: string) {
   }
 }
 
-function bootstrapInitialAdministrator(
-  initialAdmin: {
-    approvalReference: string;
-    email: string;
-  },
-  supabaseUrl: string,
-) {
-  runCommand("Bootstrap the initial production administrator", "node", [
+function bootstrapProductionAdministrators(supabaseUrl: string) {
+  runCommand("Bootstrap the approved production administrators", "node", [
     "--conditions=react-server",
     "--import",
     "tsx",
-    "scripts/bootstrap-initial-admin.ts",
-    "--email",
-    initialAdmin.email,
-    "--approval-reference",
-    initialAdmin.approvalReference,
+    "scripts/bootstrap-production-admins.ts",
     "--confirm-supabase-url",
     supabaseUrl,
     "--execute",
@@ -118,7 +108,7 @@ async function main() {
   await verifyMigrationLedger(plan.directUrl);
   process.stdout.write("[vercel-build] Production migration ledger verified\n");
 
-  bootstrapInitialAdministrator(plan.initialAdmin, plan.supabaseUrl);
+  bootstrapProductionAdministrators(plan.supabaseUrl);
 }
 
 void main().catch((error: unknown) => {

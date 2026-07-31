@@ -74,6 +74,7 @@ not cross environments.
 | `DATABASE_URL`                          | Development Supavisor transaction pooler    | Production Supavisor transaction pooler  |
 | `DIRECT_URL`                            | Development direct/session connection       | Production direct/session connection     |
 | `SUPABASE_SERVICE_ROLE_KEY`             | Development only                            | Production only                          |
+| `PRODUCTION_ADMIN_INITIAL_PASSWORD`     | Not configured                              | One-time approved admin initial password |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE` | Non-production Marques endpoint             | Production Marques endpoint              |
 | `SMTP_USER`, `SMTP_PASSWORD`            | Non-production credentials                  | Production credentials                   |
 | `SMTP_FROM_NAME`, `SMTP_FROM_EMAIL`     | Approved non-production identity            | Approved production identity             |
@@ -94,6 +95,12 @@ preferred when both are configured:
 Do not reconstruct PostgreSQL URLs from the separate host, user, password, and
 database variables. The integration URLs preserve the reviewed pooler, port,
 TLS, and credential encoding configuration.
+
+`PRODUCTION_ADMIN_INITIAL_PASSWORD` must exist only in the Vercel
+**Production** scope. The deployment uses it to create or initialize the three
+approved administrator identities. A private Supabase Auth metadata marker
+prevents later deployments from resetting a password that was already seeded.
+Do not add this secret to DEV, Preview, `.env.local`, GitHub, or the repository.
 
 `NEXT_PUBLIC_*` values are frozen into the browser bundle during
 `vercel build`; therefore the workflow pulls and builds against the target

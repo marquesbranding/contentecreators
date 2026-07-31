@@ -167,7 +167,8 @@ Em um build Vercel de produção autorizado, esse comando:
 2. valida se Vercel, branch, ambiente e Supabase apontam para PRD;
 3. aplica somente migrations pendentes usando a conexão não agrupada;
 4. verifica o ledger de migrations;
-5. provisiona idempotentemente o administrador inicial aprovado;
+5. provisiona idempotentemente os três administradores iniciais aprovados,
+   usando a senha inicial protegida pela Vercel apenas uma vez;
 6. entrega o artefato para publicação pela Vercel.
 
 Não execute `drizzle-kit push` e não aplique alterações de schema manualmente

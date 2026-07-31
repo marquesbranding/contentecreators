@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, ne, sql } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { createDatabaseClient } from "@/db/client";
@@ -66,6 +66,15 @@ describeLocalStack("Drizzle admin provisioning repository", () => {
           requestId: "admin-bootstrap-setup",
           source: "SCRIPT",
         });
+        await transaction
+          .update(accounts)
+          .set({ archivedAt: new Date() })
+          .where(
+            and(
+              eq(accounts.role, "ADMIN"),
+              ne(accounts.id, seedAdmin.accountId),
+            ),
+          );
         await transaction
           .update(accounts)
           .set({
@@ -162,6 +171,151 @@ describeLocalStack("Drizzle admin provisioning repository", () => {
         kind: "already_provisioned",
       },
     });
+  });
+
+  it("bootstraps an approved production admin when another admin already exists", async () => {
+    let result:
+      | {
+          account: {
+            authUserId: string;
+            role: string | null;
+            status: string;
+          };
+          auditRows: {
+            actorType: string;
+            operation: string;
+            reason: string | null;
+            source: string;
+          }[];
+          first: {
+            accountId: string;
+            kind: string;
+          };
+          repeated: {
+            accountId: string;
+            kind: string;
+          };
+        }
+      | undefined;
+
+    try {
+      await drizzleClient.database.transaction(async (transaction) => {
+        await transaction.execute(sql`
+          insert into auth.users (
+            instance_id,
+            id,
+            aud,
+            role,
+            email,
+            encrypted_password,
+            email_confirmed_at,
+            raw_app_meta_data,
+            raw_user_meta_data,
+            created_at,
+            updated_at,
+            confirmation_token,
+            recovery_token,
+            email_change_token_new,
+            email_change
+          )
+          values (
+            '00000000-0000-4000-8000-000000000000',
+            ${targetIdentity.id},
+            'authenticated',
+            'authenticated',
+            ${targetIdentity.email},
+            extensions.crypt('LocalTest123!', extensions.gen_salt('bf')),
+            now(),
+            '{"provider":"email","providers":["email"]}'::jsonb,
+            '{"fixture":true}'::jsonb,
+            now(),
+            now(),
+            '',
+            '',
+            '',
+            ''
+          )
+        `);
+        const repository = createDrizzleAdminProvisioningRepository({
+          database: transaction,
+          runBootstrapTransaction: async (context, work) => {
+            await applyVerifiedAuditContext(transaction, context);
+            return work(transaction);
+          },
+        });
+        const input = {
+          allowExistingAdmins: true,
+          approvalReference: "CLIENTE-ADMIN-PRODUCTION-2026-07-31",
+          email: targetIdentity.email,
+          identityId: targetIdentity.id,
+          requestId: "admin-production-integration",
+        };
+        const first = await repository.bootstrapInitialAdmin(input);
+        const repeated = await repository.bootstrapInitialAdmin(input);
+
+        if (first.kind === "rejected" || repeated.kind === "rejected") {
+          throw new Error(
+            "Expected idempotent approved production admin provisioning.",
+          );
+        }
+
+        const [account] = await transaction
+          .select({
+            authUserId: accounts.authUserId,
+            role: accounts.role,
+            status: accounts.status,
+          })
+          .from(accounts)
+          .where(eq(accounts.authUserId, targetIdentity.id));
+        const auditRows = await transaction
+          .select({
+            actorType: auditRevisions.actorType,
+            operation: auditRevisions.operation,
+            reason: auditRevisions.reason,
+            source: auditRevisions.source,
+          })
+          .from(auditRevisions)
+          .where(eq(auditRevisions.requestId, "admin-production-integration"));
+
+        result = {
+          account: account!,
+          auditRows,
+          first,
+          repeated,
+        };
+        throw rollback;
+      });
+    } catch (error) {
+      if (error !== rollback) {
+        throw error;
+      }
+    }
+
+    expect(result).toEqual({
+      account: {
+        authUserId: targetIdentity.id,
+        role: "ADMIN",
+        status: "APPROVED",
+      },
+      auditRows: [
+        {
+          actorType: "SYSTEM",
+          operation: "INSERT",
+          reason:
+            "Approved production administrator bootstrap: CLIENTE-ADMIN-PRODUCTION-2026-07-31",
+          source: "SCRIPT",
+        },
+      ],
+      first: {
+        accountId: expect.any(String),
+        kind: "provisioned",
+      },
+      repeated: {
+        accountId: expect.any(String),
+        kind: "already_provisioned",
+      },
+    });
+    expect(result?.first.accountId).toBe(result?.repeated.accountId);
   });
 
   it("lets a verified admin provision another identity once with attributed audit", async () => {

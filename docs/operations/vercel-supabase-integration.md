@@ -109,24 +109,32 @@ senha: as URLs completas preservam pooler, porta, TLS e encoding corretos.
 Estas variáveis não são fornecidas pela integração e devem ser criadas no
 projeto Vercel correto:
 
-| Variável                      | Produção                                                 |
-| ----------------------------- | -------------------------------------------------------- |
-| `APP_ENV`                     | `production`                                             |
-| `NEXT_PUBLIC_APP_URL`         | `https://www.contentecreators.com`                       |
-| `CRON_SECRET`                 | segredo aleatório exclusivo, com no mínimo 32 caracteres |
-| `SMTP_HOST`                   | host SMTP aprovado pela Marques Branding                 |
-| `SMTP_PORT`                   | porta do provedor                                        |
-| `SMTP_SECURE`                 | `true` para TLS implícito; `false` para STARTTLS         |
-| `SMTP_USER`                   | usuário SMTP                                             |
-| `SMTP_PASSWORD`               | senha de app/credencial SMTP                             |
-| `SMTP_FROM_NAME`              | `Contente Creators` ou nome aprovado                     |
-| `SMTP_FROM_EMAIL`             | remetente aprovado e verificado                          |
-| `PUBLIC_SOCIAL_PROOF_ENABLED` | `false` durante o Beta                                   |
-| `SUPPORT_CONTACT_EMAIL`       | contato de privacidade/suporte aprovado                  |
+| Variável                            | Produção                                                 |
+| ----------------------------------- | -------------------------------------------------------- |
+| `APP_ENV`                           | `production`                                             |
+| `NEXT_PUBLIC_APP_URL`               | `https://www.contentecreators.com`                       |
+| `CRON_SECRET`                       | segredo aleatório exclusivo, com no mínimo 32 caracteres |
+| `PRODUCTION_ADMIN_INITIAL_PASSWORD` | senha inicial dos três administradores aprovados         |
+| `SMTP_HOST`                         | host SMTP aprovado pela Marques Branding                 |
+| `SMTP_PORT`                         | porta do provedor                                        |
+| `SMTP_SECURE`                       | `true` para TLS implícito; `false` para STARTTLS         |
+| `SMTP_USER`                         | usuário SMTP                                             |
+| `SMTP_PASSWORD`                     | senha de app/credencial SMTP                             |
+| `SMTP_FROM_NAME`                    | `Contente Creators` ou nome aprovado                     |
+| `SMTP_FROM_EMAIL`                   | remetente aprovado e verificado                          |
+| `PUBLIC_SOCIAL_PROOF_ENABLED`       | `false` durante o Beta                                   |
+| `SUPPORT_CONTACT_EMAIL`             | contato de privacidade/suporte aprovado                  |
 
 Todas devem ser marcadas para o escopo **Production** do projeto
 `contente-creators-prd`. Não exponha `CRON_SECRET`, credenciais SMTP, URLs de
 banco ou chaves secretas com prefixo `NEXT_PUBLIC_`.
+
+`PRODUCTION_ADMIN_INITIAL_PASSWORD` é consumida somente pelo bootstrap fechado
+dos três administradores documentados em
+[Provisionamento de administradores](./admin-provisioning.md). O valor não é
+passado pela linha de comando nem impresso. Depois da primeira aplicação
+confirmada, um marcador privado na identidade impede que novos deploys
+redefinam a senha.
 
 As variáveis SMTP acima são usadas pelos e-mails transacionais da aplicação.
 O Supabase Auth também deve receber o SMTP da Marques Branding em seu próprio
@@ -194,7 +202,7 @@ push/merge em main
   -> valida Vercel + main + APP_ENV=production + Supabase PRD
   -> dry-run e aplicação de migrations pendentes
   -> verificação do ledger
-  -> bootstrap idempotente do administrador inicial
+  -> bootstrap idempotente dos três administradores iniciais aprovados
   -> publicação do artefato pela Vercel
   -> https://contentecreators.com
 ```
@@ -221,6 +229,7 @@ Se o runtime ou build acusar envs de servidor inválidas, verifique:
 - `POSTGRES_URL` ou `DATABASE_URL`;
 - `POSTGRES_URL_NON_POOLING` ou `DIRECT_URL`;
 - `SUPABASE_SECRET_KEY` ou `SUPABASE_SERVICE_ROLE_KEY`;
+- `PRODUCTION_ADMIN_INITIAL_PASSWORD`;
 - todas as variáveis SMTP.
 
 Depois de corrigir qualquer variável na Vercel, faça um novo deployment. As
