@@ -2,7 +2,7 @@
 
 import { MapPin, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -33,6 +33,7 @@ import {
 } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
 
+import { isValidCnpj } from "../domain/cnpj";
 import { useCnpjLookup } from "../hooks/use-cnpj-lookup";
 import {
   companySegmentOptions,
@@ -120,57 +121,97 @@ function ErrorMessages({ errors, id }: { errors?: string[]; id: string }) {
 function TextField({
   autoComplete,
   defaultValue,
+  description,
   errors,
   id,
   inputMode,
   label,
   max,
+  maxLength,
   min,
+  minLength,
   name,
+  pattern,
   placeholder,
   required = true,
   step,
   type = "text",
+  validate,
+  validationMessage,
   value,
   onChange,
 }: {
   autoComplete?: string;
   defaultValue?: number | string;
+  description?: string;
   errors?: string[];
   id: string;
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   label: string;
   max?: number | string;
+  maxLength?: number;
   min?: number | string;
+  minLength?: number;
   name: string;
+  pattern?: string;
   placeholder?: string;
   required?: boolean;
   step?: number | string;
   type?: React.HTMLInputTypeAttribute;
+  validate?: (value: string) => string | null;
+  validationMessage?: string;
   value?: string;
   onChange?: React.ChangeEventHandler<HTMLInputElement>;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const errorId = errors?.length ? `${id}-error` : undefined;
+  const descriptionId = description ? `${id}-description` : undefined;
+  const describedBy = [descriptionId, errorId].filter(Boolean).join(" ");
+
+  useEffect(() => {
+    const input = inputRef.current;
+
+    if (!input || !validate) {
+      return;
+    }
+
+    input.setCustomValidity(validate(input.value) ?? "");
+  }, [defaultValue, validate, value]);
 
   return (
     <Field data-invalid={Boolean(errors?.length)}>
       <FieldLabel htmlFor={id} required={required}>
         {label}
       </FieldLabel>
+      {description ? (
+        <FieldDescription id={descriptionId}>{description}</FieldDescription>
+      ) : null}
       <Input
-        aria-describedby={errorId}
+        aria-describedby={describedBy || undefined}
         aria-invalid={Boolean(errors?.length)}
         autoComplete={autoComplete}
         className="h-12 rounded-xl"
+        data-validation-message={validationMessage}
         id={id}
         inputMode={inputMode}
         max={max}
+        maxLength={maxLength}
         min={min}
+        minLength={minLength}
         name={name}
+        pattern={pattern}
         placeholder={placeholder}
+        ref={inputRef}
         required={required}
         step={step}
         type={type}
+        onInput={(event) => {
+          if (validate) {
+            event.currentTarget.setCustomValidity(
+              validate(event.currentTarget.value) ?? "",
+            );
+          }
+        }}
         onChange={onChange}
         {...(value === undefined ? { defaultValue } : { value })}
       />
@@ -302,6 +343,12 @@ export function ProfileFormFields({
 
     return isPredefinedCompanySegment(segment) ? segment : "OTHER";
   });
+  const [companySocialPlatform, setCompanySocialPlatform] = useState(
+    companyInitialValues?.socialPlatform ?? "",
+  );
+  const [companySocialUrl, setCompanySocialUrl] = useState(
+    companyInitialValues?.socialUrl ?? "",
+  );
   const [selectedNicheSlugs, setSelectedNicheSlugs] = useState(
     () => new Set(creatorInitialValues?.nicheSlugs ?? []),
   );
@@ -409,10 +456,13 @@ export function ProfileFormFields({
         <FieldGroup className="grid gap-5 md:grid-cols-2">
           <TextField
             autoComplete="name"
+            description="Mínimo de 3 caracteres."
             errors={resolveFieldErrors("legalName")}
             id={`${role.toLowerCase()}-legal-name`}
             label={role === "COMPANY" ? "Razão social" : "Nome completo"}
             name="legalName"
+            maxLength={200}
+            minLength={3}
             placeholder={
               role === "COMPANY" ? "Empresa Exemplo Ltda." : "Seu nome completo"
             }
@@ -421,28 +471,43 @@ export function ProfileFormFields({
             onChange={
               role === "COMPANY" ? updateCompanyField("legalName") : undefined
             }
+            validationMessage="Use pelo menos 3 caracteres."
           />
 
           {role === "COMPANY" ? (
             <>
               <TextField
+                description="Mínimo de 2 caracteres."
                 errors={resolveFieldErrors("tradeName")}
                 id="company-trade-name"
                 label="Nome fantasia"
                 name="tradeName"
+                maxLength={160}
+                minLength={2}
                 placeholder="Nome conhecido pelo público"
                 value={companyFields.tradeName}
                 onChange={updateCompanyField("tradeName")}
+                validationMessage="Use pelo menos 2 caracteres."
               />
               <TextField
+                description="Informe os 14 dígitos do CNPJ."
                 errors={resolveFieldErrors("cnpj")}
                 id="company-cnpj"
                 inputMode="numeric"
                 label="CNPJ"
                 name="cnpj"
+                maxLength={18}
+                minLength={14}
+                pattern="(?:[0-9]{14}|[0-9]{2}\\.[0-9]{3}\\.[0-9]{3}/[0-9]{4}-[0-9]{2})"
                 placeholder="00.000.000/0000-00"
                 value={companyFields.cnpj}
                 onChange={updateCompanyField("cnpj")}
+                validate={(value) =>
+                  value && !isValidCnpj(value)
+                    ? "Informe um CNPJ válido."
+                    : null
+                }
+                validationMessage="Informe um CNPJ válido com 14 dígitos."
               />
               <div className="md:col-span-2">
                 <CnpjLookupFeedback
@@ -477,13 +542,17 @@ export function ProfileFormFields({
               />
               {companySegmentChoice === "OTHER" ? (
                 <TextField
+                  description="Mínimo de 2 caracteres."
                   errors={resolveFieldErrors("segment")}
                   id="company-other-segment"
                   label="Qual é o segmento?"
                   name="segment"
+                  maxLength={120}
+                  minLength={2}
                   onChange={updateCompanyField("segment")}
                   placeholder="Ex.: Economia criativa"
                   value={companyFields.segment}
+                  validationMessage="Use pelo menos 2 caracteres."
                 />
               ) : (
                 <input
@@ -513,11 +582,15 @@ export function ProfileFormFields({
             <>
               <TextField
                 defaultValue={creatorInitialValues?.displayName}
+                description="Mínimo de 2 caracteres."
                 errors={resolveFieldErrors("displayName")}
                 id="creator-display-name"
                 label="Nome de creator"
                 name="displayName"
+                maxLength={120}
+                minLength={2}
                 placeholder="Como você quer aparecer"
+                validationMessage="Use pelo menos 2 caracteres."
               />
               <ControlledSelect
                 errors={resolveFieldErrors("creatorType")}
@@ -538,6 +611,7 @@ export function ProfileFormFields({
                 id="creator-followers"
                 inputMode="numeric"
                 label="Número de seguidores"
+                min={0}
                 name="followers"
                 placeholder="Ex.: 12500"
                 type="number"
@@ -560,11 +634,14 @@ export function ProfileFormFields({
 
           <TextField
             autoComplete="tel"
+            description="Mínimo de 10 caracteres, incluindo o DDD."
             errors={resolveFieldErrors("whatsapp")}
             id={`${role.toLowerCase()}-whatsapp`}
             inputMode="tel"
             label="WhatsApp com DDD"
             name="whatsapp"
+            maxLength={20}
+            minLength={10}
             placeholder="(11) 99999-9999"
             type="tel"
             defaultValue={
@@ -572,6 +649,7 @@ export function ProfileFormFields({
                 ? companyInitialValues?.whatsapp
                 : creatorInitialValues?.whatsapp
             }
+            validationMessage="Informe um WhatsApp com DDD."
           />
 
           {role === "COMPANY" ? (
@@ -582,6 +660,7 @@ export function ProfileFormFields({
                 id="company-website"
                 inputMode="url"
                 label="Site (opcional)"
+                maxLength={2_000}
                 name="websiteUrl"
                 placeholder="https://suaempresa.com.br"
                 required={false}
@@ -591,10 +670,14 @@ export function ProfileFormFields({
               <ControlledSelect
                 errors={resolveFieldErrors("socialPlatform")}
                 id="company-social-platform"
-                initialValue={companyInitialValues?.socialPlatform}
-                label="Rede social (opcional)"
+                label={
+                  companySocialUrl && !companySocialPlatform
+                    ? "Rede social"
+                    : "Rede social (opcional)"
+                }
                 name="socialPlatform"
                 onFieldChange={onFieldChange}
+                onValueChange={setCompanySocialPlatform}
                 options={[
                   ["INSTAGRAM", "Instagram"],
                   ["TIKTOK", "TikTok"],
@@ -605,19 +688,29 @@ export function ProfileFormFields({
                   ["OTHER", "Outra"],
                 ]}
                 placeholder="Selecione uma rede"
-                required={false}
+                required={Boolean(companySocialUrl && !companySocialPlatform)}
+                selectedValue={companySocialPlatform}
               />
               <TextField
                 autoComplete="url"
-                defaultValue={companyInitialValues?.socialUrl}
                 errors={resolveFieldErrors("socialUrl")}
                 id="company-social-url"
                 inputMode="url"
-                label="Link da rede social (opcional)"
+                label={
+                  companySocialPlatform && !companySocialUrl
+                    ? "Link da rede social"
+                    : "Link da rede social (opcional)"
+                }
+                maxLength={2_000}
                 name="socialUrl"
+                onChange={(event) => {
+                  setCompanySocialUrl(event.target.value);
+                  onFieldChange?.("socialUrl");
+                }}
                 placeholder="https://linkedin.com/company/suaempresa"
-                required={false}
+                required={Boolean(companySocialPlatform && !companySocialUrl)}
                 type="url"
+                value={companySocialUrl}
               />
             </>
           ) : null}
@@ -634,19 +727,26 @@ export function ProfileFormFields({
               ? "Apresente a empresa"
               : "Conte sobre seu conteúdo"}
           </FieldLabel>
+          <FieldDescription id={`${role.toLowerCase()}-description-help`}>
+            Mínimo de 30 caracteres. Máximo de{" "}
+            {role === "COMPANY" ? "3.000" : "2.000"}.
+          </FieldDescription>
           <Textarea
-            aria-describedby={`${role.toLowerCase()}-description-error`}
+            aria-describedby={`${role.toLowerCase()}-description-help ${role.toLowerCase()}-description-error`}
             aria-invalid={Boolean(
               resolveFieldErrors(role === "COMPANY" ? "description" : "bio")
                 ?.length,
             )}
             className="min-h-32 rounded-xl"
+            data-validation-message="Use pelo menos 30 caracteres."
             defaultValue={
               role === "COMPANY"
                 ? companyInitialValues?.description
                 : creatorInitialValues?.bio
             }
             id={`${role.toLowerCase()}-description`}
+            maxLength={role === "COMPANY" ? 3_000 : 2_000}
+            minLength={30}
             name={role === "COMPANY" ? "description" : "bio"}
             placeholder={
               role === "COMPANY"
@@ -698,6 +798,7 @@ export function ProfileFormFields({
               id="creator-social-url"
               inputMode="url"
               label="Link do perfil"
+              maxLength={2_000}
               name="socialUrl"
               placeholder="https://instagram.com/seuperfil"
               type="url"
@@ -709,6 +810,9 @@ export function ProfileFormFields({
             <FieldLabel id="creator-niches-label" required>
               Principais nichos
             </FieldLabel>
+            <FieldDescription>
+              Selecione de 1 a 5 nichos que melhor representam seu conteúdo.
+            </FieldDescription>
             <div
               aria-describedby="creator-niches-error"
               aria-labelledby="creator-niches-label"
@@ -731,6 +835,10 @@ export function ProfileFormFields({
                       resolveFieldErrors("nicheSlugs")?.length,
                     )}
                     checked={selectedNicheSlugs.has(value)}
+                    disabled={
+                      selectedNicheSlugs.size >= 5 &&
+                      !selectedNicheSlugs.has(value)
+                    }
                     name="nicheSlugs"
                     onCheckedChange={(checked) => {
                       setSelectedNicheSlugs((current) => {
@@ -763,16 +871,20 @@ export function ProfileFormFields({
           </Field>
           {otherNicheSelected ? (
             <TextField
+              description="Mínimo de 2 caracteres."
               errors={resolveFieldErrors("otherNiche")}
               id="creator-other-niche"
               label="Qual é o outro nicho?"
               name="otherNiche"
+              maxLength={120}
+              minLength={2}
               onChange={(event) => {
                 setOtherNiche(event.target.value);
                 onFieldChange?.("otherNiche");
               }}
               placeholder="Ex.: Artesanato sustentável"
               value={otherNiche}
+              validationMessage="Use pelo menos 2 caracteres."
             />
           ) : null}
         </FieldSet>
@@ -792,28 +904,38 @@ export function ProfileFormFields({
           <FieldGroup className="grid gap-5 md:grid-cols-2">
             <TextField
               autoComplete="postal-code"
+              description="Informe os 8 dígitos do CEP."
               errors={resolveFieldErrors("postalCode")}
               id="company-postal-code"
               inputMode="numeric"
               label="CEP"
               name="postalCode"
+              maxLength={9}
+              minLength={8}
+              pattern="(?:[0-9]{8}|[0-9]{5}-[0-9]{3})"
               placeholder="00000-000"
               value={companyFields.postalCode}
               onChange={updateCompanyField("postalCode")}
+              validationMessage="Informe um CEP válido com 8 dígitos."
             />
             <TextField
               autoComplete="address-line1"
+              description="Mínimo de 3 caracteres."
               errors={resolveFieldErrors("street")}
               id="company-street"
               label="Logradouro"
               name="street"
+              maxLength={180}
+              minLength={3}
               value={companyFields.street}
               onChange={updateCompanyField("street")}
+              validationMessage="Use pelo menos 3 caracteres."
             />
             <TextField
               errors={resolveFieldErrors("number")}
               id="company-number"
               label="Número"
+              maxLength={30}
               name="number"
               value={companyFields.number}
               onChange={updateCompanyField("number")}
@@ -823,18 +945,23 @@ export function ProfileFormFields({
               errors={resolveFieldErrors("complement")}
               id="company-complement"
               label="Complemento (opcional)"
+              maxLength={120}
               name="complement"
               required={false}
               value={companyFields.complement}
               onChange={updateCompanyField("complement")}
             />
             <TextField
+              description="Mínimo de 2 caracteres."
               errors={resolveFieldErrors("neighborhood")}
               id="company-neighborhood"
               label="Bairro"
               name="neighborhood"
+              maxLength={120}
+              minLength={2}
               value={companyFields.neighborhood}
               onChange={updateCompanyField("neighborhood")}
+              validationMessage="Use pelo menos 2 caracteres."
             />
           </FieldGroup>
 
@@ -864,10 +991,13 @@ export function ProfileFormFields({
                     </CardHeader>
                     <CardContent className="grid gap-5 px-5 md:grid-cols-2">
                       <TextField
+                        description="Mínimo de 2 caracteres."
                         errors={resolveFieldErrors("additionalLocations")}
                         id={`${idPrefix}-label`}
                         label="Nome da localidade"
                         name={`${namePrefix}.label`}
+                        maxLength={80}
+                        minLength={2}
                         onChange={(event) =>
                           updateAdditionalLocation(
                             location.clientId,
@@ -877,13 +1007,18 @@ export function ProfileFormFields({
                         }
                         placeholder="Ex.: Filial Sul"
                         value={location.label}
+                        validationMessage="Use pelo menos 2 caracteres."
                       />
                       <TextField
                         autoComplete="postal-code"
+                        description="Informe os 8 dígitos do CEP."
                         id={`${idPrefix}-postal-code`}
                         inputMode="numeric"
                         label="CEP da localidade"
                         name={`${namePrefix}.postalCode`}
+                        maxLength={9}
+                        minLength={8}
+                        pattern="(?:[0-9]{8}|[0-9]{5}-[0-9]{3})"
                         onChange={(event) =>
                           updateAdditionalLocation(
                             location.clientId,
@@ -893,12 +1028,16 @@ export function ProfileFormFields({
                         }
                         placeholder="00000-000"
                         value={location.postalCode}
+                        validationMessage="Informe um CEP válido com 8 dígitos."
                       />
                       <TextField
                         autoComplete="address-line1"
+                        description="Mínimo de 3 caracteres."
                         id={`${idPrefix}-street`}
                         label="Logradouro da localidade"
                         name={`${namePrefix}.street`}
+                        maxLength={180}
+                        minLength={3}
                         onChange={(event) =>
                           updateAdditionalLocation(
                             location.clientId,
@@ -907,10 +1046,12 @@ export function ProfileFormFields({
                           )
                         }
                         value={location.street}
+                        validationMessage="Use pelo menos 3 caracteres."
                       />
                       <TextField
                         id={`${idPrefix}-number`}
                         label="Número da localidade"
+                        maxLength={30}
                         name={`${namePrefix}.number`}
                         onChange={(event) =>
                           updateAdditionalLocation(
@@ -925,6 +1066,7 @@ export function ProfileFormFields({
                         autoComplete="address-line2"
                         id={`${idPrefix}-complement`}
                         label="Complemento da localidade (opcional)"
+                        maxLength={120}
                         name={`${namePrefix}.complement`}
                         onChange={(event) =>
                           updateAdditionalLocation(
@@ -937,9 +1079,12 @@ export function ProfileFormFields({
                         value={location.complement}
                       />
                       <TextField
+                        description="Mínimo de 2 caracteres."
                         id={`${idPrefix}-neighborhood`}
                         label="Bairro da localidade"
                         name={`${namePrefix}.neighborhood`}
+                        maxLength={120}
+                        minLength={2}
                         onChange={(event) =>
                           updateAdditionalLocation(
                             location.clientId,
@@ -948,12 +1093,16 @@ export function ProfileFormFields({
                           )
                         }
                         value={location.neighborhood}
+                        validationMessage="Use pelo menos 2 caracteres."
                       />
                       <TextField
                         autoComplete="address-level2"
+                        description="Mínimo de 2 caracteres."
                         id={`${idPrefix}-city`}
                         label="Cidade da localidade"
                         name={`${namePrefix}.city`}
+                        maxLength={120}
+                        minLength={2}
                         onChange={(event) =>
                           updateAdditionalLocation(
                             location.clientId,
@@ -962,6 +1111,7 @@ export function ProfileFormFields({
                           )
                         }
                         value={location.city}
+                        validationMessage="Use pelo menos 2 caracteres."
                       />
                       <ControlledSelect
                         id={`${idPrefix}-state`}
@@ -1006,15 +1156,19 @@ export function ProfileFormFields({
         <FieldGroup className="grid gap-5 md:grid-cols-[1fr_10rem]">
           <TextField
             autoComplete="address-level2"
+            description="Mínimo de 2 caracteres."
             errors={resolveFieldErrors("city")}
             id={`${role.toLowerCase()}-city`}
             label="Cidade"
             name="city"
+            maxLength={120}
+            minLength={2}
             defaultValue={creatorInitialValues?.city}
             value={role === "COMPANY" ? companyFields.city : undefined}
             onChange={
               role === "COMPANY" ? updateCompanyField("city") : undefined
             }
+            validationMessage="Use pelo menos 2 caracteres."
           />
           <ControlledSelect
             errors={resolveFieldErrors("state")}

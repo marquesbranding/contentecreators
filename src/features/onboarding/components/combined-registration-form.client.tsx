@@ -29,6 +29,7 @@ import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-va
 import { useSubmitConfirmation } from "@/shared/hooks/use-submit-confirmation";
 import { useUnsavedChangesGuard } from "@/shared/hooks/use-unsaved-changes-guard";
 import { cn } from "@/shared/lib/cn";
+import { dispatchFormActionPreservingValues } from "@/shared/lib/forms/dispatch-form-action-preserving-values";
 
 import type { OnboardingAction } from "../types/onboarding-action.types";
 import { initialOnboardingActionState } from "../types/onboarding-action.types";
@@ -74,7 +75,14 @@ export function CombinedRegistrationForm({
     resendAction,
     initialOnboardingActionState,
   );
-  const formValidation = useRequiredFieldValidation();
+  const {
+    clearFieldError,
+    clientFieldErrors,
+    formRef,
+    formValidationProps,
+    getFieldErrors,
+    isFormValid,
+  } = useRequiredFieldValidation();
   const submitConfirmation = useSubmitConfirmation();
   useActionSuccessToast(state, {
     successStatuses: ["success", "confirmation_required"],
@@ -89,23 +97,14 @@ export function CombinedRegistrationForm({
   useUnsavedChangesGuard(
     hasUnsavedChanges && !pending && state.status !== "confirmation_required",
   );
-  const summaryErrors = mergeFieldErrors(
-    formValidation.clientFieldErrors,
-    state.fieldErrors,
-  );
-  const roleErrors = formValidation.getFieldErrors(
-    "role",
-    state.fieldErrors?.role,
-  );
-  const emailErrors = formValidation.getFieldErrors(
-    "email",
-    state.fieldErrors?.email,
-  );
-  const passwordErrors = formValidation.getFieldErrors(
+  const summaryErrors = mergeFieldErrors(clientFieldErrors, state.fieldErrors);
+  const roleErrors = getFieldErrors("role", state.fieldErrors?.role);
+  const emailErrors = getFieldErrors("email", state.fieldErrors?.email);
+  const passwordErrors = getFieldErrors(
     "password",
     state.fieldErrors?.password,
   );
-  const passwordConfirmationErrors = formValidation.getFieldErrors(
+  const passwordConfirmationErrors = getFieldErrors(
     "passwordConfirmation",
     state.fieldErrors?.passwordConfirmation,
   );
@@ -161,17 +160,16 @@ export function CombinedRegistrationForm({
         action={formAction}
         className="space-y-9"
         noValidate
-        onBlur={formValidation.formValidationProps.onBlur}
+        onBlur={formValidationProps.onBlur}
         onInput={(event) => {
           setHasUnsavedChanges(true);
-          formValidation.formValidationProps.onInput(event);
+          formValidationProps.onInput(event);
         }}
-        onSubmit={(event) =>
-          submitConfirmation.handleSubmit(
-            event,
-            formValidation.formValidationProps.onSubmit,
-          )
-        }
+        onSubmit={(event) => {
+          submitConfirmation.handleSubmit(event, formValidationProps.onSubmit);
+          dispatchFormActionPreservingValues(event, formAction);
+        }}
+        ref={formRef}
       >
         <RequiredFieldsNotice />
         <FormErrorSummary errors={summaryErrors} />
@@ -200,7 +198,7 @@ export function CombinedRegistrationForm({
               onValueChange={(value) => {
                 if (value === "INFLUENCER" || value === "COMPANY") {
                   setRole(value);
-                  formValidation.clearFieldError("role");
+                  clearFieldError("role");
                 }
               }}
               value={role}
@@ -287,6 +285,7 @@ export function CombinedRegistrationForm({
                 className="h-12 rounded-xl"
                 id="registration-email"
                 inputMode="email"
+                maxLength={320}
                 name="email"
                 placeholder="voce@exemplo.com"
                 required
@@ -323,9 +322,9 @@ export function CombinedRegistrationForm({
         {role ? (
           <ProfileFormFields
             fieldErrors={state.fieldErrors}
-            getFieldErrors={formValidation.getFieldErrors}
+            getFieldErrors={getFieldErrors}
             key={role}
-            onFieldChange={formValidation.clearFieldError}
+            onFieldChange={clearFieldError}
             role={role}
           />
         ) : (
@@ -340,12 +339,22 @@ export function CombinedRegistrationForm({
 
         <ActionSubmitButton
           className="w-full"
+          disabled={!isFormValid}
           pending={pending}
           pendingLabel="Criando cadastro..."
           size="lg"
         >
           Criar conta e enviar perfil
         </ActionSubmitButton>
+        {!isFormValid && !pending ? (
+          <p
+            aria-live="polite"
+            className="text-muted-foreground text-center text-sm"
+          >
+            Preencha corretamente todos os campos obrigatórios para liberar o
+            envio.
+          </p>
+        ) : null}
       </form>
       <OnboardingSubmitConfirmation
         onConfirm={submitConfirmation.confirmSubmission}

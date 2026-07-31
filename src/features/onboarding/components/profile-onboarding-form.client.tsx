@@ -14,6 +14,7 @@ import { useActionSuccessToast } from "@/shared/hooks/use-action-success-toast";
 import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 import { useSubmitConfirmation } from "@/shared/hooks/use-submit-confirmation";
 import { useUnsavedChangesGuard } from "@/shared/hooks/use-unsaved-changes-guard";
+import { dispatchFormActionPreservingValues } from "@/shared/lib/forms/dispatch-form-action-preserving-values";
 import { BrowserQueryProvider } from "@/shared/query/browser-query-provider";
 
 import { useOnboardingAutosave } from "../hooks/use-onboarding-autosave";
@@ -61,7 +62,14 @@ function ProfileOnboardingFormContent({
     action,
     initialOnboardingActionState,
   );
-  const formValidation = useRequiredFieldValidation();
+  const {
+    clearFieldError,
+    clientFieldErrors,
+    formRef,
+    formValidationProps,
+    getFieldErrors,
+    isFormValid,
+  } = useRequiredFieldValidation();
   const submitConfirmation = useSubmitConfirmation();
   const autosave = useOnboardingAutosave({
     action: draftAction,
@@ -69,10 +77,7 @@ function ProfileOnboardingFormContent({
     role,
   });
   useUnsavedChangesGuard(autosave.hasUnsavedChanges && !pending);
-  const summaryErrors = mergeFieldErrors(
-    formValidation.clientFieldErrors,
-    state.fieldErrors,
-  );
+  const summaryErrors = mergeFieldErrors(clientFieldErrors, state.fieldErrors);
   useActionSuccessToast(state, {
     title: correctionCommand ? "Correções reenviadas" : "Perfil enviado",
   });
@@ -83,17 +88,16 @@ function ProfileOnboardingFormContent({
         action={formAction}
         className="space-y-9"
         noValidate
-        onBlur={formValidation.formValidationProps.onBlur}
+        onBlur={formValidationProps.onBlur}
         onInput={(event) => {
-          formValidation.formValidationProps.onInput(event);
+          formValidationProps.onInput(event);
           autosave.onFormInput(event);
         }}
-        onSubmit={(event) =>
-          submitConfirmation.handleSubmit(
-            event,
-            formValidation.formValidationProps.onSubmit,
-          )
-        }
+        onSubmit={(event) => {
+          submitConfirmation.handleSubmit(event, formValidationProps.onSubmit);
+          dispatchFormActionPreservingValues(event, formAction);
+        }}
+        ref={formRef}
       >
         <input name="role" type="hidden" value={role} />
         {correctionCommand ? (
@@ -127,23 +131,33 @@ function ProfileOnboardingFormContent({
         <FormErrorSummary errors={summaryErrors} />
         <ProfileFormFields
           fieldErrors={state.fieldErrors}
-          getFieldErrors={formValidation.getFieldErrors}
+          getFieldErrors={getFieldErrors}
           initialValues={
             initialValues ??
             (initialDraft?.role === role ? initialDraft.payload : undefined)
           }
-          onFieldChange={formValidation.clearFieldError}
+          onFieldChange={clearFieldError}
           role={role}
         />
         {mediaFields}
         <ActionSubmitButton
           className="w-full"
+          disabled={!isFormValid}
           pending={pending}
           pendingLabel="Enviando para análise..."
           size="lg"
         >
           Enviar perfil para análise
         </ActionSubmitButton>
+        {!isFormValid && !pending ? (
+          <p
+            aria-live="polite"
+            className="text-muted-foreground text-center text-sm"
+          >
+            Preencha corretamente todos os campos obrigatórios para liberar o
+            envio.
+          </p>
+        ) : null}
       </form>
       <OnboardingSubmitConfirmation
         onConfirm={submitConfirmation.confirmSubmission}

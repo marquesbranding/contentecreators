@@ -24,13 +24,17 @@ const brazilianState = z
   .trim()
   .transform((value) => value.toUpperCase())
   .pipe(z.string().regex(/^[A-Z]{2}$/u, "Informe uma UF válida."));
-const city = z.string().trim().min(2, requiredMessage).max(120);
+const city = z.string().trim().min(2, "Use pelo menos 2 caracteres.").max(120);
 const email = z
   .string()
   .trim()
   .toLowerCase()
   .pipe(z.email("Informe um e-mail válido.").max(320));
-const legalName = z.string().trim().min(3, requiredMessage).max(200);
+const legalName = z
+  .string()
+  .trim()
+  .min(3, "Use pelo menos 3 caracteres.")
+  .max(200);
 const whatsapp = z
   .string()
   .trim()
@@ -96,8 +100,12 @@ const consentShape = {
 const companyLocationSchema = z.object({
   city,
   complement: z.string().trim().max(120).optional().default(""),
-  label: z.string().trim().min(2, requiredMessage).max(80),
-  neighborhood: z.string().trim().min(2, requiredMessage).max(120),
+  label: z.string().trim().min(2, "Use pelo menos 2 caracteres.").max(80),
+  neighborhood: z
+    .string()
+    .trim()
+    .min(2, "Use pelo menos 2 caracteres.")
+    .max(120),
   number: z.string().trim().min(1, requiredMessage).max(30),
   postalCode: z
     .string()
@@ -105,7 +113,7 @@ const companyLocationSchema = z.object({
     .transform((value) => value.replace(/\D/gu, ""))
     .pipe(z.string().length(8, "Informe um CEP válido.")),
   state: brazilianState,
-  street: z.string().trim().min(3, requiredMessage).max(180),
+  street: z.string().trim().min(3, "Use pelo menos 3 caracteres.").max(180),
 });
 
 function validateOtherNiche(
@@ -135,18 +143,18 @@ function validateOtherNiche(
 export const influencerProfileFieldsSchema = z
   .object({
     avatarAssetId: z.uuid("A foto de perfil enviada não é válida.").optional(),
-    bio: z
-      .string()
-      .trim()
-      .min(30, "Conte um pouco mais sobre seu trabalho.")
-      .max(2_000),
+    bio: z.string().trim().min(30, "Use pelo menos 30 caracteres.").max(2_000),
     city,
     contactVisibilityAccepted: optionalConsent,
     coverAssetId: z.uuid("A capa enviada não é válida.").optional(),
     creatorType: z.enum(["INFLUENCER", "UGC"], {
       error: "Escolha um tipo de creator.",
     }),
-    displayName: z.string().trim().min(2, requiredMessage).max(120),
+    displayName: z
+      .string()
+      .trim()
+      .min(2, "Use pelo menos 2 caracteres.")
+      .max(120),
     engagementRate: z.coerce.number("Informe uma taxa válida.").min(0).max(100),
     followers: z.coerce
       .number("Informe uma quantidade válida.")
@@ -196,7 +204,7 @@ export const companyProfileFieldsSchema = z.object({
   description: z
     .string()
     .trim()
-    .min(30, "Conte um pouco mais sobre a empresa.")
+    .min(30, "Use pelo menos 30 caracteres.")
     .max(3_000),
   employeeRange: z.enum(
     ["UP_TO_10", "11_TO_50", "51_TO_200", "201_TO_500", "MORE_THAN_500"],
@@ -204,19 +212,23 @@ export const companyProfileFieldsSchema = z.object({
   ),
   legalName,
   logoAssetId: z.uuid("O logo enviado não é válido.").optional(),
-  neighborhood: z.string().trim().min(2, requiredMessage).max(120),
+  neighborhood: z
+    .string()
+    .trim()
+    .min(2, "Use pelo menos 2 caracteres.")
+    .max(120),
   number: z.string().trim().min(1, requiredMessage).max(30),
   postalCode: z
     .string()
     .trim()
     .transform((value) => value.replace(/\D/gu, ""))
     .pipe(z.string().length(8, "Informe um CEP válido.")),
-  segment: z.string().trim().min(2, requiredMessage).max(120),
+  segment: z.string().trim().min(2, "Use pelo menos 2 caracteres.").max(120),
   socialPlatform: optionalSocialPlatform,
   socialUrl: optionalUrl.optional(),
   state: brazilianState,
-  street: z.string().trim().min(3, requiredMessage).max(180),
-  tradeName: z.string().trim().min(2, requiredMessage).max(160),
+  street: z.string().trim().min(3, "Use pelo menos 3 caracteres.").max(180),
+  tradeName: z.string().trim().min(2, "Use pelo menos 2 caracteres.").max(160),
   websiteUrl: optionalUrl.optional(),
   whatsapp,
 });

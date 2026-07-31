@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type FieldErrors = Record<string, string[] | undefined>;
 
@@ -68,6 +68,29 @@ function getControlValidationMessage(
   return null;
 }
 
+function formIsValid(form: HTMLFormElement) {
+  for (const element of Array.from(form.elements)) {
+    if (
+      !isNativeFormControl(element) ||
+      element.disabled ||
+      (element instanceof HTMLInputElement && element.type === "hidden") ||
+      !element.name
+    ) {
+      continue;
+    }
+
+    if (getControlValidationMessage(element, form)) {
+      return false;
+    }
+  }
+
+  const customRequiredFields = form.querySelectorAll<HTMLElement>(
+    '[data-required-field="true"][data-field-name]',
+  );
+
+  return Array.from(customRequiredFields).every(customFieldHasValue);
+}
+
 function customFieldHasValue(field: HTMLElement) {
   const fieldKind = field.dataset.fieldKind;
 
@@ -113,7 +136,40 @@ function findFocusableField(form: HTMLFormElement, fieldName: string) {
 
 export function useRequiredFieldValidation() {
   const [clientFieldErrors, setClientFieldErrors] = useState<FieldErrors>({});
+  const [isFormValid, setIsFormValid] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
   const touchedFields = useRef(new Set<string>());
+
+  const refreshFormValidity = useCallback(() => {
+    const form = formRef.current;
+
+    setIsFormValid(form ? formIsValid(form) : false);
+  }, []);
+
+  useEffect(() => {
+    const form = formRef.current;
+
+    if (!form) {
+      return;
+    }
+
+    const observer = new MutationObserver(refreshFormValidity);
+    observer.observe(form, {
+      attributeFilter: [
+        "aria-checked",
+        "data-field-value",
+        "data-required-field",
+        "disabled",
+        "required",
+      ],
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
+    refreshFormValidity();
+
+    return () => observer.disconnect();
+  }, [refreshFormValidity]);
 
   const clearFieldError = useCallback((fieldName: string) => {
     setClientFieldErrors((current) => {
@@ -216,8 +272,10 @@ export function useRequiredFieldValidation() {
           getControlValidationMessage(matchingControl, event.currentTarget),
         );
       }
+
+      refreshFormValidity();
     },
-    [clearFieldError, clientFieldErrors, updateFieldError],
+    [clearFieldError, clientFieldErrors, refreshFormValidity, updateFieldError],
   );
 
   const onBlur = useCallback(
@@ -239,6 +297,7 @@ export function useRequiredFieldValidation() {
           target.name,
           getControlValidationMessage(target, form),
         );
+        refreshFormValidity();
         return;
       }
 
@@ -271,8 +330,9 @@ export function useRequiredFieldValidation() {
           ? null
           : (customField.dataset.requiredMessage ?? defaultRequiredMessage),
       );
+      refreshFormValidity();
     },
-    [updateFieldError],
+    [refreshFormValidity, updateFieldError],
   );
 
   const onSubmit = useCallback((event: React.FormEvent<HTMLFormElement>) => {
@@ -352,11 +412,14 @@ export function useRequiredFieldValidation() {
   return {
     clearFieldError,
     clientFieldErrors,
+    formRef,
     formValidationProps: {
       onBlur,
       onInput,
       onSubmit,
     },
     getFieldErrors,
+    isFormValid,
+    refreshFormValidity,
   };
 }

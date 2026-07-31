@@ -1,11 +1,19 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import { getBlockingComponentAccessibilityViolations } from "@/test/component-accessibility";
 
 import { CombinedRegistrationForm } from "./combined-registration-form.client";
+
+vi.mock("../hooks/use-cnpj-lookup", () => ({
+  useCnpjLookup: () => ({
+    data: null,
+    lookupStatus: "idle",
+    refetch: vi.fn(),
+  }),
+}));
 
 function renderRegistration(
   props: React.ComponentProps<typeof CombinedRegistrationForm>,
@@ -19,6 +27,85 @@ function renderRegistration(
       <CombinedRegistrationForm {...props} />
     </QueryClientProvider>,
   );
+}
+
+async function selectOption(
+  user: ReturnType<typeof userEvent.setup>,
+  label: string,
+  option: string,
+) {
+  await user.click(screen.getByRole("combobox", { name: label }));
+  await user.click(await screen.findByRole("option", { name: option }));
+}
+
+async function fillAccessFields(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(screen.getByLabelText("E-mail"), "teste@exemplo.com");
+  await user.type(screen.getByLabelText("Senha"), "SenhaForte1");
+  await user.type(screen.getByLabelText("Confirmar senha"), "SenhaForte1");
+}
+
+async function acceptRequiredConsents(
+  user: ReturnType<typeof userEvent.setup>,
+) {
+  await user.click(
+    screen.getByRole("checkbox", { name: /Li e aceito os Termos de Uso/iu }),
+  );
+  await user.click(
+    screen.getByRole("checkbox", {
+      name: /Li e aceito a Política de Privacidade/iu,
+    }),
+  );
+}
+
+async function fillCreatorFields(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(screen.getByLabelText("Nome completo"), "Creator Exemplo");
+  await user.type(screen.getByLabelText("Nome de creator"), "Creator Teste");
+  await selectOption(user, "Tipo de atuação", "Influencer");
+  await user.type(screen.getByLabelText("Número de seguidores"), "15000");
+  await user.type(screen.getByLabelText("Taxa de engajamento (%)"), "5");
+  await user.type(screen.getByLabelText("WhatsApp com DDD"), "11999999999");
+  await user.type(
+    screen.getByLabelText("Conte sobre seu conteúdo"),
+    "Crio conteúdo sobre tecnologia, cultura e negócios locais.",
+  );
+  await selectOption(user, "Canal principal", "Instagram");
+  await user.type(
+    screen.getByLabelText("Link do perfil"),
+    "https://instagram.com/creator_teste",
+  );
+  await user.click(screen.getByRole("checkbox", { name: "Tecnologia" }));
+  await user.type(
+    screen.getByLabelText("Cidade", { exact: true }),
+    "São Paulo",
+  );
+  await selectOption(user, "UF", "SP");
+  await acceptRequiredConsents(user);
+}
+
+async function fillCompanyFields(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(
+    screen.getByLabelText("Razão social"),
+    "Empresa Exemplo Ltda.",
+  );
+  await user.type(screen.getByLabelText("Nome fantasia"), "Empresa Exemplo");
+  await user.type(screen.getByLabelText("CNPJ"), "11444777000161");
+  await selectOption(user, "Segmento", "Tecnologia");
+  await selectOption(user, "Tamanho da empresa", "11 a 50 pessoas");
+  await user.type(screen.getByLabelText("WhatsApp com DDD"), "11988887777");
+  await user.type(
+    screen.getByLabelText("Apresente a empresa"),
+    "Empresa preparada para validar o fluxo completo de cadastro.",
+  );
+  await user.type(screen.getByLabelText("CEP"), "01001000");
+  await user.type(screen.getByLabelText("Logradouro"), "Praça da Sé");
+  await user.type(screen.getByLabelText("Número"), "100");
+  await user.type(screen.getByLabelText("Bairro"), "Sé");
+  await user.type(
+    screen.getByLabelText("Cidade", { exact: true }),
+    "São Paulo",
+  );
+  await selectOption(user, "UF", "SP");
+  await acceptRequiredConsents(user);
 }
 
 describe("combined registration form", () => {
@@ -35,7 +122,12 @@ describe("combined registration form", () => {
     expect(screen.queryByLabelText("CNPJ")).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Criar conta e enviar perfil" }),
-    ).toBeEnabled();
+    ).toBeDisabled();
+    expect(
+      screen.getByText(
+        "Preencha corretamente todos os campos obrigatórios para liberar o envio.",
+      ),
+    ).toBeInTheDocument();
     expect(screen.queryByText("ADMIN")).not.toBeInTheDocument();
   });
 
@@ -154,8 +246,7 @@ describe("combined registration form", () => {
     expect(confirmation).toHaveAttribute("aria-invalid", "false");
   });
 
-  it("blocks an empty submission and identifies the required role", async () => {
-    const user = userEvent.setup();
+  it("keeps submission disabled until the required role and fields are valid", async () => {
     const action = vi.fn();
 
     renderRegistration({
@@ -164,59 +255,108 @@ describe("combined registration form", () => {
       resendAction: vi.fn(),
     });
 
-    await user.click(
-      screen.getByRole("button", { name: "Criar conta e enviar perfil" }),
-    );
-
+    const submit = screen.getByRole("button", {
+      name: "Criar conta e enviar perfil",
+    });
     expect(action).not.toHaveBeenCalled();
+    expect(submit).toBeDisabled();
     expect(
       screen.getByRole("radiogroup", {
         name: /como você vai usar a plataforma/iu,
       }),
-    ).toHaveAttribute("aria-invalid", "true");
-    expect(
-      screen.getByText("Escolha como você vai usar a plataforma."),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: /sou creator/iu })).toHaveFocus();
+    ).toHaveAttribute("aria-required", "true");
   });
 
-  it("validates custom required profile fields in the selected flow", async () => {
+  it("shows minimum lengths and preserves creator values after a server error", async () => {
     const user = userEvent.setup();
-    const action = vi.fn();
-    const { container } = renderRegistration({
+    const action = vi.fn(async () => ({
+      fieldErrors: { socialUrl: ["Não foi possível validar este perfil."] },
+      message: "Revise o endereço informado.",
+      status: "error" as const,
+    }));
+    renderRegistration({
       action,
       googleAction: vi.fn(),
       initialRole: "INFLUENCER",
       resendAction: vi.fn(),
     });
 
-    await user.click(
-      screen.getByRole("button", { name: "Criar conta e enviar perfil" }),
+    expect(screen.getByLabelText("Nome completo")).toHaveAttribute(
+      "minlength",
+      "3",
     );
+    expect(screen.getByLabelText("Conte sobre seu conteúdo")).toHaveAttribute(
+      "minlength",
+      "30",
+    );
+    expect(screen.getByText(/Mínimo de 30 caracteres/iu)).toBeInTheDocument();
 
-    expect(action).not.toHaveBeenCalled();
-    expect(screen.getByLabelText("Tipo de atuação")).toHaveAttribute(
-      "aria-invalid",
-      "true",
+    await fillAccessFields(user);
+    await fillCreatorFields(user);
+
+    const submit = screen.getByRole("button", {
+      name: "Criar conta e enviar perfil",
+    });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+    await user.click(screen.getByRole("button", { name: "Confirmar envio" }));
+
+    expect(
+      await screen.findByText("Revise o endereço informado."),
+    ).toBeVisible();
+    expect(action).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText("E-mail")).toHaveValue("teste@exemplo.com");
+    expect(screen.getByLabelText("Nome completo")).toHaveValue(
+      "Creator Exemplo",
     );
-    expect(
-      container.querySelector('[data-field-name="nicheSlugs"]'),
-    ).toHaveAttribute("data-invalid", "true");
-    expect(
-      container.querySelector('[data-field-name="termsAccepted"]'),
-    ).toHaveAttribute("aria-invalid", "true");
-    expect(screen.getAllByText("Selecione uma opção.").length).toBeGreaterThan(
-      0,
+    expect(screen.getByLabelText("Nome de creator")).toHaveValue(
+      "Creator Teste",
     );
+    expect(screen.getByLabelText("Cidade", { exact: true })).toHaveValue(
+      "São Paulo",
+    );
+    expect(screen.getByLabelText("Conte sobre seu conteúdo")).toHaveValue(
+      "Crio conteúdo sobre tecnologia, cultura e negócios locais.",
+    );
+  });
+
+  it("preserves company values after a server error", async () => {
+    const user = userEvent.setup();
+    const action = vi.fn(async () => ({
+      fieldErrors: { cnpj: ["Este CNPJ já está em análise."] },
+      message: "Não foi possível concluir o cadastro.",
+      status: "error" as const,
+    }));
+    renderRegistration({
+      action,
+      googleAction: vi.fn(),
+      initialRole: "COMPANY",
+      resendAction: vi.fn(),
+    });
+
+    await fillAccessFields(user);
+    await fillCompanyFields(user);
+
+    const submit = screen.getByRole("button", {
+      name: "Criar conta e enviar perfil",
+    });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+    await user.click(screen.getByRole("button", { name: "Confirmar envio" }));
+
     expect(
-      screen.getByText("Escolha pelo menos um nicho."),
-    ).toBeInTheDocument();
-    expect(
-      screen.getAllByText("Você precisa aceitar para continuar."),
-    ).toHaveLength(2);
-    expect(
-      screen.getByRole("heading", { name: "Corrija os campos abaixo" }),
-    ).toBeInTheDocument();
+      await screen.findByText("Não foi possível concluir o cadastro."),
+    ).toBeVisible();
+    expect(action).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText("E-mail")).toHaveValue("teste@exemplo.com");
+    expect(screen.getByLabelText("Razão social")).toHaveValue(
+      "Empresa Exemplo Ltda.",
+    );
+    expect(screen.getByLabelText("Nome fantasia")).toHaveValue(
+      "Empresa Exemplo",
+    );
+    expect(screen.getByLabelText("CNPJ")).toHaveValue("11444777000161");
+    expect(screen.getByLabelText("Logradouro")).toHaveValue("Praça da Sé");
   });
 
   it("has no serious or critical automated accessibility violations", async () => {
