@@ -28,6 +28,7 @@ export const companyCarouselLogoReferenceSchema = z
 export const companyCarouselItemSchema = z
   .object({
     city: z.string().trim().min(1).max(120).nullable(),
+    companyId: z.uuid(),
     description: z.string().trim().min(1).max(220).nullable(),
     displayName: z.string().trim().min(1).max(160),
     email: z.email().max(320),

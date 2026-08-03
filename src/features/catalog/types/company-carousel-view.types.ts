@@ -2,6 +2,7 @@ import type { CatalogSignedMediaDto } from "./catalog-detail-view.types";
 
 export interface CompanyCarouselViewItemDto {
   city: string | null;
+  companyId: string;
   description: string | null;
   displayName: string;
   email: string;

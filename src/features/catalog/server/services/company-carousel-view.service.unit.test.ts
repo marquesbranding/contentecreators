@@ -8,6 +8,7 @@ const source: CompanyCarouselResponseDto = {
   items: [
     {
       city: "Joaçaba",
+      companyId: "20000000-0000-4000-8000-000000000002",
       description: "Marca aberta a parcerias com creators locais.",
       displayName: "Marca Exemplo",
       email: "contato@marca.example",
@@ -50,9 +51,10 @@ describe("company carousel view service", () => {
     expect(result).toEqual({
       items: [
         {
-          displayName: "Marca Exemplo",
           city: "Joaçaba",
+          companyId: "20000000-0000-4000-8000-000000000002",
           description: "Marca aberta a parcerias com creators locais.",
+          displayName: "Marca Exemplo",
           email: "contato@marca.example",
           logo: {
             alt: "Logo da Marca Exemplo",

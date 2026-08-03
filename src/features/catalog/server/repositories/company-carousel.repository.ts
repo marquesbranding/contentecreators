@@ -39,6 +39,7 @@ export async function listEligibleCarouselCompanies(
           limit 1
         )
       `,
+      companyId: companyProfiles.id,
       description: sql<string | null>`
         case
           when ${companyProfiles.description} is null then null
@@ -90,6 +91,7 @@ export async function listEligibleCarouselCompanies(
   return rows.map((row) =>
     companyCarouselItemSchema.parse({
       city: row.city,
+      companyId: row.companyId,
       description: row.description,
       displayName: row.tradeName,
       email: row.email,

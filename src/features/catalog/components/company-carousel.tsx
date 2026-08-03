@@ -156,14 +156,6 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
                   >
                     Empresa
                   </Badge>
-                  {company.segment ? (
-                    <span
-                      className="max-w-full min-w-0 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-xs leading-5 font-medium break-words whitespace-normal text-white/70"
-                      title={company.segment}
-                    >
-                      {company.segment}
-                    </span>
-                  ) : null}
                 </div>
                 <div className="space-y-1.5">
                   <CardTitle>
@@ -171,6 +163,11 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
                       {company.displayName}
                     </h3>
                   </CardTitle>
+                  {company.segment ? (
+                    <p className="line-clamp-2 text-sm leading-5 text-white/55">
+                      {company.segment}
+                    </p>
+                  ) : null}
                   {[company.city, company.state].filter(Boolean).length > 0 ? (
                     <p className="flex items-center gap-1.5 text-sm text-white/55">
                       <MapPin aria-hidden="true" className="size-4 shrink-0" />
@@ -197,9 +194,7 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
                     className: "w-full",
                     size: "lg",
                   })}
-                  href={getPrimaryCompanyHref(company)}
-                  rel={company.whatsappE164 ? "noopener noreferrer" : undefined}
-                  target={company.whatsappE164 ? "_blank" : undefined}
+                  href={`/app/companies/${company.companyId}`}
                 >
                   <ShieldCheck aria-hidden="true" />
                   Conhecer marca
@@ -215,14 +210,6 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
 }
 
 type Company = CompanyCarouselViewResponseDto["items"][number];
-
-function getPrimaryCompanyHref(company: Company) {
-  if (company.whatsappE164) {
-    return `https://wa.me/${company.whatsappE164.replace(/\D/gu, "")}`;
-  }
-
-  return `mailto:${company.email}`;
-}
 
 function CompanyContactLinks({ company }: { company: Company }) {
   return (

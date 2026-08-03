@@ -24,6 +24,8 @@ export {
 } from "./server/mappers/creator-catalog-browser.mapper";
 export { createCatalogDetailService } from "./server/services/catalog-detail.service";
 export { createCatalogDetailViewService } from "./server/services/catalog-detail-view.service";
+export { createCompanyDetailService } from "./server/services/company-detail.service";
+export { createCompanyDetailViewService } from "./server/services/company-detail-view.service";
 export { createCompanyCarouselViewService } from "./server/services/company-carousel-view.service";
 export {
   createCompanyCarouselService,
@@ -34,3 +36,4 @@ export {
   createServerCreatorCatalogService,
 } from "./server/services/creator-catalog.service";
 export { createServerCatalogDetailService } from "./server/services/server-catalog-detail.service";
+export { createServerCompanyDetailService } from "./server/services/server-company-detail.service";

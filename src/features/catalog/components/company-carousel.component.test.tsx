@@ -11,6 +11,7 @@ const response: CompanyCarouselViewResponseDto = {
   items: [
     {
       city: "Joaçaba",
+      companyId: "20000000-0000-4000-8000-000000000002",
       description: "Marca aberta a parcerias com creators locais.",
       displayName: "Marca Segura",
       email: "contato@marca.example",
@@ -46,7 +47,10 @@ describe("CompanyCarouselView", () => {
     ).toHaveAttribute("src", response.items[0]!.logo!.url);
     expect(
       screen.getByRole("link", { name: /conhecer marca marca segura/iu }),
-    ).toHaveAttribute("href", "https://wa.me/5549999999999");
+    ).toHaveAttribute(
+      "href",
+      "/app/companies/20000000-0000-4000-8000-000000000002",
+    );
     expect(screen.getByRole("link", { name: "WhatsApp" })).toHaveAttribute(
       "href",
       "https://wa.me/5549999999999",

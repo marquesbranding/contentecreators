@@ -2,6 +2,7 @@ export { ApprovedCatalogEntry } from "./components/approved-catalog-entry";
 export { CreatorCatalogView } from "./components/creator-catalog-view.client";
 export { HydratedCreatorCatalog } from "./components/hydrated-creator-catalog.client";
 export { CatalogDetailScreen } from "./components/catalog-detail-screen.client";
+export { CompanyDetailView } from "./components/company-detail-view";
 export { CompanyCarouselScreen } from "./components/company-carousel-screen.client";
 export {
   creatorCatalogKeys,
@@ -47,6 +48,10 @@ export {
   type CatalogDetailQuery,
 } from "./schemas/catalog-detail.schema";
 export {
+  companyDetailQuerySchema,
+  type CompanyDetailQuery,
+} from "./schemas/company-detail.schema";
+export {
   companyCarouselItemSchema,
   companyCarouselLogoReferenceSchema,
   companyCarouselResponseSchema,
@@ -77,6 +82,11 @@ export type {
   CatalogCreatorDetailViewDto,
   CatalogSignedMediaDto,
 } from "./types/catalog-detail-view.types";
+export type {
+  CompanyDetailDto,
+  CompanyDetailViewDto,
+  CompanyMediaReferenceDto,
+} from "./types/company-detail.types";
 export {
   COMPANY_CAROUSEL_DEFAULT_LIMIT,
   COMPANY_CAROUSEL_MAX_LIMIT,

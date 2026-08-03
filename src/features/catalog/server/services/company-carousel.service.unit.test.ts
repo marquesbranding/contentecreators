@@ -12,6 +12,7 @@ import { createCompanyCarouselService } from "./company-carousel.service";
 
 const eligibleItem: CompanyCarouselItemDto = {
   city: "Joaçaba",
+  companyId: "20000000-0000-4000-8000-000000000002",
   description: "Marca aberta a parcerias com creators locais.",
   displayName: "Marca Segura",
   email: "contato@marca.example",

@@ -22,6 +22,7 @@ interface CompanyCarouselViewServiceDependencies {
   ): Promise<{
     items: {
       city: string | null;
+      companyId: string;
       description: string | null;
       displayName: string;
       email: string;
@@ -57,6 +58,7 @@ export function createCompanyCarouselViewService({
 
           return {
             city: company.city,
+            companyId: company.companyId,
             description: company.description,
             displayName: company.displayName,
             email: company.email,

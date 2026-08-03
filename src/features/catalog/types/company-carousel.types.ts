@@ -8,6 +8,7 @@ export interface CompanyCarouselLogoReferenceDto {
 
 export interface CompanyCarouselItemDto {
   city: string | null;
+  companyId: string;
   description: string | null;
   displayName: string;
   email: string;
