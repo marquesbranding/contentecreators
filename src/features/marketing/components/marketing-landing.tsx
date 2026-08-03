@@ -501,71 +501,113 @@ function MarketingFooter({
 }: {
   supportContactEmail: string | null;
 }) {
+  const institutionalLinks = [
+    { href: "#faq", label: copy.footer.faq },
+    { href: "/terms", label: copy.footer.terms },
+    { href: "/privacy", label: copy.footer.privacy },
+  ];
+
   return (
     <footer className="bg-brand-night text-white">
-      <div className="mx-auto grid w-full max-w-[90rem] gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[1fr_auto] lg:items-end lg:px-12">
-        <div>
-          <p className="text-xl font-extrabold tracking-[-0.025em]">
-            {ptBR.brand.name}
-          </p>
-          <p className="mt-2 text-sm text-white/55">{copy.footer.tagline}</p>
-        </div>
-        <nav
-          aria-label="Links institucionais"
-          className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-semibold"
-        >
-          <a
-            className="text-white/70 hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
-            href="#faq"
-          >
-            {copy.footer.faq}
-          </a>
-          <Link
-            className="text-white/70 hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
-            href="/terms"
-          >
-            {copy.footer.terms}
-          </Link>
-          <Link
-            className="text-white/70 hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
-            href="/privacy"
-          >
-            {copy.footer.privacy}
-          </Link>
-          {supportContactEmail ? (
-            <a
-              className="inline-flex items-center gap-2 text-white/70 hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
-              href={`mailto:${supportContactEmail}`}
-            >
-              <Mail aria-hidden="true" className="size-4" />
-              {copy.footer.supportContact}
-            </a>
-          ) : null}
-        </nav>
-        <nav
-          aria-label="Redes sociais"
-          className="flex flex-wrap gap-3 lg:justify-end"
-        >
-          {copy.footer.socialLinks.map((link) => {
-            const Icon = socialIcons[link.label];
+      <div className="mx-auto w-full max-w-[90rem] px-5 py-12 sm:px-8 lg:px-12">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.45fr)_minmax(12rem,0.55fr)_minmax(16rem,0.75fr)] lg:items-start">
+          <div className="max-w-md">
+            <p className="text-2xl font-extrabold tracking-[-0.03em]">
+              {ptBR.brand.name}
+            </p>
+            <p className="mt-3 max-w-sm text-sm leading-6 text-white/58">
+              {copy.footer.tagline}
+            </p>
+          </div>
 
-            return (
+          <nav aria-label="Links institucionais">
+            <h2 className="text-brand-lime text-xs font-extrabold tracking-[0.14em] uppercase">
+              Institucional
+            </h2>
+            <div className="mt-4 grid gap-3">
+              {institutionalLinks.map((link) =>
+                link.href.startsWith("/") ? (
+                  <Link
+                    className="w-fit text-sm font-semibold text-white/68 transition-colors hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
+                    href={link.href}
+                    key={link.label}
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <a
+                    className="w-fit text-sm font-semibold text-white/68 transition-colors hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
+                    href={link.href}
+                    key={link.label}
+                  >
+                    {link.label}
+                  </a>
+                ),
+              )}
+            </div>
+          </nav>
+
+          <div>
+            <h2 className="text-brand-lime text-xs font-extrabold tracking-[0.14em] uppercase">
+              Contato
+            </h2>
+            {supportContactEmail ? (
               <a
-                aria-label={link.label}
-                className="flex size-11 items-center justify-center rounded-full border border-white/15 text-white/70 transition-colors hover:border-white/45 hover:text-white focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
-                href={link.href}
-                key={link.label}
-                rel="noopener noreferrer"
-                target="_blank"
+                className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-4 text-sm font-semibold text-white/70 transition-colors hover:border-white/35 hover:bg-white/[0.08] hover:text-white focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
+                href={`mailto:${supportContactEmail}`}
               >
-                <Icon aria-hidden="true" className="size-5" />
+                <Mail aria-hidden="true" className="size-4" />
+                {copy.footer.supportContact}
               </a>
-            );
-          })}
-        </nav>
-        <p className="border-t border-white/15 pt-6 text-xs text-white/60 lg:col-span-2">
-          © {new Date().getFullYear()} {copy.footer.copyright}
-        </p>
+            ) : null}
+            <nav
+              aria-label="Redes sociais"
+              className="mt-5 flex flex-wrap gap-3"
+            >
+              {copy.footer.socialLinks.map((link) => {
+                const Icon = socialIcons[link.label];
+
+                return (
+                  <a
+                    aria-label={link.label}
+                    className="flex size-11 items-center justify-center rounded-full border border-white/15 text-white/70 transition-colors hover:border-white/45 hover:text-white focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
+                    href={link.href}
+                    key={link.label}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    <Icon aria-hidden="true" className="size-5" />
+                  </a>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+
+        <div className="mt-10 flex flex-col gap-4 border-t border-white/12 pt-6 text-xs text-white/55 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {new Date().getFullYear()} {copy.footer.copyright}
+          </p>
+          <a
+            aria-label="Conhecer a Vevox"
+            className="inline-flex w-fit items-center gap-3 rounded-md px-1 py-1 transition-colors hover:bg-white/[0.04] focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
+            href="https://vevox.com.br/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <span>Desenvolvido por</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              alt="Vevox"
+              className="h-5 w-auto opacity-80 transition-opacity hover:opacity-100"
+              decoding="async"
+              height={24}
+              loading="lazy"
+              src="/logos/by-vevox-512.webp"
+              width={132}
+            />
+          </a>
+        </div>
       </div>
     </footer>
   );

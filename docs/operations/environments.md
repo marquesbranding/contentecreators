@@ -122,7 +122,7 @@ or Supabase project in production.
 | ----------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | Local       | `http://localhost:3000/auth/callback` and the exact `127.0.0.1` equivalent | `http://127.0.0.1:54321/auth/v1/callback`                          |
 | Development | `https://<contente-creators-dev-domain>/auth/callback`                     | `https://<contente-creators-dev-ref>.supabase.co/auth/v1/callback` |
-| Production  | `https://www.contentecreators.com/auth/callback`                           | `https://<contente-creators-prd-ref>.supabase.co/auth/v1/callback` |
+| Production  | `https://www.contentecreators.com/auth/callback`                           | `https://kstbhqeiebutpfvswyla.supabase.co/auth/v1/callback`        |
 
 For each Vercel project, `NEXT_PUBLIC_APP_URL` must be the exact application
 origin represented in its Supabase allowlist. The application callback accepts

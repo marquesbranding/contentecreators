@@ -109,7 +109,9 @@ project instead of promoting one prebuilt artifact across projects.
 The complete distinction between variables installed by the Supabase/Vercel
 integration, manually managed Vercel values, and Supabase Dashboard
 configuration is documented in the
-[integration guide](./vercel-supabase-integration.md).
+[integration guide](./vercel-supabase-integration.md). The production Google
+OAuth values for `www.contentecreators.com` are listed in the
+[Google OAuth release checklist](./google-oauth-release.md).
 
 ## Supabase Auth, Storage, and scheduled work
 
@@ -118,7 +120,8 @@ For each Supabase project:
 - [ ] Set the exact application site URL and only the matching callback,
       recovery, and email-confirmation redirect origins.
 - [ ] Configure a dedicated Google OAuth client and the matching
-      `https://<project-ref>.supabase.co/auth/v1/callback`.
+      `https://<project-ref>.supabase.co/auth/v1/callback`. Production uses
+      `https://kstbhqeiebutpfvswyla.supabase.co/auth/v1/callback`.
 - [ ] Configure Marques Branding SMTP and copy the reviewed `pt-BR` templates
       from `supabase/templates/`.
 - [ ] Confirm sender ownership, SPF, DKIM, DMARC, provider limits, and

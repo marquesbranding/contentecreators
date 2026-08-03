@@ -12,6 +12,7 @@ variável e como evitar cruzamento entre DEV e PRD.
 | Origem canônica atual | `https://www.contentecreators.com` |
 | Projeto Vercel        | `contente-creators-prd`            |
 | Projeto Supabase      | `contente-creators-prd`            |
+| Ref Supabase          | `kstbhqeiebutpfvswyla`             |
 | Branch de produção    | `main`                             |
 | Executor do deploy    | Vercel                             |
 | Build Command         | `npm run vercel:build`             |
@@ -150,7 +151,7 @@ No projeto `contente-creators-prd`:
 2. Adicione redirects exatos necessários, incluindo
    `https://www.contentecreators.com/auth/callback`.
 3. Configure o Google OAuth de produção com callback do próprio projeto
-   Supabase: `https://<project-ref>.supabase.co/auth/v1/callback`.
+   Supabase: `https://kstbhqeiebutpfvswyla.supabase.co/auth/v1/callback`.
 4. Configure o SMTP da Marques Branding para o Supabase Auth.
 5. Publique os templates `pt-BR` versionados em `supabase/templates/`.
 6. Confirme que buckets, RLS, hooks e schema correspondem às migrations
@@ -240,5 +241,6 @@ também:
 
 - [Configuração de ambientes](./environments.md)
 - [Provisionamento hospedado](./environment-provisioning.md)
+- [Google OAuth de release](./google-oauth-release.md)
 - [Deploy e migrations](./deployment-runbook.md)
 - [Entrega de e-mails](./email-delivery.md)
