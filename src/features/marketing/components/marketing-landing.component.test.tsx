@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import { MarketingLanding } from "@/features/marketing";
@@ -87,6 +88,31 @@ describe("MarketingLanding", () => {
       "href",
       "#faq",
     );
+  });
+
+  it("opens the Vevox information dialog from the footer credit", async () => {
+    const user = userEvent.setup();
+    render(<MarketingLanding />);
+
+    expect(
+      screen.queryByRole("heading", { name: "Sobre a Vevox" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Conhecer a Vevox" }),
+    ).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Abrir informações sobre a Vevox",
+      }),
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Sobre a Vevox" }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "Conhecer a Vevox" }),
+    ).toHaveAttribute("href", "https://vevox.com.br/");
   });
 
   it("uses the supplied brand asset without participant listings", () => {

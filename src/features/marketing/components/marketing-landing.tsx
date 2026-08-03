@@ -1,4 +1,5 @@
 import {
+  ArrowUpRight,
   ArrowRight,
   AtSign,
   BadgeCheck,
@@ -11,6 +12,8 @@ import {
   MessageCircle,
   Music2,
   Search,
+  SearchCheck,
+  ShieldCheck,
   Sparkles,
   UserRoundSearch,
 } from "lucide-react";
@@ -26,6 +29,14 @@ import {
 } from "@/registry/magicui/scroll-based-velocity";
 import { TextAnimate } from "@/registry/magicui/text-animate";
 import { buttonVariants } from "@/shared/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/shared/components/ui/dialog";
 import { ptBR } from "@/shared/copy/pt-BR";
 import { cn } from "@/shared/lib/cn";
 
@@ -53,6 +64,27 @@ const socialIcons = {
   LinkedIn: BriefcaseBusiness,
   TikTok: Music2,
 } as const;
+
+const vevoxFacts = [
+  {
+    description:
+      "Experiências objetivas, com informação organizada e menos atrito.",
+    icon: SearchCheck,
+    title: "Clareza primeiro",
+  },
+  {
+    description:
+      "Produtos digitais sustentados com consistência, revisão e evolução contínua.",
+    icon: ShieldCheck,
+    title: "Entrega controlada",
+  },
+  {
+    description:
+      "Construção perto da operação, ouvindo contexto antes de propor caminho.",
+    icon: MessageCircle,
+    title: "Proximidade real",
+  },
+] as const;
 
 function HeroPreview() {
   return (
@@ -431,6 +463,83 @@ function FinalCallToAction() {
   );
 }
 
+function ByVevoxInfoDialog() {
+  return (
+    <Dialog>
+      <DialogTrigger
+        render={
+          <button
+            aria-label="Abrir informações sobre a Vevox"
+            className="inline-flex min-h-8 items-center justify-center rounded-md px-2 py-1 transition-colors hover:bg-white/[0.06] focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
+            type="button"
+          />
+        }
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          alt=""
+          aria-hidden="true"
+          className="h-5 w-auto opacity-80 transition-opacity hover:opacity-100"
+          decoding="async"
+          height={24}
+          loading="lazy"
+          src="/logos/by-vevox-512.webp"
+          width={132}
+        />
+      </DialogTrigger>
+
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto border-white/10 bg-[#111114] p-0 text-white sm:max-w-lg">
+        <DialogHeader className="gap-3 p-6 pr-12 pb-4">
+          <DialogTitle className="text-2xl font-semibold tracking-normal text-white">
+            Sobre a Vevox
+          </DialogTitle>
+          <DialogDescription className="text-sm leading-6 text-white/70">
+            A Vevox cria produtos digitais com pesquisa constante, identidade
+            consistente e foco em clareza. Interfaces simples, decisões
+            controladas e proximidade real para evoluir com segurança.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid gap-2 px-6 pb-5">
+          {vevoxFacts.map((fact) => (
+            <div
+              className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-3"
+              key={fact.title}
+            >
+              <div className="flex size-8 items-center justify-center rounded-md bg-white/[0.08] text-white/80">
+                <fact.icon aria-hidden="true" className="size-4" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold text-white">
+                  {fact.title}
+                </h3>
+                <p className="mt-1 text-xs leading-5 text-white/[0.62]">
+                  {fact.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-4 border-t border-white/10 bg-black/20 p-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+          <p className="max-w-[15rem] text-xs leading-5 text-white/[0.55]">
+            Plataforma desenvolvida e sustentada pela Vevox.
+          </p>
+          <a
+            className="inline-flex min-h-10 min-w-[11rem] shrink-0 items-center justify-center gap-1.5 rounded-md border border-white/[0.12] bg-white/[0.06] px-4 py-2 text-sm font-semibold whitespace-nowrap text-white transition-colors hover:border-white/[0.35] hover:bg-white/10 focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
+            href="https://vevox.com.br/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Conhecer a Vevox
+            <ArrowUpRight aria-hidden="true" className="size-3.5" />
+          </a>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function MarketingFooter({
   supportContactEmail,
 }: {
@@ -523,25 +632,10 @@ function MarketingFooter({
           <p>
             © {new Date().getFullYear()} {copy.footer.copyright}
           </p>
-          <a
-            aria-label="Conhecer a Vevox"
-            className="inline-flex w-fit items-center gap-3 rounded-md px-1 py-1 transition-colors hover:bg-white/[0.04] focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
-            href="https://vevox.com.br/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
+          <div className="inline-flex w-fit items-center gap-3">
             <span>Desenvolvido por</span>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              alt="Vevox"
-              className="h-5 w-auto opacity-80 transition-opacity hover:opacity-100"
-              decoding="async"
-              height={24}
-              loading="lazy"
-              src="/logos/by-vevox-512.webp"
-              width={132}
-            />
-          </a>
+            <ByVevoxInfoDialog />
+          </div>
         </div>
       </div>
     </footer>
