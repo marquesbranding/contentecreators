@@ -36,6 +36,11 @@ describe("MarketingLanding", () => {
       }),
     ).toBeInTheDocument();
     expect(
+      screen.getByText(
+        "Descubra creators aprovados, filtre por região, segmento, perfil e métricas. Sua marca ganhando mais visibilidade com os influenciadores que tem a audiência certa para o seu negócio.",
+      ),
+    ).toBeInTheDocument();
+    expect(
       screen.getByRole("heading", {
         name: "Da inscrição à conexão, sem complicação.",
       }),

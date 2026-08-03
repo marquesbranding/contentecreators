@@ -103,49 +103,47 @@ export function PublicCommunityProof({
       data-testid="public-community-proof"
     >
       <div className="mx-auto w-full max-w-[90rem] px-5 sm:px-8 lg:px-12">
-        <div className="grid gap-8 lg:grid-cols-[0.86fr_1.14fr] lg:items-end">
-          <div>
-            <p className="text-brand-blue text-sm font-extrabold tracking-[0.12em] uppercase">
-              Comunidade em movimento
-            </p>
-            <h2
-              className="mt-4 max-w-2xl text-3xl leading-[1.05] font-extrabold sm:text-5xl"
-              id="public-community-proof-title"
-            >
-              Creators e marcas em destaque
-            </h2>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-[#686868]">
-              Um espaço público para apresentar a força da comunidade sem expor
-              dados privados antes da aprovação.
-            </p>
-          </div>
-
-          {proof.companies.length > 0 ? (
-            <div className="overflow-hidden border-y border-black/10 py-5">
-              <p className="mb-4 text-center text-xs font-bold text-black/45">
-                Marcas que já impulsionam seus resultados conosco
-              </p>
-              <ul
-                aria-label="Marcas aprovadas"
-                className="flex min-w-max flex-wrap items-center justify-center gap-3"
-              >
-                {proof.companies.map((company) => (
-                  <li
-                    className="rounded-md border border-black/10 bg-[#f7f6f2] px-4 py-2 text-sm font-extrabold text-black/55 uppercase"
-                    key={company.companyId}
-                  >
-                    {company.tradeName}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
+        <div className="max-w-3xl">
+          <p className="text-brand-blue text-sm font-extrabold tracking-[0.12em] uppercase">
+            Comunidade em movimento
+          </p>
+          <h2
+            className="mt-4 max-w-2xl text-3xl leading-[1.05] font-extrabold sm:text-5xl"
+            id="public-community-proof-title"
+          >
+            Creators e marcas em destaque
+          </h2>
+          <p className="mt-5 max-w-xl text-lg leading-8 text-[#686868]">
+            Um espaço público para apresentar a força da comunidade sem expor
+            dados privados antes da aprovação.
+          </p>
         </div>
+
+        {proof.companies.length > 0 ? (
+          <div className="mt-10 overflow-hidden border-y border-black/10 py-5">
+            <p className="mb-4 text-center text-xs font-bold text-black/45">
+              Marcas que já impulsionam seus resultados conosco
+            </p>
+            <ul
+              aria-label="Marcas aprovadas"
+              className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4"
+            >
+              {proof.companies.map((company) => (
+                <li
+                  className="text-xl font-extrabold tracking-[0.02em] text-black/40 uppercase sm:text-2xl"
+                  key={company.companyId}
+                >
+                  {company.tradeName}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         {proof.creators.length > 0 ? (
           <ul
             aria-label="Creators em destaque"
-            className="mt-8 grid gap-5 md:grid-cols-3"
+            className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3"
           >
             {proof.creators.map((creator) => (
               <li
