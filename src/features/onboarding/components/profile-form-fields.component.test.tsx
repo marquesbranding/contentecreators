@@ -27,7 +27,14 @@ describe("ProfileFormFields company CNPJ experience", () => {
       refetch: vi.fn(),
     });
 
-    render(<ProfileFormFields role="COMPANY" />);
+    render(
+      <ProfileFormFields
+        initialValues={{
+          cnpj: "11444777000161",
+        }}
+        role="COMPANY"
+      />,
+    );
 
     expect(screen.getByRole("alert")).toHaveTextContent(
       "Consulta automática indisponível",
@@ -106,6 +113,32 @@ describe("ProfileFormFields company CNPJ experience", () => {
       "Nome salvo no cadastro Ltda.",
     );
     expect(screen.getByLabelText("Nome fantasia")).toHaveValue("Nome salvo");
+  });
+
+  it("does not show stale automatic-fill feedback for an invalid current CNPJ", () => {
+    useCnpjLookupMock.mockReturnValue({
+      data: {
+        data: {
+          legalName: "Empresa retornada Ltda.",
+        },
+        status: "success",
+      },
+      lookupStatus: "success",
+      refetch: vi.fn(),
+    });
+
+    render(
+      <ProfileFormFields
+        initialValues={{
+          cnpj: "07526557000101",
+        }}
+        role="COMPANY"
+      />,
+    );
+
+    expect(
+      screen.queryByText("Dados preenchidos automaticamente"),
+    ).not.toBeInTheDocument();
   });
 
   it("starts every applicable consent unchecked and keeps contact sharing optional", async () => {

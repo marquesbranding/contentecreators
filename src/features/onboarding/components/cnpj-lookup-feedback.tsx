@@ -58,10 +58,16 @@ export function CnpjLookupFeedback({
       <Alert aria-live="polite">
         <CircleCheck aria-hidden="true" className="text-emerald-600" />
         <AlertTitle>Dados preenchidos automaticamente</AlertTitle>
-        <AlertDescription>
-          Encontramos os dados públicos da empresa. Revise e edite os campos
-          antes de enviar, se necessário.
-          <Button className="mt-3" onClick={onApply} type="button">
+        <AlertDescription className="flex flex-col gap-4 text-pretty lg:flex-row lg:items-center lg:justify-between">
+          <span>
+            Encontramos os dados públicos da empresa. Revise e edite os campos
+            antes de enviar, se necessário.
+          </span>
+          <Button
+            className="w-full shrink-0 lg:w-auto"
+            onClick={onApply}
+            type="button"
+          >
             Preencher novamente
           </Button>
         </AlertDescription>

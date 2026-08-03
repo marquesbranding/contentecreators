@@ -1,5 +1,5 @@
 import { MarketingLanding } from "@/features/marketing";
-import { PublicAggregateCountersEnhancement } from "@/features/marketing/client";
+import { PublicCommunityProofEnhancement } from "@/features/marketing/client";
 import { loadPublicSupportContact } from "@/features/marketing/server";
 import { PublicSponsorshipPromotionEnhancement } from "@/features/sponsorships/client";
 
@@ -10,7 +10,7 @@ export default function Home() {
 
   return (
     <MarketingLanding
-      aggregateCountersSlot={<PublicAggregateCountersEnhancement />}
+      publicCommunityProof={<PublicCommunityProofEnhancement />}
       publicPromotion={<PublicSponsorshipPromotionEnhancement />}
       supportContactEmail={supportContactEmail}
     />

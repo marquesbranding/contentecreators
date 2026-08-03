@@ -21,9 +21,6 @@ vi.mock("next/image", () => ({
 
 vi.mock("@/features/marketing/server", () => ({
   loadPublicSupportContact: () => "privacidade@contentecreators.test",
-  PublicAggregateCountersSlot: () => {
-    throw new Error("The static landing must not query aggregate counters");
-  },
 }));
 
 vi.mock("@/features/sponsorships/server", () => ({

@@ -33,7 +33,7 @@ import {
 } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
 
-import { isValidCnpj } from "../domain/cnpj";
+import { isValidCnpj, normalizeCnpj } from "../domain/cnpj";
 import { useCnpjLookup } from "../hooks/use-cnpj-lookup";
 import {
   companySegmentOptions,
@@ -372,6 +372,8 @@ export function ProfileFormFields({
   const cnpjLookup = useCnpjLookup(
     role === "COMPANY" ? companyFields.cnpj : "",
   );
+  const currentCnpjIsValid =
+    role === "COMPANY" && isValidCnpj(companyFields.cnpj);
   const automaticallyAppliedCnpj = useRef(
     companyInitialValues?.cnpj?.replace(/\D/gu, "") ?? "",
   );
@@ -498,20 +500,29 @@ export function ProfileFormFields({
                   label="CNPJ"
                   name="cnpj"
                   maxLength={18}
-                  minLength={14}
-                  pattern="(?:[0-9]{14}|[0-9]{2}\\.[0-9]{3}\\.[0-9]{3}/[0-9]{4}-[0-9]{2})"
                   placeholder="00.000.000/0000-00"
                   value={companyFields.cnpj}
                   onChange={updateCompanyField("cnpj")}
-                  validate={(value) =>
-                    value && !isValidCnpj(value)
-                      ? "Informe um CNPJ válido."
-                      : null
-                  }
-                  validationMessage="Informe um CNPJ válido com 14 dígitos."
+                  validate={(value) => {
+                    const normalizedCnpj = normalizeCnpj(value);
+
+                    if (!normalizedCnpj) {
+                      return null;
+                    }
+
+                    if (normalizedCnpj.length !== 14) {
+                      return "Informe os 14 dígitos do CNPJ.";
+                    }
+
+                    return isValidCnpj(normalizedCnpj)
+                      ? null
+                      : "CNPJ inválido. Confira os números informados.";
+                  }}
                 />
                 <CnpjLookupFeedback
-                  lookupStatus={cnpjLookup.lookupStatus}
+                  lookupStatus={
+                    currentCnpjIsValid ? cnpjLookup.lookupStatus : "idle"
+                  }
                   onApply={applyCompanyLookup}
                   onRetry={() => {
                     void cnpjLookup.refetch();

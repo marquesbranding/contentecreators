@@ -37,11 +37,6 @@ describe("MarketingLanding", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
-        name: "Creators e marcas em destaque",
-      }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", {
         name: "Da inscrição à conexão, sem complicação.",
       }),
     ).toBeInTheDocument();
@@ -99,20 +94,13 @@ describe("MarketingLanding", () => {
     expect(screen.queryByTestId("company-listing")).not.toBeInTheDocument();
   });
 
-  it("shows only optional aggregate counters supplied by the server", () => {
-    const { container } = render(
-      <MarketingLanding
-        aggregateCounters={{
-          approvedCompanies: 7,
-          approvedCreators: 24,
-        }}
-      />,
-    );
+  it("keeps public proof out of the static shell until data is available", () => {
+    const { container } = render(<MarketingLanding />);
 
-    expect(screen.getByText("24")).toBeInTheDocument();
-    expect(screen.getByText("Creators aprovados")).toBeInTheDocument();
-    expect(screen.getByText("7")).toBeInTheDocument();
-    expect(screen.getByText("Empresas aprovadas")).toBeInTheDocument();
+    expect(screen.queryByText("Creators e marcas em destaque")).toBeNull();
+    expect(screen.queryByText("Comunidade com curadoria")).toBeNull();
+    expect(screen.queryByText("Creators aprovados")).toBeNull();
+    expect(screen.queryByText("Empresas aprovadas")).toBeNull();
     expect(
       container.querySelector('[data-testid="creator-listing"]'),
     ).toBeNull();

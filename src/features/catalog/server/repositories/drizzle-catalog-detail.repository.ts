@@ -180,7 +180,6 @@ export const findEligibleCatalogCreator: FindEligibleCatalogCreator = async (
     eq(creatorProfiles.id, creatorId),
     eq(accounts.role, "INFLUENCER"),
     eq(accounts.status, "APPROVED"),
-    eq(accounts.completionPercentage, 100),
     isNull(accounts.archivedAt),
     isNull(creatorProfiles.archivedAt),
     isNotNull(creatorProfiles.bio),

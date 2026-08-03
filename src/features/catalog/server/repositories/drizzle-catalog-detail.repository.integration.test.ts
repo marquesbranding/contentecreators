@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { createDatabaseClient } from "@/db/client";
-import { creatorProfiles } from "@/db/schema";
+import { accounts, creatorProfiles } from "@/db/schema";
 import {
   AccountAccessError,
   createVerifiedAccountTransactionRunner,
@@ -17,9 +17,11 @@ const databaseUrl = "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
 const approvedCompanyAuthUserId = "30000000-0000-4000-8000-000000000004";
 const approvedCreatorAuthUserId = "20000000-0000-4000-8000-000000000004";
 const pendingCompanyAuthUserId = "30000000-0000-4000-8000-000000000002";
+const approvedCompanyAccountId = "c0000000-0000-4000-8000-000000000004";
 const approvedCreatorAccountId = "b0000000-0000-4000-8000-000000000004";
 const suspendedCreatorAccountId = "b0000000-0000-4000-8000-000000000005";
 const client = createDatabaseClient(databaseUrl);
+const rollback = new Error("rollback catalog detail fixture");
 let approvedCreatorId = "";
 let suspendedCreatorId = "";
 
@@ -111,6 +113,40 @@ describeLocalStack("Drizzle catalog detail repository", () => {
     });
 
     expect(result).toBeNull();
+  });
+
+  it("does not require optional profile completion for detail eligibility", async () => {
+    let result:
+      Awaited<ReturnType<typeof findEligibleCatalogCreator>> | undefined;
+
+    try {
+      await client.database.transaction(async (transaction) => {
+        await transaction
+          .update(accounts)
+          .set({ completionPercentage: 69 })
+          .where(eq(accounts.id, approvedCreatorAccountId));
+
+        result = await findEligibleCatalogCreator(
+          transaction,
+          approvedCreatorId,
+          {
+            accountId: approvedCompanyAccountId,
+            role: "COMPANY",
+          },
+        );
+
+        throw rollback;
+      });
+    } catch (error) {
+      if (error !== rollback) {
+        throw error;
+      }
+    }
+
+    expect(result).toMatchObject({
+      creatorId: approvedCreatorId,
+      displayName: "Diego Aprova",
+    });
   });
 
   it("returns null for a suspended creator without leaking prior detail", async () => {

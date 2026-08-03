@@ -151,6 +151,57 @@ describe("onboarding form contracts", () => {
     }
   });
 
+  it("accepts a formatted valid CNPJ and distinguishes invalid check digits", () => {
+    const valid = emailRegistrationSchema.safeParse({
+      ...commonProfile,
+      cnpj: "07.526.557/0001-00",
+      description:
+        "Empresa de tecnologia que busca creators para campanhas institucionais.",
+      email: "empresa@example.com",
+      employeeRange: "11_TO_50",
+      neighborhood: "Centro",
+      number: "100",
+      password: "StrongPass1",
+      passwordConfirmation: "StrongPass1",
+      postalCode: "01001-000",
+      role: "COMPANY",
+      segment: "Tecnologia",
+      street: "Praça da Sé",
+      tradeName: "Empresa Exemplo",
+    });
+    const invalidCheckDigits = emailRegistrationSchema.safeParse({
+      ...commonProfile,
+      cnpj: "07.526.557/0001-01",
+      description:
+        "Empresa de tecnologia que busca creators para campanhas institucionais.",
+      email: "empresa@example.com",
+      employeeRange: "11_TO_50",
+      neighborhood: "Centro",
+      number: "100",
+      password: "StrongPass1",
+      passwordConfirmation: "StrongPass1",
+      postalCode: "01001-000",
+      role: "COMPANY",
+      segment: "Tecnologia",
+      street: "Praça da Sé",
+      tradeName: "Empresa Exemplo",
+    });
+
+    expect(valid.success).toBe(true);
+    if (valid.success && valid.data.role === "COMPANY") {
+      expect(valid.data.cnpj).toBe("07526557000100");
+    }
+    expect(invalidCheckDigits.success).toBe(false);
+    if (!invalidCheckDigits.success) {
+      const fieldErrors = invalidCheckDigits.error.flatten().fieldErrors as
+        Record<string, string[] | undefined> | undefined;
+
+      expect(fieldErrors?.cnpj).toContain(
+        "CNPJ inválido. Confira os números informados.",
+      );
+    }
+  });
+
   it.each([
     { socialPlatform: "LINKEDIN", socialUrl: undefined },
     {

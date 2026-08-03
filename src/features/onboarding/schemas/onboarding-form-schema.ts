@@ -198,7 +198,12 @@ export const companyProfileFieldsSchema = z.object({
     .string()
     .trim()
     .transform(normalizeCnpj)
-    .refine(isValidCnpj, "Informe um CNPJ válido."),
+    .pipe(
+      z
+        .string()
+        .length(14, "Informe os 14 dígitos do CNPJ.")
+        .refine(isValidCnpj, "CNPJ inválido. Confira os números informados."),
+    ),
   coverAssetId: z.uuid("A capa enviada não é válida.").optional(),
   complement: z.string().trim().max(120).optional().default(""),
   description: z

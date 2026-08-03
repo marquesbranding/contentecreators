@@ -35,6 +35,10 @@ function getNativeValidationMessage(control: NativeFormControl) {
     return "Informe um número válido.";
   }
 
+  if (control.validity.customError) {
+    return control.validationMessage || "Revise este campo.";
+  }
+
   if (
     control.validity.patternMismatch ||
     control.validity.tooLong ||

@@ -69,7 +69,7 @@ describe("catalog detail service", () => {
     );
   });
 
-  it("returns null for an unavailable, incomplete, suspended or archived creator", async () => {
+  it("returns null for an unavailable, suspended or archived creator", async () => {
     const findEligibleCreator = vi.fn().mockResolvedValue(null);
     const service = createCatalogDetailService({
       findEligibleCreator,

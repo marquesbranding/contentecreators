@@ -88,7 +88,7 @@ export const ptBR = {
       eyebrow: "Feita para os dois lados da parceria",
       title: "Para quem cria conteúdo e para quem procura resultados.",
       description:
-        "Uma experiência clara para quem cria e para quem procura criatividade.",
+        "Uma comunidade que conecta empresas e influenciadores para criar marcas mais fortes.",
       creator: {
         label: "Para creators",
         title: "Seu trabalho merece ser encontrado.",
@@ -104,7 +104,7 @@ export const ptBR = {
         label: "Para empresas",
         title: "Encontre a voz certa para sua marca.",
         description:
-          "Descubra creators aprovados, filtre por região, segmento, perfil e métricas.",
+          "Descubra creators aprovados, filtre por região, segmento, perfil e métricas. Sua marca ganhando mais visibilidade com os influenciadores que tem a audiência certa para o seu negócio.",
         benefits: [
           "Tenha os melhores creators para sua campanha",
           "Agilidade e eficiência na busca perfeita",
@@ -122,7 +122,7 @@ export const ptBR = {
           number: "01",
           title: "Crie sua conta",
           description:
-            "Entre com e-mail e senha ou com o Google e escolha seu tipo de perfil.",
+            "Entre com e-mail e senha, ou com o Google, e escolha seu tipo de perfil.",
         },
         {
           number: "02",

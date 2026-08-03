@@ -19,19 +19,15 @@ import type { ReactNode } from "react";
 
 import { MarketingHeader } from "@/features/marketing/components/marketing-header";
 import { buildRegistrationHref } from "@/features/marketing/domain/registration-intent";
-import type { PublicAggregateCountersDto } from "@/features/marketing/types/public-aggregate-counters.types";
 import { AuroraText } from "@/registry/magicui/aurora-text";
 import {
   ScrollVelocityContainer,
   ScrollVelocityRow,
 } from "@/registry/magicui/scroll-based-velocity";
 import { TextAnimate } from "@/registry/magicui/text-animate";
-import { BrandLogo } from "@/shared/components/brand-logo";
 import { buttonVariants } from "@/shared/components/ui/button";
 import { ptBR } from "@/shared/copy/pt-BR";
 import { cn } from "@/shared/lib/cn";
-
-import { PublicAggregateCounters } from "./public-aggregate-counters";
 
 const copy = ptBR.marketing;
 const influencerHref = buildRegistrationHref("INFLUENCER");
@@ -144,67 +140,6 @@ function MotionStrip() {
   );
 }
 
-function PublicProofPreview() {
-  return (
-    <section
-      aria-labelledby="proof-preview-title"
-      className="bg-white py-14 text-black sm:py-16"
-    >
-      <div className="mx-auto w-full max-w-[90rem] px-5 sm:px-8 lg:px-12">
-        <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <div>
-            <p className="text-brand-blue text-sm font-extrabold tracking-[0.12em] uppercase">
-              Comunidade em movimento
-            </p>
-            <h2
-              className="mt-4 max-w-2xl text-3xl leading-[1.05] font-extrabold tracking-[-0.04em] sm:text-5xl"
-              id="proof-preview-title"
-            >
-              {copy.proofPreview.title}
-            </h2>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-[#686868]">
-              {copy.proofPreview.description}
-            </p>
-          </div>
-
-          <div className="overflow-hidden border-y border-black/10 py-6">
-            <div aria-hidden="true" className="mb-6">
-              <ScrollVelocityContainer>
-                <ScrollVelocityRow
-                  baseVelocity={1.4}
-                  className="flex items-center"
-                  direction={1}
-                >
-                  <div className="flex items-center gap-10 pr-10">
-                    {Array.from({ length: 8 }, (_, index) => (
-                      <BrandLogo
-                        background="transparent"
-                        className="w-[11rem] opacity-90"
-                        key={index}
-                        variant="black"
-                      />
-                    ))}
-                  </div>
-                </ScrollVelocityRow>
-              </ScrollVelocityContainer>
-            </div>
-            <ul className="grid gap-3 sm:grid-cols-2">
-              {copy.proofPreview.items.map((item) => (
-                <li
-                  className="border border-black/10 bg-[#f7f6f2] px-4 py-3 text-sm font-extrabold tracking-[0.08em] uppercase"
-                  key={item}
-                >
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function AudienceSection() {
   return (
     <section
@@ -239,7 +174,7 @@ function AudienceSection() {
 
         <div className="mt-12 grid gap-5 lg:grid-cols-2">
           <article
-            className="bg-brand-pink text-brand-night scroll-mt-24 rounded-[1.75rem] border border-white/10 p-6 shadow-[0_24px_70px_rgba(245,22,126,0.16)] sm:p-8 lg:p-10"
+            className="bg-brand-pink text-brand-night flex h-full scroll-mt-24 flex-col rounded-[1.75rem] border border-white/10 p-6 shadow-[0_24px_70px_rgba(245,22,126,0.16)] sm:p-8 lg:p-10"
             id="para-creators"
           >
             <UserRoundSearch className="size-10" aria-hidden="true" />
@@ -249,10 +184,10 @@ function AudienceSection() {
             <h3 className="mt-3 max-w-lg text-3xl font-extrabold tracking-[-0.035em] sm:text-4xl">
               {copy.audience.creator.title}
             </h3>
-            <p className="mt-4 max-w-xl text-base leading-7 sm:text-lg">
+            <p className="mt-4 max-w-xl text-base leading-7 sm:text-lg lg:min-h-[5.25rem]">
               {copy.audience.creator.description}
             </p>
-            <ul className="mt-7 space-y-3">
+            <ul className="mt-7 flex-1 space-y-3">
               {copy.audience.creator.benefits.map((benefit) => (
                 <li
                   className="flex items-start gap-3 font-semibold"
@@ -279,7 +214,7 @@ function AudienceSection() {
           </article>
 
           <article
-            className="bg-brand-sky text-brand-night scroll-mt-24 rounded-[1.75rem] border border-white/10 p-6 shadow-[0_24px_70px_rgba(30,155,240,0.16)] sm:p-8 lg:p-10"
+            className="bg-brand-sky text-brand-night flex h-full scroll-mt-24 flex-col rounded-[1.75rem] border border-white/10 p-6 shadow-[0_24px_70px_rgba(30,155,240,0.16)] sm:p-8 lg:p-10"
             id="para-empresas"
           >
             <Building2 className="size-10" aria-hidden="true" />
@@ -289,10 +224,10 @@ function AudienceSection() {
             <h3 className="mt-3 max-w-lg text-3xl font-extrabold tracking-[-0.035em] sm:text-4xl">
               {copy.audience.company.title}
             </h3>
-            <p className="mt-4 max-w-xl text-base leading-7 sm:text-lg">
+            <p className="mt-4 max-w-xl text-base leading-7 sm:text-lg lg:min-h-[5.25rem]">
               {copy.audience.company.description}
             </p>
-            <ul className="mt-7 space-y-3">
+            <ul className="mt-7 flex-1 space-y-3">
               {copy.audience.company.benefits.map((benefit) => (
                 <li
                   className="flex items-start gap-3 font-semibold"
@@ -614,13 +549,11 @@ function MarketingFooter({
 }
 
 export function MarketingLanding({
-  aggregateCounters = null,
-  aggregateCountersSlot = null,
+  publicCommunityProof = null,
   publicPromotion = null,
   supportContactEmail = null,
 }: {
-  aggregateCounters?: PublicAggregateCountersDto | null;
-  aggregateCountersSlot?: ReactNode;
+  publicCommunityProof?: ReactNode;
   publicPromotion?: ReactNode;
   supportContactEmail?: string | null;
 }) {
@@ -685,10 +618,7 @@ export function MarketingLanding({
         </section>
 
         <MotionStrip />
-        <PublicProofPreview />
-        {aggregateCountersSlot ?? (
-          <PublicAggregateCounters counters={aggregateCounters} />
-        )}
+        {publicCommunityProof}
         {publicPromotion ? (
           <section aria-label="Conteúdo promocional" className="bg-[#f7f6f2]">
             {publicPromotion}
