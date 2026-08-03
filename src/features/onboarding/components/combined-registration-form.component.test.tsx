@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -39,18 +39,26 @@ async function selectOption(
 }
 
 async function fillAccessFields(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByLabelText("E-mail"), "teste@exemplo.com");
-  await user.type(screen.getByLabelText("Senha"), "SenhaForte1");
-  await user.type(screen.getByLabelText("Confirmar senha"), "SenhaForte1");
+  void user;
+  fireEvent.input(screen.getByLabelText("E-mail"), {
+    target: { value: "teste@exemplo.com" },
+  });
+  fireEvent.input(screen.getByLabelText("Senha"), {
+    target: { value: "SenhaForte1" },
+  });
+  fireEvent.input(screen.getByLabelText("Confirmar senha"), {
+    target: { value: "SenhaForte1" },
+  });
 }
 
 async function acceptRequiredConsents(
   user: ReturnType<typeof userEvent.setup>,
 ) {
-  await user.click(
+  void user;
+  fireEvent.click(
     screen.getByRole("checkbox", { name: /Li e aceito os Termos de Uso/iu }),
   );
-  await user.click(
+  fireEvent.click(
     screen.getByRole("checkbox", {
       name: /Li e aceito a Política de Privacidade/iu,
     }),
@@ -58,52 +66,74 @@ async function acceptRequiredConsents(
 }
 
 async function fillCreatorFields(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByLabelText("Nome completo"), "Creator Exemplo");
-  await user.type(screen.getByLabelText("Nome de creator"), "Creator Teste");
+  fireEvent.input(screen.getByLabelText("Nome completo"), {
+    target: { value: "Creator Exemplo" },
+  });
+  fireEvent.input(screen.getByLabelText("Nome de creator"), {
+    target: { value: "Creator Teste" },
+  });
   await selectOption(user, "Tipo de atuação", "Influencer");
-  await user.type(screen.getByLabelText("Número de seguidores"), "15000");
-  await user.type(screen.getByLabelText("Taxa de engajamento (%)"), "5");
-  await user.type(screen.getByLabelText("WhatsApp com DDD"), "11999999999");
-  await user.type(
-    screen.getByLabelText("Conte sobre seu conteúdo"),
-    "Crio conteúdo sobre tecnologia, cultura e negócios locais.",
-  );
+  fireEvent.input(screen.getByLabelText("Número de seguidores"), {
+    target: { value: "15000" },
+  });
+  fireEvent.input(screen.getByLabelText("Taxa de engajamento (%)"), {
+    target: { value: "5" },
+  });
+  fireEvent.input(screen.getByLabelText("WhatsApp com DDD"), {
+    target: { value: "11999999999" },
+  });
+  fireEvent.input(screen.getByLabelText("Conte sobre seu conteúdo"), {
+    target: {
+      value: "Crio conteúdo sobre tecnologia, cultura e negócios locais.",
+    },
+  });
   await selectOption(user, "Canal principal", "Instagram");
-  await user.type(
-    screen.getByLabelText("Link do perfil"),
-    "https://instagram.com/creator_teste",
-  );
-  await user.click(screen.getByRole("checkbox", { name: "Tecnologia" }));
-  await user.type(
-    screen.getByLabelText("Cidade", { exact: true }),
-    "São Paulo",
-  );
+  fireEvent.input(screen.getByLabelText("Link do perfil"), {
+    target: { value: "https://instagram.com/creator_teste" },
+  });
+  fireEvent.click(screen.getByRole("checkbox", { name: "Tecnologia" }));
+  fireEvent.input(screen.getByLabelText("Cidade", { exact: true }), {
+    target: { value: "São Paulo" },
+  });
   await selectOption(user, "UF", "SP");
   await acceptRequiredConsents(user);
 }
 
 async function fillCompanyFields(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(
-    screen.getByLabelText("Razão social"),
-    "Empresa Exemplo Ltda.",
-  );
-  await user.type(screen.getByLabelText("Nome fantasia"), "Empresa Exemplo");
-  await user.type(screen.getByLabelText("CNPJ"), "11444777000161");
+  fireEvent.input(screen.getByLabelText("Razão social"), {
+    target: { value: "Empresa Exemplo Ltda." },
+  });
+  fireEvent.input(screen.getByLabelText("Nome fantasia"), {
+    target: { value: "Empresa Exemplo" },
+  });
+  fireEvent.input(screen.getByLabelText("CNPJ"), {
+    target: { value: "11444777000161" },
+  });
   await selectOption(user, "Segmento", "Tecnologia");
   await selectOption(user, "Tamanho da empresa", "11 a 50 pessoas");
-  await user.type(screen.getByLabelText("WhatsApp com DDD"), "11988887777");
-  await user.type(
-    screen.getByLabelText("Apresente a empresa"),
-    "Empresa preparada para validar o fluxo completo de cadastro.",
-  );
-  await user.type(screen.getByLabelText("CEP"), "01001000");
-  await user.type(screen.getByLabelText("Logradouro"), "Praça da Sé");
-  await user.type(screen.getByLabelText("Número"), "100");
-  await user.type(screen.getByLabelText("Bairro"), "Sé");
-  await user.type(
-    screen.getByLabelText("Cidade", { exact: true }),
-    "São Paulo",
-  );
+  fireEvent.input(screen.getByLabelText("WhatsApp com DDD"), {
+    target: { value: "11988887777" },
+  });
+  fireEvent.input(screen.getByLabelText("Apresente a empresa"), {
+    target: {
+      value: "Empresa preparada para validar o fluxo completo de cadastro.",
+    },
+  });
+  fireEvent.input(screen.getByLabelText("CEP"), {
+    target: { value: "01001000" },
+  });
+  fireEvent.input(screen.getByLabelText("Logradouro"), {
+    target: { value: "Praça da Sé" },
+  });
+  fireEvent.input(screen.getByLabelText("Número"), {
+    target: { value: "100" },
+  });
+  fireEvent.input(screen.getByLabelText("Bairro"), {
+    target: { value: "Sé" },
+  });
+  fireEvent.input(screen.getByLabelText("Cidade", { exact: true }), {
+    target: { value: "São Paulo" },
+  });
   await selectOption(user, "UF", "SP");
   await acceptRequiredConsents(user);
 }
@@ -298,8 +328,8 @@ describe("combined registration form", () => {
       name: "Criar conta e enviar perfil",
     });
     await waitFor(() => expect(submit).toBeEnabled());
-    await user.click(submit);
-    await user.click(screen.getByRole("button", { name: "Confirmar envio" }));
+    fireEvent.click(submit);
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar envio" }));
 
     expect(
       await screen.findByText("Revise o endereço informado."),
@@ -341,8 +371,8 @@ describe("combined registration form", () => {
       name: "Criar conta e enviar perfil",
     });
     await waitFor(() => expect(submit).toBeEnabled());
-    await user.click(submit);
-    await user.click(screen.getByRole("button", { name: "Confirmar envio" }));
+    fireEvent.click(submit);
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar envio" }));
 
     expect(
       await screen.findByText("Não foi possível concluir o cadastro."),

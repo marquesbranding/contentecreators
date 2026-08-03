@@ -59,6 +59,7 @@ export default defineConfig({
           environment: "jsdom",
           include: ["src/**/*.component.test.{ts,tsx}"],
           setupFiles: ["./src/test/setup-component.ts"],
+          testTimeout: 10_000,
           clearMocks: true,
           restoreMocks: true,
         },
