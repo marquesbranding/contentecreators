@@ -22,9 +22,21 @@ export const companyCarouselViewResponseSchema = z
     items: z.array(
       z
         .object({
+          city: z.string().trim().min(1).max(120).nullable(),
+          description: z.string().trim().min(1).max(220).nullable(),
           displayName: z.string().trim().min(1).max(160),
-          logo: catalogSignedMediaSchema,
+          email: z.email().max(320),
+          logo: catalogSignedMediaSchema.nullable(),
+          segment: z.string().trim().min(1).max(120).nullable(),
+          state: z
+            .string()
+            .regex(/^[A-Z]{2}$/u)
+            .nullable(),
           websiteUrl: z.url().refine(isSafeWebsiteUrl).nullable(),
+          whatsappE164: z
+            .string()
+            .regex(/^\+[1-9]\d{7,14}$/u)
+            .nullable(),
         })
         .strict(),
     ),

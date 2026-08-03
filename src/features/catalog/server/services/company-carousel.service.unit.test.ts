@@ -11,12 +11,18 @@ import type { CompanyCarouselRepository } from "../repositories/company-carousel
 import { createCompanyCarouselService } from "./company-carousel.service";
 
 const eligibleItem: CompanyCarouselItemDto = {
+  city: "Joaçaba",
+  description: "Marca aberta a parcerias com creators locais.",
   displayName: "Marca Segura",
+  email: "contato@marca.example",
   logo: {
     alt: "Logo da Marca Segura",
     assetId: "90000000-0000-4000-8000-000000000001",
   },
+  segment: "Moda",
+  state: "SC",
   websiteUrl: "https://marca.example/",
+  whatsappE164: "+5549999999999",
 };
 
 type TestRole = "ADMIN" | "COMPANY" | "INFLUENCER" | null;
@@ -77,7 +83,7 @@ describe("company carousel service", () => {
 
     const serialized = JSON.stringify(result);
     expect(serialized).not.toMatch(
-      /cnpj|legalName|address|email|whatsApp|contact|account|moderation|audit|operational/i,
+      /cnpj|legalName|address|account|moderation|audit|operational/i,
     );
   });
 

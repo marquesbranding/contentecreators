@@ -21,9 +21,15 @@ interface CompanyCarouselViewServiceDependencies {
     requestId: string,
   ): Promise<{
     items: {
+      city: string | null;
+      description: string | null;
       displayName: string;
-      logo: { alt: string; assetId: string };
+      email: string;
+      logo: { alt: string; assetId: string } | null;
+      segment: string | null;
+      state: string | null;
       websiteUrl: string | null;
+      whatsappE164: string | null;
     }[];
     limit: number;
   }>;
@@ -41,23 +47,34 @@ export function createCompanyCarouselViewService({
       const response = await listCompanies(input, requestId);
       const resolved = await Promise.all(
         response.items.map(async (company) => {
-          const media = await getSignedMedia(company.logo.assetId);
+          const media = company.logo
+            ? await getSignedMedia(company.logo.assetId)
+            : null;
 
-          if (!media) {
+          if (company.logo && !media) {
             return null;
           }
 
           return {
+            city: company.city,
+            description: company.description,
             displayName: company.displayName,
-            logo: {
-              alt: company.logo.alt,
-              expiresAt: media.expiresAt,
-              height: media.height,
-              mimeType: media.mimeType,
-              url: media.url,
-              width: media.width,
-            },
+            email: company.email,
+            logo:
+              company.logo && media
+                ? {
+                    alt: company.logo.alt,
+                    expiresAt: media.expiresAt,
+                    height: media.height,
+                    mimeType: media.mimeType,
+                    url: media.url,
+                    width: media.width,
+                  }
+                : null,
+            segment: company.segment,
+            state: company.state,
             websiteUrl: company.websiteUrl,
+            whatsappE164: company.whatsappE164,
           } satisfies CompanyCarouselViewItemDto;
         }),
       );

@@ -7,9 +7,15 @@ const assetId = "30000000-0000-4000-8000-000000000001";
 const source: CompanyCarouselResponseDto = {
   items: [
     {
+      city: "Joaçaba",
+      description: "Marca aberta a parcerias com creators locais.",
       displayName: "Marca Exemplo",
+      email: "contato@marca.example",
       logo: { alt: "Logo da Marca Exemplo", assetId },
+      segment: "Moda",
+      state: "SC",
       websiteUrl: "https://marca.example/",
+      whatsappE164: "+5549999999999",
     },
   ],
   limit: 12,
@@ -45,6 +51,9 @@ describe("company carousel view service", () => {
       items: [
         {
           displayName: "Marca Exemplo",
+          city: "Joaçaba",
+          description: "Marca aberta a parcerias com creators locais.",
+          email: "contato@marca.example",
           logo: {
             alt: "Logo da Marca Exemplo",
             expiresAt: signedMedia.expiresAt,
@@ -53,17 +62,20 @@ describe("company carousel view service", () => {
             url: signedMedia.url,
             width: 800,
           },
+          segment: "Moda",
+          state: "SC",
           websiteUrl: "https://marca.example/",
+          whatsappE164: "+5549999999999",
         },
       ],
       limit: 12,
     });
     expect(JSON.stringify(result)).not.toMatch(
-      /assetId|bucketName|objectPath|cnpj|contact/iu,
+      /assetId|bucketName|objectPath|cnpj|legalName/iu,
     );
   });
 
-  it("suppresses entries after logo authorization is lost", async () => {
+  it("suppresses entries only after an existing logo authorization is lost", async () => {
     const service = createCompanyCarouselViewService({
       getSignedMedia: vi.fn(async () => null),
       listCompanies: vi.fn(async () => source),
@@ -73,6 +85,23 @@ describe("company carousel view service", () => {
       service.list({}, "company-carousel-logo-missing"),
     ).resolves.toEqual({
       items: [],
+      limit: 12,
+    });
+  });
+
+  it("keeps approved companies without a logo", async () => {
+    const service = createCompanyCarouselViewService({
+      getSignedMedia: vi.fn(),
+      listCompanies: vi.fn(async () => ({
+        ...source,
+        items: [{ ...source.items[0]!, logo: null }],
+      })),
+    });
+
+    await expect(
+      service.list({}, "company-carousel-logo-optional"),
+    ).resolves.toMatchObject({
+      items: [{ displayName: "Marca Exemplo", logo: null }],
       limit: 12,
     });
   });

@@ -10,7 +10,10 @@ import { CompanyCarouselView } from "./company-carousel";
 const response: CompanyCarouselViewResponseDto = {
   items: [
     {
+      city: "Joaçaba",
+      description: "Marca aberta a parcerias com creators locais.",
       displayName: "Marca Segura",
+      email: "contato@marca.example",
       logo: {
         alt: "Logo da Marca Segura",
         expiresAt: "2026-07-28T18:00:00.000Z",
@@ -19,37 +22,48 @@ const response: CompanyCarouselViewResponseDto = {
         url: "https://storage.example.test/signed-logo",
         width: 800,
       },
+      segment: "Moda",
+      state: "SC",
       websiteUrl: "https://marca.example/",
+      whatsappE164: "+5549999999999",
     },
   ],
   limit: 12,
 };
 
 describe("CompanyCarouselView", () => {
-  it("renders a keyboard-accessible signed-logo carousel with safe links", async () => {
+  it("renders a keyboard-accessible company catalog with contact links", async () => {
     const user = userEvent.setup();
     const { container } = render(
       <CompanyCarouselView response={response} status="success" />,
     );
 
     expect(
-      screen.getByRole("region", { name: /empresas na comunidade/iu }),
+      screen.getByRole("region", { name: /marcas para conhecer/iu }),
     ).toBeVisible();
     expect(
       screen.getByRole("img", { name: "Logo da Marca Segura" }),
-    ).toHaveAttribute("src", response.items[0]?.logo.url);
+    ).toHaveAttribute("src", response.items[0]!.logo!.url);
     expect(
-      screen.getByRole("link", { name: /visitar marca segura/iu }),
-    ).toHaveAttribute("target", "_blank");
+      screen.getByRole("link", { name: /chamar no whatsapp/iu }),
+    ).toHaveAttribute("href", "https://wa.me/5549999999999");
     expect(
-      screen.getByRole("link", { name: /visitar marca segura/iu }),
-    ).toHaveAttribute("rel", expect.stringContaining("noreferrer"));
+      screen.getByRole("link", { name: /enviar e-mail/iu }),
+    ).toHaveAttribute("href", "mailto:contato@marca.example");
+    expect(screen.getByRole("link", { name: /abrir site/iu })).toHaveAttribute(
+      "target",
+      "_blank",
+    );
+    expect(screen.getByRole("link", { name: /abrir site/iu })).toHaveAttribute(
+      "rel",
+      expect.stringContaining("noreferrer"),
+    );
     expect(container.innerHTML).not.toMatch(
-      /cnpj|legalName|email|whatsapp|bucket|objectPath|assetId/iu,
+      /cnpj|legalName|bucket|objectPath|assetId/iu,
     );
     await user.tab();
     expect(
-      screen.getByRole("link", { name: /visitar marca segura/iu }),
+      screen.getByRole("link", { name: /chamar no whatsapp/iu }),
     ).toHaveFocus();
     expect(
       await getBlockingComponentAccessibilityViolations(container),
@@ -66,7 +80,7 @@ describe("CompanyCarouselView", () => {
     );
 
     expect(
-      screen.queryByRole("region", { name: /empresas na comunidade/iu }),
+      screen.queryByRole("region", { name: /marcas para conhecer/iu }),
     ).toBeNull();
 
     rerender(
@@ -79,7 +93,7 @@ describe("CompanyCarouselView", () => {
   });
 
   it.each([320, 390, 768, 1440])(
-    "preserves the private horizontal list semantics at %d px",
+    "preserves the private company list semantics at %d px",
     async (width) => {
       Object.defineProperty(window, "innerWidth", {
         configurable: true,
@@ -91,7 +105,7 @@ describe("CompanyCarouselView", () => {
 
       expect(
         screen.getByRole("list", { name: "Empresas aprovadas" }),
-      ).toHaveClass("overflow-x-auto");
+      ).toHaveClass("grid");
       expect(
         await getBlockingComponentAccessibilityViolations(container),
       ).toEqual([]);

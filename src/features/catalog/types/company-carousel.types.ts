@@ -7,9 +7,15 @@ export interface CompanyCarouselLogoReferenceDto {
 }
 
 export interface CompanyCarouselItemDto {
+  city: string | null;
+  description: string | null;
   displayName: string;
-  logo: CompanyCarouselLogoReferenceDto;
+  email: string;
+  logo: CompanyCarouselLogoReferenceDto | null;
+  segment: string | null;
+  state: string | null;
   websiteUrl: string | null;
+  whatsappE164: string | null;
 }
 
 export interface CompanyCarouselResponseDto {

@@ -9,15 +9,27 @@ import {
 describe("company carousel schema", () => {
   it("accepts only strict presentation fields", () => {
     const safeItem = {
+      city: "Joaçaba",
+      description: "Marca aberta a parcerias com creators locais.",
       displayName: "Marca Segura",
+      email: "contato@marca.example",
       logo: {
         alt: "Logo da Marca Segura",
         assetId: "90000000-0000-4000-8000-000000000001",
       },
+      segment: "Moda",
+      state: "SC",
       websiteUrl: "https://marca.example/",
+      whatsappE164: "+5549999999999",
     };
 
     expect(companyCarouselItemSchema.parse(safeItem)).toEqual(safeItem);
+    expect(
+      companyCarouselItemSchema.parse({ ...safeItem, logo: null }),
+    ).toEqual({
+      ...safeItem,
+      logo: null,
+    });
     expect(() =>
       companyCarouselItemSchema.parse({
         ...safeItem,

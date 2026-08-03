@@ -63,19 +63,30 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         const queryClient = getServerQueryClient();
         const requestId = `catalog-page-${randomUUID()}`;
 
-        const companyCarouselPromise =
-          account.role === "INFLUENCER"
-            ? (async () => {
-                const service = await createServerCompanyCarouselService();
-                const viewService = createCompanyCarouselViewService({
-                  getSignedMedia: getServerSignedMedia,
-                  listCompanies: service.list,
-                });
+        if (account.role === "INFLUENCER") {
+          const [companyCarousel, sponsorshipSlots] = await Promise.all([
+            (async () => {
+              const service = await createServerCompanyCarouselService();
+              const viewService = createCompanyCarouselViewService({
+                getSignedMedia: getServerSignedMedia,
+                listCompanies: service.list,
+              });
 
-                return viewService.list({}, `company-carousel-${randomUUID()}`);
-              })()
-            : Promise.resolve(undefined);
-        const [, companyCarousel, sponsorshipSlots] = await Promise.all([
+              return viewService.list({}, `company-carousel-${randomUUID()}`);
+            })(),
+            loadServerCatalogSponsorshipSlots(account.role),
+          ]);
+
+          return (
+            <ApprovedCatalogEntry signOutAction={signOutAction}>
+              <CatalogSponsorshipSlots slots={sponsorshipSlots}>
+                <CompanyCarouselScreen initialData={companyCarousel} />
+              </CatalogSponsorshipSlots>
+            </ApprovedCatalogEntry>
+          );
+        }
+
+        const [, sponsorshipSlots] = await Promise.all([
           queryClient.prefetchInfiniteQuery({
             getNextPageParam: (lastPage: CreatorCatalogBrowserPageDto) =>
               lastPage.nextCursor ?? undefined,
@@ -90,18 +101,12 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
               ),
             queryKey: creatorCatalogKeys.list(filters),
           }),
-          companyCarouselPromise,
           loadServerCatalogSponsorshipSlots(account.role),
         ]);
 
         return (
           <ApprovedCatalogEntry signOutAction={signOutAction}>
             <CatalogSponsorshipSlots slots={sponsorshipSlots}>
-              {companyCarousel ? (
-                <div className="mb-8">
-                  <CompanyCarouselScreen initialData={companyCarousel} />
-                </div>
-              ) : null}
               <HydratedCreatorCatalog
                 state={dehydrate(queryClient)}
                 viewerRole={account.role}

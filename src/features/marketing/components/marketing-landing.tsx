@@ -299,7 +299,7 @@ function StepsSection() {
     >
       <div className="mx-auto w-full max-w-[90rem] px-5 sm:px-8 lg:px-12">
         <div className="grid gap-8 lg:grid-cols-[0.75fr_1.25fr] lg:gap-16">
-          <div className="lg:sticky lg:top-28 lg:self-start">
+          <div className="lg:self-start">
             <p className="text-sm font-extrabold tracking-[0.12em] text-[#0059db] uppercase">
               {copy.steps.eyebrow}
             </p>

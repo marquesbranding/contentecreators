@@ -3,7 +3,12 @@ import "server-only";
 import { and, asc, eq, isNull, sql } from "drizzle-orm";
 
 import type { ApplicationTransaction } from "@/db/client";
-import { accounts, companyProfiles, mediaAssets } from "@/db/schema";
+import {
+  accounts,
+  companyLocations,
+  companyProfiles,
+  mediaAssets,
+} from "@/db/schema";
 
 import {
   companyCarouselItemSchema,
@@ -24,13 +29,42 @@ export async function listEligibleCarouselCompanies(
 ): Promise<CompanyCarouselItemDto[]> {
   const rows = await transaction
     .select({
+      city: sql<string | null>`
+        (
+          select ${companyLocations.city}
+          from ${companyLocations}
+          where ${companyLocations.companyProfileId} = ${companyProfiles.id}
+            and ${companyLocations.archivedAt} is null
+          order by ${companyLocations.isPrimary} desc, ${companyLocations.id}
+          limit 1
+        )
+      `,
+      description: sql<string | null>`
+        case
+          when ${companyProfiles.description} is null then null
+          else left(${companyProfiles.description}, 220)
+        end
+      `,
+      email: accounts.operationalEmail,
       logoAssetId: mediaAssets.id,
+      segment: companyProfiles.segment,
+      state: sql<string | null>`
+        (
+          select ${companyLocations.state}
+          from ${companyLocations}
+          where ${companyLocations.companyProfileId} = ${companyProfiles.id}
+            and ${companyLocations.archivedAt} is null
+          order by ${companyLocations.isPrimary} desc, ${companyLocations.id}
+          limit 1
+        )
+      `,
       tradeName: companyProfiles.tradeName,
       websiteUrl: companyProfiles.websiteUrl,
+      whatsappE164: companyProfiles.whatsappE164,
     })
     .from(companyProfiles)
     .innerJoin(accounts, eq(accounts.id, companyProfiles.accountId))
-    .innerJoin(
+    .leftJoin(
       mediaAssets,
       and(
         eq(mediaAssets.id, companyProfiles.logoAssetId),
@@ -45,7 +79,6 @@ export async function listEligibleCarouselCompanies(
       and(
         eq(accounts.role, "COMPANY"),
         eq(accounts.status, "APPROVED"),
-        eq(accounts.completionPercentage, 100),
         isNull(accounts.archivedAt),
         isNull(companyProfiles.archivedAt),
         sql`length(trim(${companyProfiles.tradeName})) > 0`,
@@ -56,12 +89,20 @@ export async function listEligibleCarouselCompanies(
 
   return rows.map((row) =>
     companyCarouselItemSchema.parse({
+      city: row.city,
+      description: row.description,
       displayName: row.tradeName,
-      logo: {
-        alt: `Logo da ${row.tradeName}`,
-        assetId: row.logoAssetId,
-      },
+      email: row.email,
+      logo: row.logoAssetId
+        ? {
+            alt: `Logo da ${row.tradeName}`,
+            assetId: row.logoAssetId,
+          }
+        : null,
+      segment: row.segment,
+      state: row.state,
       websiteUrl: toSafeCompanyWebsiteUrl(row.websiteUrl),
+      whatsappE164: row.whatsappE164,
     }),
   );
 }
