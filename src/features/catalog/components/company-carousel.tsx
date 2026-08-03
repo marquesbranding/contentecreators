@@ -8,8 +8,10 @@ import {
   MapPin,
   MessageCircle,
   RefreshCw,
+  ShieldCheck,
 } from "lucide-react";
 
+import { Badge } from "@/shared/components/ui/badge";
 import {
   Alert,
   AlertDescription,
@@ -19,7 +21,7 @@ import { Button } from "@/shared/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
@@ -119,9 +121,9 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
             data-testid="company-listing"
             key={`${company.displayName}-${company.email}`}
           >
-            <Card className="h-full overflow-hidden rounded-2xl">
-              <CardHeader>
-                <div className="bg-muted flex h-24 items-center justify-center overflow-hidden rounded-xl p-3">
+            <Card className="bg-brand-night-surface h-full gap-0 overflow-hidden rounded-2xl border-white/10 py-0 text-white shadow-md transition-transform duration-200 hover:-translate-y-0.5 hover:border-white/20">
+              <div className="from-brand-blue/35 to-brand-night flex aspect-[16/9] items-center justify-center border-b border-white/10 bg-gradient-to-br p-5">
+                <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/92 p-4">
                   {company.logo ? (
                     <>
                       {/* Signed bearer URLs must not enter the shared image cache. */}
@@ -138,64 +140,95 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
                       />
                     </>
                   ) : (
-                    <Building2
+                    <span
                       aria-label={`${company.displayName} está sem logo`}
-                      className="text-muted-foreground size-10"
-                    />
+                      className="text-brand-night/55 flex size-16 items-center justify-center rounded-2xl bg-black/5"
+                      role="img"
+                    >
+                      <Building2 aria-hidden="true" className="size-8" />
+                    </span>
                   )}
                 </div>
-                <CardTitle>{company.displayName}</CardTitle>
-                <CardDescription className="space-y-1">
-                  <span className="block">
-                    {company.segment ?? "Empresa aprovada"}
-                  </span>
-                  {[company.city, company.state].filter(Boolean).length > 0 ? (
-                    <span className="flex items-center gap-1.5">
-                      <MapPin aria-hidden="true" className="size-4" />
-                      {[company.city, company.state].filter(Boolean).join(", ")}
-                    </span>
+              </div>
+
+              <CardHeader className="gap-3 px-5 pt-5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge
+                    className="bg-brand-blue/30 border-transparent text-white"
+                    variant="ghost"
+                  >
+                    Empresa
+                  </Badge>
+                  {company.segment ? (
+                    <Badge
+                      className="border-white/15 bg-white/5 text-white/70"
+                      variant="outline"
+                    >
+                      {company.segment}
+                    </Badge>
                   ) : null}
-                </CardDescription>
+                </div>
+                <div className="space-y-1.5">
+                  <CardTitle>
+                    <h3 className="text-xl font-bold tracking-[-0.02em]">
+                      {company.displayName}
+                    </h3>
+                  </CardTitle>
+                  {[company.city, company.state].filter(Boolean).length > 0 ? (
+                    <p className="flex items-center gap-1.5 text-sm text-white/55">
+                      <MapPin aria-hidden="true" className="size-4 shrink-0" />
+                      {[company.city, company.state].filter(Boolean).join(", ")}
+                    </p>
+                  ) : null}
+                </div>
               </CardHeader>
-              <CardContent className="flex flex-1 flex-col gap-4">
+
+              <CardContent className="flex flex-1 flex-col gap-4 px-5 py-4">
                 {company.description ? (
-                  <p className="text-muted-foreground line-clamp-3 leading-6">
+                  <p className="line-clamp-4 leading-6 text-white/60">
                     {company.description}
                   </p>
                 ) : null}
 
-                <div className="mt-auto grid gap-2">
-                  {company.whatsappE164 ? (
-                    <a
-                      className="bg-brand-blue inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:ring-3 focus-visible:ring-blue-300 focus-visible:outline-none"
-                      href={`https://wa.me/${company.whatsappE164.replace(/\D/gu, "")}`}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      <MessageCircle aria-hidden="true" />
-                      Chamar no WhatsApp
-                    </a>
-                  ) : null}
-                  <a
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-black/[0.04] px-4 py-2 font-semibold transition-colors hover:bg-black/[0.08] focus-visible:ring-3 focus-visible:ring-blue-300 focus-visible:outline-none"
-                    href={`mailto:${company.email}`}
-                  >
-                    <Mail aria-hidden="true" />
-                    Enviar e-mail
-                  </a>
-                  {company.websiteUrl ? (
-                    <a
-                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-black/[0.04] px-4 py-2 font-semibold transition-colors hover:bg-black/[0.08] focus-visible:ring-3 focus-visible:ring-blue-300 focus-visible:outline-none"
-                      href={company.websiteUrl}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      <ExternalLink aria-hidden="true" />
-                      Abrir site
-                    </a>
-                  ) : null}
+                <div className="mt-auto rounded-xl border border-white/10 bg-black/10 p-3">
+                  <p className="flex items-center gap-1.5 text-xs font-semibold text-white/50">
+                    <ShieldCheck aria-hidden="true" className="size-4" />
+                    Contato liberado para creators aprovados
+                  </p>
                 </div>
               </CardContent>
+
+              <CardFooter className="grid gap-2 border-t border-white/10 bg-transparent px-5 py-4">
+                {company.whatsappE164 ? (
+                  <a
+                    className="bg-brand-blue inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:ring-3 focus-visible:ring-blue-300 focus-visible:outline-none"
+                    href={`https://wa.me/${company.whatsappE164.replace(/\D/gu, "")}`}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    <MessageCircle aria-hidden="true" />
+                    Chamar no WhatsApp
+                  </a>
+                ) : null}
+                <a
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white/8 px-4 py-2 font-semibold text-white transition-colors hover:bg-white/12 focus-visible:ring-3 focus-visible:ring-blue-300 focus-visible:outline-none"
+                  href={`mailto:${company.email}`}
+                >
+                  <Mail aria-hidden="true" />
+                  Enviar e-mail
+                </a>
+                {company.websiteUrl ? (
+                  <a
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white/8 px-4 py-2 font-semibold text-white transition-colors hover:bg-white/12 focus-visible:ring-3 focus-visible:ring-blue-300 focus-visible:outline-none"
+                    href={company.websiteUrl}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    <ExternalLink aria-hidden="true" />
+                    Abrir site
+                  </a>
+                ) : null}
+              </CardFooter>
             </Card>
           </li>
         ))}
