@@ -1,7 +1,7 @@
 "use client";
 
 import { ShieldX } from "lucide-react";
-import { useMemo, useTransition } from "react";
+import { useMemo, useOptimistic, useTransition } from "react";
 
 import {
   Alert,
@@ -172,10 +172,29 @@ export function CreatorCatalogView({
   viewerRole: "COMPANY" | "INFLUENCER";
 }) {
   const { clearFilters, filters, updateFilters } = useCreatorCatalogUrlState();
+  const [optimisticFilters, addOptimisticFiltersPatch] = useOptimistic(
+    filters,
+    (
+      current,
+      patch: Partial<Omit<CreatorCatalogFilters, "cursor">> | "clear",
+    ): CreatorCatalogFilters => {
+      if (patch === "clear") {
+        return {
+          pageSize: current.pageSize,
+        };
+      }
+
+      return {
+        ...current,
+        ...patch,
+        cursor: undefined,
+      };
+    },
+  );
   const [isNavigationPending, startTransition] = useTransition();
   const catalog = useCreatorCatalog({ filters });
   const items = catalog.items.map(toCardViewModel);
-  const activeFilters = activeFilterLabels(filters);
+  const activeFilters = activeFilterLabels(optimisticFilters);
   const options = useMemo<CatalogFilterOptions>(() => {
     const cities = new Set(
       catalog.items.flatMap((creator) => (creator.city ? [creator.city] : [])),
@@ -198,6 +217,7 @@ export function CreatorCatalogView({
     patch: Partial<Omit<CreatorCatalogFilters, "cursor">> | "clear",
   ) {
     startTransition(() => {
+      addOptimisticFiltersPatch(patch);
       if (patch === "clear") {
         clearFilters();
       } else {
@@ -227,7 +247,7 @@ export function CreatorCatalogView({
     <div className="space-y-5">
       <CatalogFilterControls
         activeFilters={activeFilters}
-        filters={filters}
+        filters={optimisticFilters}
         isPending={
           isNavigationPending ||
           (catalog.isFetching && !catalog.isFetchingNextPage)
@@ -246,7 +266,7 @@ export function CreatorCatalogView({
               <Button
                 aria-pressed={!filters.niche && !filters.platform}
                 className={
-                  !filters.niche && !filters.platform
+                  !optimisticFilters.niche && !optimisticFilters.platform
                     ? "bg-brand-night min-h-11 shrink-0 rounded-full px-4 text-white hover:bg-black"
                     : "min-h-11 shrink-0 rounded-full bg-white px-4 shadow-sm"
                 }
@@ -256,13 +276,16 @@ export function CreatorCatalogView({
                 size="sm"
                 type="button"
                 variant={
-                  !filters.niche && !filters.platform ? "default" : "outline"
+                  !optimisticFilters.niche && !optimisticFilters.platform
+                    ? "default"
+                    : "outline"
                 }
               >
                 Todos
               </Button>
               {companyDiscoveryShortcuts.map((shortcut) => {
-                const active = filters[shortcut.key] === shortcut.value;
+                const active =
+                  optimisticFilters[shortcut.key] === shortcut.value;
 
                 return (
                   <Button

@@ -114,7 +114,7 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
       </div>
       <ul
         aria-label="Empresas aprovadas"
-        className="grid gap-5 md:grid-cols-2 xl:grid-cols-3"
+        className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
       >
         {props.response.items.map((company) => (
           <li
@@ -122,15 +122,15 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
             key={`${company.displayName}-${company.email}`}
           >
             <Card className="bg-brand-night-surface h-full gap-0 overflow-hidden rounded-2xl border-white/10 py-0 text-white shadow-md transition-transform duration-200 hover:-translate-y-0.5 hover:border-white/20">
-              <div className="from-brand-blue/35 to-brand-night flex aspect-[16/9] items-center justify-center border-b border-white/10 bg-gradient-to-br p-5">
-                <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/92 p-4">
+              <div className="from-brand-blue/35 to-brand-night flex h-36 items-center justify-center border-b border-white/10 bg-gradient-to-br p-4 sm:h-40">
+                <div className="flex size-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/92 p-3">
                   {company.logo ? (
                     <>
                       {/* Signed bearer URLs must not enter the shared image cache. */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         alt={company.logo.alt}
-                        className="max-h-full max-w-full object-contain"
+                        className="max-h-24 max-w-full object-contain sm:max-h-28"
                         decoding="async"
                         height={company.logo.height ?? 320}
                         loading="lazy"
@@ -142,16 +142,16 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
                   ) : (
                     <span
                       aria-label={`${company.displayName} está sem logo`}
-                      className="text-brand-night/55 flex size-16 items-center justify-center rounded-2xl bg-black/5"
+                      className="text-brand-night/55 flex size-14 items-center justify-center rounded-2xl bg-black/5"
                       role="img"
                     >
-                      <Building2 aria-hidden="true" className="size-8" />
+                      <Building2 aria-hidden="true" className="size-7" />
                     </span>
                   )}
                 </div>
               </div>
 
-              <CardHeader className="gap-3 px-5 pt-5">
+              <CardHeader className="gap-3 px-4 pt-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge
                     className="bg-brand-blue/30 border-transparent text-white"
@@ -161,7 +161,7 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
                   </Badge>
                   {company.segment ? (
                     <Badge
-                      className="border-white/15 bg-white/5 text-white/70"
+                      className="max-w-full truncate border-white/15 bg-white/5 text-white/70"
                       variant="outline"
                     >
                       {company.segment}
@@ -170,7 +170,7 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
                 </div>
                 <div className="space-y-1.5">
                   <CardTitle>
-                    <h3 className="text-xl font-bold tracking-[-0.02em]">
+                    <h3 className="text-lg font-bold tracking-[-0.02em] break-words">
                       {company.displayName}
                     </h3>
                   </CardTitle>
@@ -183,9 +183,9 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
                 </div>
               </CardHeader>
 
-              <CardContent className="flex flex-1 flex-col gap-4 px-5 py-4">
+              <CardContent className="flex flex-1 flex-col gap-3 px-4 py-3">
                 {company.description ? (
-                  <p className="line-clamp-4 leading-6 text-white/60">
+                  <p className="line-clamp-3 leading-6 break-words text-white/60">
                     {company.description}
                   </p>
                 ) : null}
@@ -198,7 +198,7 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
                 </div>
               </CardContent>
 
-              <CardFooter className="grid gap-2 border-t border-white/10 bg-transparent px-5 py-4">
+              <CardFooter className="grid gap-2 border-t border-white/10 bg-transparent px-4 py-4">
                 {company.whatsappE164 ? (
                   <a
                     className="bg-brand-blue inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:ring-3 focus-visible:ring-blue-300 focus-visible:outline-none"

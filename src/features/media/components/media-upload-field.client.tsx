@@ -172,11 +172,12 @@ export function MediaUploadField({
                   }}
                 />
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid gap-2 sm:min-w-48">
                 <Dialog>
                   <DialogTrigger
                     render={
                       <Button
+                        className="w-full justify-start"
                         disabled={upload.isBusy}
                         type="button"
                         variant="outline"
@@ -258,10 +259,11 @@ export function MediaUploadField({
                   </DialogContent>
                 </Dialog>
                 <Button
+                  className="w-full justify-start"
                   disabled={upload.isBusy}
                   onClick={upload.reset}
                   type="button"
-                  variant="ghost"
+                  variant="outline"
                 >
                   <Trash2 aria-hidden="true" />
                   Remover seleção
