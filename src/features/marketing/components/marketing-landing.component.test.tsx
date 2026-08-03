@@ -27,17 +27,27 @@ describe("MarketingLanding", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: "Creators e marcas, no mesmo ritmo.",
+        name: "Creators e marcas conectados no mesmo ritmo.",
       }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
-        name: "Menos ruído. Mais conexão.",
+        name: "Para quem cria conteúdo e para quem procura resultados.",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: "Creators e marcas em destaque",
       }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
         name: "Da inscrição à conexão, sem complicação.",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: "Perguntas frequentes",
       }),
     ).toBeInTheDocument();
     expect(screen.getByRole("contentinfo")).toBeInTheDocument();
@@ -47,10 +57,10 @@ describe("MarketingLanding", () => {
     render(<MarketingLanding />);
 
     expect(
-      screen.getAllByRole("link", { name: "Sou influencer" })[0],
+      screen.getAllByRole("link", { name: "Sou Influenciador" })[0],
     ).toHaveAttribute("href", "/sign-up?intent=influencer");
     expect(
-      screen.getAllByRole("link", { name: "Sou empresa" })[0],
+      screen.getAllByRole("link", { name: "Sou Empresa" })[0],
     ).toHaveAttribute("href", "/sign-up?intent=company");
     expect(screen.getAllByRole("link", { name: "Entrar" })[0]).toHaveAttribute(
       "href",
@@ -73,6 +83,10 @@ describe("MarketingLanding", () => {
     expect(
       screen.getByRole("link", { name: "Política de Privacidade" }),
     ).toHaveAttribute("href", "/privacy");
+    expect(screen.getAllByRole("link", { name: "FAQ" })[0]).toHaveAttribute(
+      "href",
+      "#faq",
+    );
   });
 
   it("uses the supplied brand asset without participant listings", () => {
@@ -80,7 +94,7 @@ describe("MarketingLanding", () => {
 
     expect(
       screen.getByRole("img", { name: "Contente Creators" }),
-    ).toHaveAttribute("src", "/brand/official/contente-creators-blue.png");
+    ).toHaveAttribute("src", "/brand/official/contente-creators-white.png");
     expect(screen.queryByTestId("creator-listing")).not.toBeInTheDocument();
     expect(screen.queryByTestId("company-listing")).not.toBeInTheDocument();
   });
@@ -126,12 +140,12 @@ describe("MarketingLanding", () => {
 
     expect(
       container.querySelectorAll('[data-slot="text-animate"]').length,
-    ).toBeGreaterThanOrEqual(3);
+    ).toBeGreaterThanOrEqual(2);
     expect(
       container.querySelector('[data-slot="aurora-text"]'),
     ).toBeInTheDocument();
     expect(screen.getByTestId("marketing-motion-strip")).toHaveTextContent(
-      "Creators",
+      /creators/iu,
     );
     expect(
       container.querySelector('[data-slot="scroll-velocity-container"]'),

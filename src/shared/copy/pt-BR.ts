@@ -33,66 +33,82 @@ export const ptBR = {
   },
   marketing: {
     navigation: {
+      faq: "FAQ",
+      forCompanies: "Para Empresas",
+      forCreators: "Para Creators",
       howItWorks: "Como funciona",
       forWho: "Para quem é",
     },
     hero: {
       eyebrow: "A ponte certa para boas parcerias",
-      title: "Creators e marcas, no mesmo ritmo.",
+      title: "Creators e marcas conectados no mesmo ritmo.",
       description:
-        "Crie seu perfil, passe por uma curadoria humana e encontre conexões que fazem sentido para o seu momento.",
-      creatorCta: "Sou influencer",
-      companyCta: "Sou empresa",
-      note: "Cadastro gratuito para o Beta.",
+        "Encontre influenciadores do seu nicho e região, com todas as informações em um só lugar. O creator perfeito para cada campanha, com a cara da sua marca!",
+      creatorCta: "Sou Influenciador",
+      companyCta: "Sou Empresa",
+      note: "Cadastro gratuito para o Beta",
       preview: {
         items: [
           {
-            title: "Perfil bem apresentado",
-            description: "Dados, canais e objetivos em um só lugar.",
+            title: "Influenciadores",
+            description:
+              "Filtros e informações para encontrar o influenciador que faz sentido para a sua marca.",
           },
           {
-            title: "Curadoria humana",
-            description: "Cada cadastro passa pela análise da nossa equipe.",
+            title: "Curadoria",
+            description:
+              "Cada cadastro passa por uma avaliação humana para garantir as melhores marcas e creators.",
           },
           {
-            title: "Conexões relevantes",
-            description: "Acesso liberado depois da aprovação.",
+            title: "Conexão",
+            description: "Creators e marcas transformando influência em venda.",
           },
         ],
-        badge: "Pronto para conectar",
+        badge: "Pronto para conectar #vemsercontente",
       },
     },
     motionStrip: [
-      "Creators",
-      "Marcas",
-      "Curadoria humana",
-      "Conexões relevantes",
+      "Encontre creators",
+      "Conexões com marcas",
+      "Engajamento real",
+      "Conversão e resultados",
     ],
+    proofPreview: {
+      title: "Creators e marcas em destaque",
+      description:
+        "Um espaço público para apresentar a força da comunidade sem expor dados privados antes da aprovação.",
+      items: [
+        "Perfis resumidos",
+        "Marcas aprovadas",
+        "Curadoria humana",
+        "Conexões por afinidade",
+      ],
+    },
     audience: {
       eyebrow: "Feita para os dois lados da parceria",
-      title: "Menos ruído. Mais conexão.",
+      title: "Para quem cria conteúdo e para quem procura resultados.",
       description:
         "Uma experiência clara para quem cria e para quem procura criatividade.",
       creator: {
         label: "Para creators",
         title: "Seu trabalho merece ser encontrado.",
         description:
-          "Apresente seu perfil, nichos, canais e métricas em um espaço criado para conectar você a novas marcas.",
+          "Nano, micro ou influenciador. UGC ou Publi. Apresente seu perfil, nicho, canais e métricas em um espaço para te conectar com as empresas que tem tudo a ver com você.",
         benefits: [
-          "Perfil organizado para mostrar seu trabalho",
-          "Métricas identificadas como autodeclaradas",
-          "Contato direto quando houver interesse",
+          "Perfil detalhado para mostrar seu trabalho",
+          "Métricas e informações para o match perfeito",
+          "Maior visibilidade e conexão com marcas reais",
         ],
       },
       company: {
         label: "Para empresas",
         title: "Encontre a voz certa para sua marca.",
         description:
-          "Descubra creators aprovados, filtre pelo que importa e inicie a conversa diretamente pelo canal escolhido.",
+          "Descubra creators aprovados, filtre por região, segmento, perfil e métricas.",
         benefits: [
-          "Catálogo privado depois da aprovação",
-          "Filtros por nicho, canal e localização",
-          "Dados de contato conforme consentimento",
+          "Tenha os melhores creators para sua campanha",
+          "Agilidade e eficiência na busca perfeita",
+          "Mais audiência e visibilidade para sua marca",
         ],
       },
     },
@@ -124,7 +140,28 @@ export const ptBR = {
           number: "04",
           title: "Encontre conexões",
           description:
-            "Depois da aprovação, explore o catálogo privado e encontre oportunidades alinhadas.",
+            "Depois da aprovação, explore o catálogo de creators e marcas para encontrar as melhores oportunidades.",
+        },
+      ],
+    },
+    faq: {
+      eyebrow: "FAQ",
+      title: "Perguntas frequentes",
+      items: [
+        {
+          question: "O cadastro no Beta é gratuito?",
+          answer:
+            "Sim. O cadastro para participar do Beta da Contente Creators é gratuito.",
+        },
+        {
+          question: "Todo perfil entra automaticamente no catálogo?",
+          answer:
+            "Não. Cada cadastro passa por curadoria humana antes de ser liberado na área privada.",
+        },
+        {
+          question: "Como acontece o contato entre marcas e creators?",
+          answer:
+            "Depois da aprovação, empresas acessam os canais liberados pelo creator, como WhatsApp, e-mail ou redes sociais.",
         },
       ],
     },
@@ -132,11 +169,30 @@ export const ptBR = {
       eyebrow: "Seu próximo contato pode começar aqui",
       title: "Entre para a comunidade Contente Creators.",
       description:
-        "Escolha seu caminho, monte seu perfil e deixe a curadoria preparar o terreno para boas conexões.",
+        "Escolha seu caminho, monte seu perfil e crie boas conexões.",
     },
     footer: {
       tagline: "Creators e marcas, no mesmo ritmo.",
+      faq: "FAQ",
       privacy: "Política de Privacidade",
+      socialLinks: [
+        {
+          href: "https://www.instagram.com/contentecreators",
+          label: "Instagram",
+        },
+        {
+          href: "https://www.facebook.com/contentecreators",
+          label: "Facebook",
+        },
+        {
+          href: "https://www.tiktok.com/@contentecreators",
+          label: "TikTok",
+        },
+        {
+          href: "https://www.linkedin.com/company/contente-creators",
+          label: "LinkedIn",
+        },
+      ],
       supportContact: "Contato de suporte e privacidade",
       terms: "Termos de Uso",
       copyright: "Contente Creators. Todos os direitos reservados.",

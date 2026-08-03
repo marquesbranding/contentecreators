@@ -1,10 +1,15 @@
 import {
   ArrowRight,
+  AtSign,
   BadgeCheck,
+  BriefcaseBusiness,
   Building2,
   Check,
   CircleCheck,
+  HelpCircle,
   Mail,
+  MessageCircle,
+  Music2,
   Search,
   Sparkles,
   UserRoundSearch,
@@ -21,6 +26,7 @@ import {
   ScrollVelocityRow,
 } from "@/registry/magicui/scroll-based-velocity";
 import { TextAnimate } from "@/registry/magicui/text-animate";
+import { BrandLogo } from "@/shared/components/brand-logo";
 import { buttonVariants } from "@/shared/components/ui/button";
 import { ptBR } from "@/shared/copy/pt-BR";
 import { cn } from "@/shared/lib/cn";
@@ -44,6 +50,13 @@ const journeyIconStyles = [
   "bg-brand-sky text-brand-night",
   "bg-brand-lime text-brand-night",
 ] as const;
+
+const socialIcons = {
+  Facebook: MessageCircle,
+  Instagram: AtSign,
+  LinkedIn: BriefcaseBusiness,
+  TikTok: Music2,
+} as const;
 
 function HeroPreview() {
   return (
@@ -131,6 +144,67 @@ function MotionStrip() {
   );
 }
 
+function PublicProofPreview() {
+  return (
+    <section
+      aria-labelledby="proof-preview-title"
+      className="bg-white py-14 text-black sm:py-16"
+    >
+      <div className="mx-auto w-full max-w-[90rem] px-5 sm:px-8 lg:px-12">
+        <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div>
+            <p className="text-brand-blue text-sm font-extrabold tracking-[0.12em] uppercase">
+              Comunidade em movimento
+            </p>
+            <h2
+              className="mt-4 max-w-2xl text-3xl leading-[1.05] font-extrabold tracking-[-0.04em] sm:text-5xl"
+              id="proof-preview-title"
+            >
+              {copy.proofPreview.title}
+            </h2>
+            <p className="mt-5 max-w-xl text-lg leading-8 text-[#686868]">
+              {copy.proofPreview.description}
+            </p>
+          </div>
+
+          <div className="overflow-hidden border-y border-black/10 py-6">
+            <div aria-hidden="true" className="mb-6">
+              <ScrollVelocityContainer>
+                <ScrollVelocityRow
+                  baseVelocity={1.4}
+                  className="flex items-center"
+                  direction={1}
+                >
+                  <div className="flex items-center gap-10 pr-10">
+                    {Array.from({ length: 8 }, (_, index) => (
+                      <BrandLogo
+                        background="transparent"
+                        className="w-[11rem] opacity-90"
+                        key={index}
+                        variant="black"
+                      />
+                    ))}
+                  </div>
+                </ScrollVelocityRow>
+              </ScrollVelocityContainer>
+            </div>
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {copy.proofPreview.items.map((item) => (
+                <li
+                  className="border border-black/10 bg-[#f7f6f2] px-4 py-3 text-sm font-extrabold tracking-[0.08em] uppercase"
+                  key={item}
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function AudienceSection() {
   return (
     <section
@@ -164,7 +238,10 @@ function AudienceSection() {
         </div>
 
         <div className="mt-12 grid gap-5 lg:grid-cols-2">
-          <article className="bg-brand-pink text-brand-night rounded-[1.75rem] border border-white/10 p-6 shadow-[0_24px_70px_rgba(245,22,126,0.16)] sm:p-8 lg:p-10">
+          <article
+            className="bg-brand-pink text-brand-night scroll-mt-24 rounded-[1.75rem] border border-white/10 p-6 shadow-[0_24px_70px_rgba(245,22,126,0.16)] sm:p-8 lg:p-10"
+            id="para-creators"
+          >
             <UserRoundSearch className="size-10" aria-hidden="true" />
             <p className="mt-8 text-sm font-extrabold tracking-[0.12em] uppercase">
               {copy.audience.creator.label}
@@ -201,7 +278,10 @@ function AudienceSection() {
             </Link>
           </article>
 
-          <article className="bg-brand-sky text-brand-night rounded-[1.75rem] border border-white/10 p-6 shadow-[0_24px_70px_rgba(30,155,240,0.16)] sm:p-8 lg:p-10">
+          <article
+            className="bg-brand-sky text-brand-night scroll-mt-24 rounded-[1.75rem] border border-white/10 p-6 shadow-[0_24px_70px_rgba(30,155,240,0.16)] sm:p-8 lg:p-10"
+            id="para-empresas"
+          >
             <Building2 className="size-10" aria-hidden="true" />
             <p className="mt-8 text-sm font-extrabold tracking-[0.12em] uppercase">
               {copy.audience.company.label}
@@ -311,6 +391,50 @@ function StepsSection() {
   );
 }
 
+function FaqSection() {
+  return (
+    <section
+      aria-labelledby="faq-title"
+      className="bg-[#f7f6f2] px-5 py-14 sm:px-8 sm:py-16 lg:px-12"
+      id="faq"
+    >
+      <div className="mx-auto grid max-w-[90rem] gap-8 lg:grid-cols-[0.75fr_1.25fr] lg:gap-16">
+        <div>
+          <p className="text-brand-blue text-sm font-extrabold tracking-[0.12em] uppercase">
+            {copy.faq.eyebrow}
+          </p>
+          <h2
+            className="mt-4 text-4xl leading-[1.04] font-extrabold tracking-[-0.045em] text-black sm:text-5xl"
+            id="faq-title"
+          >
+            {copy.faq.title}
+          </h2>
+        </div>
+        <div className="grid gap-3">
+          {copy.faq.items.map((item) => (
+            <details
+              className="group border border-black/10 bg-white p-5 shadow-[0_18px_50px_rgba(8,8,8,0.05)]"
+              key={item.question}
+            >
+              <summary className="flex cursor-pointer list-none items-center gap-4 text-lg font-extrabold tracking-[-0.015em] text-black marker:hidden">
+                <HelpCircle
+                  aria-hidden="true"
+                  className="text-brand-blue size-5 shrink-0"
+                />
+                <span>{item.question}</span>
+                <span className="ml-auto text-2xl leading-none group-open:rotate-45">
+                  +
+                </span>
+              </summary>
+              <p className="mt-4 leading-7 text-[#686868]">{item.answer}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function FinalCallToAction() {
   return (
     <section className="bg-white px-5 py-12 sm:px-8 sm:py-16 lg:px-12 lg:py-20">
@@ -318,6 +442,18 @@ function FinalCallToAction() {
         className="marketing-cta-surface relative mx-auto max-w-[90rem] overflow-hidden rounded-[2rem] border border-white/15 px-6 py-12 text-white sm:px-10 sm:py-16 lg:px-16 lg:py-20"
         data-testid="marketing-final-cta"
       >
+        {/* The supplied brand watermark is already optimized and decorative. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute right-4 bottom-4 w-[22rem] max-w-[70vw] opacity-10 sm:right-10 sm:bottom-8 sm:w-[34rem]"
+          decoding="async"
+          height={3334}
+          loading="lazy"
+          src="/brand/official/contente-creators-white.png"
+          width={3334}
+        />
         <Search
           aria-hidden="true"
           className="absolute -top-10 -right-8 size-48 rotate-12 text-white/10 sm:size-64"
@@ -327,15 +463,9 @@ function FinalCallToAction() {
           <p className="text-sm font-extrabold tracking-[0.12em] text-white uppercase">
             {copy.finalCta.eyebrow}
           </p>
-          <TextAnimate
-            animation="blurInUp"
-            as="h2"
-            by="word"
-            className="mt-4 text-4xl leading-[1.02] font-extrabold tracking-[-0.045em] sm:text-5xl lg:text-6xl"
-            once
-          >
+          <h2 className="mt-4 text-4xl leading-[1.02] font-extrabold tracking-[-0.045em] sm:text-5xl lg:text-6xl">
             {copy.finalCta.title}
-          </TextAnimate>
+          </h2>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-white">
             {copy.finalCta.description}
           </p>
@@ -384,6 +514,12 @@ function MarketingFooter({
           aria-label="Links institucionais"
           className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-semibold"
         >
+          <a
+            className="text-white/70 hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
+            href="#faq"
+          >
+            {copy.footer.faq}
+          </a>
           <Link
             className="text-white/70 hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
             href="/terms"
@@ -405,6 +541,27 @@ function MarketingFooter({
               {copy.footer.supportContact}
             </a>
           ) : null}
+        </nav>
+        <nav
+          aria-label="Redes sociais"
+          className="flex flex-wrap gap-3 lg:justify-end"
+        >
+          {copy.footer.socialLinks.map((link) => {
+            const Icon = socialIcons[link.label];
+
+            return (
+              <a
+                aria-label={link.label}
+                className="flex size-11 items-center justify-center rounded-full border border-white/15 text-white/70 transition-colors hover:border-white/45 hover:text-white focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
+                href={link.href}
+                key={link.label}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <Icon aria-hidden="true" className="size-5" />
+              </a>
+            );
+          })}
         </nav>
         <p className="border-t border-white/15 pt-6 text-xs text-white/60 lg:col-span-2">
           © {new Date().getFullYear()} {copy.footer.copyright}
@@ -430,7 +587,7 @@ export function MarketingLanding({
       <MarketingHeader />
       <main id="main-content" tabIndex={-1}>
         <section
-          className="marketing-hero-surface relative overflow-hidden py-14 text-white sm:py-20 lg:py-24"
+          className="marketing-hero-surface relative overflow-hidden pt-28 pb-14 text-white sm:pt-32 sm:pb-20 lg:pt-36 lg:pb-24"
           data-testid="marketing-hero"
         >
           <div className="relative mx-auto grid w-full max-w-[90rem] gap-16 px-5 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-12 lg:px-12">
@@ -443,7 +600,8 @@ export function MarketingLanding({
                 aria-label={copy.hero.title}
                 className="mt-7 text-[clamp(2.9rem,8.5vw,6.7rem)] leading-[0.9] font-extrabold tracking-[-0.065em] text-white"
               >
-                <span className="block">Creators e marcas,</span>
+                <span className="block">Creators e marcas</span>
+                <span className="block">conectados</span>
                 <span className="mt-2 block bg-linear-to-r from-[#1e9bf0] via-[#c5f500] to-[#f5167e] bg-clip-text text-transparent">
                   no mesmo ritmo.
                 </span>
@@ -485,6 +643,7 @@ export function MarketingLanding({
         </section>
 
         <MotionStrip />
+        <PublicProofPreview />
         {aggregateCountersSlot ?? (
           <PublicAggregateCounters counters={aggregateCounters} />
         )}
@@ -495,6 +654,7 @@ export function MarketingLanding({
         ) : null}
         <AudienceSection />
         <StepsSection />
+        <FaqSection />
         <FinalCallToAction />
       </main>
       <MarketingFooter supportContactEmail={supportContactEmail} />

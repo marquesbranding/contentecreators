@@ -45,12 +45,12 @@ describe("Home", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: "Creators e marcas, no mesmo ritmo.",
+        name: "Creators e marcas conectados no mesmo ritmo.",
       }),
     ).toBeInTheDocument();
     await waitFor(() => expect(request).toHaveBeenCalledTimes(2));
     expect(
-      screen.getAllByRole("link", { name: "Sou influencer" })[0],
+      screen.getAllByRole("link", { name: "Sou Influenciador" })[0],
     ).toHaveAttribute("href", "/sign-up?intent=influencer");
   });
 });
