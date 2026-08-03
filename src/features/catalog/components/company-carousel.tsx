@@ -128,7 +128,7 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       alt={company.logo.alt}
-                      className="size-full bg-white/92 object-contain p-8"
+                      className="max-h-24 max-w-[70%] object-contain sm:max-h-28"
                       decoding="async"
                       height={company.logo.height ?? 320}
                       loading="lazy"
@@ -157,13 +157,12 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
                     Empresa
                   </Badge>
                   {company.segment ? (
-                    <Badge
-                      className="max-w-full truncate border-white/15 bg-white/5 text-white/70"
+                    <span
+                      className="max-w-full min-w-0 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-xs leading-5 font-medium break-words whitespace-normal text-white/70"
                       title={company.segment}
-                      variant="outline"
                     >
                       {company.segment}
-                    </Badge>
+                    </span>
                   ) : null}
                 </div>
                 <div className="space-y-1.5">
@@ -234,17 +233,30 @@ function CompanyContactLinks({ company }: { company: Company }) {
       </p>
       <div className="flex flex-wrap gap-2">
         {company.whatsappE164 ? (
-          <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
+          <a
+            className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70 transition-colors hover:bg-white/15 focus-visible:ring-3 focus-visible:ring-blue-300 focus-visible:outline-none"
+            href={`https://wa.me/${company.whatsappE164.replace(/\D/gu, "")}`}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
             WhatsApp
-          </span>
+          </a>
         ) : null}
-        <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
+        <a
+          className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70 transition-colors hover:bg-white/15 focus-visible:ring-3 focus-visible:ring-blue-300 focus-visible:outline-none"
+          href={`mailto:${company.email}`}
+        >
           E-mail
-        </span>
+        </a>
         {company.websiteUrl ? (
-          <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
+          <a
+            className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70 transition-colors hover:bg-white/15 focus-visible:ring-3 focus-visible:ring-blue-300 focus-visible:outline-none"
+            href={company.websiteUrl}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
             Site
-          </span>
+          </a>
         ) : null}
       </div>
     </div>
