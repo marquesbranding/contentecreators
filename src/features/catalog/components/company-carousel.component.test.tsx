@@ -45,25 +45,17 @@ describe("CompanyCarouselView", () => {
       screen.getByRole("img", { name: "Logo da Marca Segura" }),
     ).toHaveAttribute("src", response.items[0]!.logo!.url);
     expect(
-      screen.getByRole("link", { name: /chamar no whatsapp/iu }),
+      screen.getByRole("link", { name: /conhecer marca marca segura/iu }),
     ).toHaveAttribute("href", "https://wa.me/5549999999999");
-    expect(
-      screen.getByRole("link", { name: /enviar e-mail/iu }),
-    ).toHaveAttribute("href", "mailto:contato@marca.example");
-    expect(screen.getByRole("link", { name: /abrir site/iu })).toHaveAttribute(
-      "target",
-      "_blank",
-    );
-    expect(screen.getByRole("link", { name: /abrir site/iu })).toHaveAttribute(
-      "rel",
-      expect.stringContaining("noreferrer"),
-    );
+    expect(screen.getByText("WhatsApp")).toBeVisible();
+    expect(screen.getByText("E-mail")).toBeVisible();
+    expect(screen.getByText("Site")).toBeVisible();
     expect(container.innerHTML).not.toMatch(
       /cnpj|legalName|bucket|objectPath|assetId/iu,
     );
     await user.tab();
     expect(
-      screen.getByRole("link", { name: /chamar no whatsapp/iu }),
+      screen.getByRole("link", { name: /conhecer marca marca segura/iu }),
     ).toHaveFocus();
     expect(
       await getBlockingComponentAccessibilityViolations(container),

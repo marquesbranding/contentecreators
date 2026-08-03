@@ -4,9 +4,7 @@ import {
   AlertCircle,
   Building2,
   ExternalLink,
-  Mail,
   MapPin,
-  MessageCircle,
   RefreshCw,
   ShieldCheck,
 } from "lucide-react";
@@ -17,7 +15,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/shared/components/ui/alert";
-import { Button } from "@/shared/components/ui/button";
+import { Button, buttonVariants } from "@/shared/components/ui/button";
 import {
   Card,
   CardContent,
@@ -123,33 +121,31 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
             key={`${company.displayName}-${company.email}`}
           >
             <Card className="bg-brand-night-surface h-full gap-0 overflow-hidden rounded-2xl border-white/10 py-0 text-white shadow-md transition-transform duration-200 hover:-translate-y-0.5 hover:border-white/20">
-              <div className="from-brand-blue/35 to-brand-night flex aspect-[16/9] items-center justify-center border-b border-white/10 bg-gradient-to-br p-5">
-                <div className="flex size-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/92 p-4">
-                  {company.logo ? (
-                    <>
-                      {/* Signed bearer URLs must not enter the shared image cache. */}
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        alt={company.logo.alt}
-                        className="max-h-full max-w-full object-contain"
-                        decoding="async"
-                        height={company.logo.height ?? 320}
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                        src={company.logo.url}
-                        width={company.logo.width ?? 640}
-                      />
-                    </>
-                  ) : (
-                    <span
-                      aria-label={`${company.displayName} está sem logo`}
-                      className="text-brand-night/55 flex size-16 items-center justify-center rounded-2xl bg-black/5"
-                      role="img"
-                    >
-                      <Building2 aria-hidden="true" className="size-8" />
-                    </span>
-                  )}
-                </div>
+              <div className="from-brand-blue/35 to-brand-night flex aspect-[16/9] items-center justify-center border-b border-white/10 bg-gradient-to-br">
+                {company.logo ? (
+                  <>
+                    {/* Signed bearer URLs must not enter the shared image cache. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      alt={company.logo.alt}
+                      className="size-full bg-white/92 object-contain p-8"
+                      decoding="async"
+                      height={company.logo.height ?? 320}
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      src={company.logo.url}
+                      width={company.logo.width ?? 640}
+                    />
+                  </>
+                ) : (
+                  <span
+                    aria-label={`${company.displayName} está sem logo`}
+                    className="text-brand-blue flex size-16 items-center justify-center rounded-2xl border border-white/10 bg-white/10"
+                    role="img"
+                  >
+                    <Building2 aria-hidden="true" className="size-8" />
+                  </span>
+                )}
               </div>
 
               <CardHeader className="gap-3 px-5 pt-5">
@@ -192,51 +188,65 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
                   </p>
                 ) : null}
 
-                <div className="mt-auto rounded-xl border border-white/10 bg-black/10 p-3">
-                  <p className="flex items-center gap-1.5 text-xs font-semibold text-white/50">
-                    <ShieldCheck aria-hidden="true" className="size-4" />
-                    Contato liberado para creators aprovados
-                  </p>
-                </div>
+                <CompanyContactLinks company={company} />
               </CardContent>
 
-              <CardFooter className="grid gap-2 border-t border-white/10 bg-transparent px-5 py-4">
-                {company.whatsappE164 ? (
-                  <a
-                    className="bg-brand-blue inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:ring-3 focus-visible:ring-blue-300 focus-visible:outline-none"
-                    href={`https://wa.me/${company.whatsappE164.replace(/\D/gu, "")}`}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    <MessageCircle aria-hidden="true" />
-                    Chamar no WhatsApp
-                  </a>
-                ) : null}
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <a
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white/8 px-4 py-2 font-semibold text-white transition-colors hover:bg-white/12 focus-visible:ring-3 focus-visible:ring-blue-300 focus-visible:outline-none"
-                    href={`mailto:${company.email}`}
-                  >
-                    <Mail aria-hidden="true" />
-                    Enviar e-mail
-                  </a>
-                  {company.websiteUrl ? (
-                    <a
-                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white/8 px-4 py-2 font-semibold text-white transition-colors hover:bg-white/12 focus-visible:ring-3 focus-visible:ring-blue-300 focus-visible:outline-none"
-                      href={company.websiteUrl}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      <ExternalLink aria-hidden="true" />
-                      Abrir site
-                    </a>
-                  ) : null}
-                </div>
+              <CardFooter className="border-t border-white/10 bg-transparent px-5 py-4">
+                <a
+                  aria-label={`Conhecer marca ${company.displayName}`}
+                  className={buttonVariants({
+                    className: "w-full",
+                    size: "lg",
+                  })}
+                  href={getPrimaryCompanyHref(company)}
+                  rel={company.whatsappE164 ? "noopener noreferrer" : undefined}
+                  target={company.whatsappE164 ? "_blank" : undefined}
+                >
+                  <ShieldCheck aria-hidden="true" />
+                  Conhecer marca
+                  <ExternalLink aria-hidden="true" />
+                </a>
               </CardFooter>
             </Card>
           </li>
         ))}
       </ul>
     </section>
+  );
+}
+
+type Company = CompanyCarouselViewResponseDto["items"][number];
+
+function getPrimaryCompanyHref(company: Company) {
+  if (company.whatsappE164) {
+    return `https://wa.me/${company.whatsappE164.replace(/\D/gu, "")}`;
+  }
+
+  return `mailto:${company.email}`;
+}
+
+function CompanyContactLinks({ company }: { company: Company }) {
+  return (
+    <div className="mt-auto rounded-xl border border-white/10 bg-black/10 p-3">
+      <p className="mb-3 flex items-center gap-1.5 text-xs font-semibold text-white/50">
+        <ShieldCheck aria-hidden="true" className="size-4" />
+        Contato liberado
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {company.whatsappE164 ? (
+          <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
+            WhatsApp
+          </span>
+        ) : null}
+        <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
+          E-mail
+        </span>
+        {company.websiteUrl ? (
+          <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
+            Site
+          </span>
+        ) : null}
+      </div>
+    </div>
   );
 }
