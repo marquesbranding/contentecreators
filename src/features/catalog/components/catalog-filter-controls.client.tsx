@@ -300,8 +300,8 @@ export function CatalogFilterControls({
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   return (
-    <section aria-label="Filtros do catálogo" className="space-y-3">
-      <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+    <section aria-label="Filtros do catálogo" className="space-y-3 pt-1">
+      <div className="-mx-4 flex scroll-px-4 items-center gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
         <Sheet onOpenChange={setFiltersOpen} open={filtersOpen}>
           <SheetTrigger
             render={

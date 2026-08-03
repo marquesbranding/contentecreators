@@ -42,11 +42,11 @@ export function InfluencerMediaFields({
 
   return (
     <FieldSet>
-      <FieldLegend>Fotos do perfil</FieldLegend>
+      <FieldLegend>Imagens</FieldLegend>
       <FieldDescription>
         {initialState.profileExists
-          ? "Novas imagens são validadas e publicadas assim que o envio termina."
-          : "As imagens ficam privadas durante o cadastro e só são associadas ao seu perfil após a validação do envio."}
+          ? "Atualize a imagem principal e a capa do seu perfil."
+          : "Adicione imagem principal e capa antes de enviar o perfil."}
       </FieldDescription>
 
       {avatarAssetId ? (
@@ -63,7 +63,7 @@ export function InfluencerMediaFields({
         actions={actions}
         activateOnUpload={activateOnUpload}
         currentAssetId={activateOnUpload ? avatarAssetId : null}
-        label="Foto de perfil (opcional)"
+        label="Perfil"
         onComplete={setAvatarAssetId}
         onProfileVersionChange={onProfileVersionChange}
         purpose="AVATAR"
@@ -76,7 +76,7 @@ export function InfluencerMediaFields({
         actions={actions}
         activateOnUpload={activateOnUpload}
         currentAssetId={activateOnUpload ? coverAssetId : null}
-        label="Capa (opcional)"
+        label="Capa"
         onComplete={setCoverAssetId}
         onProfileVersionChange={onProfileVersionChange}
         purpose="COVER"

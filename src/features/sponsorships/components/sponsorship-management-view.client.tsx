@@ -854,7 +854,7 @@ function PlacementActions({
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap [&_[data-slot=button]]:min-h-10 [&_[data-slot=button]]:w-full [&_[data-slot=button]]:px-2 [&_[data-slot=button]]:text-xs sm:[&_[data-slot=button]]:min-h-11 sm:[&_[data-slot=button]]:w-auto sm:[&_[data-slot=button]]:px-3 sm:[&_[data-slot=button]]:text-[0.8rem]">
       <PlacementPreviewDialog placement={placement} />
       <PlacementFormDialog
         mediaActions={mediaActions}
@@ -978,8 +978,11 @@ function PlacementList({
 
       <div className="grid gap-4 md:hidden">
         {data.items.map((placement) => (
-          <Card key={placement.id}>
-            <CardHeader>
+          <Card
+            className="rounded-2xl [--card-spacing:--spacing(4)]"
+            key={placement.id}
+          >
+            <CardHeader className="gap-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <Badge variant={placementStateVariant(placement.state)}>
                   {stateLabels[placement.state]}
@@ -988,14 +991,16 @@ function PlacementList({
                   Ordem {placement.sortOrder}
                 </span>
               </div>
-              <CardTitle>{placement.title ?? "Sem título"}</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-lg">
+                {placement.title ?? "Sem título"}
+              </CardTitle>
+              <CardDescription className="text-base leading-6">
                 {typeLabels[placement.placementType]} ·{" "}
                 {audienceLabels[placement.audience]}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm leading-6">
+            <CardContent className="space-y-4 pt-1">
+              <p className="line-clamp-3 text-sm leading-6">
                 {placement.body ?? "Sem texto de apoio."}
               </p>
               <PlacementActions
@@ -1208,9 +1213,9 @@ export function SponsorshipManagementView({
                 </SelectContent>
               </Select>
             </Field>
-            <div className="flex gap-2 self-end">
+            <div className="grid grid-cols-[minmax(0,1fr)_3rem] gap-2 self-end">
               <Button
-                className="min-h-11 flex-1"
+                className="min-h-12 w-full"
                 type="submit"
                 variant="outline"
               >
@@ -1219,7 +1224,7 @@ export function SponsorshipManagementView({
               </Button>
               <Button
                 aria-label="Limpar filtros"
-                className="min-h-11"
+                className="min-h-12 w-12 px-0"
                 onClick={() => {
                   setSearchDraft({
                     canonical: filters.search,

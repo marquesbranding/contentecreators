@@ -22,11 +22,11 @@ describe("InfluencerMediaFields", () => {
       />,
     );
 
-    expect(screen.getByLabelText("Foto de perfil (opcional)")).toHaveAttribute(
+    expect(screen.getByLabelText("Perfil")).toHaveAttribute(
       "accept",
       "image/jpeg,image/png,image/webp",
     );
-    expect(screen.getByLabelText("Capa (opcional)")).toBeInTheDocument();
+    expect(screen.getByLabelText("Capa")).toBeInTheDocument();
     expect(container.querySelector('input[name="avatarAssetId"]')).toHaveValue(
       avatarAssetId,
     );

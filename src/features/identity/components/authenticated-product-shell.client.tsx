@@ -231,7 +231,7 @@ export function AuthenticatedProductShell({
               render={
                 <Button
                   aria-label="Abrir menu principal"
-                  className="border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white lg:hidden"
+                  className="ml-auto border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white lg:hidden"
                   disabled={!hydrated}
                   size="icon"
                   type="button"

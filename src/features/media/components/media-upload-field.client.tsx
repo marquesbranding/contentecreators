@@ -17,13 +17,7 @@ import {
   AlertTitle,
 } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { Card, CardContent } from "@/shared/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -54,11 +48,10 @@ import type {
 } from "../types/media-upload.types";
 
 const descriptionByPurpose: Readonly<Record<MediaPurpose, string>> = {
-  AVATAR: "Use uma imagem quadrada em JPEG, PNG ou WebP, com até 5 MB.",
-  COVER: "Use uma imagem horizontal em JPEG, PNG ou WebP, com até 8 MB.",
-  LOGO: "Use uma imagem quadrada em JPEG, PNG ou WebP, com até 5 MB.",
-  SPONSORSHIP_CREATIVE:
-    "Use uma imagem horizontal em JPEG, PNG ou WebP, com até 8 MB.",
+  AVATAR: "Quadrada, JPEG/PNG/WebP, até 5 MB.",
+  COVER: "Horizontal, JPEG/PNG/WebP, até 8 MB.",
+  LOGO: "Quadrada, JPEG/PNG/WebP, até 5 MB.",
+  SPONSORSHIP_CREATIVE: "Horizontal, JPEG/PNG/WebP, até 8 MB.",
 };
 
 const previewAspectByPurpose: Readonly<Record<MediaPurpose, string>> = {
@@ -108,29 +101,56 @@ export function MediaUploadField({
       <FieldDescription id={descriptionId}>
         {descriptionByPurpose[purpose]}
       </FieldDescription>
-      <Card className="gap-4 py-4">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ImagePlus aria-hidden="true" />
-            Selecione e ajuste a imagem
-          </CardTitle>
-          <CardDescription>
-            O recorte é aplicado antes do envio seguro.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Input
-            accept="image/jpeg,image/png,image/webp"
-            aria-describedby={descriptionId}
-            aria-invalid={Boolean(upload.error)}
-            disabled={upload.isBusy}
-            id={inputId}
-            onChange={(event) =>
-              upload.selectFile(event.target.files?.[0] ?? null)
-            }
-            required={required}
-            type="file"
-          />
+      <Card className="rounded-2xl py-0">
+        <CardContent className="space-y-4 p-4">
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+            <Input
+              accept="image/jpeg,image/png,image/webp"
+              aria-describedby={descriptionId}
+              aria-invalid={Boolean(upload.error)}
+              className="sr-only"
+              disabled={upload.isBusy}
+              id={inputId}
+              onChange={(event) =>
+                upload.selectFile(event.target.files?.[0] ?? null)
+              }
+              required={required}
+              type="file"
+            />
+            <label
+              className={cn(
+                "border-input bg-background hover:bg-muted/70 focus-within:ring-ring/40 flex min-h-12 min-w-0 cursor-pointer items-center gap-3 rounded-xl border px-4 transition-colors focus-within:ring-3",
+                upload.isBusy && "pointer-events-none opacity-50",
+              )}
+              htmlFor={inputId}
+            >
+              <span className="bg-brand-blue-soft text-brand-blue flex size-8 shrink-0 items-center justify-center rounded-lg">
+                <ImagePlus aria-hidden="true" className="size-4" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold">
+                  Selecionar imagem
+                </span>
+                <span className="text-muted-foreground block truncate text-sm">
+                  {upload.file?.name ?? "Nenhum arquivo selecionado"}
+                </span>
+              </span>
+            </label>
+
+            <Button
+              className="w-full sm:w-fit"
+              disabled={!upload.file || upload.isBusy}
+              onClick={upload.upload}
+              type="button"
+            >
+              {upload.isBusy ? (
+                <Spinner aria-label="Enviando imagem" />
+              ) : (
+                <Upload aria-hidden="true" />
+              )}
+              {upload.isBusy ? "Enviando..." : "Enviar imagem"}
+            </Button>
+          </div>
 
           {upload.previewUrl && upload.file ? (
             <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
@@ -284,8 +304,8 @@ export function MediaUploadField({
             </Alert>
           ) : null}
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-            {upload.phase === "error" && upload.file ? (
+          {upload.phase === "error" && upload.file ? (
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
               <Button
                 disabled={upload.isBusy}
                 onClick={upload.retry}
@@ -295,20 +315,8 @@ export function MediaUploadField({
                 <RotateCcw aria-hidden="true" />
                 Tentar novamente
               </Button>
-            ) : null}
-            <Button
-              disabled={!upload.file || upload.isBusy}
-              onClick={upload.upload}
-              type="button"
-            >
-              {upload.isBusy ? (
-                <Spinner aria-label="Enviando imagem" />
-              ) : (
-                <Upload aria-hidden="true" />
-              )}
-              {upload.isBusy ? "Enviando..." : "Enviar imagem"}
-            </Button>
-          </div>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
     </Field>

@@ -134,6 +134,7 @@ function TextField({
   pattern,
   placeholder,
   required = true,
+  reserveDescriptionSpace = false,
   step,
   type = "text",
   validate,
@@ -156,6 +157,7 @@ function TextField({
   pattern?: string;
   placeholder?: string;
   required?: boolean;
+  reserveDescriptionSpace?: boolean;
   step?: number | string;
   type?: React.HTMLInputTypeAttribute;
   validate?: (value: string) => string | null;
@@ -185,6 +187,8 @@ function TextField({
       </FieldLabel>
       {description ? (
         <FieldDescription id={descriptionId}>{description}</FieldDescription>
+      ) : reserveDescriptionSpace ? (
+        <FieldDescription aria-hidden="true">&nbsp;</FieldDescription>
       ) : null}
       <Input
         aria-describedby={describedBy || undefined}
@@ -221,6 +225,7 @@ function TextField({
 }
 
 function ControlledSelect({
+  description,
   errors,
   id,
   label,
@@ -232,8 +237,10 @@ function ControlledSelect({
   onFieldChange,
   onValueChange,
   required = true,
+  reserveDescriptionSpace = false,
   validationName,
 }: {
+  description?: string;
   errors?: string[];
   id: string;
   label: string;
@@ -245,6 +252,7 @@ function ControlledSelect({
   onFieldChange?: (fieldName: string) => void;
   onValueChange?: (value: string) => void;
   required?: boolean;
+  reserveDescriptionSpace?: boolean;
   validationName?: string;
 }) {
   const [internalValue, setInternalValue] = useState<string | null>(
@@ -253,12 +261,19 @@ function ControlledSelect({
   const value =
     selectedValue === undefined ? internalValue : selectedValue || null;
   const errorId = errors?.length ? `${id}-error` : undefined;
+  const descriptionId = description ? `${id}-description` : undefined;
+  const describedBy = [descriptionId, errorId].filter(Boolean).join(" ");
 
   return (
     <Field data-invalid={Boolean(errors?.length)}>
       <FieldLabel htmlFor={id} required={required}>
         {label}
       </FieldLabel>
+      {description ? (
+        <FieldDescription id={descriptionId}>{description}</FieldDescription>
+      ) : reserveDescriptionSpace ? (
+        <FieldDescription aria-hidden="true">&nbsp;</FieldDescription>
+      ) : null}
       <Select
         items={Object.fromEntries(options)}
         name={name}
@@ -270,7 +285,7 @@ function ControlledSelect({
         value={value}
       >
         <SelectTrigger
-          aria-describedby={errorId}
+          aria-describedby={describedBy || undefined}
           aria-invalid={Boolean(errors?.length)}
           aria-required={required}
           className="h-12 w-full rounded-xl"
@@ -475,7 +490,7 @@ export function ProfileFormFields({
           Estas informações serão avaliadas pela equipe antes de liberar o
           catálogo.
         </FieldDescription>
-        <FieldGroup className="grid gap-5 md:grid-cols-2">
+        <FieldGroup className="grid max-w-5xl gap-5 md:grid-cols-2">
           {role === "COMPANY" ? (
             <Card className="border-brand-blue/25 bg-brand-blue-soft/35 gap-4 py-5 md:col-span-2">
               <CardHeader className="gap-2 px-5">
@@ -682,7 +697,6 @@ export function ProfileFormFields({
 
           <TextField
             autoComplete="tel"
-            description="Mínimo de 10 caracteres, incluindo o DDD."
             errors={resolveFieldErrors("whatsapp")}
             id={`${role.toLowerCase()}-whatsapp`}
             inputMode="tel"
@@ -1201,10 +1215,9 @@ export function ProfileFormFields({
 
       <FieldSet>
         <FieldLegend>Localização</FieldLegend>
-        <FieldGroup className="grid gap-5 md:grid-cols-[1fr_10rem]">
+        <FieldGroup className="grid max-w-[44rem] gap-5 md:grid-cols-[minmax(0,34rem)_8rem]">
           <TextField
             autoComplete="address-level2"
-            description="Mínimo de 2 caracteres."
             errors={resolveFieldErrors("city")}
             id={`${role.toLowerCase()}-city`}
             label="Cidade"
