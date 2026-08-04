@@ -163,7 +163,7 @@ export function CompanyDetailView({
             {detail.media.cover ? (
               <CompanyPrivateImage
                 alt={detail.media.cover.alt}
-                className="aspect-[16/7] w-full object-cover"
+                className="h-36 w-full object-cover sm:h-44 lg:h-52"
                 fetchPriority="high"
                 height={detail.media.cover.height}
                 loading="eager"
@@ -173,11 +173,11 @@ export function CompanyDetailView({
             ) : (
               <div
                 aria-hidden="true"
-                className="from-brand-blue/30 via-brand-pink/15 to-brand-lime/25 aspect-[16/7] bg-gradient-to-br"
+                className="from-brand-blue/30 via-brand-pink/15 to-brand-lime/25 h-36 bg-gradient-to-br sm:h-44 lg:h-52"
               />
             )}
-            <CardHeader className="relative gap-4 px-5 pt-16 pb-6 sm:px-8 sm:pt-20">
-              <div className="absolute -top-12 left-5 flex size-24 items-center justify-center overflow-hidden rounded-3xl border-4 border-white bg-white shadow-lg sm:left-8 sm:size-28">
+            <CardHeader className="relative gap-4 px-5 pt-14 pb-6 sm:px-8 sm:pt-16">
+              <div className="absolute -top-10 left-5 flex size-20 items-center justify-center overflow-hidden rounded-3xl border-4 border-white bg-white shadow-lg sm:-top-12 sm:left-8 sm:size-24">
                 {detail.media.logo ? (
                   <CompanyPrivateImage
                     alt={detail.media.logo.alt}
