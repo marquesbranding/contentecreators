@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import {
   AuthPageShell,
@@ -15,8 +16,31 @@ export const metadata: Metadata = {
   description: "Defina uma nova senha para sua conta.",
 };
 
-export default async function ResetPasswordPage() {
+interface ResetPasswordPageProps {
+  searchParams: Promise<{
+    code?: string | string[];
+  }>;
+}
+
+function firstSearchParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function ResetPasswordPage({
+  searchParams,
+}: ResetPasswordPageProps) {
   const service = await createServerIdentityAuthService();
+  const parameters = await searchParams;
+  const code = firstSearchParam(parameters.code);
+
+  if (code) {
+    const result = await service.exchangeCallback(code);
+
+    if (result.kind === "success") {
+      redirect("/reset-password");
+    }
+  }
+
   const identity = await service.requireVerifiedIdentity();
 
   return (
