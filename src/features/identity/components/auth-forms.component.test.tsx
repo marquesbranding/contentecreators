@@ -13,6 +13,15 @@ const supabaseAuthMock = vi.hoisted(() => ({
   exchangeCodeForSession: vi.fn(async (): Promise<{ error: Error | null }> => ({
     error: null,
   })),
+  getSession: vi.fn(
+    async (): Promise<{
+      data: { session: Record<string, unknown> | null };
+      error: Error | null;
+    }> => ({
+      data: { session: null },
+      error: null,
+    }),
+  ),
   signOut: vi.fn(async (): Promise<{ error: Error | null }> => ({
     error: null,
   })),
@@ -316,6 +325,26 @@ describe("identity auth forms", () => {
 
     expect(await screen.findByText("Link indisponível")).toBeInTheDocument();
     expect(screen.queryByLabelText("Nova senha")).not.toBeInTheDocument();
+  });
+
+  it("supports recovery links that arrive as browser hash sessions", async () => {
+    supabaseAuthMock.getSession.mockResolvedValueOnce({
+      data: { session: { access_token: "token" } },
+      error: null,
+    });
+    window.history.replaceState(
+      null,
+      "",
+      "/reset-password#access_token=token&type=recovery",
+    );
+
+    render(<ResetPasswordRecoveryGate />);
+
+    expect(supabaseAuthMock.exchangeCodeForSession).not.toHaveBeenCalled();
+    expect(supabaseAuthMock.getSession).toHaveBeenCalled();
+    expect(await screen.findByLabelText("Nova senha")).toBeInTheDocument();
+    expect(window.location.pathname).toBe("/reset-password");
+    expect(window.location.hash).toBe("");
   });
 
   it("has no serious or critical automated accessibility violations", async () => {

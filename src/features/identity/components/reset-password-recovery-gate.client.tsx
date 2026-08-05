@@ -11,7 +11,7 @@ import { ResetPasswordForm } from "./reset-password-form.client";
 type RecoveryGateState = "invalid" | "pending" | "ready";
 
 interface ResetPasswordRecoveryGateProps {
-  code: string;
+  code?: string;
 }
 
 export function ResetPasswordRecoveryGate({
@@ -22,15 +22,17 @@ export function ResetPasswordRecoveryGate({
   useEffect(() => {
     let isMounted = true;
 
-    async function exchangeRecoveryCode() {
+    async function validateRecoveryAccess() {
       const client = getBrowserSupabaseClient();
-      const { error } = await client.auth.exchangeCodeForSession(code);
+      const result = code
+        ? await client.auth.exchangeCodeForSession(code)
+        : await client.auth.getSession();
 
       if (!isMounted) {
         return;
       }
 
-      if (error) {
+      if (result.error || (!code && !result.data.session)) {
         setState("invalid");
         return;
       }
@@ -39,7 +41,7 @@ export function ResetPasswordRecoveryGate({
       setState("ready");
     }
 
-    void exchangeRecoveryCode();
+    void validateRecoveryAccess();
 
     return () => {
       isMounted = false;
