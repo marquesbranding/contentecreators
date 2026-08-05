@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createDatabaseClient } from "@/db/client";
-import { buildAuthCallbackUrl } from "@/features/identity/domain/auth-return-path";
+import { buildPasswordResetUrl } from "@/features/identity/domain/auth-return-path";
 import { createAuditedTransactionRunner } from "@/features/audit/server/services/audited-transaction";
 import { parseServerEnv } from "@/shared/lib/env/server-env-schema";
 import { createSupabaseAdminClient } from "@/shared/server/supabase/admin-client";
@@ -15,10 +15,7 @@ export function createAdminIdentityGateway() {
   const environment = parseServerEnv(process.env);
 
   return createSupabaseAdminIdentityGateway(createSupabaseAdminClient(), {
-    redirectTo: buildAuthCallbackUrl(
-      environment.NEXT_PUBLIC_APP_URL,
-      "/reset-password",
-    ),
+    redirectTo: buildPasswordResetUrl(environment.NEXT_PUBLIC_APP_URL),
   });
 }
 

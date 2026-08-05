@@ -80,27 +80,36 @@ export function ResetPasswordForm() {
     async function updatePassword() {
       setIsSubmitting(true);
       const client = getBrowserSupabaseClient();
-      const { error } = await client.auth.updateUser({
-        password: input.password,
-      });
 
-      if (error) {
-        setIsSubmitting(false);
+      try {
+        const { error } = await client.auth.updateUser({
+          password: input.password,
+        });
+
+        if (error) {
+          setState({
+            message:
+              "Não foi possível atualizar a senha. Solicite um novo link e tente novamente.",
+            status: "error",
+          });
+          return;
+        }
+
+        await client.auth.signOut({ scope: "local" });
+        setState({
+          message:
+            "Senha atualizada. Agora você já pode entrar com a nova senha.",
+          status: "success",
+        });
+      } catch {
         setState({
           message:
             "Não foi possível atualizar a senha. Solicite um novo link e tente novamente.",
           status: "error",
         });
-        return;
+      } finally {
+        setIsSubmitting(false);
       }
-
-      await client.auth.signOut({ scope: "local" });
-      setIsSubmitting(false);
-      setState({
-        message:
-          "Senha atualizada. Agora você já pode entrar com a nova senha.",
-        status: "success",
-      });
     }
 
     void updatePassword();

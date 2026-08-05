@@ -42,3 +42,7 @@ export function buildAuthCallbackUrl(appUrl: string, destination: unknown) {
 
   return callbackUrl.toString();
 }
+
+export function buildPasswordResetUrl(appUrl: string) {
+  return new URL("/reset-password", appUrl).toString();
+}

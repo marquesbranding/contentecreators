@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
 import {
   AuthPageShell,
   RecoveryLinkUnavailable,
+  ResetPasswordRecoveryGate,
   ResetPasswordForm,
 } from "@/features/identity";
 import { createServerIdentityAuthService } from "@/features/identity/server";
@@ -29,17 +29,9 @@ export default async function ResetPasswordPage({
   const parameters = await searchParams;
   const code = firstSearchParam(parameters.code);
 
-  if (code) {
-    const callbackSearchParams = new URLSearchParams({
-      code,
-      next: "/reset-password",
-    });
-
-    redirect(`/auth/callback?${callbackSearchParams.toString()}`);
-  }
-
-  const service = await createServerIdentityAuthService();
-  const identity = await service.requireVerifiedIdentity();
+  const identity = code
+    ? null
+    : await (await createServerIdentityAuthService()).requireVerifiedIdentity();
 
   return (
     <AuthPageShell
@@ -47,7 +39,9 @@ export default async function ResetPasswordPage({
       eyebrow="Segurança da conta"
       title="Crie uma nova senha"
     >
-      {identity.kind === "verified" ? (
+      {code ? (
+        <ResetPasswordRecoveryGate code={code} />
+      ) : identity?.kind === "verified" ? (
         <ResetPasswordForm />
       ) : (
         <RecoveryLinkUnavailable />

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildAuthCallbackUrl,
+  buildPasswordResetUrl,
   sanitizeAuthReturnPath,
 } from "./auth-return-path";
 
@@ -35,6 +36,12 @@ describe("auth return paths", () => {
       ),
     ).toBe(
       "http://localhost:3000/auth/callback?next=%2Fonboarding%2Frole%3Fintent%3Dcompany",
+    );
+  });
+
+  it("builds a direct password reset URL for browser-side code exchange", () => {
+    expect(buildPasswordResetUrl("https://www.contentecreators.com")).toBe(
+      "https://www.contentecreators.com/reset-password",
     );
   });
 });

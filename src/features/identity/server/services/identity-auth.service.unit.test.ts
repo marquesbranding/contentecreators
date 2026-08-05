@@ -121,21 +121,25 @@ describe("identity auth service", () => {
   });
 
   it("never reveals whether a recovery email exists or delivery failed", async () => {
-    const service = createIdentityAuthService(
-      createGateway({
-        requestPasswordRecovery: vi.fn(async () => ({
-          code: "provider_unavailable",
-          kind: "failure" as const,
-        })),
-      }),
-      { appUrl: "http://localhost:3000" },
-    );
+    const gateway = createGateway({
+      requestPasswordRecovery: vi.fn(async () => ({
+        code: "provider_unavailable",
+        kind: "failure" as const,
+      })),
+    });
+    const service = createIdentityAuthService(gateway, {
+      appUrl: "http://localhost:3000",
+    });
 
     await expect(
       service.requestPasswordRecovery("unknown@example.com"),
     ).resolves.toEqual({
       kind: "success",
       message: AUTH_MESSAGES.recoveryRequested,
+    });
+    expect(gateway.requestPasswordRecovery).toHaveBeenCalledWith({
+      email: "unknown@example.com",
+      redirectTo: "http://localhost:3000/reset-password",
     });
   });
 

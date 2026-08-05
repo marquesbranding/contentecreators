@@ -2,6 +2,7 @@ import "server-only";
 
 import {
   buildAuthCallbackUrl,
+  buildPasswordResetUrl,
   sanitizeAuthReturnPath,
 } from "../../domain/auth-return-path";
 import { buildRoleSelectionPath } from "../../domain/registration-intent";
@@ -232,10 +233,7 @@ export function createIdentityAuthService(
       if (await isAllowed("passwordRecovery", email)) {
         await gateway.requestPasswordRecovery({
           email,
-          redirectTo: buildAuthCallbackUrl(
-            configuration.appUrl,
-            "/reset-password",
-          ),
+          redirectTo: buildPasswordResetUrl(configuration.appUrl),
         });
       }
 

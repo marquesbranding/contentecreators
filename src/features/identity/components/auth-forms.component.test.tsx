@@ -1,16 +1,24 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getBlockingComponentAccessibilityViolations } from "@/test/component-accessibility";
 
 import { LoginForm } from "./login-form.client";
+import { ResetPasswordRecoveryGate } from "./reset-password-recovery-gate.client";
 import { ResetPasswordForm } from "./reset-password-form.client";
 import { SignUpForm } from "./sign-up-form.client";
 
 const supabaseAuthMock = vi.hoisted(() => ({
-  signOut: vi.fn(async () => ({ error: null })),
-  updateUser: vi.fn(async () => ({ error: null })),
+  exchangeCodeForSession: vi.fn(async (): Promise<{ error: Error | null }> => ({
+    error: null,
+  })),
+  signOut: vi.fn(async (): Promise<{ error: Error | null }> => ({
+    error: null,
+  })),
+  updateUser: vi.fn(async (): Promise<{ error: Error | null }> => ({
+    error: null,
+  })),
 }));
 
 vi.mock("next/image", () => ({
@@ -30,6 +38,11 @@ vi.mock("@/shared/lib/supabase/browser-client", () => ({
 }));
 
 describe("identity auth forms", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    window.history.replaceState(null, "", "/");
+  });
+
   it("offers only supported login methods and recovery navigation", () => {
     render(
       <LoginForm
@@ -275,6 +288,34 @@ describe("identity auth forms", () => {
     expect(
       await screen.findByRole("link", { name: "Entrar com a nova senha" }),
     ).toHaveAttribute("href", "/login");
+  });
+
+  it("exchanges a recovery link code in the browser before showing the password form", async () => {
+    supabaseAuthMock.exchangeCodeForSession.mockResolvedValueOnce({
+      error: null,
+    });
+    window.history.replaceState(null, "", "/reset-password?code=abc123");
+
+    render(<ResetPasswordRecoveryGate code="abc123" />);
+
+    expect(screen.getByText("Validando link de recuperação...")).toBeVisible();
+    expect(supabaseAuthMock.exchangeCodeForSession).toHaveBeenCalledWith(
+      "abc123",
+    );
+    expect(await screen.findByLabelText("Nova senha")).toBeInTheDocument();
+    expect(window.location.pathname).toBe("/reset-password");
+    expect(window.location.search).toBe("");
+  });
+
+  it("keeps invalid recovery link codes from exposing the password form", async () => {
+    supabaseAuthMock.exchangeCodeForSession.mockResolvedValueOnce({
+      error: new Error("invalid code"),
+    });
+
+    render(<ResetPasswordRecoveryGate code="expired-code" />);
+
+    expect(await screen.findByText("Link indisponível")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Nova senha")).not.toBeInTheDocument();
   });
 
   it("has no serious or critical automated accessibility violations", async () => {

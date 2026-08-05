@@ -77,7 +77,7 @@ describe("Supabase admin identity gateway", () => {
   it("invites through the server-only Admin API with an environment callback", async () => {
     const { client, inviteUserByEmail } = createClient();
     const gateway = createSupabaseAdminIdentityGateway(client, {
-      redirectTo: "http://localhost:3000/auth/callback?next=%2Freset-password",
+      redirectTo: "http://localhost:3000/reset-password",
     });
 
     await expect(
@@ -87,14 +87,14 @@ describe("Supabase admin identity gateway", () => {
       id: "20000000-0000-4000-8000-000000000009",
     });
     expect(inviteUserByEmail).toHaveBeenCalledWith("admin.novo@example.com", {
-      redirectTo: "http://localhost:3000/auth/callback?next=%2Freset-password",
+      redirectTo: "http://localhost:3000/reset-password",
     });
   });
 
   it("returns no identity when Supabase rejects or omits the invite", async () => {
     const { client } = createClient({ fails: true });
     const gateway = createSupabaseAdminIdentityGateway(client, {
-      redirectTo: "http://localhost:3000/auth/callback?next=%2Freset-password",
+      redirectTo: "http://localhost:3000/reset-password",
     });
 
     await expect(

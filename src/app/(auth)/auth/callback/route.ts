@@ -11,6 +11,14 @@ export async function GET(request: NextRequest) {
   const destination = sanitizeAuthReturnPath(
     request.nextUrl.searchParams.get("next"),
   );
+
+  if (destination === "/reset-password" && code.trim()) {
+    const resetPasswordUrl = new URL("/reset-password", request.url);
+    resetPasswordUrl.searchParams.set("code", code);
+
+    return NextResponse.redirect(resetPasswordUrl);
+  }
+
   const service = await createServerIdentityAuthService();
   const result = await service.exchangeCallback(code);
 

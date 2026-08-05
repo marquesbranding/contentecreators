@@ -6,6 +6,7 @@ export { ForgotPasswordForm } from "./components/forgot-password-form.client";
 export { LoginForm } from "./components/login-form.client";
 export { RecoveryLinkUnavailable } from "./components/recovery-link-unavailable";
 export { ResetPasswordForm } from "./components/reset-password-form.client";
+export { ResetPasswordRecoveryGate } from "./components/reset-password-recovery-gate.client";
 export { RoleSelectionForm } from "./components/role-selection-form.client";
 export { RoleSelectionShell } from "./components/role-selection-shell";
 export { SignUpForm } from "./components/sign-up-form.client";
