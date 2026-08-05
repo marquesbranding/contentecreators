@@ -12,10 +12,14 @@ type RecoveryGateState = "invalid" | "pending" | "ready";
 
 interface ResetPasswordRecoveryGateProps {
   code?: string;
+  tokenHash?: string;
+  type?: string;
 }
 
 export function ResetPasswordRecoveryGate({
   code,
+  tokenHash,
+  type,
 }: ResetPasswordRecoveryGateProps) {
   const [state, setState] = useState<RecoveryGateState>("pending");
 
@@ -24,15 +28,21 @@ export function ResetPasswordRecoveryGate({
 
     async function validateRecoveryAccess() {
       const client = getBrowserSupabaseClient();
+      const hasRecoveryTokenHash = Boolean(tokenHash && type === "recovery");
       const result = code
         ? await client.auth.exchangeCodeForSession(code)
-        : await client.auth.getSession();
+        : hasRecoveryTokenHash
+          ? await client.auth.verifyOtp({
+              token_hash: tokenHash,
+              type: "recovery",
+            })
+          : await client.auth.getSession();
 
       if (!isMounted) {
         return;
       }
 
-      if (result.error || (!code && !result.data.session)) {
+      if (result.error || !result.data.session) {
         setState("invalid");
         return;
       }
@@ -46,7 +56,7 @@ export function ResetPasswordRecoveryGate({
     return () => {
       isMounted = false;
     };
-  }, [code]);
+  }, [code, tokenHash, type]);
 
   if (state === "invalid") {
     return <RecoveryLinkUnavailable />;

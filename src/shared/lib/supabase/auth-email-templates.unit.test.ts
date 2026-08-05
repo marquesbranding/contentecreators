@@ -26,10 +26,20 @@ describe("local Supabase Auth email templates", () => {
       expect(html).toMatch(
         /{{\s*\.SiteURL\s*}}\/brand\/official\/contente-creators-(?:black|white)\.png/,
       );
-      expect(html).toContain("{{ .ConfirmationURL }}");
+      if (templateName === "recovery") {
+        expect(html).toContain(
+          "{{ .SiteURL }}/reset-password?token_hash={{ .TokenHash }}&amp;type=recovery",
+        );
+        expect(html).not.toContain("{{ .ConfirmationURL }}");
+      } else {
+        expect(html).toContain("{{ .ConfirmationURL }}");
+      }
       expect(html).not.toMatch(
-        /{{\s*\.(?:Token|TokenHash|Data|Email|NewEmail|OldEmail)\s*}}/,
+        /{{\s*\.(?:Token|Data|Email|NewEmail|OldEmail)\s*}}/,
       );
+      if (templateName !== "recovery") {
+        expect(html).not.toContain("{{ .TokenHash }}");
+      }
       expect(html).not.toMatch(
         /{{\s*\.(?:Password|AccessToken|RefreshToken)\s*}}/,
       );

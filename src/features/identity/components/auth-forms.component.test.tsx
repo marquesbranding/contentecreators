@@ -10,10 +10,25 @@ import { ResetPasswordForm } from "./reset-password-form.client";
 import { SignUpForm } from "./sign-up-form.client";
 
 const supabaseAuthMock = vi.hoisted(() => ({
-  exchangeCodeForSession: vi.fn(async (): Promise<{ error: Error | null }> => ({
-    error: null,
-  })),
+  exchangeCodeForSession: vi.fn(
+    async (): Promise<{
+      data: { session: Record<string, unknown> | null };
+      error: Error | null;
+    }> => ({
+      data: { session: { access_token: "token" } },
+      error: null,
+    }),
+  ),
   getSession: vi.fn(
+    async (): Promise<{
+      data: { session: Record<string, unknown> | null };
+      error: Error | null;
+    }> => ({
+      data: { session: null },
+      error: null,
+    }),
+  ),
+  verifyOtp: vi.fn(
     async (): Promise<{
       data: { session: Record<string, unknown> | null };
       error: Error | null;
@@ -301,6 +316,7 @@ describe("identity auth forms", () => {
 
   it("exchanges a recovery link code in the browser before showing the password form", async () => {
     supabaseAuthMock.exchangeCodeForSession.mockResolvedValueOnce({
+      data: { session: { access_token: "token" } },
       error: null,
     });
     window.history.replaceState(null, "", "/reset-password?code=abc123");
@@ -318,10 +334,23 @@ describe("identity auth forms", () => {
 
   it("keeps invalid recovery link codes from exposing the password form", async () => {
     supabaseAuthMock.exchangeCodeForSession.mockResolvedValueOnce({
+      data: { session: null },
       error: new Error("invalid code"),
     });
 
     render(<ResetPasswordRecoveryGate code="expired-code" />);
+
+    expect(await screen.findByText("Link indisponível")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Nova senha")).not.toBeInTheDocument();
+  });
+
+  it("requires a recovered session before exposing the password form", async () => {
+    supabaseAuthMock.exchangeCodeForSession.mockResolvedValueOnce({
+      data: { session: null },
+      error: null,
+    });
+
+    render(<ResetPasswordRecoveryGate code="sessionless-code" />);
 
     expect(await screen.findByText("Link indisponível")).toBeInTheDocument();
     expect(screen.queryByLabelText("Nova senha")).not.toBeInTheDocument();
@@ -345,6 +374,29 @@ describe("identity auth forms", () => {
     expect(await screen.findByLabelText("Nova senha")).toBeInTheDocument();
     expect(window.location.pathname).toBe("/reset-password");
     expect(window.location.hash).toBe("");
+  });
+
+  it("verifies token hash recovery links before showing the password form", async () => {
+    supabaseAuthMock.verifyOtp.mockResolvedValueOnce({
+      data: { session: { access_token: "token" } },
+      error: null,
+    });
+    window.history.replaceState(
+      null,
+      "",
+      "/reset-password?token_hash=hash123&type=recovery",
+    );
+
+    render(<ResetPasswordRecoveryGate tokenHash="hash123" type="recovery" />);
+
+    expect(supabaseAuthMock.exchangeCodeForSession).not.toHaveBeenCalled();
+    expect(supabaseAuthMock.verifyOtp).toHaveBeenCalledWith({
+      token_hash: "hash123",
+      type: "recovery",
+    });
+    expect(await screen.findByLabelText("Nova senha")).toBeInTheDocument();
+    expect(window.location.pathname).toBe("/reset-password");
+    expect(window.location.search).toBe("");
   });
 
   it("has no serious or critical automated accessibility violations", async () => {

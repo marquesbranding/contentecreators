@@ -10,6 +10,8 @@ export const metadata: Metadata = {
 interface ResetPasswordPageProps {
   searchParams: Promise<{
     code?: string | string[];
+    token_hash?: string | string[];
+    type?: string | string[];
   }>;
 }
 
@@ -22,6 +24,8 @@ export default async function ResetPasswordPage({
 }: ResetPasswordPageProps) {
   const parameters = await searchParams;
   const code = firstSearchParam(parameters.code);
+  const tokenHash = firstSearchParam(parameters.token_hash);
+  const type = firstSearchParam(parameters.type);
 
   return (
     <AuthPageShell
@@ -29,7 +33,11 @@ export default async function ResetPasswordPage({
       eyebrow="Segurança da conta"
       title="Crie uma nova senha"
     >
-      <ResetPasswordRecoveryGate code={code} />
+      <ResetPasswordRecoveryGate
+        code={code}
+        tokenHash={tokenHash}
+        type={type}
+      />
     </AuthPageShell>
   );
 }
