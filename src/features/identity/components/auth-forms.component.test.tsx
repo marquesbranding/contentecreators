@@ -9,13 +9,18 @@ import { ResetPasswordRecoveryGate } from "./reset-password-recovery-gate.client
 import { ResetPasswordForm } from "./reset-password-form.client";
 import { SignUpForm } from "./sign-up-form.client";
 
+const recoveredSession = {
+  access_token: "token",
+  refresh_token: "refresh-token",
+};
+
 const supabaseAuthMock = vi.hoisted(() => ({
   exchangeCodeForSession: vi.fn(
     async (): Promise<{
       data: { session: Record<string, unknown> | null };
       error: Error | null;
     }> => ({
-      data: { session: { access_token: "token" } },
+      data: { session: recoveredSession },
       error: null,
     }),
   ),
@@ -38,6 +43,9 @@ const supabaseAuthMock = vi.hoisted(() => ({
     }),
   ),
   signOut: vi.fn(async (): Promise<{ error: Error | null }> => ({
+    error: null,
+  })),
+  setSession: vi.fn(async (): Promise<{ error: Error | null }> => ({
     error: null,
   })),
   updateUser: vi.fn(async (): Promise<{ error: Error | null }> => ({
@@ -293,6 +301,10 @@ describe("identity auth forms", () => {
   it("updates the recovery password with the browser Supabase session", async () => {
     const user = userEvent.setup();
 
+    supabaseAuthMock.getSession.mockResolvedValueOnce({
+      data: { session: recoveredSession },
+      error: null,
+    });
     supabaseAuthMock.updateUser.mockResolvedValueOnce({ error: null });
     supabaseAuthMock.signOut.mockResolvedValueOnce({ error: null });
 
@@ -316,7 +328,11 @@ describe("identity auth forms", () => {
 
   it("exchanges a recovery link code in the browser before showing the password form", async () => {
     supabaseAuthMock.exchangeCodeForSession.mockResolvedValueOnce({
-      data: { session: { access_token: "token" } },
+      data: { session: recoveredSession },
+      error: null,
+    });
+    supabaseAuthMock.getSession.mockResolvedValueOnce({
+      data: { session: recoveredSession },
       error: null,
     });
     window.history.replaceState(null, "", "/reset-password?code=abc123");
@@ -357,10 +373,15 @@ describe("identity auth forms", () => {
   });
 
   it("supports recovery links that arrive as browser hash sessions", async () => {
-    supabaseAuthMock.getSession.mockResolvedValueOnce({
-      data: { session: { access_token: "token" } },
-      error: null,
-    });
+    supabaseAuthMock.getSession
+      .mockResolvedValueOnce({
+        data: { session: recoveredSession },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: { session: recoveredSession },
+        error: null,
+      });
     window.history.replaceState(
       null,
       "",
@@ -378,7 +399,11 @@ describe("identity auth forms", () => {
 
   it("verifies token hash recovery links before showing the password form", async () => {
     supabaseAuthMock.verifyOtp.mockResolvedValueOnce({
-      data: { session: { access_token: "token" } },
+      data: { session: recoveredSession },
+      error: null,
+    });
+    supabaseAuthMock.getSession.mockResolvedValueOnce({
+      data: { session: recoveredSession },
       error: null,
     });
     window.history.replaceState(

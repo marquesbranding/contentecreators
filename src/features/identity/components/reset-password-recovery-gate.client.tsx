@@ -29,6 +29,21 @@ export function ResetPasswordRecoveryGate({
     async function validateRecoveryAccess() {
       const client = getBrowserSupabaseClient();
       const hasRecoveryTokenHash = Boolean(tokenHash && type === "recovery");
+      const hashParameters = new URLSearchParams(
+        window.location.hash.replace(/^#/, ""),
+      );
+      const hasRecoveryHash =
+        hashParameters.get("type") === "recovery" &&
+        hashParameters.has("access_token");
+
+      if (!code && !hasRecoveryTokenHash && !hasRecoveryHash) {
+        if (isMounted) {
+          setState("invalid");
+        }
+
+        return;
+      }
+
       const result = code
         ? await client.auth.exchangeCodeForSession(code)
         : hasRecoveryTokenHash
@@ -43,6 +58,23 @@ export function ResetPasswordRecoveryGate({
       }
 
       if (result.error || !result.data.session) {
+        setState("invalid");
+        return;
+      }
+
+      const { access_token: accessToken, refresh_token: refreshToken } =
+        result.data.session;
+
+      if (accessToken && refreshToken) {
+        await client.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+      }
+
+      const sessionResult = await client.auth.getSession();
+
+      if (sessionResult.error || !sessionResult.data.session) {
         setState("invalid");
         return;
       }

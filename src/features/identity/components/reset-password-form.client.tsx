@@ -40,6 +40,23 @@ function validationFailure(error: ZodError): AuthActionState {
   };
 }
 
+function updatePasswordFailureMessage(errorMessage?: string) {
+  const normalizedMessage = errorMessage?.toLowerCase() ?? "";
+
+  if (
+    normalizedMessage.includes("same") ||
+    normalizedMessage.includes("different")
+  ) {
+    return "Use uma senha diferente da senha atual.";
+  }
+
+  if (normalizedMessage.includes("password")) {
+    return "A senha foi recusada. Use pelo menos 8 caracteres, com letras maiúsculas, minúsculas e um número.";
+  }
+
+  return "Não foi possível atualizar a senha. Solicite um novo link e tente novamente.";
+}
+
 export function ResetPasswordForm() {
   const [state, setState] = useState<AuthActionState>(initialAuthActionState);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,14 +99,24 @@ export function ResetPasswordForm() {
       const client = getBrowserSupabaseClient();
 
       try {
+        const sessionResult = await client.auth.getSession();
+
+        if (sessionResult.error || !sessionResult.data.session) {
+          setState({
+            message:
+              "Este link expirou ou não pertence a uma sessão válida. Solicite um novo link e tente novamente.",
+            status: "error",
+          });
+          return;
+        }
+
         const { error } = await client.auth.updateUser({
           password: input.password,
         });
 
         if (error) {
           setState({
-            message:
-              "Não foi possível atualizar a senha. Solicite um novo link e tente novamente.",
+            message: updatePasswordFailureMessage(error.message),
             status: "error",
           });
           return;
