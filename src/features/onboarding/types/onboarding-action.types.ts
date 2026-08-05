@@ -1,6 +1,7 @@
 export interface OnboardingActionState {
   status: "idle" | "error" | "success" | "confirmation_required";
   message?: string;
+  errorCode?: "account_already_exists";
   fieldErrors?: Record<string, string[]>;
   values?: {
     email?: string;

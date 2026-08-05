@@ -108,6 +108,8 @@ export function CombinedRegistrationForm({
     "passwordConfirmation",
     state.fieldErrors?.passwordConfirmation,
   );
+  const accountAlreadyExists =
+    state.errorCode === "account_already_exists";
 
   if (state.status === "confirmation_required" && state.values?.email) {
     return (
@@ -156,8 +158,28 @@ export function CombinedRegistrationForm({
       {state.message ? (
         <Alert aria-live="polite" variant="destructive">
           <CircleAlert aria-hidden="true" />
-          <AlertTitle>Revise seu cadastro</AlertTitle>
-          <AlertDescription>{state.message}</AlertDescription>
+          <AlertTitle>
+            {accountAlreadyExists ? "Conta já cadastrada" : "Revise seu cadastro"}
+          </AlertTitle>
+          <AlertDescription>
+            <span className="block">{state.message}</span>
+            {accountAlreadyExists ? (
+              <span className="mt-4 flex flex-wrap gap-2">
+                <Link
+                  className={buttonVariants({ size: "sm" })}
+                  href="/login"
+                >
+                  Entrar
+                </Link>
+                <Link
+                  className={buttonVariants({ size: "sm", variant: "outline" })}
+                  href="/forgot-password"
+                >
+                  Recuperar senha
+                </Link>
+              </span>
+            ) : null}
+          </AlertDescription>
         </Alert>
       ) : null}
 

@@ -63,6 +63,33 @@ describe("onboarding registration service", () => {
     expect(identity.signUp).not.toHaveBeenCalled();
   });
 
+  it("returns account guidance when the identity already exists", async () => {
+    const identity = {
+      deleteIdentity: vi.fn(),
+      signUp: vi.fn().mockResolvedValue({ kind: "account_exists" }),
+    };
+    const repository = {
+      finalizePreparedRegistration: vi.fn(),
+      prepareEmailRegistration: vi.fn(),
+      submitGoogleProfile: vi.fn(),
+    };
+    const service = createOnboardingRegistrationService(identity, repository, {
+      callbackUrls: {
+        COMPANY: "http://localhost:3000/auth/callback?next=/onboarding/company",
+        INFLUENCER:
+          "http://localhost:3000/auth/callback?next=/onboarding/influencer",
+      },
+    });
+
+    await expect(service.registerWithEmail(influencerInput)).resolves.toEqual({
+      kind: "account_exists",
+      message:
+        "Este e-mail já possui cadastro. Entre com sua senha ou recupere o acesso para continuar.",
+    });
+    expect(repository.prepareEmailRegistration).not.toHaveBeenCalled();
+    expect(identity.deleteIdentity).not.toHaveBeenCalled();
+  });
+
   it("prepares identity and profile in one application request", async () => {
     const identity = {
       deleteIdentity: vi.fn(),

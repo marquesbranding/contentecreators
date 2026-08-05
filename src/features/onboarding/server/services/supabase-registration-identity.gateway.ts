@@ -4,6 +4,19 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { RegistrationIdentityGateway } from "./onboarding-registration.service";
 
+function isAccountAlreadyRegisteredError(error: {
+  code?: string;
+  message?: string;
+}): boolean {
+  const message = error.message?.toLowerCase() ?? "";
+
+  return (
+    error.code === "user_already_exists" ||
+    message.includes("already registered") ||
+    message.includes("already been registered")
+  );
+}
+
 export function createSupabaseRegistrationIdentityGateway(
   authClient: SupabaseClient,
   adminClient: SupabaseClient,
@@ -20,7 +33,17 @@ export function createSupabaseRegistrationIdentityGateway(
         password,
       });
 
-      if (error || !data.user || data.user.identities?.length === 0) {
+      if (error) {
+        return isAccountAlreadyRegisteredError(error)
+          ? { kind: "account_exists" }
+          : { kind: "failure" };
+      }
+
+      if (data.user && data.user.identities?.length === 0) {
+        return { kind: "account_exists" };
+      }
+
+      if (!data.user) {
         return { kind: "failure" };
       }
 

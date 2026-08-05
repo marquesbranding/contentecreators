@@ -23,6 +23,7 @@ interface RegistrationIdentityGateway {
         identityId: string;
         kind: "success";
       }
+    | { kind: "account_exists" }
     | { kind: "failure" }
   >;
 }
@@ -67,6 +68,8 @@ interface RegistrationAbuseProtection {
 
 const REGISTRATION_FAILURE_MESSAGE =
   "Não foi possível concluir o cadastro agora. Nenhum cadastro parcial foi mantido.";
+const ACCOUNT_EXISTS_MESSAGE =
+  "Este e-mail já possui cadastro. Entre com sua senha ou recupere o acesso para continuar.";
 
 export function createOnboardingRegistrationService(
   identity: RegistrationIdentityGateway,
@@ -134,6 +137,13 @@ export function createOnboardingRegistrationService(
         email: input.email,
         password: input.password,
       });
+
+      if (identityResult.kind === "account_exists") {
+        return {
+          kind: "account_exists" as const,
+          message: ACCOUNT_EXISTS_MESSAGE,
+        };
+      }
 
       if (identityResult.kind === "failure") {
         return {

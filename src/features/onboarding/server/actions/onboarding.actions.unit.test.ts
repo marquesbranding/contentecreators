@@ -215,6 +215,39 @@ describe("onboarding actions", () => {
     expect(serializedResult).not.toContain("https://instagram.com/joanacria");
   });
 
+  it("returns account-exists guidance without exposing private fields", async () => {
+    const registerWithEmail = vi.fn().mockResolvedValue({
+      kind: "account_exists",
+      message:
+        "Este e-mail já possui cadastro. Entre com sua senha ou recupere o acesso para continuar.",
+    });
+    mockedCreateRegistrationService.mockResolvedValue({
+      finalizePreparedEmailRegistration: vi.fn(),
+      registerWithEmail,
+      submitGoogleProfile: vi.fn(),
+    });
+
+    const result = await registerWithEmailAction(
+      { status: "idle" },
+      completeCompanyRegistration(),
+    );
+    const serializedResult = JSON.stringify(result);
+
+    expect(result).toMatchObject({
+      errorCode: "account_already_exists",
+      message:
+        "Este e-mail já possui cadastro. Entre com sua senha ou recupere o acesso para continuar.",
+      status: "error",
+      values: {
+        email: "empresa@example.com",
+        role: "COMPANY",
+      },
+    });
+    expect(serializedResult).not.toContain("StrongPass1");
+    expect(serializedResult).not.toContain("11.222.333/0001-81");
+    expect(serializedResult).not.toContain("(11) 99999-9999");
+  });
+
   it("validates and canonicalizes optional company social data before registration", async () => {
     const registerWithEmail = vi.fn().mockResolvedValue({
       kind: "confirmation_required",

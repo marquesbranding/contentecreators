@@ -98,6 +98,8 @@ export async function registerWithEmailAction(
   }
 
   return {
+    errorCode:
+      result.kind === "account_exists" ? "account_already_exists" : undefined,
     message: result.message,
     status:
       result.kind === "confirmation_required"
