@@ -6,10 +6,7 @@ import {
   RecoveryLinkUnavailable,
   ResetPasswordForm,
 } from "@/features/identity";
-import {
-  createServerIdentityAuthService,
-  resetPasswordAction,
-} from "@/features/identity/server";
+import { createServerIdentityAuthService } from "@/features/identity/server";
 
 export const metadata: Metadata = {
   title: "Criar nova senha",
@@ -51,7 +48,7 @@ export default async function ResetPasswordPage({
       title="Crie uma nova senha"
     >
       {identity.kind === "verified" ? (
-        <ResetPasswordForm action={resetPasswordAction} />
+        <ResetPasswordForm />
       ) : (
         <RecoveryLinkUnavailable />
       )}

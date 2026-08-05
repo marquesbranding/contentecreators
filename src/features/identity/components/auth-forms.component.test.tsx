@@ -5,7 +5,13 @@ import { describe, expect, it, vi } from "vitest";
 import { getBlockingComponentAccessibilityViolations } from "@/test/component-accessibility";
 
 import { LoginForm } from "./login-form.client";
+import { ResetPasswordForm } from "./reset-password-form.client";
 import { SignUpForm } from "./sign-up-form.client";
+
+const supabaseAuthMock = vi.hoisted(() => ({
+  signOut: vi.fn(async () => ({ error: null })),
+  updateUser: vi.fn(async () => ({ error: null })),
+}));
 
 vi.mock("next/image", () => ({
   default: ({
@@ -15,6 +21,12 @@ vi.mock("next/image", () => ({
     // eslint-disable-next-line @next/next/no-img-element
     <img alt={alt} {...props} />
   ),
+}));
+
+vi.mock("@/shared/lib/supabase/browser-client", () => ({
+  getBrowserSupabaseClient: vi.fn(() => ({
+    auth: supabaseAuthMock,
+  })),
 }));
 
 describe("identity auth forms", () => {
@@ -239,6 +251,30 @@ describe("identity auth forms", () => {
     expect(password).toHaveAttribute("aria-invalid", "true");
     expect(screen.getAllByText("Preencha este campo.")).toHaveLength(2);
     expect(email).toHaveFocus();
+  });
+
+  it("updates the recovery password with the browser Supabase session", async () => {
+    const user = userEvent.setup();
+
+    supabaseAuthMock.updateUser.mockResolvedValueOnce({ error: null });
+    supabaseAuthMock.signOut.mockResolvedValueOnce({ error: null });
+
+    render(<ResetPasswordForm />);
+
+    await user.type(screen.getByLabelText("Nova senha"), "NovaSenha123");
+    await user.type(
+      screen.getByLabelText("Confirmar nova senha"),
+      "NovaSenha123",
+    );
+    await user.click(screen.getByRole("button", { name: "Atualizar senha" }));
+
+    expect(supabaseAuthMock.updateUser).toHaveBeenCalledWith({
+      password: "NovaSenha123",
+    });
+    expect(supabaseAuthMock.signOut).toHaveBeenCalledWith({ scope: "local" });
+    expect(
+      await screen.findByRole("link", { name: "Entrar com a nova senha" }),
+    ).toHaveAttribute("href", "/login");
   });
 
   it("has no serious or critical automated accessibility violations", async () => {
