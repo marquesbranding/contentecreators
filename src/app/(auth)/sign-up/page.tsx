@@ -32,10 +32,10 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
   return (
     <OnboardingFormShell
       currentStep={1}
-      description="Crie seu acesso e envie todos os dados do perfil em um único cadastro. Depois da confirmação do e-mail, nossa equipe inicia a análise."
-      progressLabel="Conta e perfil"
+      description="Preencha seu acesso e os dados iniciais do perfil. Depois de confirmar o e-mail, você revisa tudo antes de enviar para análise."
+      progressLabel="Conta e dados"
       title="Crie sua conta e seu perfil"
-      totalSteps={1}
+      totalSteps={2}
     >
       <CombinedRegistrationForm
         action={registerWithEmailAction}

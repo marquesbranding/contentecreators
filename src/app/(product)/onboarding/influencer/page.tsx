@@ -15,6 +15,7 @@ import {
 } from "@/features/onboarding";
 import {
   loadCurrentOnboardingDraft,
+  loadCurrentPreparedInfluencerProfile,
   loadCurrentCorrectionContext,
   saveOnboardingDraftAction,
   submitGoogleProfileAction,
@@ -39,9 +40,10 @@ export default async function InfluencerOnboardingPage() {
   ) {
     redirect(decision.destination);
   }
-  const [initialDraft, initialMediaState] = await Promise.all([
+  const [initialDraft, initialMediaState, preparedProfile] = await Promise.all([
     loadCurrentOnboardingDraft(),
     loadCurrentInfluencerMediaFormState(),
+    loadCurrentPreparedInfluencerProfile(),
   ]);
   const correctionContext = correctionRequested
     ? await loadCurrentCorrectionContext()
@@ -66,7 +68,12 @@ export default async function InfluencerOnboardingPage() {
         correctionCommand={correctionContext?.command}
         draftAction={saveOnboardingDraftAction}
         initialDraft={initialDraft}
-        initialValues={correctionContext?.initialValues}
+        initialValues={
+          correctionContext?.initialValues ??
+          (initialDraft?.role === "INFLUENCER"
+            ? undefined
+            : (preparedProfile ?? undefined))
+        }
         mediaFields={
           <InfluencerMediaFields
             actions={{
