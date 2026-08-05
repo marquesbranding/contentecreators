@@ -201,6 +201,8 @@ export async function resendPreparedRegistrationConfirmationAction(
     .trim()
     .toLowerCase();
   const role = formData.get("role");
+  const normalizedRole =
+    role === "COMPANY" || role === "INFLUENCER" ? role : undefined;
 
   if (!email) {
     return {
@@ -219,16 +221,31 @@ export async function resendPreparedRegistrationConfirmationAction(
     role === "COMPANY" ? "/onboarding/company" : "/onboarding/influencer",
   );
   const authClient = await createServerSupabaseClient();
-  await authClient.auth.resend({
+  const { error } = await authClient.auth.resend({
     email,
     options: { emailRedirectTo: callbackUrl.toString() },
     type: "signup",
   });
 
+  if (error) {
+    const isRateLimited =
+      error.status === 429 ||
+      error.code === "email_rate_limit_exceeded" ||
+      error.code === "over_email_send_rate_limit";
+
+    return {
+      message: isRateLimited
+        ? "Aguarde alguns segundos antes de reenviar a confirmação."
+        : "Não foi possível reenviar a confirmação agora. Tente novamente em instantes.",
+      status: "error",
+      values: { email, role: normalizedRole },
+    };
+  }
+
   return {
     message:
       "Se a confirmação ainda estiver pendente, enviaremos uma nova mensagem.",
     status: "success",
-    values: { email },
+    values: { email, role: normalizedRole },
   };
 }
