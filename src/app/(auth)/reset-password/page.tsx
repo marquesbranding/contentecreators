@@ -29,18 +29,19 @@ function firstSearchParam(value: string | string[] | undefined) {
 export default async function ResetPasswordPage({
   searchParams,
 }: ResetPasswordPageProps) {
-  const service = await createServerIdentityAuthService();
   const parameters = await searchParams;
   const code = firstSearchParam(parameters.code);
 
   if (code) {
-    const result = await service.exchangeCallback(code);
+    const callbackSearchParams = new URLSearchParams({
+      code,
+      next: "/reset-password",
+    });
 
-    if (result.kind === "success") {
-      redirect("/reset-password");
-    }
+    redirect(`/auth/callback?${callbackSearchParams.toString()}`);
   }
 
+  const service = await createServerIdentityAuthService();
   const identity = await service.requireVerifiedIdentity();
 
   return (
