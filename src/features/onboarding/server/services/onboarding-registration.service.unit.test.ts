@@ -137,7 +137,7 @@ describe("onboarding registration service", () => {
     });
   });
 
-  it("opens the saved profile for review when Auth returns an active session", async () => {
+  it("submits the saved profile for analysis when Auth returns an active session", async () => {
     const identity = {
       deleteIdentity: vi.fn(),
       signUp: vi.fn().mockResolvedValue({
@@ -173,11 +173,59 @@ describe("onboarding registration service", () => {
 
     const result = await service.registerWithEmail(influencerInput);
 
-    expect(repository.finalizePreparedRegistration).not.toHaveBeenCalled();
-    expect(processOne).not.toHaveBeenCalled();
+    expect(repository.finalizePreparedRegistration).toHaveBeenCalledWith(
+      "identity-3",
+    );
+    expect(processOne).toHaveBeenCalledWith({
+      outboxId: "e0000000-0000-4000-8000-000000000001",
+      workerId: expect.stringMatching(/^onboarding:/u),
+    });
     expect(result).toEqual({
-      destination: "/onboarding/influencer",
+      destination: "/app/status/analysis",
       kind: "redirect",
+    });
+  });
+
+  it("submits a prepared email registration after the confirmation callback", async () => {
+    const identity = {
+      deleteIdentity: vi.fn(),
+      signUp: vi.fn(),
+    };
+    const repository = {
+      finalizePreparedRegistration: vi.fn().mockResolvedValue({
+        kind: "submitted",
+        outboxId: "e0000000-0000-4000-8000-000000000002",
+      }),
+      prepareEmailRegistration: vi.fn(),
+      submitGoogleProfile: vi.fn(),
+    };
+    const processOne = vi.fn().mockResolvedValue({ kind: "sent" as const });
+    const service = createOnboardingRegistrationService(
+      identity,
+      repository,
+      {
+        callbackUrls: {
+          COMPANY:
+            "http://localhost:3000/auth/callback?next=/onboarding/company",
+          INFLUENCER:
+            "http://localhost:3000/auth/callback?next=/onboarding/influencer",
+        },
+      },
+      { processOne },
+    );
+
+    await expect(
+      service.finalizePreparedEmailRegistration("identity-4"),
+    ).resolves.toEqual({
+      destination: "/app/status/analysis",
+      kind: "redirect",
+    });
+    expect(repository.finalizePreparedRegistration).toHaveBeenCalledWith(
+      "identity-4",
+    );
+    expect(processOne).toHaveBeenCalledWith({
+      outboxId: "e0000000-0000-4000-8000-000000000002",
+      workerId: expect.stringMatching(/^onboarding:/u),
     });
   });
 });

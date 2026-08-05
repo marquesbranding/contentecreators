@@ -88,7 +88,7 @@ export function CombinedRegistrationForm({
     successStatuses: ["success", "confirmation_required"],
     title:
       state.status === "confirmation_required"
-        ? "Cadastro enviado"
+        ? "Cadastro salvo"
         : "Cadastro concluído",
   });
   useActionSuccessToast(resendState, {
@@ -118,9 +118,9 @@ export function CombinedRegistrationForm({
         </Alert>
         <p className="text-muted-foreground text-sm leading-6">
           Enviamos o link para{" "}
-          <strong className="text-foreground">{state.values.email}</strong>. O
-          perfil já foi salvo. Após confirmar, você poderá revisar os dados e
-          completar as imagens antes de enviá-lo para análise.
+          <strong className="text-foreground">{state.values.email}</strong>.
+          Depois da confirmação, seu cadastro será enviado para análise
+          automaticamente.
         </p>
         <form action={resendFormAction} className="space-y-3">
           <input name="email" type="hidden" value={state.values.email} />

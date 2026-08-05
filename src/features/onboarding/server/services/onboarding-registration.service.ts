@@ -102,6 +102,21 @@ export function createOnboardingRegistrationService(
   }
 
   return {
+    async finalizePreparedEmailRegistration(identityId: string) {
+      const result = await submitWithImmediateEmail(() =>
+        repository.finalizePreparedRegistration(identityId),
+      );
+
+      if (result.kind === "not_prepared") {
+        return { kind: "not_prepared" as const };
+      }
+
+      return {
+        destination: "/app/status/analysis",
+        kind: "redirect" as const,
+      };
+    },
+
     async registerWithEmail(input: EmailRegistrationInput) {
       if (
         abuseProtection &&
@@ -147,7 +162,18 @@ export function createOnboardingRegistrationService(
         return {
           kind: "confirmation_required" as const,
           message:
-            "Seu perfil foi salvo. Confirme seu e-mail para revisar os dados e enviá-los à análise.",
+            "Seu perfil foi salvo. Confirme seu e-mail para enviar o cadastro para análise.",
+        };
+      }
+
+      const submissionResult = await submitWithImmediateEmail(() =>
+        repository.finalizePreparedRegistration(identityResult.identityId),
+      );
+
+      if (submissionResult.kind !== "not_prepared") {
+        return {
+          destination: "/app/status/analysis",
+          kind: "redirect" as const,
         };
       }
 

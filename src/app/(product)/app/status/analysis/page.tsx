@@ -11,7 +11,19 @@ export const metadata: Metadata = {
   title: "Cadastro em análise",
 };
 
-export default async function AnalysisStatusPage() {
+interface AnalysisStatusPageProps {
+  searchParams: Promise<{
+    confirmed?: string | string[];
+  }>;
+}
+
+export default async function AnalysisStatusPage({
+  searchParams,
+}: AnalysisStatusPageProps) {
+  const parameters = await searchParams;
+  const confirmedValue = Array.isArray(parameters.confirmed)
+    ? parameters.confirmed[0]
+    : parameters.confirmed;
   const service = await createServerRoleSelectionService();
   const decision = await service.getEntryDecision();
 
@@ -24,5 +36,10 @@ export default async function AnalysisStatusPage() {
     );
   }
 
-  return <AnalysisPending signOutAction={signOutAction} />;
+  return (
+    <AnalysisPending
+      emailConfirmed={confirmedValue === "1"}
+      signOutAction={signOutAction}
+    />
+  );
 }

@@ -12,8 +12,10 @@ import {
 } from "@/shared/components/ui/card";
 
 export function AnalysisPending({
+  emailConfirmed = false,
   signOutAction,
 }: {
+  emailConfirmed?: boolean;
   signOutAction: () => Promise<void>;
 }) {
   return (
@@ -44,6 +46,20 @@ export function AnalysisPending({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 px-6 py-7 sm:px-9">
+          {emailConfirmed ? (
+            <div className="flex gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-950">
+              <CheckCircle2
+                aria-hidden="true"
+                className="mt-0.5 size-5 shrink-0 text-emerald-600"
+              />
+              <div>
+                <strong className="text-sm">E-mail confirmado</strong>
+                <p className="mt-1 text-sm leading-5 text-emerald-800">
+                  Seu cadastro foi enviado para análise.
+                </p>
+              </div>
+            </div>
+          ) : null}
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="flex gap-3 rounded-2xl border p-4">
               <CheckCircle2
