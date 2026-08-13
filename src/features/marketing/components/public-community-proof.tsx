@@ -127,15 +127,18 @@ export function PublicCommunityProof({
                 baseVelocity={2}
                 className="text-xl font-extrabold tracking-[0.02em] text-black/40 uppercase sm:text-2xl"
                 direction={-1}
-                scrollReactivity={false}
               >
-                <ul
-                  aria-label="Marcas aprovadas"
-                  className="flex items-center gap-12 pr-12"
-                >
+                <ul aria-label="Marcas aprovadas" className="flex items-center">
                   {proof.companies.map((company) => (
-                    <li className="shrink-0" key={company.companyId}>
-                      {company.tradeName}
+                    <li
+                      className="flex shrink-0 items-center gap-8 pr-8"
+                      key={company.companyId}
+                    >
+                      <span>{company.tradeName}</span>
+                      <span
+                        aria-hidden="true"
+                        className="bg-brand-lime size-2 shrink-0 rounded-full"
+                      />
                     </li>
                   ))}
                 </ul>

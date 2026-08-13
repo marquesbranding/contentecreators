@@ -180,7 +180,7 @@ function AudienceSection() {
       id="para-quem"
     >
       <div className="mx-auto w-full max-w-[90rem] px-5 sm:px-8 lg:px-12">
-        <div className="max-w-3xl">
+        <div className="max-w-5xl">
           <p className="text-sm font-extrabold tracking-[0.12em] uppercase">
             <AuroraText
               colors={["#c5f500", "#1e9bf0", "#f5167e", "#c5f500"]}
@@ -199,7 +199,7 @@ function AudienceSection() {
           >
             {copy.audience.title}
           </TextAnimate>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-white/65">
+          <p className="mt-5 max-w-5xl text-lg leading-8 text-white/65 xl:whitespace-nowrap">
             {copy.audience.description}
           </p>
         </div>
@@ -235,8 +235,8 @@ function AudienceSection() {
             </ul>
             <Link
               className={cn(
-                buttonVariants({ size: "lg" }),
-                "bg-brand-lime text-brand-night hover:bg-brand-lime/90 mt-8 w-full rounded-full sm:w-auto",
+                buttonVariants({ size: "lg", variant: "secondary" }),
+                "bg-brand-night hover:bg-brand-night/90 mt-8 w-full rounded-full text-white sm:w-auto",
               )}
               href={influencerHref}
             >
@@ -275,8 +275,8 @@ function AudienceSection() {
             </ul>
             <Link
               className={cn(
-                buttonVariants({ size: "lg", variant: "outline" }),
-                "border-brand-lime text-brand-lime hover:bg-brand-lime hover:text-brand-night mt-8 w-full rounded-full bg-transparent sm:w-auto",
+                buttonVariants({ size: "lg" }),
+                "bg-brand-night hover:bg-brand-night/90 mt-8 w-full rounded-full text-white sm:w-auto",
               )}
               href={companyHref}
             >
@@ -298,7 +298,7 @@ function StepsSection() {
       id="como-funciona"
     >
       <div className="mx-auto w-full max-w-[90rem] px-5 sm:px-8 lg:px-12">
-        <div className="grid gap-8 lg:grid-cols-[0.75fr_1.25fr] lg:gap-16">
+        <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
           <div className="lg:self-start">
             <p className="text-sm font-extrabold tracking-[0.12em] text-[#0059db] uppercase">
               {copy.steps.eyebrow}
@@ -313,7 +313,7 @@ function StepsSection() {
             >
               {copy.steps.title}
             </TextAnimate>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-[#686868]">
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-[#686868] xl:whitespace-nowrap">
               {copy.steps.description}
             </p>
           </div>
@@ -414,7 +414,7 @@ function FinalCallToAction() {
         <img
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute right-4 bottom-4 w-[22rem] max-w-[70vw] opacity-10 sm:right-10 sm:bottom-8 sm:w-[34rem]"
+          className="pointer-events-none absolute top-5 right-12 w-[20rem] max-w-[50vw] opacity-10 sm:w-[27rem] lg:right-24"
           decoding="async"
           height={3334}
           loading="lazy"
@@ -425,11 +425,11 @@ function FinalCallToAction() {
         <img
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 right-8 hidden w-[24rem] -translate-y-1/2 opacity-95 lg:block xl:right-16 xl:w-[32rem]"
+          className="pointer-events-none absolute top-1/2 right-2 hidden w-[34rem] -translate-y-1/2 opacity-95 lg:block xl:right-8 xl:w-[43rem]"
           decoding="async"
           height={3334}
           loading="lazy"
-          src="/brand/official/contente-creators-lime.png"
+          src="/brand/official/contente-creators-lime-blue.png"
           width={3334}
         />
         <Search
@@ -686,7 +686,7 @@ export function MarketingLanding({
                   no mesmo ritmo.
                 </span>
               </h1>
-              <p className="mt-7 max-w-2xl text-lg leading-8 text-white/70 sm:text-xl sm:leading-9">
+              <p className="mt-7 max-w-[39rem] text-justify text-lg leading-8 text-white/70 sm:text-xl sm:leading-9">
                 {copy.hero.description}
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
