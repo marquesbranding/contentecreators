@@ -414,7 +414,7 @@ function FinalCallToAction() {
         <img
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute top-8 right-10 hidden w-[25rem] max-w-[40vw] opacity-10 lg:block xl:right-16 xl:w-[30rem]"
+          className="pointer-events-none absolute top-5 right-12 w-[20rem] max-w-[50vw] opacity-10 sm:w-[27rem] lg:right-24"
           decoding="async"
           height={3334}
           loading="lazy"
@@ -425,7 +425,7 @@ function FinalCallToAction() {
         <img
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 right-10 hidden w-[27rem] -translate-y-1/2 opacity-95 lg:block xl:right-20 xl:w-[34rem]"
+          className="pointer-events-none absolute top-1/2 right-2 hidden w-[34rem] -translate-y-1/2 opacity-95 lg:block xl:right-8 xl:w-[43rem]"
           decoding="async"
           height={3334}
           loading="lazy"
@@ -437,7 +437,7 @@ function FinalCallToAction() {
           className="absolute -top-10 -right-8 size-48 rotate-12 text-white/10 sm:size-64"
           strokeWidth={1.4}
         />
-        <div className="relative max-w-4xl lg:max-w-[44rem]">
+        <div className="relative max-w-4xl">
           <p className="text-sm font-extrabold tracking-[0.12em] text-white uppercase">
             {copy.finalCta.eyebrow}
           </p>
@@ -686,7 +686,7 @@ export function MarketingLanding({
                   no mesmo ritmo.
                 </span>
               </h1>
-              <p className="mt-7 max-w-[44.25rem] text-justify text-lg leading-8 text-white/70 sm:text-xl sm:leading-9">
+              <p className="mt-7 max-w-[39rem] text-justify text-lg leading-8 text-white/70 sm:text-xl sm:leading-9">
                 {copy.hero.description}
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
