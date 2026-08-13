@@ -235,8 +235,8 @@ function AudienceSection() {
             </ul>
             <Link
               className={cn(
-                buttonVariants({ size: "lg", variant: "secondary" }),
-                "bg-brand-night hover:bg-brand-night/90 mt-8 w-full rounded-full text-white sm:w-auto",
+                buttonVariants({ size: "lg" }),
+                "bg-brand-lime text-brand-night hover:bg-brand-lime/90 mt-8 w-full rounded-full sm:w-auto",
               )}
               href={influencerHref}
             >
@@ -275,8 +275,8 @@ function AudienceSection() {
             </ul>
             <Link
               className={cn(
-                buttonVariants({ size: "lg" }),
-                "bg-brand-night hover:bg-brand-night/90 mt-8 w-full rounded-full text-white sm:w-auto",
+                buttonVariants({ size: "lg", variant: "outline" }),
+                "border-brand-lime text-brand-lime hover:bg-brand-lime hover:text-brand-night mt-8 w-full rounded-full bg-transparent sm:w-auto",
               )}
               href={companyHref}
             >
@@ -667,15 +667,11 @@ export function MarketingLanding({
               </div>
               <h1
                 aria-label={copy.hero.title}
-                className="mt-7 text-[clamp(2.9rem,8.5vw,6.7rem)] leading-[0.9] font-extrabold tracking-[-0.065em] text-white"
+                className="mt-7 max-w-[11ch] text-[clamp(3.1rem,8.2vw,6.7rem)] leading-[0.92] font-extrabold tracking-[-0.065em] text-white"
               >
-                <span className="block">Creators e marcas</span>
-                <span className="block">conectados</span>
-                <span className="mt-2 block bg-linear-to-r from-[#1e9bf0] via-[#c5f500] to-[#f5167e] bg-clip-text text-transparent">
-                  no mesmo ritmo.
-                </span>
+                {copy.hero.title}
               </h1>
-              <p className="mt-7 max-w-2xl text-lg leading-8 text-white/70 sm:text-xl sm:leading-9">
+              <p className="mt-7 max-w-3xl text-lg leading-8 text-white/70 sm:text-xl sm:leading-9 xl:whitespace-nowrap">
                 {copy.hero.description}
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">

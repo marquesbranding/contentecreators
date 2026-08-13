@@ -41,9 +41,9 @@ export const ptBR = {
     },
     hero: {
       eyebrow: "A ponte certa para boas parcerias",
-      title: "Creators e marcas conectados no mesmo ritmo.",
+      title: "Você no foco das buscas das melhores marcas.",
       description:
-        "Encontre influenciadores do seu nicho e região, com todas as informações em um só lugar. O creator perfeito para cada campanha, com a cara da sua marca!",
+        "Você cria seu perfil e começa suas conexões – simples assim.",
       creatorCta: "Sou Influenciador",
       companyCta: "Sou Empresa",
       note: "Cadastro gratuito para o Beta",

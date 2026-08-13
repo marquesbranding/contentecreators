@@ -42,7 +42,7 @@ describe("Home", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: "Creators e marcas conectados no mesmo ritmo.",
+        name: "Você no foco das buscas das melhores marcas.",
       }),
     ).toBeInTheDocument();
     await waitFor(() => expect(request).toHaveBeenCalledTimes(2));

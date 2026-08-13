@@ -16,7 +16,7 @@ export function MarketingHeader() {
           className="shrink-0 rounded-md focus-visible:ring-3 focus-visible:ring-white/80 focus-visible:outline-none"
           href="/"
         >
-          <BrandLogo background="transparent" variant="white" />
+          <BrandLogo background="transparent" variant="blue" />
         </Link>
 
         <nav

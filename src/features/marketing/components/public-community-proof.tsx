@@ -1,5 +1,10 @@
 import { BarChart3, MapPin, ShieldCheck } from "lucide-react";
 
+import {
+  ScrollVelocityContainer,
+  ScrollVelocityRow,
+} from "@/registry/magicui/scroll-based-velocity";
+
 import type {
   PublicCommunityCreatorDto,
   PublicCommunityCreatorMetricDto,
@@ -113,30 +118,29 @@ export function PublicCommunityProof({
           >
             Creators e marcas em destaque
           </h2>
-          <p className="mt-5 max-w-xl text-lg leading-8 text-[#686868]">
-            Um espaço público para apresentar a força da comunidade sem expor
-            dados privados antes da aprovação.
-          </p>
         </div>
 
         {proof.companies.length > 0 ? (
           <div className="mt-10 overflow-hidden border-y border-black/10 py-5">
-            <p className="mb-4 text-center text-xs font-bold text-black/45">
-              Marcas que já impulsionam seus resultados conosco
-            </p>
-            <ul
-              aria-label="Marcas aprovadas"
-              className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4"
-            >
-              {proof.companies.map((company) => (
-                <li
-                  className="text-xl font-extrabold tracking-[0.02em] text-black/40 uppercase sm:text-2xl"
-                  key={company.companyId}
+            <ScrollVelocityContainer>
+              <ScrollVelocityRow
+                baseVelocity={0.55}
+                className="text-xl font-extrabold tracking-[0.02em] text-black/40 uppercase sm:text-2xl"
+                direction={-1}
+                scrollReactivity={false}
+              >
+                <ul
+                  aria-label="Marcas aprovadas"
+                  className="flex items-center gap-12 pr-12"
                 >
-                  {company.tradeName}
-                </li>
-              ))}
-            </ul>
+                  {proof.companies.map((company) => (
+                    <li className="shrink-0" key={company.companyId}>
+                      {company.tradeName}
+                    </li>
+                  ))}
+                </ul>
+              </ScrollVelocityRow>
+            </ScrollVelocityContainer>
           </div>
         ) : null}
 

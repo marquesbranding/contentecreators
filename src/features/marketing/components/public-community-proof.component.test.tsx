@@ -40,6 +40,14 @@ describe("PublicCommunityProof", () => {
     expect(
       screen.getByRole("heading", { name: "Creators e marcas em destaque" }),
     ).toBeVisible();
+    expect(
+      screen.queryByText(
+        /Um espaço público para apresentar a força da comunidade/iu,
+      ),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Marcas que já impulsionam seus resultados conosco"),
+    ).not.toBeInTheDocument();
     expect(screen.getByText("Marca Beta")).toBeVisible();
     expect(screen.getByText("Fernanda")).toBeVisible();
     expect(screen.getByText("Criador UGC")).toBeVisible();
