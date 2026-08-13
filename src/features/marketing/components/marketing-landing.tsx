@@ -421,6 +421,17 @@ function FinalCallToAction() {
           src="/brand/official/contente-creators-white.png"
           width={3334}
         />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 right-8 hidden w-[24rem] -translate-y-1/2 opacity-95 lg:block xl:right-16 xl:w-[32rem]"
+          decoding="async"
+          height={3334}
+          loading="lazy"
+          src="/brand/official/contente-creators-lime.png"
+          width={3334}
+        />
         <Search
           aria-hidden="true"
           className="absolute -top-10 -right-8 size-48 rotate-12 text-white/10 sm:size-64"
@@ -439,8 +450,8 @@ function FinalCallToAction() {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               className={cn(
-                buttonVariants({ size: "lg", variant: "secondary" }),
-                "w-full rounded-full bg-white text-black hover:bg-white/90 sm:w-auto",
+                buttonVariants({ size: "lg" }),
+                "bg-brand-lime text-brand-night hover:bg-brand-lime/90 w-full rounded-full sm:w-auto",
               )}
               href={influencerHref}
             >
@@ -450,7 +461,7 @@ function FinalCallToAction() {
             <Link
               className={cn(
                 buttonVariants({ size: "lg", variant: "outline" }),
-                "w-full rounded-full border-white/50 bg-transparent text-white hover:bg-white hover:text-black sm:w-auto",
+                "border-brand-lime text-brand-lime hover:bg-brand-lime hover:text-brand-night w-full rounded-full bg-transparent sm:w-auto",
               )}
               href={companyHref}
             >
@@ -667,11 +678,15 @@ export function MarketingLanding({
               </div>
               <h1
                 aria-label={copy.hero.title}
-                className="mt-7 max-w-[11ch] text-[clamp(3.1rem,8.2vw,6.7rem)] leading-[0.92] font-extrabold tracking-[-0.065em] text-white"
+                className="mt-7 text-[clamp(2.9rem,8.5vw,6.7rem)] leading-[0.9] font-extrabold tracking-[-0.065em] text-white"
               >
-                {copy.hero.title}
+                <span className="block">Creators e marcas</span>
+                <span className="block">conectados</span>
+                <span className="mt-2 block bg-linear-to-r from-[#1e9bf0] via-[#c5f500] to-[#f5167e] bg-clip-text text-transparent">
+                  no mesmo ritmo.
+                </span>
               </h1>
-              <p className="mt-7 max-w-3xl text-lg leading-8 text-white/70 sm:text-xl sm:leading-9 xl:whitespace-nowrap">
+              <p className="mt-7 max-w-2xl text-lg leading-8 text-white/70 sm:text-xl sm:leading-9">
                 {copy.hero.description}
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">

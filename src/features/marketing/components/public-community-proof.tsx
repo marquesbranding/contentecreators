@@ -124,7 +124,7 @@ export function PublicCommunityProof({
           <div className="mt-10 overflow-hidden border-y border-black/10 py-5">
             <ScrollVelocityContainer>
               <ScrollVelocityRow
-                baseVelocity={0.55}
+                baseVelocity={2}
                 className="text-xl font-extrabold tracking-[0.02em] text-black/40 uppercase sm:text-2xl"
                 direction={-1}
                 scrollReactivity={false}

@@ -41,9 +41,9 @@ export const ptBR = {
     },
     hero: {
       eyebrow: "A ponte certa para boas parcerias",
-      title: "Você no foco das buscas das melhores marcas.",
+      title: "Creators e marcas conectados no mesmo ritmo.",
       description:
-        "Você cria seu perfil e começa suas conexões – simples assim.",
+        "Encontre influenciadores do seu nicho e região, com todas as informações em um só lugar. O creator perfeito para cada campanha, com a cara da sua marca!",
       creatorCta: "Sou Influenciador",
       companyCta: "Sou Empresa",
       note: "Cadastro gratuito para o Beta",
@@ -91,7 +91,7 @@ export const ptBR = {
         "Uma comunidade que conecta empresas e influenciadores para criar marcas mais fortes.",
       creator: {
         label: "Para creators",
-        title: "Seu trabalho merece ser encontrado.",
+        title: "Você no foco das buscas das melhores marcas.",
         description:
           "Nano, micro ou influenciador. UGC ou Publi. Apresente seu perfil, nicho, canais e métricas em um espaço para te conectar com as empresas que tem tudo a ver com você.",
         benefits: [
@@ -116,7 +116,7 @@ export const ptBR = {
       eyebrow: "Como funciona",
       title: "Da inscrição à conexão, sem complicação.",
       description:
-        "Você cuida do seu perfil. A curadoria cuida do caminho até o catálogo.",
+        "Você cria seu perfil e começa suas conexões – simples assim.",
       items: [
         {
           number: "01",

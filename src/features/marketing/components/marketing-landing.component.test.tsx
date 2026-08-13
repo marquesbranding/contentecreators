@@ -28,13 +28,18 @@ describe("MarketingLanding", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: "Você no foco das buscas das melhores marcas.",
+        name: "Creators e marcas conectados no mesmo ritmo.",
       }),
     ).toBeInTheDocument();
     expect(
       screen.getByText(
         "Você cria seu perfil e começa suas conexões – simples assim.",
       ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: "Você no foco das buscas das melhores marcas.",
+      }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
