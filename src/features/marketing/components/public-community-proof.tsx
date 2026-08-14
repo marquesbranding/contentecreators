@@ -49,9 +49,9 @@ function CreatorMetric({
   }
 
   return (
-    <dl className="grid grid-cols-2 gap-4 rounded-lg border border-black/10 bg-white p-3">
+    <dl className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4 rounded-lg border border-black/10 bg-white p-3">
       {metric.followerCount ? (
-        <div>
+        <div className="min-w-0">
           <dt className="text-[0.7rem] font-bold text-black/45">Seguidores</dt>
           <dd className="text-brand-pink text-xl font-extrabold">
             {formatCompactNumber(metric.followerCount)}
@@ -59,14 +59,14 @@ function CreatorMetric({
         </div>
       ) : null}
       {metric.engagementRate ? (
-        <div>
+        <div className="min-w-0">
           <dt className="text-[0.7rem] font-bold text-black/45">Engajamento</dt>
           <dd className="text-brand-pink text-xl font-extrabold">
             {formatEngagement(metric.engagementRate)}
           </dd>
         </div>
       ) : null}
-      <div className="col-span-2 flex items-center gap-1.5 text-[0.72rem] font-semibold text-black/45">
+      <div className="col-span-2 flex min-w-0 flex-wrap items-center gap-1.5 text-[0.72rem] font-semibold text-black/45">
         <BarChart3 aria-hidden="true" className="size-3.5" />
         {platformLabels[metric.platform]} · informado pelo creator
       </div>
@@ -150,20 +150,20 @@ export function PublicCommunityProof({
         {proof.creators.length > 0 ? (
           <ul
             aria-label="Creators em destaque"
-            className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3"
+            className="mt-8 grid min-w-0 gap-5 md:grid-cols-2 xl:grid-cols-3"
           >
             {proof.creators.map((creator) => (
               <li
-                className="flex h-full flex-col rounded-lg border border-black/10 bg-[#f7f6f2] p-5 shadow-sm"
+                className="flex h-full min-w-0 flex-col rounded-lg border border-black/10 bg-[#f7f6f2] p-5 shadow-sm"
                 data-testid="creator-listing"
                 key={creator.creatorId}
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-brand-blue text-xs font-extrabold tracking-[0.08em] uppercase">
                       {creatorTypeLabels[creator.creatorType]}
                     </p>
-                    <h3 className="mt-2 text-2xl font-extrabold">
+                    <h3 className="mt-2 text-2xl font-extrabold break-words">
                       {creator.displayName}
                     </h3>
                     <CreatorLocation
@@ -178,7 +178,7 @@ export function PublicCommunityProof({
                 </div>
 
                 {creator.bioExcerpt ? (
-                  <p className="mt-4 line-clamp-3 text-sm leading-6 text-black/55">
+                  <p className="mt-4 line-clamp-3 text-sm leading-6 [overflow-wrap:anywhere] text-black/55">
                     {creator.bioExcerpt}
                   </p>
                 ) : null}
@@ -196,7 +196,7 @@ export function PublicCommunityProof({
                   </ul>
                 ) : null}
 
-                <div className="mt-auto pt-5">
+                <div className="mt-auto min-w-0 pt-5">
                   <CreatorMetric metric={creator.metric} />
                 </div>
               </li>

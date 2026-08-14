@@ -409,35 +409,44 @@ function FinalCallToAction() {
         className="marketing-cta-surface relative mx-auto max-w-[90rem] overflow-hidden rounded-[2rem] border border-white/15 px-6 py-12 text-white sm:px-10 sm:py-16 lg:px-16 lg:py-20"
         data-testid="marketing-final-cta"
       >
-        {/* The supplied brand watermark is already optimized and decorative. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          alt=""
+        <span
           aria-hidden="true"
-          className="pointer-events-none absolute top-5 right-12 w-[20rem] max-w-[50vw] opacity-10 sm:w-[27rem] lg:right-24"
-          decoding="async"
-          height={3334}
-          loading="lazy"
-          src="/brand/official/contente-creators-white.png"
-          width={3334}
-        />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          alt=""
+          className="pointer-events-none absolute top-[21%] right-16 hidden aspect-[2857/1039] w-[19rem] max-w-[32vw] overflow-hidden opacity-20 lg:block xl:right-24 xl:w-[24rem]"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            alt=""
+            className="absolute h-auto max-w-none select-none"
+            decoding="async"
+            height={3334}
+            loading="lazy"
+            src="/brand/official/contente-creators-white.png"
+            style={{ left: "-7.42%", top: "-98.08%", width: "116.74%" }}
+            width={3334}
+          />
+        </span>
+        <span
           aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 right-2 hidden w-[34rem] -translate-y-1/2 opacity-95 lg:block xl:right-8 xl:w-[43rem]"
-          decoding="async"
-          height={3334}
-          loading="lazy"
-          src="/brand/official/contente-creators-lime-blue.png"
-          width={3334}
-        />
+          className="pointer-events-none absolute top-[34%] right-10 hidden aspect-[2857/1039] w-[23rem] max-w-[40vw] overflow-hidden opacity-95 lg:block xl:right-16 xl:w-[29rem]"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            alt=""
+            className="absolute h-auto max-w-none select-none"
+            decoding="async"
+            height={3334}
+            loading="lazy"
+            src="/brand/official/contente-creators-lime-blue.png"
+            style={{ left: "-9.8%", top: "-110.39%", width: "116.7%" }}
+            width={3334}
+          />
+        </span>
         <Search
           aria-hidden="true"
           className="absolute -top-10 -right-8 size-48 rotate-12 text-white/10 sm:size-64"
           strokeWidth={1.4}
         />
-        <div className="relative max-w-4xl">
+        <div className="relative max-w-4xl lg:max-w-[43rem]">
           <p className="text-sm font-extrabold tracking-[0.12em] text-white uppercase">
             {copy.finalCta.eyebrow}
           </p>
@@ -686,7 +695,7 @@ export function MarketingLanding({
                   no mesmo ritmo.
                 </span>
               </h1>
-              <p className="mt-7 max-w-[39rem] text-justify text-lg leading-8 text-white/70 sm:text-xl sm:leading-9">
+              <p className="mt-7 max-w-[39rem] text-lg leading-8 text-white/70 sm:text-xl sm:leading-9">
                 {copy.hero.description}
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
