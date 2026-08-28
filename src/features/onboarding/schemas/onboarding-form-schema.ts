@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { isValidCnpj, normalizeCnpj } from "../domain/cnpj";
 import { OTHER_NICHE_SLUG } from "../domain/profile-segments";
+import { SOCIAL_CHANNEL_PLATFORMS } from "../domain/social-channels-form-data";
 
 const requiredMessage = "Preencha este campo.";
 const acceptedConsent = z
@@ -40,6 +41,15 @@ const whatsapp = z
   .trim()
   .min(10, "Informe um WhatsApp com DDD.")
   .max(20);
+const optionalNonNegativeInt = z.preprocess(
+  (value) => (value === null || value === "" ? undefined : value),
+  z.coerce
+    .number("Informe uma quantidade válida.")
+    .int()
+    .min(0)
+    .max(Number.MAX_SAFE_INTEGER)
+    .optional(),
+);
 const password = z
   .string()
   .min(8, "Use pelo menos 8 caracteres.")
@@ -85,6 +95,8 @@ const socialPlatform = z.enum([
   "FACEBOOK",
   "X",
   "LINKEDIN",
+  "THREADS",
+  "TELEGRAM",
   "OTHER",
 ]);
 const optionalSocialPlatform = z.preprocess(
@@ -92,6 +104,73 @@ const optionalSocialPlatform = z.preprocess(
     value === "" || value === null || value === undefined ? undefined : value,
   socialPlatform.optional(),
 );
+const isPrimaryFlag = z.preprocess(
+  (value) => value === "on" || value === true,
+  z.boolean(),
+);
+const creatorSocialChannelPlatform = z.enum(SOCIAL_CHANNEL_PLATFORMS);
+const socialChannelEntry = z.object({
+  followerCount: z.coerce
+    .number("Informe uma quantidade válida.")
+    .int()
+    .min(0)
+    .max(Number.MAX_SAFE_INTEGER),
+  interactions: optionalNonNegativeInt,
+  isPrimary: isPrimaryFlag,
+  newFollowers: optionalNonNegativeInt,
+  platform: creatorSocialChannelPlatform,
+  sharedContent: z.preprocess(
+    (value) => (value === null || value === "" ? undefined : value),
+    z.string().trim().min(2, "Use pelo menos 2 caracteres.").max(200).optional(),
+  ),
+  url,
+  views: optionalNonNegativeInt,
+});
+
+export function validateSocialChannels(
+  value: {
+    role?: "COMPANY" | "INFLUENCER";
+    socialChannels?: z.infer<typeof socialChannelEntry>[];
+  },
+  context: z.RefinementCtx,
+) {
+  const channels = value.socialChannels;
+
+  if (!channels || channels.length === 0) {
+    return;
+  }
+
+  const primaryCount = channels.filter((channel) => channel.isPrimary).length;
+
+  if (primaryCount !== 1) {
+    context.addIssue({
+      code: "custom",
+      message: "Marque exatamente uma rede social como principal.",
+      path: ["socialChannels"],
+    });
+  }
+
+  channels.forEach((channel, index) => {
+    if (channel.platform === "INSTAGRAM") {
+      return;
+    }
+
+    const hasInstagramOnlyFields =
+      channel.views !== undefined ||
+      channel.interactions !== undefined ||
+      channel.newFollowers !== undefined ||
+      channel.sharedContent !== undefined;
+
+    if (hasInstagramOnlyFields) {
+      context.addIssue({
+        code: "custom",
+        message:
+          "Visualizações, interações, novos seguidores e conteúdo compartilhado só podem ser informados no Instagram.",
+        path: ["socialChannels", index],
+      });
+    }
+  });
+}
 
 const consentShape = {
   privacyAccepted: acceptedConsent,
@@ -150,17 +229,15 @@ export const influencerProfileFieldsSchema = z
     creatorType: z.enum(["INFLUENCER", "UGC"], {
       error: "Escolha um tipo de creator.",
     }),
-    displayName: z
-      .string()
-      .trim()
-      .min(2, "Use pelo menos 2 caracteres.")
-      .max(120),
-    engagementRate: z.coerce.number("Informe uma taxa válida.").min(0).max(100),
-    followers: z.coerce
-      .number("Informe uma quantidade válida.")
-      .int()
-      .min(0)
-      .max(Number.MAX_SAFE_INTEGER),
+    displayName: z.preprocess(
+      (value) => (value === null || value === "" ? undefined : value),
+      z
+        .string()
+        .trim()
+        .min(2, "Use pelo menos 2 caracteres.")
+        .max(120)
+        .optional(),
+    ),
     legalName,
     nicheSlugs: z
       .array(z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u))
@@ -176,12 +253,14 @@ export const influencerProfileFieldsSchema = z
         .regex(/[\p{L}\p{N}]/u, "Use letras ou números para descrever o nicho.")
         .optional(),
     ),
-    socialPlatform,
-    socialUrl: url,
+    socialChannels: z
+      .array(socialChannelEntry)
+      .min(1, "Selecione pelo menos uma rede social e informe o link."),
     state: brazilianState,
     whatsapp,
   })
-  .superRefine(validateOtherNiche);
+  .superRefine(validateOtherNiche)
+  .superRefine(validateSocialChannels);
 
 const creatorProfileShape = {
   ...consentShape,
@@ -308,7 +387,8 @@ function validateCompanySocialPair(
 
 export const emailRegistrationSchema = z
   .union([creatorEmailRegistrationSchema, companyEmailRegistrationSchema])
-  .superRefine(validateCompanySocialPair);
+  .superRefine(validateCompanySocialPair)
+  .superRefine(validateSocialChannels);
 
 export const googleProfileSchema = z
   .discriminatedUnion("role", [
@@ -322,7 +402,8 @@ export const googleProfileSchema = z
     }),
   ])
   .superRefine(validateCompanySocialPair)
-  .superRefine(validateOtherNiche);
+  .superRefine(validateOtherNiche)
+  .superRefine(validateSocialChannels);
 
 export type EmailRegistrationInput = z.infer<typeof emailRegistrationSchema>;
 export type GoogleProfileInput = z.infer<typeof googleProfileSchema>;

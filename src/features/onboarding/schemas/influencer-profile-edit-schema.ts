@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-import { influencerProfileFieldsSchema } from "./onboarding-form-schema";
+import {
+  influencerProfileFieldsSchema,
+  validateSocialChannels,
+} from "./onboarding-form-schema";
 
 export const influencerProfileEditSchema = z
   .object(influencerProfileFieldsSchema.shape)
@@ -23,7 +26,8 @@ export const influencerProfileEditSchema = z
         path: ["otherNiche"],
       });
     }
-  });
+  })
+  .superRefine(validateSocialChannels);
 
 export type InfluencerProfileEditInput = z.infer<
   typeof influencerProfileEditSchema

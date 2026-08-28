@@ -304,6 +304,7 @@ export const socialProfiles = pgTable(
     isVisibleInCatalog: boolean("is_visible_in_catalog")
       .notNull()
       .default(true),
+    isPrimary: boolean("is_primary").notNull().default(false),
     sortOrder: integer("sort_order").notNull().default(0),
     version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -318,6 +319,9 @@ export const socialProfiles = pgTable(
     uniqueIndex("social_profiles_owner_platform_url_uidx")
       .on(table.ownerAccountId, table.platform, table.normalizedUrl)
       .where(sql`${table.archivedAt} is null`),
+    uniqueIndex("social_profiles_owner_primary_uidx")
+      .on(table.ownerAccountId)
+      .where(sql`${table.archivedAt} is null and ${table.isPrimary}`),
     index("social_profiles_owner_order_idx")
       .on(table.ownerAccountId, table.sortOrder, table.id)
       .where(sql`${table.archivedAt} is null`),
@@ -349,6 +353,10 @@ export const creatorMetricSnapshots = pgTable(
       precision: 7,
       scale: 4,
     }),
+    viewCount: bigint("view_count", { mode: "number" }),
+    interactionCount: bigint("interaction_count", { mode: "number" }),
+    newFollowerCount: bigint("new_follower_count", { mode: "number" }),
+    sharedContentDescription: text("shared_content_description"),
     observedOn: date("observed_on", { mode: "date" }).notNull(),
     source: creatorMetricSourceEnum("source")
       .notNull()
@@ -377,6 +385,18 @@ export const creatorMetricSnapshots = pgTable(
     check(
       "creator_metric_snapshots_engagement_rate_check",
       sql`${table.engagementRate} is null or ${table.engagementRate} between 0 and 100`,
+    ),
+    check(
+      "creator_metric_snapshots_view_count_check",
+      sql`${table.viewCount} is null or ${table.viewCount} >= 0`,
+    ),
+    check(
+      "creator_metric_snapshots_interaction_count_check",
+      sql`${table.interactionCount} is null or ${table.interactionCount} >= 0`,
+    ),
+    check(
+      "creator_metric_snapshots_new_follower_count_check",
+      sql`${table.newFollowerCount} is null or ${table.newFollowerCount} >= 0`,
     ),
   ],
 );

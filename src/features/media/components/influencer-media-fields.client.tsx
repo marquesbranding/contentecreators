@@ -66,6 +66,7 @@ export function InfluencerMediaFields({
         label="Perfil"
         onComplete={setAvatarAssetId}
         onProfileVersionChange={onProfileVersionChange}
+        onRemove={() => setAvatarAssetId(null)}
         purpose="AVATAR"
       />
 
@@ -79,6 +80,7 @@ export function InfluencerMediaFields({
         label="Capa"
         onComplete={setCoverAssetId}
         onProfileVersionChange={onProfileVersionChange}
+        onRemove={() => setCoverAssetId(null)}
         purpose="COVER"
       />
     </FieldSet>

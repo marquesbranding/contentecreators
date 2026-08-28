@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { readAdditionalCompanyLocations } from "../../domain/company-location-form-data";
+import { readSocialChannels } from "../../domain/social-channels-form-data";
 import { companyProfileEditSchema } from "../../schemas/company-profile-edit-schema";
 import { influencerProfileEditSchema } from "../../schemas/influencer-profile-edit-schema";
 import type { CompanyProfileActionState } from "../../types/company-profile.types";
@@ -27,14 +28,11 @@ function influencerProfilePayload(formData: FormData) {
     city: formData.get("city"),
     creatorType: formData.get("creatorType"),
     displayName: formData.get("displayName"),
-    engagementRate: formData.get("engagementRate"),
     expectedVersion: formData.get("expectedVersion"),
-    followers: formData.get("followers"),
     legalName: formData.get("legalName"),
     nicheSlugs: formData.getAll("nicheSlugs"),
     otherNiche: formData.get("otherNiche"),
-    socialPlatform: formData.get("socialPlatform"),
-    socialUrl: formData.get("socialUrl"),
+    socialChannels: readSocialChannels(formData),
     state: formData.get("state"),
     whatsapp: formData.get("whatsapp"),
   };

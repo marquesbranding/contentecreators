@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { readAdditionalCompanyLocations } from "../domain/company-location-form-data";
+import { readSocialChannels } from "../domain/social-channels-form-data";
 import type {
   CompanyOnboardingDraftPayload,
   CreatorOnboardingDraftPayload,
@@ -31,23 +32,14 @@ const socialPlatforms = new Set([
   "FACEBOOK",
   "X",
   "LINKEDIN",
+  "THREADS",
+  "TELEGRAM",
   "OTHER",
 ]);
 
 function readText(formData: FormData, name: string) {
   const value = formData.get(name);
   return typeof value === "string" ? value : "";
-}
-
-function readOptionalNumber(formData: FormData, name: string) {
-  const rawValue = readText(formData, name).replace(",", ".").trim();
-
-  if (!rawValue) {
-    return undefined;
-  }
-
-  const value = Number(rawValue);
-  return Number.isFinite(value) ? value : undefined;
 }
 
 function readSafeUrl(formData: FormData, name: string) {
@@ -67,12 +59,31 @@ function readSafeUrl(formData: FormData, name: string) {
   }
 }
 
+function toDraftSocialChannels(
+  channels: ReturnType<typeof readSocialChannels>,
+): CreatorOnboardingDraftPayload["socialChannels"] {
+  return channels.map((channel) => ({
+    followerCount: Number(channel.followerCount) || 0,
+    interactions:
+      channel.interactions === undefined
+        ? undefined
+        : Number(channel.interactions) || 0,
+    isPrimary: channel.isPrimary,
+    newFollowers:
+      channel.newFollowers === undefined
+        ? undefined
+        : Number(channel.newFollowers) || 0,
+    platform: channel.platform,
+    sharedContent: channel.sharedContent,
+    url: channel.url,
+    views:
+      channel.views === undefined ? undefined : Number(channel.views) || 0,
+  }));
+}
+
 function collectCreatorPayload(formData: FormData) {
   const payload: CreatorOnboardingDraftPayload = {};
   const creatorType = readText(formData, "creatorType");
-  const engagementRate = readOptionalNumber(formData, "engagementRate");
-  const followers = readOptionalNumber(formData, "followers");
-  const socialPlatform = readText(formData, "socialPlatform");
 
   if (formData.has("bio")) {
     payload.bio = readText(formData, "bio");
@@ -86,12 +97,6 @@ function collectCreatorPayload(formData: FormData) {
   if (formData.has("displayName")) {
     payload.displayName = readText(formData, "displayName");
   }
-  if (engagementRate !== undefined) {
-    payload.engagementRate = engagementRate;
-  }
-  if (followers !== undefined) {
-    payload.followers = Math.trunc(followers);
-  }
   if (formData.has("legalName")) {
     payload.legalName = readText(formData, "legalName");
   }
@@ -103,15 +108,9 @@ function collectCreatorPayload(formData: FormData) {
   if (formData.has("otherNiche")) {
     payload.otherNiche = readText(formData, "otherNiche");
   }
-  if (socialPlatforms.has(socialPlatform)) {
-    payload.socialPlatform =
-      socialPlatform as CreatorOnboardingDraftPayload["socialPlatform"];
-  }
-  if (formData.has("socialUrl")) {
-    const socialUrl = readSafeUrl(formData, "socialUrl");
-    if (socialUrl !== undefined) {
-      payload.socialUrl = socialUrl;
-    }
+  const socialChannels = readSocialChannels(formData);
+  if (socialChannels.length > 0) {
+    payload.socialChannels = toDraftSocialChannels(socialChannels);
   }
   if (formData.has("state")) {
     payload.state = readText(formData, "state");
@@ -208,6 +207,13 @@ function collectDraftPayload(form: HTMLFormElement, role: OnboardingDraftRole) {
     form.querySelector('[name="nicheSlugs"]')
   ) {
     payload.nicheSlugs = [];
+  }
+
+  if (
+    !payload.socialChannels &&
+    form.querySelector('[name^="socialChannels."]')
+  ) {
+    payload.socialChannels = [];
   }
 
   return payload;

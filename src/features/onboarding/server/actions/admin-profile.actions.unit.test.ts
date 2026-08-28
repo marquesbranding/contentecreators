@@ -23,18 +23,17 @@ function influencerForm() {
     city: "São Paulo",
     creatorType: "INFLUENCER",
     displayName: "Creator Exemplo",
-    engagementRate: "4.5",
     expectedVersion: "3",
     followers: "42000",
     legalName: "Creator Exemplo da Silva",
     reason: "Correção administrativa confirmada durante a revisão.",
-    socialPlatform: "INSTAGRAM",
-    socialUrl: "https://instagram.com/creator-exemplo",
+    "socialChannels.INSTAGRAM.selected": "on",
+    "socialChannels.INSTAGRAM.url": "https://instagram.com/creator-exemplo",
     state: "SP",
     whatsapp: "(11) 99999-9999",
   };
   Object.entries(values).forEach(([key, value]) => formData.set(key, value));
-  formData.append("nicheSlugs", "tecnologia");
+  formData.append("nicheSlugs", "tecnologia-games-e-inovacao");
   return formData;
 }
 
@@ -114,7 +113,7 @@ describe("admin profile edit actions", () => {
       accountId,
       input: expect.objectContaining({
         expectedVersion: 3,
-        nicheSlugs: ["tecnologia"],
+        nicheSlugs: ["tecnologia-games-e-inovacao"],
       }),
       reason: "Correção administrativa confirmada durante a revisão.",
       requestId: expect.any(String),

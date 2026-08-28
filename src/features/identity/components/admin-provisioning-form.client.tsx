@@ -89,7 +89,7 @@ export function AdminProvisioningForm({
               aria-describedby={emailErrorId}
               aria-invalid={Boolean(emailErrors?.length)}
               autoComplete="email"
-              className="h-12 rounded-xl"
+              className="rounded-xl"
               id="admin-provisioning-email"
               inputMode="email"
               name="email"

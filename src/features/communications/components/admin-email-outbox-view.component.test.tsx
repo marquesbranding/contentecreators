@@ -49,8 +49,14 @@ describe("AdminEmailOutboxView", () => {
     const onFiltersChange = vi.fn();
     renderView({ data: emptyList, status: "success" }, onFiltersChange);
 
-    screen.getByRole("combobox", { name: "Status" }).focus();
-    await user.keyboard("{ArrowDown}{End}{Enter}");
+    const statusCombobox = screen.getByRole("combobox", { name: "Status" });
+    await user.click(statusCombobox);
+    await user.clear(statusCombobox);
+    await user.type(statusCombobox, "Falha");
+    const option = await screen.findByRole("option", {
+      name: "Falha definitiva",
+    });
+    await user.click(option);
 
     expect(onFiltersChange).toHaveBeenCalledWith({
       ...filters,

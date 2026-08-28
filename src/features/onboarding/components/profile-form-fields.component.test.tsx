@@ -178,12 +178,16 @@ describe("ProfileFormFields company CNPJ experience", () => {
           city: "Curitiba",
           creatorType: "UGC",
           displayName: "Creator Restaurada",
-          engagementRate: 5.25,
-          followers: 42000,
           legalName: "Joana Restaurada",
-          nicheSlugs: ["tecnologia", "viagem"],
-          socialPlatform: "YOUTUBE",
-          socialUrl: "https://youtube.com/@creator-restaurada",
+          nicheSlugs: ["tecnologia-games-e-inovacao", "viagens-e-turismo"],
+          socialChannels: [
+            {
+              followerCount: 42000,
+              isPrimary: true,
+              platform: "YOUTUBE",
+              url: "https://youtube.com/@creator-restaurada",
+            },
+          ],
           state: "PR",
           whatsapp: "(41) 99999-9999",
         }}
@@ -194,17 +198,19 @@ describe("ProfileFormFields company CNPJ experience", () => {
     expect(screen.getByLabelText("Nome completo")).toHaveValue(
       "Joana Restaurada",
     );
-    expect(screen.getByLabelText("Nome de creator")).toHaveValue(
-      "Creator Restaurada",
-    );
     expect(screen.getByLabelText("Tipo de atuação")).toHaveTextContent(
       "Creator UGC",
     );
-    expect(screen.getByLabelText("Canal principal")).toHaveTextContent(
-      "YouTube",
-    );
-    expect(screen.getByRole("checkbox", { name: "Tecnologia" })).toBeChecked();
-    expect(screen.getByRole("checkbox", { name: "Viagem" })).toBeChecked();
+    expect(
+      screen.getByRole("checkbox", { name: "YouTube" }),
+    ).toBeChecked();
+    expect(
+      screen.getByLabelText("Link do perfil no YouTube"),
+    ).toHaveValue("https://youtube.com/@creator-restaurada");
+    expect(
+      screen.getByText("Tecnologia, games e inovação"),
+    ).toBeVisible();
+    expect(screen.getByText("Viagens e turismo")).toBeVisible();
     expect(
       screen.getByRole("checkbox", {
         name: /Li e aceito os Termos de Uso/iu,
@@ -225,7 +231,13 @@ describe("ProfileFormFields company CNPJ experience", () => {
       screen.queryByLabelText("Qual é o outro nicho?"),
     ).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("checkbox", { name: "Outros" }));
+    const nichesCombobox = screen.getByRole("combobox", {
+      name: "Principais nichos",
+    });
+    await user.click(nichesCombobox);
+    await user.click(
+      await screen.findByRole("option", { name: "Envie sua sugestão" }),
+    );
 
     const otherNiche = screen.getByLabelText("Qual é o outro nicho?");
     expect(otherNiche).toBeRequired();
@@ -257,7 +269,7 @@ describe("ProfileFormFields company CNPJ experience", () => {
       />,
     );
 
-    expect(screen.getByRole("checkbox", { name: "Outros" })).toBeChecked();
+    expect(screen.getByText("Envie sua sugestão")).toBeVisible();
     expect(screen.getByLabelText("Qual é o outro nicho?")).toHaveValue(
       "Cultura geek",
     );
@@ -270,7 +282,7 @@ describe("ProfileFormFields company CNPJ experience", () => {
       />,
     );
 
-    expect(screen.getByLabelText("Segmento")).toHaveTextContent("Outros");
+    expect(screen.getByLabelText("Segmento")).toHaveValue("Outros");
     expect(screen.getByLabelText("Qual é o segmento?")).toHaveValue(
       "Economia criativa",
     );
@@ -343,7 +355,7 @@ describe("ProfileFormFields company CNPJ experience", () => {
       />,
     );
 
-    expect(screen.getByLabelText("Rede social (opcional)")).toHaveTextContent(
+    expect(screen.getByLabelText("Rede social (opcional)")).toHaveValue(
       "LinkedIn",
     );
     expect(screen.getByLabelText("Link da rede social (opcional)")).toHaveValue(

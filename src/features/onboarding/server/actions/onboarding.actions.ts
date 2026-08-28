@@ -8,6 +8,7 @@ import { getPublicEnv } from "@/shared/lib/env/public-env";
 import { createServerSupabaseClient } from "@/shared/server/supabase/server-client";
 
 import { readAdditionalCompanyLocations } from "../../domain/company-location-form-data";
+import { readSocialChannels } from "../../domain/social-channels-form-data";
 import { correctedProfileResubmissionCommandSchema } from "../../schemas/corrected-profile-resubmission-schema";
 import {
   emailRegistrationSchema,
@@ -32,8 +33,6 @@ function formPayload(formData: FormData) {
     displayName: formData.get("displayName"),
     email: formData.get("email"),
     employeeRange: formData.get("employeeRange"),
-    engagementRate: formData.get("engagementRate"),
-    followers: formData.get("followers"),
     legalName: formData.get("legalName"),
     logoAssetId: formData.get("logoAssetId") || undefined,
     neighborhood: formData.get("neighborhood"),
@@ -46,6 +45,7 @@ function formPayload(formData: FormData) {
     privacyAccepted: formData.get("privacyAccepted"),
     role: formData.get("role"),
     segment: formData.get("segment"),
+    socialChannels: readSocialChannels(formData),
     socialPlatform: formData.get("socialPlatform"),
     socialUrl: formData.get("socialUrl"),
     state: formData.get("state"),

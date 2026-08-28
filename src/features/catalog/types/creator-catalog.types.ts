@@ -1,7 +1,15 @@
 export type CatalogViewerRole = "COMPANY" | "INFLUENCER";
 export type CatalogCreatorType = "INFLUENCER" | "UGC";
 export type CatalogSocialPlatform =
-  "FACEBOOK" | "INSTAGRAM" | "LINKEDIN" | "OTHER" | "TIKTOK" | "X" | "YOUTUBE";
+  | "FACEBOOK"
+  | "INSTAGRAM"
+  | "LINKEDIN"
+  | "OTHER"
+  | "TELEGRAM"
+  | "THREADS"
+  | "TIKTOK"
+  | "X"
+  | "YOUTUBE";
 
 export interface CreatorCatalogFilters {
   city?: string;
@@ -34,9 +42,12 @@ export interface CatalogNicheDto {
 export interface CatalogCardMetricDto {
   engagementRate: number | null;
   followerCount: number | null;
+  interactionCount: number | null;
+  isPrimary: boolean;
   observedOn: string;
   platform: CatalogSocialPlatform;
   source: "SELF_REPORTED";
+  viewCount: number | null;
 }
 
 /**

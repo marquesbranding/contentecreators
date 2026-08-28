@@ -19,13 +19,17 @@ const updateInput = {
   city: "São Paulo",
   creatorType: "UGC",
   displayName: "Joana Atualizada",
-  engagementRate: 5.75,
   expectedVersion: 3,
-  followers: 42000,
   legalName: "Joana da Silva",
-  nicheSlugs: ["tecnologia"],
-  socialPlatform: "YOUTUBE",
-  socialUrl: "https://youtube.com/@joana-atualizada",
+  nicheSlugs: ["tecnologia-games-e-inovacao"],
+  socialChannels: [
+    {
+      followerCount: 42000,
+      isPrimary: true,
+      platform: "YOUTUBE",
+      url: "https://youtube.com/@joana-atualizada",
+    },
+  ],
   state: "SP",
   whatsapp: "(11) 99999-9999",
 } satisfies InfluencerProfileEditInput;

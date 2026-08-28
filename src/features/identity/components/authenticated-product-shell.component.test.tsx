@@ -32,13 +32,19 @@ vi.mock("next/image", () => ({
   },
 }));
 
-function renderShell(pathname = "/app/catalog") {
+function renderShell(
+  pathname = "/app/catalog",
+  viewerRole?: "COMPANY" | "INFLUENCER",
+) {
   const signOutAction = vi.fn(async () => undefined);
 
   usePathnameMock.mockReturnValue(pathname);
 
   const result = render(
-    <AuthenticatedProductShell signOutAction={signOutAction}>
+    <AuthenticatedProductShell
+      signOutAction={signOutAction}
+      viewerRole={viewerRole}
+    >
       <main id="main-content">
         <h1>Conteúdo do catálogo</h1>
       </main>
@@ -95,21 +101,37 @@ describe("AuthenticatedProductShell", () => {
     ).toHaveAttribute("href", "/app/profile");
   });
 
-  it("keeps catalog search in the product header and preserves filters", async () => {
+  it("keeps creator search in the product header for a company viewer and preserves filters", async () => {
     const user = userEvent.setup();
     useSearchParamsMock.mockReturnValue(
       new URLSearchParams("niche=moda&cursor=next-page"),
     );
-    renderShell("/app/catalog");
+    renderShell("/app/catalog", "COMPANY");
 
     const search = screen.getByRole("searchbox", {
-      name: "Buscar criadores",
+      name: "Buscar creator por nome ou nicho",
     });
     await user.type(search, "Marina");
     await user.keyboard("{Enter}");
 
     expect(routerPushMock).toHaveBeenCalledWith(
       "/app/catalog?niche=moda&search=Marina",
+    );
+  });
+
+  it("switches the product header to company search for an influencer viewer", async () => {
+    const user = userEvent.setup();
+    useSearchParamsMock.mockReturnValue(new URLSearchParams("segment=Moda"));
+    renderShell("/app/catalog", "INFLUENCER");
+
+    const search = screen.getByRole("searchbox", {
+      name: "Buscar empresas por nome ou segmento",
+    });
+    await user.type(search, "Marca X");
+    await user.keyboard("{Enter}");
+
+    expect(routerPushMock).toHaveBeenCalledWith(
+      "/app/catalog?segment=Moda&companySearch=Marca+X",
     );
   });
 

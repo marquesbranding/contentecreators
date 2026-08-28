@@ -45,20 +45,19 @@ function completeCreatorProfile() {
     coverAssetId: "79000000-0000-4000-8000-000000000032",
     creatorType: "INFLUENCER",
     displayName: "Joana Cria",
-    engagementRate: "4.25",
     followers: "12500",
     legalName: "Joana da Silva",
     privacyAccepted: "on",
     role: "INFLUENCER",
-    socialPlatform: "INSTAGRAM",
-    socialUrl: "https://instagram.com/joanacria",
+    "socialChannels.INSTAGRAM.selected": "on",
+    "socialChannels.INSTAGRAM.url": "https://instagram.com/joanacria",
     state: "SP",
     termsAccepted: "on",
     whatsapp: "(11) 99999-9999",
   };
 
   Object.entries(fields).forEach(([name, value]) => formData.set(name, value));
-  formData.append("nicheSlugs", "tecnologia");
+  formData.append("nicheSlugs", "tecnologia-games-e-inovacao");
 
   return formData;
 }

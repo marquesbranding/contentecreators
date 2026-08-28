@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import type { FieldErrors } from "@/shared/hooks/use-required-field-validation";
 
 const fieldLabels: Record<string, string> = {
+  accountType: "Tipo de cadastro",
   avatarAssetId: "Foto de perfil",
   bio: "Conte sobre seu conteúdo",
   city: "Cidade",
@@ -17,8 +18,6 @@ const fieldLabels: Record<string, string> = {
   displayName: "Nome de creator",
   email: "E-mail",
   employeeRange: "Tamanho da empresa",
-  engagementRate: "Taxa de engajamento",
-  followers: "Número de seguidores",
   legalName: "Nome ou razão social",
   additionalLocations: "Localidades adicionais",
   neighborhood: "Bairro",
@@ -31,6 +30,7 @@ const fieldLabels: Record<string, string> = {
   privacyAccepted: "Política de Privacidade",
   role: "Tipo de cadastro",
   segment: "Segmento",
+  socialChannels: "Audiência e canais",
   socialPlatform: "Canal principal",
   socialUrl: "Link do perfil",
   state: "Estado",
@@ -41,9 +41,24 @@ const fieldLabels: Record<string, string> = {
   whatsapp: "WhatsApp",
 };
 
+const socialChannelFieldLabels: Record<string, string> = {
+  followers: "Número de seguidores",
+  interactions: "Interações",
+  newFollowers: "Novos seguidores",
+  primary: "Rede principal",
+  sharedContent: "Conteúdo que você compartilhou",
+  url: "Link do perfil",
+  views: "Visualizações",
+};
+
 function fieldLabel(fieldName: string) {
   if (fieldName.startsWith("additionalLocations.")) {
     return "Localidade adicional";
+  }
+
+  if (fieldName.startsWith("socialChannels.")) {
+    const suffix = fieldName.split(".").at(-1) ?? "";
+    return socialChannelFieldLabels[suffix] ?? "Rede social";
   }
 
   return fieldLabels[fieldName] ?? "Campo";

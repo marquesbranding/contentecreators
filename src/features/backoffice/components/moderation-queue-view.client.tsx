@@ -18,13 +18,7 @@ import {
 } from "@/shared/components/ui/card";
 import { Field, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
+import { SearchableSelect } from "@/shared/components/ui/searchable-select";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 
 import { useModerationQueue } from "../hooks/use-moderation-queue";
@@ -220,14 +214,15 @@ export function ModerationQueueView({
 
             <Field>
               <FieldLabel htmlFor="moderation-status">Status</FieldLabel>
-              <Select
+              <SearchableSelect
+                id="moderation-status"
                 items={{
                   ALL: "Todos os status",
-                  APPROVED: "Aprovado",
-                  BANNED: "Banido",
-                  CHANGES_REQUESTED: "Correções solicitadas",
                   PENDING_REVIEW: "Aguardando análise",
+                  CHANGES_REQUESTED: "Correções solicitadas",
+                  APPROVED: "Aprovado",
                   SUSPENDED: "Suspenso",
+                  BANNED: "Banido",
                 }}
                 onValueChange={(value) =>
                   update({
@@ -238,55 +233,24 @@ export function ModerationQueueView({
                   })
                 }
                 value={filters.status ?? "ALL"}
-              >
-                <SelectTrigger className="h-11 w-full" id="moderation-status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">Todos os status</SelectItem>
-                  <SelectItem value="PENDING_REVIEW">
-                    Aguardando análise
-                  </SelectItem>
-                  <SelectItem value="CHANGES_REQUESTED">
-                    Correções solicitadas
-                  </SelectItem>
-                  <SelectItem value="APPROVED">Aprovado</SelectItem>
-                  <SelectItem value="SUSPENDED">Suspenso</SelectItem>
-                  <SelectItem value="BANNED">Banido</SelectItem>
-                </SelectContent>
-              </Select>
+              />
             </Field>
 
             <Field>
               <FieldLabel htmlFor="moderation-order">Ordenação</FieldLabel>
-              <Select
+              <SearchableSelect
+                id="moderation-order"
                 items={{
-                  NAME_ASC: "Nome (A–Z)",
-                  NEWEST_SUBMITTED: "Envios mais recentes",
-                  OLDEST_SUBMITTED: "Envios mais antigos",
                   PENDING_FIRST: "Pendências primeiro",
+                  OLDEST_SUBMITTED: "Envios mais antigos",
+                  NEWEST_SUBMITTED: "Envios mais recentes",
+                  NAME_ASC: "Nome (A–Z)",
                 }}
                 onValueChange={(value) =>
                   value && update({ order: value as ModerationQueueOrder })
                 }
                 value={filters.order}
-              >
-                <SelectTrigger className="h-11 w-full" id="moderation-order">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="PENDING_FIRST">
-                    Pendências primeiro
-                  </SelectItem>
-                  <SelectItem value="OLDEST_SUBMITTED">
-                    Envios mais antigos
-                  </SelectItem>
-                  <SelectItem value="NEWEST_SUBMITTED">
-                    Envios mais recentes
-                  </SelectItem>
-                  <SelectItem value="NAME_ASC">Nome (A–Z)</SelectItem>
-                </SelectContent>
-              </Select>
+              />
             </Field>
 
             <Button className="self-end" type="submit">

@@ -61,6 +61,27 @@ export function parseCompanyCarouselLimit(value: number | undefined): number {
   return Math.min(value, COMPANY_CAROUSEL_MAX_LIMIT);
 }
 
+function parseOptionalTrimmedText(
+  value: string | null | undefined,
+  maxLength: number,
+): string | undefined {
+  const trimmed = value?.trim();
+
+  return trimmed && trimmed.length <= maxLength ? trimmed : undefined;
+}
+
+export function parseCompanyCarouselSearch(
+  value: string | null | undefined,
+): string | undefined {
+  return parseOptionalTrimmedText(value, 120);
+}
+
+export function parseCompanyCarouselSegment(
+  value: string | null | undefined,
+): string | undefined {
+  return parseOptionalTrimmedText(value, 120);
+}
+
 export function toSafeCompanyWebsiteUrl(value: string | null): string | null {
   if (!value) {
     return null;

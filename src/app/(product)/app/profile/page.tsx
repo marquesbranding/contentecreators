@@ -9,6 +9,7 @@ import {
   loadCurrentCompanyMediaFormState,
   loadCurrentInfluencerMediaFormState,
   prepareMediaUploadAction,
+  removeProfileMediaAction,
 } from "@/features/media/server";
 import { AccountStatusBoundary } from "@/features/moderation/server";
 import {
@@ -59,6 +60,7 @@ export default function ProfilePage() {
                       activate: activateProfileMediaAction,
                       finalize: finalizeMediaUploadAction,
                       prepare: prepareMediaUploadAction,
+                      remove: removeProfileMediaAction,
                     }}
                     mediaState={mediaState}
                     profile={profile}
@@ -99,6 +101,7 @@ export default function ProfilePage() {
                     activate: activateProfileMediaAction,
                     finalize: finalizeMediaUploadAction,
                     prepare: prepareMediaUploadAction,
+                    remove: removeProfileMediaAction,
                   }}
                   mediaState={mediaState}
                   profile={profile}

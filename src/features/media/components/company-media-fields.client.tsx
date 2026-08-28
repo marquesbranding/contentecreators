@@ -64,6 +64,7 @@ export function CompanyMediaFields({
         label="Logo da empresa (opcional)"
         onComplete={setLogoAssetId}
         onProfileVersionChange={onProfileVersionChange}
+        onRemove={() => setLogoAssetId(null)}
         purpose="LOGO"
       />
 
@@ -77,6 +78,7 @@ export function CompanyMediaFields({
         label="Capa da empresa (opcional)"
         onComplete={setCoverAssetId}
         onProfileVersionChange={onProfileVersionChange}
+        onRemove={() => setCoverAssetId(null)}
         purpose="COVER"
       />
     </FieldSet>

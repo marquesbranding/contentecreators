@@ -36,6 +36,10 @@ function dependencies(
         profileVersion: 8,
         replacedAssetId: currentAssetId,
       }),
+      removeProfileMedia: vi.fn().mockResolvedValue({
+        kind: "removed",
+        profileVersion: 9,
+      }),
     },
     resolveCurrentSession: vi.fn().mockResolvedValue(session),
   };
@@ -144,4 +148,60 @@ describe("profile media replacement service", () => {
       });
     },
   );
+
+  it("removes the active asset for an authorized purpose", async () => {
+    const serviceDependencies = dependencies();
+    const service = createProfileMediaReplacementService(serviceDependencies);
+
+    const result = await service.removeProfileMedia({
+      purpose: "AVATAR",
+      requestId: "remove-profile-media-unit",
+    });
+
+    expect(
+      serviceDependencies.repository.removeProfileMedia,
+    ).toHaveBeenCalledWith({
+      purpose: "AVATAR",
+      requestId: "remove-profile-media-unit",
+    });
+    expect(result).toEqual({ kind: "removed", profileVersion: 9 });
+  });
+
+  it("denies removal for a restricted account before persistence", async () => {
+    const suspendedDependencies = dependencies(authenticated(suspendedAccount));
+    const suspendedService = createProfileMediaReplacementService(
+      suspendedDependencies,
+    );
+
+    await expect(
+      suspendedService.removeProfileMedia({
+        purpose: "AVATAR",
+        requestId: "suspended-removal-unit",
+      }),
+    ).resolves.toEqual({
+      code: "ACCESS_DENIED",
+      kind: "error",
+    });
+    expect(
+      suspendedDependencies.repository.removeProfileMedia,
+    ).not.toHaveBeenCalled();
+  });
+
+  it("maps a not_found repository result without exposing repository data", async () => {
+    const serviceDependencies = dependencies();
+    serviceDependencies.repository.removeProfileMedia.mockResolvedValue({
+      kind: "not_found",
+    });
+    const service = createProfileMediaReplacementService(serviceDependencies);
+
+    await expect(
+      service.removeProfileMedia({
+        purpose: "AVATAR",
+        requestId: "remove-not-found-unit",
+      }),
+    ).resolves.toEqual({
+      code: "ACCESS_DENIED",
+      kind: "error",
+    });
+  });
 });

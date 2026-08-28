@@ -10,6 +10,7 @@ import { isMediaPurposeAllowed } from "../../domain/media-upload-policy";
 import type {
   ActivateProfileMediaResult,
   ProfileMediaPurpose,
+  RemoveProfileMediaResult,
 } from "../../types/media-upload.types";
 
 type ActivateProfileMediaRepositoryResult =
@@ -26,6 +27,15 @@ type ActivateProfileMediaRepositoryResult =
       kind: "not_found";
     };
 
+type RemoveProfileMediaRepositoryResult =
+  | {
+      kind: "removed";
+      profileVersion: number;
+    }
+  | {
+      kind: "not_found";
+    };
+
 export interface ProfileMediaReplacementRepository {
   activateProfileMedia(input: {
     assetId: string;
@@ -33,6 +43,10 @@ export interface ProfileMediaReplacementRepository {
     purpose: ProfileMediaPurpose;
     requestId: string;
   }): Promise<ActivateProfileMediaRepositoryResult>;
+  removeProfileMedia(input: {
+    purpose: ProfileMediaPurpose;
+    requestId: string;
+  }): Promise<RemoveProfileMediaRepositoryResult>;
 }
 
 interface ProfileMediaReplacementDependencies {
@@ -92,6 +106,46 @@ export function createProfileMediaReplacementService({
           kind: "activated",
           profileVersion: result.profileVersion,
           replacedAssetId: result.replacedAssetId,
+        };
+      } catch (error) {
+        if (error instanceof AccountAccessError) {
+          return {
+            code: "ACCESS_DENIED",
+            kind: "error",
+          };
+        }
+
+        throw error;
+      }
+    },
+
+    async removeProfileMedia(input: {
+      purpose: ProfileMediaPurpose;
+      requestId: string;
+    }): Promise<RemoveProfileMediaResult> {
+      try {
+        const session = await resolveCurrentSession(input.requestId);
+        const account = requireAccount(session);
+
+        if (!isMediaPurposeAllowed(account, input.purpose)) {
+          return {
+            code: "ACCESS_DENIED",
+            kind: "error",
+          };
+        }
+
+        const result = await repository.removeProfileMedia(input);
+
+        if (result.kind === "not_found") {
+          return {
+            code: "ACCESS_DENIED",
+            kind: "error",
+          };
+        }
+
+        return {
+          kind: "removed",
+          profileVersion: result.profileVersion,
         };
       } catch (error) {
         if (error instanceof AccountAccessError) {

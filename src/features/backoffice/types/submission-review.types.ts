@@ -20,7 +20,15 @@ type ModerationAction =
   | "SUSPEND"
   | "UNBAN";
 type SocialPlatform =
-  "FACEBOOK" | "INSTAGRAM" | "LINKEDIN" | "OTHER" | "TIKTOK" | "X" | "YOUTUBE";
+  | "FACEBOOK"
+  | "INSTAGRAM"
+  | "LINKEDIN"
+  | "OTHER"
+  | "TELEGRAM"
+  | "THREADS"
+  | "TIKTOK"
+  | "X"
+  | "YOUTUBE";
 
 export interface BackofficeReviewAccountDto {
   archivedAt: string | null;

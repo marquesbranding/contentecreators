@@ -19,18 +19,17 @@ function completeProfileForm() {
     city: "Florianópolis",
     creatorType: "UGC",
     displayName: "Diego em Movimento",
-    engagementRate: "6.75",
     expectedVersion: "3",
-    followers: "54321",
     legalName: "Diego Exemplo",
-    socialPlatform: "YOUTUBE",
-    socialUrl: "https://youtube.com/@diego-em-movimento",
+    "socialChannels.YOUTUBE.followers": "54321",
+    "socialChannels.YOUTUBE.selected": "on",
+    "socialChannels.YOUTUBE.url": "https://youtube.com/@diego-em-movimento",
     state: "SC",
     whatsapp: "(48) 99999-1111",
   };
 
   Object.entries(fields).forEach(([name, value]) => formData.set(name, value));
-  formData.append("nicheSlugs", "viagem");
+  formData.append("nicheSlugs", "viagens-e-turismo");
   return formData;
 }
 
@@ -41,7 +40,7 @@ describe("approved influencer profile action", () => {
 
   it("returns field errors without invoking the service", async () => {
     const formData = completeProfileForm();
-    formData.set("displayName", "");
+    formData.set("legalName", "");
 
     const result = await updateInfluencerProfileAction(
       { status: "idle" },
@@ -49,7 +48,7 @@ describe("approved influencer profile action", () => {
     );
 
     expect(result).toMatchObject({
-      fieldErrors: { displayName: expect.any(Array) },
+      fieldErrors: { legalName: expect.any(Array) },
       message: "Revise os campos destacados para salvar seu perfil.",
       status: "error",
     });
@@ -59,7 +58,7 @@ describe("approved influencer profile action", () => {
   it("publishes an approved profile and returns only its new version", async () => {
     const formData = completeProfileForm();
     formData.set(
-      "socialUrl",
+      "socialChannels.YOUTUBE.url",
       " HTTPS://YouTube.COM:443/@diego-em-movimento/#perfil ",
     );
     const updateOwnerProfile = vi.fn().mockResolvedValue({
@@ -71,12 +70,16 @@ describe("approved influencer profile action", () => {
         coverAssetId: null,
         creatorType: "UGC",
         displayName: "Diego em Movimento",
-        engagementRate: 6.75,
-        followers: 54_321,
         legalName: "Diego Exemplo",
-        nicheSlugs: ["viagem"],
-        socialPlatform: "YOUTUBE",
-        socialUrl: "https://youtube.com/@diego-em-movimento",
+        nicheSlugs: ["viagens-e-turismo"],
+        socialChannels: [
+          {
+            followerCount: 54_321,
+            isPrimary: true,
+            platform: "YOUTUBE",
+            url: "https://youtube.com/@diego-em-movimento",
+          },
+        ],
         state: "SC",
         version: 4,
         whatsapp: "+5548999991111",
@@ -95,11 +98,16 @@ describe("approved influencer profile action", () => {
     expect(updateOwnerProfile).toHaveBeenCalledWith({
       input: expect.objectContaining({
         creatorType: "UGC",
-        engagementRate: 6.75,
         expectedVersion: 3,
-        followers: 54_321,
-        nicheSlugs: ["viagem"],
-        socialUrl: "https://youtube.com/@diego-em-movimento",
+        nicheSlugs: ["viagens-e-turismo"],
+        socialChannels: [
+          {
+            followerCount: 54_321,
+            isPrimary: true,
+            platform: "YOUTUBE",
+            url: "https://youtube.com/@diego-em-movimento",
+          },
+        ],
       }),
       requestId: expect.any(String),
     });

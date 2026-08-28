@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { SOCIAL_CHANNEL_PLATFORMS } from "../domain/social-channels-form-data";
+
 const draftText = (maximum: number) => z.string().trim().max(maximum);
 const draftUrl = z.union([
   z.literal(""),
@@ -18,8 +20,30 @@ const socialPlatform = z.enum([
   "FACEBOOK",
   "X",
   "LINKEDIN",
+  "THREADS",
+  "TELEGRAM",
   "OTHER",
 ]);
+const creatorSocialChannelPlatform = z.enum(SOCIAL_CHANNEL_PLATFORMS);
+const draftNonNegativeInt = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
+const socialChannelDraftSchema = z
+  .object({
+    followerCount: draftNonNegativeInt,
+    interactions: draftNonNegativeInt,
+    isPrimary: z.boolean(),
+    newFollowers: draftNonNegativeInt,
+    platform: creatorSocialChannelPlatform,
+    sharedContent: draftText(200),
+    url: draftUrl,
+    views: draftNonNegativeInt,
+  })
+  .partial({
+    interactions: true,
+    newFollowers: true,
+    sharedContent: true,
+    views: true,
+  })
+  .strict();
 const companyLocationDraftSchema = z
   .object({
     city: draftText(120),
@@ -43,13 +67,10 @@ export const creatorOnboardingDraftPayloadSchema = z
     city: draftText(120),
     creatorType: z.enum(["INFLUENCER", "UGC"]),
     displayName: draftText(120),
-    engagementRate: z.number().min(0).max(100),
-    followers: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
     legalName: draftText(160),
     nicheSlugs: z.array(z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u)).max(5),
     otherNiche: draftText(120),
-    socialPlatform,
-    socialUrl: draftUrl,
+    socialChannels: z.array(socialChannelDraftSchema).max(8),
     state: draftState,
     whatsapp: draftWhatsapp,
   })

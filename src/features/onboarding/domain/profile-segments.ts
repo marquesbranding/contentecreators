@@ -2,12 +2,46 @@ export const OTHER_NICHE_SLUG = "outros";
 export const CUSTOM_NICHE_SLUG_PREFIX = "personalizado-";
 
 export const creatorNicheOptions = [
-  ["beleza", "Beleza"],
-  ["gastronomia", "Gastronomia"],
-  ["moda", "Moda"],
-  ["tecnologia", "Tecnologia"],
-  ["viagem", "Viagem"],
-  [OTHER_NICHE_SLUG, "Outros"],
+  ["lifestyle-e-rotina", "Lifestyle e rotina"],
+  ["moda-e-estilo", "Moda e estilo"],
+  [
+    "beleza-maquiagem-e-cuidados-pessoais",
+    "Beleza, maquiagem e cuidados pessoais",
+  ],
+  ["saude-nutricao-e-bem-estar", "Saúde, nutrição e bem-estar"],
+  [
+    "fitness-esportes-e-atividade-fisica",
+    "Fitness, esportes e atividade física",
+  ],
+  ["maternidade-paternidade-e-familia", "Maternidade, paternidade e família"],
+  ["infantil-e-conteudo-para-criancas", "Infantil e conteúdo para crianças"],
+  ["gastronomia-e-culinaria", "Gastronomia e culinária"],
+  ["viagens-e-turismo", "Viagens e turismo"],
+  ["casa-decoracao-e-organizacao", "Casa, decoração e organização"],
+  [
+    "financas-investimentos-e-empreendedorismo",
+    "Finanças, investimentos e empreendedorismo",
+  ],
+  ["tecnologia-games-e-inovacao", "Tecnologia, games e inovação"],
+  [
+    "educacao-carreira-e-desenvolvimento-pessoal",
+    "Educação, carreira e desenvolvimento pessoal",
+  ],
+  ["humor-e-entretenimento", "Humor e entretenimento"],
+  ["musica-arte-e-cultura", "Música, arte e cultura"],
+  ["pets-e-animais", "Pets e animais"],
+  [
+    "sustentabilidade-e-consumo-consciente",
+    "Sustentabilidade e consumo consciente",
+  ],
+  ["relacionamentos-e-sexualidade", "Relacionamentos e sexualidade"],
+  ["conteudo-adulto", "Conteúdo adulto"],
+  ["comunidades-e-causas-sociais", "Comunidades e causas sociais"],
+  [
+    "marketing-publicidade-e-redes-sociais",
+    "Marketing, publicidade e redes sociais",
+  ],
+  [OTHER_NICHE_SLUG, "Envie sua sugestão"],
 ] as const;
 
 export const companySegmentOptions = [

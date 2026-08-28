@@ -7,13 +7,21 @@ const completeEdit = {
   city: "São Paulo",
   creatorType: "UGC",
   displayName: "Joana Atualizada",
-  engagementRate: "5.75",
   expectedVersion: "3",
-  followers: "42000",
   legalName: "Joana da Silva",
-  nicheSlugs: ["tecnologia"],
-  socialPlatform: "YOUTUBE",
-  socialUrl: "https://youtube.com/@joana-atualizada",
+  nicheSlugs: ["tecnologia-games-e-inovacao"],
+  socialChannels: [
+    {
+      followerCount: "42000",
+      interactions: "1200",
+      isPrimary: true,
+      newFollowers: "300",
+      platform: "INSTAGRAM",
+      sharedContent: "Reels e vlogs semanais",
+      url: "https://instagram.com/joana-atualizada",
+      views: "80000",
+    },
+  ],
   state: "sp",
   whatsapp: "(11) 99999-9999",
 };
@@ -24,9 +32,15 @@ describe("influencer profile edit schema", () => {
 
     expect(result).toEqual({
       data: expect.objectContaining({
-        engagementRate: 5.75,
         expectedVersion: 3,
-        followers: 42000,
+        socialChannels: [
+          expect.objectContaining({
+            followerCount: 42000,
+            interactions: 1200,
+            newFollowers: 300,
+            views: 80000,
+          }),
+        ],
         state: "SP",
       }),
       success: true,
@@ -36,9 +50,15 @@ describe("influencer profile edit schema", () => {
   it("rejects invalid metrics, URLs and stale-shaped versions", () => {
     const result = influencerProfileEditSchema.safeParse({
       ...completeEdit,
-      engagementRate: "101",
       expectedVersion: "0",
-      socialUrl: "not-a-url",
+      socialChannels: [
+        {
+          followerCount: "-1",
+          isPrimary: true,
+          platform: "YOUTUBE",
+          url: "not-a-url",
+        },
+      ],
     });
 
     expect(result.success).toBe(false);
@@ -47,16 +67,35 @@ describe("influencer profile edit schema", () => {
   it("canonicalizes HTTP social URLs and rejects unsupported protocols", () => {
     const normalized = influencerProfileEditSchema.safeParse({
       ...completeEdit,
-      socialUrl: " HTTPS://Instagram.COM:443/joana-atualizada/#sobre ",
+      socialChannels: [
+        {
+          followerCount: "10000",
+          isPrimary: true,
+          platform: "INSTAGRAM",
+          url: " HTTPS://Instagram.COM:443/joana-atualizada/#sobre ",
+        },
+      ],
     });
     const unsupported = influencerProfileEditSchema.safeParse({
       ...completeEdit,
-      socialUrl: "ftp://instagram.com/joana-atualizada",
+      socialChannels: [
+        {
+          followerCount: "10000",
+          isPrimary: true,
+          platform: "INSTAGRAM",
+          url: "ftp://instagram.com/joana-atualizada",
+        },
+      ],
     });
 
     expect(normalized).toMatchObject({
       data: {
-        socialUrl: "https://instagram.com/joana-atualizada",
+        socialChannels: [
+          {
+            platform: "INSTAGRAM",
+            url: "https://instagram.com/joana-atualizada",
+          },
+        ],
       },
       success: true,
     });
@@ -64,16 +103,53 @@ describe("influencer profile edit schema", () => {
   });
 
   it.each([
-    { engagementRate: "-0.01", followers: "42000" },
-    { engagementRate: "100.01", followers: "42000" },
-    { engagementRate: "5.75", followers: "-1" },
-    { engagementRate: "5.75", followers: "1.5" },
-  ])("rejects invalid self-reported metrics %#", (metrics) => {
+    { followerCount: "-1" },
+    { followerCount: "1.5" },
+    { interactions: "-1" },
+    { newFollowers: "1.5" },
+    { views: "-1" },
+  ])("rejects invalid self-reported metrics %#", (metricOverride) => {
     expect(
       influencerProfileEditSchema.safeParse({
         ...completeEdit,
-        ...metrics,
+        socialChannels: [
+          { ...completeEdit.socialChannels[0], ...metricOverride },
+        ],
       }).success,
     ).toBe(false);
+  });
+
+  it("rejects Instagram-only metrics declared on another network", () => {
+    const result = influencerProfileEditSchema.safeParse({
+      ...completeEdit,
+      socialChannels: [
+        {
+          followerCount: "10000",
+          interactions: "500",
+          isPrimary: true,
+          platform: "YOUTUBE",
+          url: "https://youtube.com/@joana-atualizada",
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a payload with more than one primary channel", () => {
+    const result = influencerProfileEditSchema.safeParse({
+      ...completeEdit,
+      socialChannels: [
+        completeEdit.socialChannels[0],
+        {
+          followerCount: "5000",
+          isPrimary: true,
+          platform: "YOUTUBE",
+          url: "https://youtube.com/@joana-atualizada",
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
   });
 });

@@ -21,9 +21,12 @@ export interface CatalogCreatorSocialDto {
 export interface CatalogCreatorMetricDto {
   engagementRate: number | null;
   followerCount: number | null;
+  interactionCount: number | null;
+  isPrimary: boolean;
   observedOn: string;
   platform: CatalogSocialPlatform;
   source: "SELF_REPORTED";
+  viewCount: number | null;
 }
 
 export interface CatalogMediaReferenceDto {

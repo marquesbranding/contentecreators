@@ -39,16 +39,10 @@ async function selectOption(
 }
 
 async function fillAccessFields(user: ReturnType<typeof userEvent.setup>) {
-  void user;
-  fireEvent.input(screen.getByLabelText("E-mail"), {
-    target: { value: "teste@exemplo.com" },
-  });
-  fireEvent.input(screen.getByLabelText("Senha"), {
-    target: { value: "SenhaForte1" },
-  });
-  fireEvent.input(screen.getByLabelText("Confirmar senha"), {
-    target: { value: "SenhaForte1" },
-  });
+  await user.type(screen.getByLabelText("E-mail"), "teste@exemplo.com");
+  await user.type(screen.getByLabelText("Senha"), "SenhaForte1");
+  await user.type(screen.getByLabelText("Confirmar senha"), "SenhaForte1");
+  await user.type(screen.getByLabelText("WhatsApp com DDD"), "11999999999");
 }
 
 async function acceptRequiredConsents(
@@ -66,35 +60,27 @@ async function acceptRequiredConsents(
 }
 
 async function fillCreatorFields(user: ReturnType<typeof userEvent.setup>) {
-  fireEvent.input(screen.getByLabelText("Nome completo"), {
-    target: { value: "Creator Exemplo" },
-  });
-  fireEvent.input(screen.getByLabelText("Nome de creator"), {
-    target: { value: "Creator Teste" },
-  });
-  await selectOption(user, "Tipo de atuação", "Influencer");
-  fireEvent.input(screen.getByLabelText("Número de seguidores"), {
-    target: { value: "15000" },
-  });
-  fireEvent.input(screen.getByLabelText("Taxa de engajamento (%)"), {
-    target: { value: "5" },
-  });
-  fireEvent.input(screen.getByLabelText("WhatsApp com DDD"), {
-    target: { value: "11999999999" },
-  });
-  fireEvent.input(screen.getByLabelText("Conte sobre seu conteúdo"), {
-    target: {
-      value: "Crio conteúdo sobre tecnologia, cultura e negócios locais.",
-    },
-  });
-  await selectOption(user, "Canal principal", "Instagram");
-  fireEvent.input(screen.getByLabelText("Link do perfil"), {
-    target: { value: "https://instagram.com/creator_teste" },
-  });
-  fireEvent.click(screen.getByRole("checkbox", { name: "Tecnologia" }));
-  fireEvent.input(screen.getByLabelText("Cidade", { exact: true }), {
-    target: { value: "São Paulo" },
-  });
+  await user.type(screen.getByLabelText("Nome completo"), "Creator Exemplo");
+  await user.type(
+    screen.getByLabelText("Conte sobre seu conteúdo"),
+    "Crio conteúdo sobre tecnologia, cultura e negócios locais.",
+  );
+  await user.click(screen.getByRole("checkbox", { name: "Instagram" }));
+  await user.type(screen.getByLabelText("Seguidores no Instagram"), "15000");
+  await user.type(
+    screen.getByLabelText("Link do perfil no Instagram"),
+    "https://instagram.com/creator_teste",
+  );
+  await user.click(
+    screen.getByRole("combobox", { name: "Principais nichos" }),
+  );
+  await user.click(
+    await screen.findByRole("option", { name: "Tecnologia, games e inovação" }),
+  );
+  await user.type(
+    screen.getByLabelText("Cidade", { exact: true }),
+    "São Paulo",
+  );
   await selectOption(user, "UF", "SP");
   await acceptRequiredConsents(user);
 }
@@ -111,29 +97,18 @@ async function fillCompanyFields(user: ReturnType<typeof userEvent.setup>) {
   });
   await selectOption(user, "Segmento", "Tecnologia");
   await selectOption(user, "Tamanho da empresa", "11 a 50 pessoas");
-  fireEvent.input(screen.getByLabelText("WhatsApp com DDD"), {
-    target: { value: "11988887777" },
-  });
-  fireEvent.input(screen.getByLabelText("Apresente a empresa"), {
-    target: {
-      value: "Empresa preparada para validar o fluxo completo de cadastro.",
-    },
-  });
-  fireEvent.input(screen.getByLabelText("CEP"), {
-    target: { value: "01001000" },
-  });
-  fireEvent.input(screen.getByLabelText("Logradouro"), {
-    target: { value: "Praça da Sé" },
-  });
-  fireEvent.input(screen.getByLabelText("Número"), {
-    target: { value: "100" },
-  });
-  fireEvent.input(screen.getByLabelText("Bairro"), {
-    target: { value: "Sé" },
-  });
-  fireEvent.input(screen.getByLabelText("Cidade", { exact: true }), {
-    target: { value: "São Paulo" },
-  });
+  await user.type(
+    screen.getByLabelText("Apresente a empresa"),
+    "Empresa preparada para validar o fluxo completo de cadastro.",
+  );
+  await user.type(screen.getByLabelText("CEP"), "01001000");
+  await user.type(screen.getByLabelText("Logradouro"), "Praça da Sé");
+  await user.type(screen.getByLabelText("Número"), "100");
+  await user.type(screen.getByLabelText("Bairro"), "Sé");
+  await user.type(
+    screen.getByLabelText("Cidade", { exact: true }),
+    "São Paulo",
+  );
   await selectOption(user, "UF", "SP");
   await acceptRequiredConsents(user);
 }
@@ -147,8 +122,12 @@ describe("combined registration form", () => {
       resendAction: vi.fn(),
     });
 
-    expect(screen.getByRole("radio", { name: /sou creator/iu })).toBeChecked();
-    expect(screen.getByLabelText("Nome de creator")).toBeInTheDocument();
+    expect(
+      screen.getByRole("radio", { name: /sou influencer/iu }),
+    ).toBeChecked();
+    expect(
+      screen.getByLabelText("Seguidores no Instagram"),
+    ).toBeInTheDocument();
     expect(screen.queryByLabelText("CNPJ")).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Criar conta e enviar perfil" }),
@@ -175,7 +154,9 @@ describe("combined registration form", () => {
 
     expect(screen.getByLabelText("CNPJ")).toBeInTheDocument();
     expect(screen.getByLabelText("Nome fantasia")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Nome de creator")).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText("Seguidores no Instagram"),
+    ).not.toBeInTheDocument();
   });
 
   it("keeps Base UI fields controlled when registration starts without an intent", async () => {
@@ -338,9 +319,6 @@ describe("combined registration form", () => {
     expect(screen.getByLabelText("E-mail")).toHaveValue("teste@exemplo.com");
     expect(screen.getByLabelText("Nome completo")).toHaveValue(
       "Creator Exemplo",
-    );
-    expect(screen.getByLabelText("Nome de creator")).toHaveValue(
-      "Creator Teste",
     );
     expect(screen.getByLabelText("Cidade", { exact: true })).toHaveValue(
       "São Paulo",

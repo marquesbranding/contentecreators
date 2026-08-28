@@ -69,7 +69,7 @@ async function updateProfileReference(
   account: CurrentAccountDto,
   purpose: ProfileMediaPurpose,
   profileId: string,
-  assetId: string,
+  assetId: string | null,
 ) {
   if (account.role === "INFLUENCER") {
     const [updated] = await transaction
@@ -110,6 +110,94 @@ export function createDrizzleProfileMediaReplacementRepository({
   runVerifiedAccountTransaction,
 }: DrizzleProfileMediaReplacementDependencies): ProfileMediaReplacementRepository {
   return {
+    async removeProfileMedia(input) {
+      return runVerifiedAccountTransaction(
+        { requestId: input.requestId },
+        async (transaction, context) => {
+          const account: CurrentAccountDto = {
+            id: context.accountId,
+            role: context.role,
+            status: context.status,
+          };
+
+          if (!isMediaPurposeAllowed(account, input.purpose)) {
+            throw new AccountAccessError("ROLE_FORBIDDEN");
+          }
+
+          const profile = await findCurrentProfileMedia(
+            transaction,
+            account,
+            input.purpose,
+          );
+
+          if (!profile) {
+            return { kind: "not_found" as const };
+          }
+
+          if (!profile.currentAssetId) {
+            return {
+              kind: "removed" as const,
+              profileVersion: profile.version,
+            };
+          }
+
+          await applyVerifiedAuditContext(transaction, {
+            actorAccountId: account.id,
+            actorRole: account.role,
+            actorType: "USER",
+            reason: "Remove active profile media",
+            requestId: input.requestId,
+            source: "APPLICATION",
+          });
+
+          const [archivedAsset] = await transaction
+            .update(mediaAssets)
+            .set({
+              archivedAt: new Date(),
+              status: "ARCHIVED",
+              updatedAt: new Date(),
+              version: sql`${mediaAssets.version} + 1`,
+            })
+            .where(
+              and(
+                eq(mediaAssets.id, profile.currentAssetId),
+                eq(mediaAssets.ownerAccountId, account.id),
+              ),
+            )
+            .returning({ id: mediaAssets.id });
+
+          if (!archivedAsset) {
+            throw new Error("Current media asset could not be archived.");
+          }
+
+          const profileVersion = await updateProfileReference(
+            transaction,
+            account,
+            input.purpose,
+            profile.id,
+            null,
+          );
+
+          if (!profileVersion) {
+            throw new Error("Profile media reference update failed.");
+          }
+          if (account.role !== "INFLUENCER" && account.role !== "COMPANY") {
+            throw new AccountAccessError("ROLE_FORBIDDEN");
+          }
+          await persistCurrentAccountProfileCompletion(
+            transaction,
+            account.id,
+            account.role,
+          );
+
+          return {
+            kind: "removed" as const,
+            profileVersion,
+          };
+        },
+      );
+    },
+
     async activateProfileMedia(input) {
       return runVerifiedAccountTransaction(
         { requestId: input.requestId },

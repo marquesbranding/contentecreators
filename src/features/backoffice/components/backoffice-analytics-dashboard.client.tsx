@@ -380,7 +380,7 @@ export function BackofficeAnalyticsDashboard({
             value={String(filters.periodDays)}
           >
             <SelectTrigger
-              className="h-11 w-full"
+              className="w-full"
               id="analytics-period"
               aria-label="Período de novos cadastros"
             >

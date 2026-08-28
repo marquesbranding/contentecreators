@@ -90,9 +90,12 @@ export const catalogCreatorDetailViewSchema = z
         .object({
           engagementRate: z.number().min(0).max(100).nullable(),
           followerCount: z.number().int().nonnegative().nullable(),
+          interactionCount: z.number().int().nonnegative().nullable(),
+          isPrimary: z.boolean(),
           observedOn: z.iso.date(),
           platform: catalogSocialPlatformSchema,
           source: z.literal("SELF_REPORTED"),
+          viewCount: z.number().int().nonnegative().nullable(),
         })
         .strict(),
     ),

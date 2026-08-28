@@ -86,24 +86,26 @@ const platformLabels: Record<CatalogSocialPlatform, string> = {
   INSTAGRAM: "Instagram",
   LINKEDIN: "LinkedIn",
   OTHER: "Outra rede",
+  TELEGRAM: "Telegram",
+  THREADS: "Threads",
   TIKTOK: "TikTok",
   X: "X",
   YOUTUBE: "YouTube",
 };
 
-function formatMetricValue(value: number, style: "engagement" | "followers") {
-  return style === "followers"
-    ? new Intl.NumberFormat("pt-BR", {
-        compactDisplay: "short",
-        notation: "compact",
-      }).format(value)
-    : `${new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 }).format(value)}%`;
+function formatMetricValue(value: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    compactDisplay: "short",
+    notation: "compact",
+  }).format(value);
 }
 
 function toCardViewModel(
   creator: CreatorCatalogBrowserCardDto,
 ): CatalogCreatorCardViewModel {
-  const metric = creator.metrics?.[0];
+  const metric =
+    creator.metrics?.find((candidate) => candidate.isPrimary) ??
+    creator.metrics?.[0];
   const metrics = metric
     ? [
         ...(metric.followerCount === null
@@ -111,15 +113,23 @@ function toCardViewModel(
           : [
               {
                 label: `${platformLabels[metric.platform]} · seguidores`,
-                value: formatMetricValue(metric.followerCount, "followers"),
+                value: formatMetricValue(metric.followerCount),
               },
             ]),
-        ...(metric.engagementRate === null
+        ...(metric.viewCount === null
           ? []
           : [
               {
-                label: `${platformLabels[metric.platform]} · engajamento`,
-                value: formatMetricValue(metric.engagementRate, "engagement"),
+                label: `${platformLabels[metric.platform]} · visualizações`,
+                value: formatMetricValue(metric.viewCount),
+              },
+            ]),
+        ...(metric.interactionCount === null
+          ? []
+          : [
+              {
+                label: `${platformLabels[metric.platform]} · interações`,
+                value: formatMetricValue(metric.interactionCount),
               },
             ]),
       ]

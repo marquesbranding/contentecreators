@@ -38,29 +38,50 @@ const navigationItems = [
   },
 ] as const;
 
-function CatalogHeaderSearch() {
+function CatalogHeaderSearch({
+  viewerRole,
+}: {
+  viewerRole?: "COMPANY" | "INFLUENCER";
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const currentSearch = searchParams.get("search") ?? "";
+  // Creators search for companies to work with; companies search for
+  // creators. Each role gets its own query param so neither search clears
+  // the other's filters when both sections share /app/catalog.
+  const searchesCompanies = viewerRole === "INFLUENCER";
+  const paramName = searchesCompanies ? "companySearch" : "search";
+  const currentSearch = searchParams.get(paramName) ?? "";
+  const placeholder = searchesCompanies
+    ? "Buscar empresas por nome ou segmento"
+    : "Buscar creator por nome ou nicho";
 
   return (
     <form
-      aria-label="Buscar creators no catálogo"
+      aria-label={
+        searchesCompanies
+          ? "Buscar empresas no catálogo"
+          : "Buscar creators no catálogo"
+      }
       className="relative w-full"
       onSubmit={(event) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         const nextParams = new URLSearchParams(searchParams.toString());
-        const normalizedSearch = String(formData.get("search") ?? "").trim();
+        const normalizedSearch = String(
+          formData.get(paramName) ?? "",
+        ).trim();
 
         if (normalizedSearch) {
-          nextParams.set("search", normalizedSearch);
+          nextParams.set(paramName, normalizedSearch);
         } else {
-          nextParams.delete("search");
+          nextParams.delete(paramName);
         }
 
-        nextParams.delete("cursor");
+        if (!searchesCompanies) {
+          nextParams.delete("cursor");
+        }
+
         startTransition(() => {
           const query = nextParams.toString();
           router.push(query ? `/app/catalog?${query}` : "/app/catalog");
@@ -73,13 +94,13 @@ function CatalogHeaderSearch() {
         className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-white/55"
       />
       <Input
-        aria-label="Buscar criadores"
-        className="h-11 rounded-full border-white/15 bg-white/[0.07] pr-11 pl-10 text-white placeholder:text-white/45 focus-visible:border-white/30 focus-visible:ring-white/25"
+        aria-label={placeholder}
+        className="rounded-full border-white/15 bg-white/[0.07] pr-11 pl-10 text-white placeholder:text-white/45 focus-visible:border-white/30 focus-visible:ring-white/25"
         defaultValue={currentSearch}
         disabled={isPending}
-        key={currentSearch}
-        name="search"
-        placeholder="Buscar creator por nome ou nicho"
+        key={`${paramName}-${currentSearch}`}
+        name={paramName}
+        placeholder={placeholder}
         type="search"
       />
       <Button
@@ -179,12 +200,46 @@ function ProductSignOut({
   );
 }
 
+function AuthenticatedProductFooter() {
+  return (
+    <footer className="bg-brand-night mt-auto border-t border-white/10 text-white">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <p className="text-xs text-white/60">
+          © {new Date().getFullYear()} Contente Creators. Todos os direitos
+          reservados.
+        </p>
+        <nav
+          aria-label="Links institucionais"
+          className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold"
+        >
+          <Link
+            className="text-white/70 hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
+            href="/terms"
+          >
+            Termos de Uso
+          </Link>
+          <Link
+            className="text-white/70 hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
+            href="/privacy"
+          >
+            Política de Privacidade
+          </Link>
+          {/* TODO: add links to the brand's official social media accounts
+              once real URLs are available (none exist in the codebase yet). */}
+        </nav>
+      </div>
+    </footer>
+  );
+}
+
 export function AuthenticatedProductShell({
   children,
   signOutAction,
+  viewerRole,
 }: {
   children: React.ReactNode;
   signOutAction: () => Promise<void>;
+  viewerRole?: "COMPANY" | "INFLUENCER";
 }) {
   const pathname = usePathname();
   const hydrated = useHydrated();
@@ -192,7 +247,7 @@ export function AuthenticatedProductShell({
   const catalogRoute = pathname === "/app/catalog";
 
   return (
-    <div className="bg-brand-canvas min-h-screen">
+    <div className="bg-brand-canvas flex min-h-screen flex-col">
       <header className="bg-brand-night sticky top-0 z-40 border-b border-white/10 text-white">
         <div className="mx-auto flex min-h-18 max-w-7xl flex-wrap items-center gap-3 px-4 py-3 sm:px-8 lg:flex-nowrap lg:py-0">
           <Link
@@ -213,7 +268,7 @@ export function AuthenticatedProductShell({
 
           {catalogRoute ? (
             <div className="order-last w-full lg:order-none lg:max-w-md lg:min-w-52 lg:flex-1">
-              <CatalogHeaderSearch />
+              <CatalogHeaderSearch viewerRole={viewerRole} />
             </div>
           ) : null}
 
@@ -267,6 +322,8 @@ export function AuthenticatedProductShell({
       </header>
 
       {children}
+
+      <AuthenticatedProductFooter />
     </div>
   );
 }

@@ -49,7 +49,7 @@ export function PasswordField({
       <FieldLabel htmlFor={id} required>
         {label}
       </FieldLabel>
-      <InputGroup className="h-12 overflow-visible rounded-xl">
+      <InputGroup className="overflow-visible rounded-xl">
         <InputGroupInput
           aria-describedby={describedBy || undefined}
           aria-invalid={Boolean(error?.length)}

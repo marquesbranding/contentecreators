@@ -257,7 +257,7 @@ async function insertRoleProfile(
       city: input.city,
       coverAssetId: input.coverAssetId,
       creatorType: input.creatorType,
-      displayName: input.displayName,
+      displayName: input.displayName || input.legalName,
       legalName: input.legalName,
       state: input.state,
       whatsappE164: normalizeWhatsapp(input.whatsapp),
@@ -270,23 +270,44 @@ async function insertRoleProfile(
 
   await activateInitialProfileMedia(transaction, accountId, requestedMedia);
 
-  const [socialProfile] = await transaction
+  const insertedSocialProfiles = await transaction
     .insert(socialProfiles)
-    .values({
-      normalizedUrl: input.socialUrl,
-      ownerAccountId: accountId,
-      platform: input.socialPlatform,
-    })
-    .returning({ id: socialProfiles.id });
+    .values(
+      input.socialChannels.map((channel) => ({
+        isPrimary: channel.isPrimary,
+        normalizedUrl: channel.url,
+        ownerAccountId: accountId,
+        platform: channel.platform,
+      })),
+    )
+    .returning({ id: socialProfiles.id, platform: socialProfiles.platform });
+  const channelByPlatform = new Map(
+    input.socialChannels.map((channel) => [channel.platform, channel]),
+  );
 
-  await transaction.insert(creatorMetricSnapshots).values({
-    creatorProfileId: profile.id,
-    engagementRate: input.engagementRate.toString(),
-    followerCount: input.followers,
-    observedOn: new Date(),
-    platform: input.socialPlatform,
-    socialProfileId: socialProfile?.id,
-  });
+  const observedOn = new Date();
+  await transaction.insert(creatorMetricSnapshots).values(
+    insertedSocialProfiles.map((socialProfile) => {
+      const channel = channelByPlatform.get(
+        socialProfile.platform as (typeof input.socialChannels)[number]["platform"],
+      );
+      const isInstagram = socialProfile.platform === "INSTAGRAM";
+
+      return {
+        creatorProfileId: profile.id,
+        followerCount: channel?.followerCount ?? 0,
+        interactionCount: isInstagram ? channel?.interactions : undefined,
+        newFollowerCount: isInstagram ? channel?.newFollowers : undefined,
+        observedOn,
+        platform: socialProfile.platform,
+        sharedContentDescription: isInstagram
+          ? channel?.sharedContent
+          : undefined,
+        socialProfileId: socialProfile.id,
+        viewCount: isInstagram ? channel?.views : undefined,
+      };
+    }),
+  );
 
   const selectedNiches = await resolveCreatorNiches(
     transaction,

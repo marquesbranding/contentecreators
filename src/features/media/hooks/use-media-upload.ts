@@ -79,6 +79,7 @@ interface UseMediaUploadInput {
   currentAssetId: string | null;
   onComplete?: (assetId: string) => void;
   onProfileVersionChange?: (version: number) => void;
+  onRemove?: () => void;
   purpose: MediaPurpose;
 }
 
@@ -92,6 +93,7 @@ export function useMediaUpload({
   currentAssetId,
   onComplete,
   onProfileVersionChange,
+  onRemove,
   purpose,
 }: UseMediaUploadInput) {
   const [crop, setCrop] = useState<ImageCropSettings>(initialCrop);
@@ -99,6 +101,7 @@ export function useMediaUpload({
   const [file, setFile] = useState<File | null>(null);
   const [phase, setPhase] = useState<MediaUploadPhase>("idle");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
   const previewUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -242,6 +245,35 @@ export function useMediaUpload({
     await upload();
   }, [upload]);
 
+  const removeCurrent = useCallback(async () => {
+    if (!actions.remove || purpose === "SPONSORSHIP_CREATIVE") {
+      setError("Não foi possível remover esta imagem agora.");
+      setPhase("error");
+      return;
+    }
+
+    setIsRemoving(true);
+    setError(null);
+
+    try {
+      const result = await actions.remove({ purpose });
+
+      if (result.kind === "error") {
+        setError(errorMessages[result.code] ?? errorMessages.STORAGE_UNAVAILABLE);
+        setPhase("error");
+        return;
+      }
+
+      onProfileVersionChange?.(result.profileVersion);
+      onRemove?.();
+    } catch {
+      setError(errorMessages.STORAGE_UNAVAILABLE);
+      setPhase("error");
+    } finally {
+      setIsRemoving(false);
+    }
+  }, [actions, onProfileVersionChange, onRemove, purpose]);
+
   const isBusy =
     phase === "activating" ||
     phase === "finalizing" ||
@@ -250,13 +282,19 @@ export function useMediaUpload({
 
   return useMemo(
     () => ({
+      canRemove:
+        Boolean(actions.remove) &&
+        Boolean(currentAssetId) &&
+        purpose !== "SPONSORSHIP_CREATIVE",
       crop,
       error,
       file,
       isBusy,
+      isRemoving,
       phase,
       previewUrl,
       progress: progressByPhase[phase],
+      removeCurrent,
       reset,
       retry,
       selectFile,
@@ -265,12 +303,17 @@ export function useMediaUpload({
       upload,
     }),
     [
+      actions.remove,
       crop,
+      currentAssetId,
       error,
       file,
       isBusy,
+      isRemoving,
       phase,
       previewUrl,
+      purpose,
+      removeCurrent,
       reset,
       retry,
       selectFile,

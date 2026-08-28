@@ -23,13 +23,7 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Field, FieldLabel } from "@/shared/components/ui/field";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
+import { SearchableSelect } from "@/shared/components/ui/searchable-select";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 
 import { useAdminEmailOutboxList } from "../hooks/use-admin-email-outbox";
@@ -140,12 +134,13 @@ export function AdminEmailOutboxView({
         <CardContent className="grid gap-4 pt-1 md:grid-cols-3">
           <Field>
             <FieldLabel htmlFor="email-outbox-status">Status</FieldLabel>
-            <Select
+            <SearchableSelect
+              id="email-outbox-status"
               items={{
                 ALL: "Todos os status",
-                DEAD_LETTER: "Falha definitiva",
-                FAILED: "Tentativa automática",
                 PENDING: "Pendente",
+                FAILED: "Tentativa automática",
+                DEAD_LETTER: "Falha definitiva",
               }}
               onValueChange={(value) =>
                 update({
@@ -156,30 +151,21 @@ export function AdminEmailOutboxView({
                 })
               }
               value={filters.status ?? "ALL"}
-            >
-              <SelectTrigger className="h-11 w-full" id="email-outbox-status">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">Todos os status</SelectItem>
-                <SelectItem value="PENDING">Pendente</SelectItem>
-                <SelectItem value="FAILED">Tentativa automática</SelectItem>
-                <SelectItem value="DEAD_LETTER">Falha definitiva</SelectItem>
-              </SelectContent>
-            </Select>
+            />
           </Field>
 
           <Field>
             <FieldLabel htmlFor="email-outbox-template">Mensagem</FieldLabel>
-            <Select
+            <SearchableSelect
+              id="email-outbox-template"
               items={{
                 ALL: "Todos os modelos",
-                APPROVED: "Cadastro aprovado",
-                BANNED: "Conta bloqueada",
-                CHANGES_REQUESTED: "Correções solicitadas",
                 ONBOARDING_RECEIVED: "Cadastro recebido",
-                RESTORED: "Acesso restaurado",
+                CHANGES_REQUESTED: "Correções solicitadas",
+                APPROVED: "Cadastro aprovado",
                 SUSPENDED: "Acesso suspenso",
+                RESTORED: "Acesso restaurado",
+                BANNED: "Conta bloqueada",
               }}
               onValueChange={(value) =>
                 update({
@@ -190,52 +176,24 @@ export function AdminEmailOutboxView({
                 })
               }
               value={filters.template ?? "ALL"}
-            >
-              <SelectTrigger className="h-11 w-full" id="email-outbox-template">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">Todos os modelos</SelectItem>
-                <SelectItem value="ONBOARDING_RECEIVED">
-                  Cadastro recebido
-                </SelectItem>
-                <SelectItem value="CHANGES_REQUESTED">
-                  Correções solicitadas
-                </SelectItem>
-                <SelectItem value="APPROVED">Cadastro aprovado</SelectItem>
-                <SelectItem value="SUSPENDED">Acesso suspenso</SelectItem>
-                <SelectItem value="RESTORED">Acesso restaurado</SelectItem>
-                <SelectItem value="BANNED">Conta bloqueada</SelectItem>
-              </SelectContent>
-            </Select>
+            />
           </Field>
 
           <Field>
             <FieldLabel htmlFor="email-outbox-order">Ordenação</FieldLabel>
-            <Select
+            <SearchableSelect
+              id="email-outbox-order"
               items={{
                 ATTENTION_FIRST: "Falhas definitivas primeiro",
-                NEWEST: "Mensagens mais recentes",
                 NEXT_DUE: "Próximo processamento",
                 OLDEST: "Mensagens mais antigas",
+                NEWEST: "Mensagens mais recentes",
               }}
               onValueChange={(value) =>
                 value && update({ order: value as AdminEmailOutboxOrder })
               }
               value={filters.order}
-            >
-              <SelectTrigger className="h-11 w-full" id="email-outbox-order">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ATTENTION_FIRST">
-                  Falhas definitivas primeiro
-                </SelectItem>
-                <SelectItem value="NEXT_DUE">Próximo processamento</SelectItem>
-                <SelectItem value="OLDEST">Mensagens mais antigas</SelectItem>
-                <SelectItem value="NEWEST">Mensagens mais recentes</SelectItem>
-              </SelectContent>
-            </Select>
+            />
           </Field>
         </CardContent>
       </Card>

@@ -66,9 +66,22 @@ function mapMetrics(
         record.followerCount >= 0
           ? record.followerCount
           : null,
+      interactionCount:
+        record.interactionCount !== null &&
+        Number.isSafeInteger(record.interactionCount) &&
+        record.interactionCount >= 0
+          ? record.interactionCount
+          : null,
+      isPrimary: record.isPrimary,
       observedOn: record.observedOn.toISOString().slice(0, 10),
       platform: record.platform,
       source: "SELF_REPORTED",
+      viewCount:
+        record.viewCount !== null &&
+        Number.isSafeInteger(record.viewCount) &&
+        record.viewCount >= 0
+          ? record.viewCount
+          : null,
     };
   });
 }

@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 import {
   ApprovedCatalogEntry,
+  CatalogTipsPanel,
   CompanyCarouselScreen,
   creatorCatalogKeys,
   creatorCatalogFiltersSchema,
@@ -80,7 +81,10 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           return (
             <ApprovedCatalogEntry signOutAction={signOutAction}>
               <CatalogSponsorshipSlots slots={sponsorshipSlots}>
-                <CompanyCarouselScreen initialData={companyCarousel} />
+                <div className="mb-8 space-y-8">
+                  <CompanyCarouselScreen initialData={companyCarousel} />
+                  <CatalogTipsPanel />
+                </div>
               </CatalogSponsorshipSlots>
             </ApprovedCatalogEntry>
           );
@@ -105,7 +109,10 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         ]);
 
         return (
-          <ApprovedCatalogEntry signOutAction={signOutAction}>
+          <ApprovedCatalogEntry
+            signOutAction={signOutAction}
+            viewerRole={account.role}
+          >
             <CatalogSponsorshipSlots slots={sponsorshipSlots}>
               <HydratedCreatorCatalog
                 state={dehydrate(queryClient)}

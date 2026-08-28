@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
+import { SearchableSelect } from "@/shared/components/ui/searchable-select";
 import {
   Sheet,
   SheetContent,
@@ -65,6 +66,8 @@ const platformLabels: Record<CatalogSocialPlatform, string> = {
   INSTAGRAM: "Instagram",
   LINKEDIN: "LinkedIn",
   OTHER: "Outra rede",
+  TELEGRAM: "Telegram",
+  THREADS: "Threads",
   TIKTOK: "TikTok",
   X: "X",
   YOUTUBE: "YouTube",
@@ -110,7 +113,7 @@ function FilterFields({
           value={filters.creatorType ?? "ALL"}
         >
           <SelectTrigger
-            className="h-12 w-full"
+            className="w-full"
             id={`${idPrefix}-creator-type`}
           >
             <SelectValue />
@@ -125,8 +128,9 @@ function FilterFields({
 
       <Field>
         <FieldLabel htmlFor={`${idPrefix}-niche`}>Nicho</FieldLabel>
-        <Select
+        <SearchableSelect
           disabled={isPending}
+          id={`${idPrefix}-niche`}
           items={Object.fromEntries([
             ["ALL", "Todos os nichos"],
             ...options.niches.map((option) => [option.value, option.label]),
@@ -135,25 +139,14 @@ function FilterFields({
             update({ niche: value && value !== "ALL" ? value : undefined })
           }
           value={filters.niche ?? "ALL"}
-        >
-          <SelectTrigger className="h-12 w-full" id={`${idPrefix}-niche`}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">Todos os nichos</SelectItem>
-            {options.niches.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        />
       </Field>
 
       <Field>
         <FieldLabel htmlFor={`${idPrefix}-platform`}>Rede social</FieldLabel>
-        <Select
+        <SearchableSelect
           disabled={isPending}
+          id={`${idPrefix}-platform`}
           items={{
             ALL: "Todas as redes",
             ...platformLabels,
@@ -167,25 +160,14 @@ function FilterFields({
             })
           }
           value={filters.platform ?? "ALL"}
-        >
-          <SelectTrigger className="h-12 w-full" id={`${idPrefix}-platform`}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">Todas as redes</SelectItem>
-            {Object.entries(platformLabels).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        />
       </Field>
 
       <Field>
         <FieldLabel htmlFor={`${idPrefix}-city`}>Cidade</FieldLabel>
-        <Select
+        <SearchableSelect
           disabled={isPending}
+          id={`${idPrefix}-city`}
           items={Object.fromEntries([
             ["ALL", "Todas as cidades"],
             ...options.cities.map((city) => [city, city]),
@@ -194,25 +176,14 @@ function FilterFields({
             update({ city: value && value !== "ALL" ? value : undefined })
           }
           value={filters.city ?? "ALL"}
-        >
-          <SelectTrigger className="h-12 w-full" id={`${idPrefix}-city`}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">Todas as cidades</SelectItem>
-            {options.cities.map((city) => (
-              <SelectItem key={city} value={city}>
-                {city}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        />
       </Field>
 
       <Field>
         <FieldLabel htmlFor={`${idPrefix}-state`}>UF</FieldLabel>
-        <Select
+        <SearchableSelect
           disabled={isPending}
+          id={`${idPrefix}-state`}
           items={Object.fromEntries([
             ["ALL", "Todas as UFs"],
             ...options.states.map((state) => [state, state]),
@@ -221,19 +192,7 @@ function FilterFields({
             update({ state: value && value !== "ALL" ? value : undefined })
           }
           value={filters.state ?? "ALL"}
-        >
-          <SelectTrigger className="h-12 w-full" id={`${idPrefix}-state`}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">Todas as UFs</SelectItem>
-            {options.states.map((state) => (
-              <SelectItem key={state} value={state}>
-                {state}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        />
       </Field>
     </div>
   );

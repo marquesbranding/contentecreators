@@ -8,12 +8,19 @@ import type { CompanyCarouselViewResponseDto } from "../types/company-carousel-v
 
 const all = ["catalog", "company-carousel"] as const;
 
+export interface CompanyCarouselQueryFilters {
+  search?: string;
+  segment?: string;
+}
+
 export const companyCarouselKeys = {
   all,
-  list(limit: number) {
+  list(limit: number, filters: CompanyCarouselQueryFilters = {}) {
     return [
       ...all,
       Math.min(Math.max(limit, 1), COMPANY_CAROUSEL_MAX_LIMIT),
+      filters.search ?? "",
+      filters.segment ?? "",
     ] as const;
   },
 };
@@ -28,16 +35,25 @@ function isEligibilityLoss(error: unknown) {
 export async function fetchCompanyCarousel(
   limit: number,
   signal: AbortSignal,
+  filters: CompanyCarouselQueryFilters = {},
   client: AxiosInstance = httpClient,
 ): Promise<CompanyCarouselViewResponseDto> {
   const boundedLimit = Math.min(
     Math.max(Math.trunc(limit), 1),
     COMPANY_CAROUSEL_MAX_LIMIT,
   );
+  const searchParams = new URLSearchParams({ limit: String(boundedLimit) });
+
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  if (filters.segment) {
+    searchParams.set("segment", filters.segment);
+  }
 
   try {
     const response = await client.get<unknown>(
-      `/catalog/companies?limit=${boundedLimit}`,
+      `/catalog/companies?${searchParams.toString()}`,
       { signal },
     );
 

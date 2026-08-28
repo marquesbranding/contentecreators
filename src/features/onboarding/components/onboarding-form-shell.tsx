@@ -33,7 +33,7 @@ export function OnboardingFormShell({
   correctionReason?: string | null;
   correctionRequested?: boolean;
   currentStep?: number;
-  description: string;
+  description: React.ReactNode;
   eyebrow?: string;
   progress?: number;
   progressLabel?: string;
@@ -60,9 +60,7 @@ export function OnboardingFormShell({
       <div className="relative mx-auto max-w-5xl">
         {showBrandHeader ? (
           <header className="flex items-center justify-between gap-4">
-            <span className="bg-brand-night rounded-md">
-              <BrandLogo preload />
-            </span>
+            <BrandLogo preload />
             <Badge
               className="gap-1.5 rounded-full px-3 py-1.5"
               variant="outline"
@@ -88,7 +86,7 @@ export function OnboardingFormShell({
             <CardTitle className="text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
               <h1>{title}</h1>
             </CardTitle>
-            <CardDescription className="max-w-3xl text-base leading-7">
+            <CardDescription className="max-w-3xl space-y-3 text-base leading-7">
               {description}
             </CardDescription>
             <Progress

@@ -14,7 +14,9 @@ describe("company carousel browser API", () => {
     const get = vi.fn().mockResolvedValue({ data: { items: [], limit: 24 } });
     const client = { get } as unknown as AxiosInstance;
 
-    await expect(fetchCompanyCarousel(200, signal, client)).resolves.toEqual({
+    await expect(
+      fetchCompanyCarousel(200, signal, {}, client),
+    ).resolves.toEqual({
       items: [],
       limit: 24,
     });
@@ -22,10 +24,30 @@ describe("company carousel browser API", () => {
       "catalog",
       "company-carousel",
       24,
+      "",
+      "",
     ]);
     expect(get).toHaveBeenCalledWith("/catalog/companies?limit=24", {
       signal,
     });
+  });
+
+  it("forwards search and segment filters in the query string", async () => {
+    const signal = new AbortController().signal;
+    const get = vi.fn().mockResolvedValue({ data: { items: [], limit: 12 } });
+    const client = { get } as unknown as AxiosInstance;
+
+    await fetchCompanyCarousel(
+      12,
+      signal,
+      { search: "Marca X", segment: "Tecnologia" },
+      client,
+    );
+
+    expect(get).toHaveBeenCalledWith(
+      "/catalog/companies?limit=12&search=Marca+X&segment=Tecnologia",
+      { signal },
+    );
   });
 
   it("replaces a stale carousel after authorization loss", async () => {
@@ -40,7 +62,7 @@ describe("company carousel browser API", () => {
     } as unknown as AxiosInstance;
 
     await expect(
-      fetchCompanyCarousel(12, new AbortController().signal, client),
+      fetchCompanyCarousel(12, new AbortController().signal, {}, client),
     ).resolves.toEqual({ items: [], limit: 12 });
   });
 });

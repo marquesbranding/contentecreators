@@ -35,7 +35,7 @@ import { ProfileFormFields } from "./profile-form-fields.client";
 export function InfluencerProfileEditForm({
   action,
   backHref = "/app/catalog",
-  backLabel = "Voltar ao catálogo",
+  backLabel = "Voltar ao perfil",
   changeReason,
   expectedVersion,
   formLabel = "Editar perfil de creator",

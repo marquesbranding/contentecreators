@@ -7,6 +7,7 @@ import {
   MapPin,
   MessageCircle,
   RefreshCw,
+  Star,
   UsersRound,
 } from "lucide-react";
 import Link from "next/link";
@@ -27,6 +28,14 @@ import {
 } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { formatNumber } from "@/shared/lib/formatting/formatters";
+
+function formatMetricLine(
+  value: number | null,
+  unit: string,
+  emptyLabel: string,
+) {
+  return value === null ? emptyLabel : `${formatNumber(value)} ${unit}`;
+}
 
 import type { CatalogCreatorDetailViewDto } from "../types/catalog-detail-view.types";
 
@@ -53,6 +62,8 @@ const socialLabels = {
   KWAI: "Kwai",
   LINKEDIN: "LinkedIn",
   OTHER: "Outra rede",
+  TELEGRAM: "Telegram",
+  THREADS: "Threads",
   TIKTOK: "TikTok",
   X: "X",
   YOUTUBE: "YouTube",
@@ -259,9 +270,22 @@ function MetricCards({ detail }: { detail: CatalogCreatorDetailViewDto }) {
       <ul className="mt-4 grid gap-3 sm:grid-cols-2">
         {detail.metrics.map((metric) => (
           <li key={`${metric.platform}-${metric.observedOn}`}>
-            <Card size="sm">
+            <Card
+              className={
+                metric.isPrimary ? "border-amber-400 ring-1 ring-amber-400/40" : undefined
+              }
+              size="sm"
+            >
               <CardHeader>
-                <CardTitle>{socialLabels[metric.platform]}</CardTitle>
+                <CardTitle className="flex items-center gap-1.5">
+                  {socialLabels[metric.platform]}
+                  {metric.isPrimary ? (
+                    <Badge className="gap-1" variant="outline">
+                      <Star aria-hidden="true" className="size-3 fill-amber-500 text-amber-500" />
+                      Principal
+                    </Badge>
+                  ) : null}
+                </CardTitle>
                 <CardDescription>
                   Atualizado em{" "}
                   {new Intl.DateTimeFormat("pt-BR", {
@@ -271,14 +295,25 @@ function MetricCards({ detail }: { detail: CatalogCreatorDetailViewDto }) {
               </CardHeader>
               <CardContent className="space-y-1">
                 <p className="text-lg font-bold">
-                  {metric.followerCount === null
-                    ? "Seguidores não informados"
-                    : `${formatNumber(metric.followerCount)} seguidores`}
+                  {formatMetricLine(
+                    metric.followerCount,
+                    "seguidores",
+                    "Seguidores não informados",
+                  )}
                 </p>
                 <p className="text-muted-foreground">
-                  {metric.engagementRate === null
-                    ? "Engajamento não informado"
-                    : `${formatNumber(metric.engagementRate, 1)}% de engajamento`}
+                  {formatMetricLine(
+                    metric.viewCount,
+                    "visualizações",
+                    "Visualizações não informadas",
+                  )}
+                </p>
+                <p className="text-muted-foreground">
+                  {formatMetricLine(
+                    metric.interactionCount,
+                    "interações",
+                    "Interações não informadas",
+                  )}
                 </p>
               </CardContent>
             </Card>

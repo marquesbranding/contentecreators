@@ -13,13 +13,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Field, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
+import { SearchableSelect } from "@/shared/components/ui/searchable-select";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 
 import { useAccountManagement } from "../hooks/use-account-management";
@@ -138,12 +132,13 @@ export function AccountManagementView({
 
             <Field>
               <FieldLabel htmlFor="account-role">Papel</FieldLabel>
-              <Select
+              <SearchableSelect
+                id="account-role"
                 items={{
                   ALL: "Todos os papéis",
                   ADMIN: "Administrador",
-                  COMPANY: "Empresa",
                   INFLUENCER: "Influenciador",
+                  COMPANY: "Empresa",
                 }}
                 onValueChange={(value) =>
                   update({
@@ -154,30 +149,21 @@ export function AccountManagementView({
                   })
                 }
                 value={filters.role ?? "ALL"}
-              >
-                <SelectTrigger className="h-11 w-full" id="account-role">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">Todos os papéis</SelectItem>
-                  <SelectItem value="ADMIN">Administrador</SelectItem>
-                  <SelectItem value="INFLUENCER">Influenciador</SelectItem>
-                  <SelectItem value="COMPANY">Empresa</SelectItem>
-                </SelectContent>
-              </Select>
+              />
             </Field>
 
             <Field>
               <FieldLabel htmlFor="account-status">Status</FieldLabel>
-              <Select
+              <SearchableSelect
+                id="account-status"
                 items={{
                   ALL: "Todos os status",
-                  APPROVED: "Aprovado",
-                  BANNED: "Banido",
-                  CHANGES_REQUESTED: "Correções solicitadas",
                   ONBOARDING: "Cadastro em andamento",
                   PENDING_REVIEW: "Aguardando análise",
+                  CHANGES_REQUESTED: "Correções solicitadas",
+                  APPROVED: "Aprovado",
                   SUSPENDED: "Suspenso",
+                  BANNED: "Banido",
                 }}
                 onValueChange={(value) =>
                   update({
@@ -188,79 +174,41 @@ export function AccountManagementView({
                   })
                 }
                 value={filters.status ?? "ALL"}
-              >
-                <SelectTrigger className="h-11 w-full" id="account-status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">Todos os status</SelectItem>
-                  <SelectItem value="ONBOARDING">
-                    Cadastro em andamento
-                  </SelectItem>
-                  <SelectItem value="PENDING_REVIEW">
-                    Aguardando análise
-                  </SelectItem>
-                  <SelectItem value="CHANGES_REQUESTED">
-                    Correções solicitadas
-                  </SelectItem>
-                  <SelectItem value="APPROVED">Aprovado</SelectItem>
-                  <SelectItem value="SUSPENDED">Suspenso</SelectItem>
-                  <SelectItem value="BANNED">Banido</SelectItem>
-                </SelectContent>
-              </Select>
+              />
             </Field>
 
             <Field>
               <FieldLabel htmlFor="account-archive">Arquivamento</FieldLabel>
-              <Select
+              <SearchableSelect
+                id="account-archive"
                 items={{
                   ACTIVE: "Ativas",
-                  ALL: "Ativas e arquivadas",
                   ARCHIVED: "Arquivadas",
+                  ALL: "Ativas e arquivadas",
                 }}
                 onValueChange={(value) =>
                   value &&
                   update({ archive: value as ManagedAccountArchiveFilter })
                 }
                 value={filters.archive}
-              >
-                <SelectTrigger className="h-11 w-full" id="account-archive">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ACTIVE">Ativas</SelectItem>
-                  <SelectItem value="ARCHIVED">Arquivadas</SelectItem>
-                  <SelectItem value="ALL">Ativas e arquivadas</SelectItem>
-                </SelectContent>
-              </Select>
+              />
             </Field>
 
             <Field>
               <FieldLabel htmlFor="account-order">Ordenação</FieldLabel>
-              <Select
+              <SearchableSelect
+                id="account-order"
                 items={{
-                  COMPLETION_DESC: "Maior completude",
-                  NAME_ASC: "Nome (A–Z)",
                   NEWEST: "Mais recentes",
                   OLDEST: "Mais antigas",
+                  NAME_ASC: "Nome (A–Z)",
+                  COMPLETION_DESC: "Maior completude",
                 }}
                 onValueChange={(value) =>
                   value && update({ order: value as ManagedAccountOrder })
                 }
                 value={filters.order}
-              >
-                <SelectTrigger className="h-11 w-full" id="account-order">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="NEWEST">Mais recentes</SelectItem>
-                  <SelectItem value="OLDEST">Mais antigas</SelectItem>
-                  <SelectItem value="NAME_ASC">Nome (A–Z)</SelectItem>
-                  <SelectItem value="COMPLETION_DESC">
-                    Maior completude
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              />
             </Field>
 
             <Button className="self-end" type="submit">

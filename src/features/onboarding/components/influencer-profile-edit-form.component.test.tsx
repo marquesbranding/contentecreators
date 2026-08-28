@@ -25,12 +25,16 @@ const profile = {
   coverAssetId: null,
   creatorType: "INFLUENCER",
   displayName: "Joana Cria",
-  engagementRate: 4.25,
-  followers: 12_500,
   legalName: "Joana da Silva",
-  nicheSlugs: ["tecnologia"],
-  socialPlatform: "INSTAGRAM",
-  socialUrl: "https://instagram.com/joanacria",
+  nicheSlugs: ["tecnologia-games-e-inovacao"],
+  socialChannels: [
+    {
+      followerCount: 12_500,
+      isPrimary: true,
+      platform: "INSTAGRAM",
+      url: "https://instagram.com/joanacria",
+    },
+  ],
   state: "SP",
   version: 3,
   whatsapp: "+5511999999999",
@@ -46,7 +50,9 @@ describe("InfluencerProfileEditForm", () => {
       />,
     );
 
-    expect(screen.getByLabelText("Nome de creator")).toHaveValue("Joana Cria");
+    expect(screen.getByLabelText("Nome completo")).toHaveValue(
+      "Joana da Silva",
+    );
     expect(screen.getByLabelText("Tipo de atuação")).toHaveTextContent(
       "Influencer",
     );
@@ -67,11 +73,11 @@ describe("InfluencerProfileEditForm", () => {
       />,
     );
 
-    await user.clear(screen.getByLabelText("Nome de creator"));
+    await user.clear(screen.getByLabelText("Nome completo"));
     await user.click(screen.getByRole("button", { name: "Salvar alterações" }));
 
     expect(action).not.toHaveBeenCalled();
-    expect(screen.getByLabelText("Nome de creator")).toHaveAttribute(
+    expect(screen.getByLabelText("Nome completo")).toHaveAttribute(
       "aria-invalid",
       "true",
     );
@@ -180,8 +186,6 @@ describe("InfluencerProfileEditForm", () => {
 
     await user.tab();
     expect(screen.getByLabelText("Nome completo")).toHaveFocus();
-    await user.tab();
-    expect(screen.getByLabelText("Nome de creator")).toHaveFocus();
     await user.tab();
     const creatorType = screen.getByLabelText("Tipo de atuação");
     expect(creatorType).toHaveFocus();

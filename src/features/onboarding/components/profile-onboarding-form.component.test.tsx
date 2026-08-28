@@ -26,12 +26,16 @@ describe("ProfileOnboardingForm correction mode", () => {
             city: "Curitiba",
             creatorType: "INFLUENCER",
             displayName: "Carla em Cena",
-            engagementRate: 4.5,
-            followers: 15_000,
             legalName: "Carla Exemplo",
-            nicheSlugs: ["beleza"],
-            socialPlatform: "TIKTOK",
-            socialUrl: "https://tiktok.com/@carla-em-cena",
+            nicheSlugs: ["beleza-maquiagem-e-cuidados-pessoais"],
+            socialChannels: [
+              {
+                followerCount: 15_000,
+                isPrimary: true,
+                platform: "INSTAGRAM",
+                url: "https://instagram.com/carla-em-cena",
+              },
+            ],
             state: "PR",
             whatsapp: "+5541999999999",
           }}
@@ -41,10 +45,9 @@ describe("ProfileOnboardingForm correction mode", () => {
     );
 
     expect(screen.getByLabelText("Nome completo")).toHaveValue("Carla Exemplo");
-    expect(screen.getByLabelText("Nome de creator")).toHaveValue(
-      "Carla em Cena",
+    expect(screen.getByLabelText("Seguidores no Instagram")).toHaveValue(
+      15_000,
     );
-    expect(screen.getByLabelText("Número de seguidores")).toHaveValue(15_000);
     expect(
       container.querySelector<HTMLInputElement>(
         'input[name="expectedAccountVersion"]',

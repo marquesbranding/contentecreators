@@ -57,6 +57,10 @@ function actions() {
         token: "signed-upload-token",
       },
     }),
+    remove: vi.fn().mockResolvedValue({
+      kind: "removed",
+      profileVersion: 5,
+    }),
   };
 }
 
@@ -255,5 +259,79 @@ describe("MediaUploadField", () => {
       expect(horizontal).toHaveValue("25");
       expect(vertical).toHaveValue("75");
     });
+  });
+
+  it("opens a single 'Mudar foto' menu offering Carregar foto, Remover foto atual and Cancelar", async () => {
+    const user = userEvent.setup();
+    const mediaActions = actions();
+    const onRemove = vi.fn();
+    const onProfileVersionChange = vi.fn();
+    render(
+      <MediaUploadField
+        actions={mediaActions}
+        currentAssetId={activeAssetId}
+        label="Foto de perfil"
+        onProfileVersionChange={onProfileVersionChange}
+        onRemove={onRemove}
+        purpose="AVATAR"
+      />,
+    );
+
+    expect(
+      screen.queryByRole("button", { name: "Enviar imagem" }),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Mudar foto" }));
+
+    expect(
+      screen.getByRole("button", { name: "Carregar foto" }),
+    ).toBeVisible();
+    const removeButton = screen.getByRole("button", {
+      name: "Remover foto atual",
+    });
+    expect(removeButton).toBeVisible();
+
+    await user.click(removeButton);
+
+    expect(mediaActions.remove).toHaveBeenCalledWith({ purpose: "AVATAR" });
+    await waitFor(() => expect(onRemove).toHaveBeenCalledOnce());
+    expect(onProfileVersionChange).toHaveBeenCalledWith(5);
+  });
+
+  it("cancels the menu without changing the current image", async () => {
+    const user = userEvent.setup();
+    render(
+      <MediaUploadField
+        actions={actions()}
+        currentAssetId={activeAssetId}
+        label="Foto de perfil"
+        purpose="AVATAR"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Mudar foto" }));
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
+
+    expect(
+      screen.queryByRole("button", { name: "Carregar foto" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("omits 'Remover foto atual' when there is no current image", async () => {
+    const user = userEvent.setup();
+    render(
+      <MediaUploadField
+        actions={actions()}
+        currentAssetId={null}
+        label="Foto de perfil"
+        purpose="AVATAR"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Mudar foto" }));
+
+    expect(
+      screen.queryByRole("button", { name: "Remover foto atual" }),
+    ).not.toBeInTheDocument();
   });
 });

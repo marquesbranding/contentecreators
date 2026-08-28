@@ -22,11 +22,15 @@ describe("onboarding form contracts", () => {
       bio: "Crio conteúdo sobre projetos autorais e economia criativa.",
       creatorType: "INFLUENCER",
       displayName: "Joana Cria",
-      engagementRate: "4.25",
-      followers: "12500",
       nicheSlugs: ["outros"],
-      socialPlatform: "INSTAGRAM",
-      socialUrl: "https://instagram.com/joanacria",
+      socialChannels: [
+        {
+          followerCount: "12500",
+          isPrimary: true,
+          platform: "INSTAGRAM",
+          url: "https://instagram.com/joanacria",
+        },
+      ],
     };
     const missingDescription = influencerProfileFieldsSchema.safeParse(profile);
     const customDescription = influencerProfileFieldsSchema.safeParse({
@@ -48,14 +52,18 @@ describe("onboarding form contracts", () => {
       creatorType: "INFLUENCER",
       displayName: "Joana Cria",
       email: "JOANA@EXAMPLE.COM",
-      engagementRate: "4.25",
-      followers: "12500",
-      nicheSlugs: ["tecnologia"],
+      nicheSlugs: ["tecnologia-games-e-inovacao"],
       password: "StrongPass1",
       passwordConfirmation: "StrongPass1",
       role: "INFLUENCER",
-      socialPlatform: "INSTAGRAM",
-      socialUrl: "https://instagram.com/joanacria",
+      socialChannels: [
+        {
+          followerCount: "12500",
+          isPrimary: true,
+          platform: "INSTAGRAM",
+          url: "https://instagram.com/joanacria",
+        },
+      ],
     });
 
     expect(result.success).toBe(true);
@@ -75,14 +83,18 @@ describe("onboarding form contracts", () => {
       creatorType: "INFLUENCER",
       displayName: "Joana Cria",
       email: "joana@example.com",
-      engagementRate: "4.25",
-      followers: "12500",
-      nicheSlugs: ["tecnologia"],
+      nicheSlugs: ["tecnologia-games-e-inovacao"],
       password: "StrongPass1",
       passwordConfirmation: "StrongPass1",
       role: "INFLUENCER",
-      socialPlatform: "INSTAGRAM",
-      socialUrl: "https://instagram.com/joanacria",
+      socialChannels: [
+        {
+          followerCount: "12500",
+          isPrimary: true,
+          platform: "INSTAGRAM",
+          url: "https://instagram.com/joanacria",
+        },
+      ],
     });
 
     expect(result.success).toBe(true);
@@ -265,12 +277,16 @@ describe("onboarding form contracts", () => {
       coverAssetId: "79000000-0000-4000-8000-000000000002",
       creatorType: "INFLUENCER",
       displayName: "Joana Cria",
-      engagementRate: "4.25",
-      followers: "12500",
-      nicheSlugs: ["tecnologia"],
+      nicheSlugs: ["tecnologia-games-e-inovacao"],
       role: "INFLUENCER",
-      socialPlatform: "INSTAGRAM",
-      socialUrl: "https://instagram.com/joanacria",
+      socialChannels: [
+        {
+          followerCount: "12500",
+          isPrimary: true,
+          platform: "INSTAGRAM",
+          url: "https://instagram.com/joanacria",
+        },
+      ],
     });
 
     expect(result.success).toBe(true);
@@ -291,12 +307,16 @@ describe("onboarding form contracts", () => {
       bio: "Crio conteúdo de tecnologia e produtividade para a internet.",
       creatorType: "INFLUENCER",
       displayName: "Joana Cria",
-      engagementRate: "4.25",
-      followers: "12500",
-      nicheSlugs: ["tecnologia"],
+      nicheSlugs: ["tecnologia-games-e-inovacao"],
       role: "INFLUENCER",
-      socialPlatform: "INSTAGRAM",
-      socialUrl: "https://instagram.com/joanacria",
+      socialChannels: [
+        {
+          followerCount: "12500",
+          isPrimary: true,
+          platform: "INSTAGRAM",
+          url: "https://instagram.com/joanacria",
+        },
+      ],
     });
 
     expect(result.success).toBe(false);

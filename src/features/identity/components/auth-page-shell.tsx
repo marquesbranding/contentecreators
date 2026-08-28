@@ -43,7 +43,7 @@ export function AuthPageShell({
           className="relative w-fit rounded-md focus-visible:ring-3 focus-visible:ring-white/80 focus-visible:outline-none"
           href="/"
         >
-          <BrandLogo className="h-[4.2rem] w-[12.5rem]" preload />
+          <BrandLogo className="w-[12.5rem]" preload />
         </Link>
 
         <div className="relative max-w-lg">
@@ -51,7 +51,7 @@ export function AuthPageShell({
             Creators e marcas, no mesmo ritmo
           </p>
           <h2 className="mt-5 text-5xl leading-[1.02] font-extrabold tracking-[-0.05em]">
-            Um acesso simples para conexões bem cuidadas.
+            Um acesso simples para conexões felizes.
           </h2>
           <div className="mt-8 grid gap-3 text-sm text-white/70">
             <p className="flex items-center gap-3">
@@ -79,7 +79,7 @@ export function AuthPageShell({
           <div className="mb-7 flex items-center justify-between lg:hidden">
             <Link
               aria-label="Contente Creators — início"
-              className="bg-brand-night focus-visible:ring-brand-blue/50 rounded-md focus-visible:ring-3 focus-visible:outline-none"
+              className="focus-visible:ring-brand-blue/50 rounded-md focus-visible:ring-3 focus-visible:outline-none"
               href="/"
             >
               <BrandLogo preload />

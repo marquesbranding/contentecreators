@@ -16,17 +16,49 @@ import {
 } from "../../schemas/company-carousel.schema";
 import type { CompanyCarouselItemDto } from "../../types/company-carousel.types";
 
+export interface CompanyCarouselFilters {
+  search?: string;
+  segment?: string;
+}
+
 export interface CompanyCarouselRepository {
   listEligibleCompanies(
     transaction: ApplicationTransaction,
     limit: number,
+    filters?: CompanyCarouselFilters,
   ): Promise<CompanyCarouselItemDto[]>;
 }
 
 export async function listEligibleCarouselCompanies(
   transaction: ApplicationTransaction,
   limit: number,
+  filters: CompanyCarouselFilters = {},
 ): Promise<CompanyCarouselItemDto[]> {
+  const predicates = [
+    eq(accounts.role, "COMPANY"),
+    eq(accounts.status, "APPROVED"),
+    eq(accounts.completionPercentage, 100),
+    isNull(accounts.archivedAt),
+    isNull(companyProfiles.archivedAt),
+    sql`length(trim(${companyProfiles.tradeName})) > 0`,
+  ];
+
+  if (filters.search) {
+    const normalizedSearch = sql`public.normalize_search_text(${filters.search})`;
+    predicates.push(sql`
+      ${companyProfiles.searchDocument} like '%' || ${normalizedSearch} || '%'
+      and (
+        public.normalize_search_text(${companyProfiles.tradeName}) like '%' || ${normalizedSearch} || '%'
+        or public.normalize_search_text(${companyProfiles.legalName}) like '%' || ${normalizedSearch} || '%'
+        or public.normalize_search_text(${companyProfiles.segment}) like '%' || ${normalizedSearch} || '%'
+      )
+    `);
+  }
+
+  if (filters.segment) {
+    predicates.push(eq(companyProfiles.segment, filters.segment));
+  }
+
   const rows = await transaction
     .select({
       city: sql<string | null>`
@@ -76,15 +108,7 @@ export async function listEligibleCarouselCompanies(
         isNull(mediaAssets.replacedByAssetId),
       ),
     )
-    .where(
-      and(
-        eq(accounts.role, "COMPANY"),
-        eq(accounts.status, "APPROVED"),
-        isNull(accounts.archivedAt),
-        isNull(companyProfiles.archivedAt),
-        sql`length(trim(${companyProfiles.tradeName})) > 0`,
-      ),
-    )
+    .where(and(...predicates))
     .orderBy(asc(companyProfiles.tradeName), asc(companyProfiles.id))
     .limit(limit);
 

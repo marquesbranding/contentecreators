@@ -101,6 +101,20 @@ export type ActivateProfileMediaResult =
       kind: "error";
     };
 
+export interface RemoveProfileMediaInput {
+  purpose: ProfileMediaPurpose;
+}
+
+export type RemoveProfileMediaResult =
+  | {
+      kind: "removed";
+      profileVersion: number;
+    }
+  | {
+      code: "ACCESS_DENIED" | "INVALID_INPUT" | "STORAGE_UNAVAILABLE";
+      kind: "error";
+    };
+
 export interface SignedMediaDto {
   expiresAt: string;
   height: number | null;
@@ -122,10 +136,15 @@ export type ActivateProfileMediaAction = (
   input: ActivateProfileMediaInput,
 ) => Promise<ActivateProfileMediaResult>;
 
+export type RemoveProfileMediaAction = (
+  input: RemoveProfileMediaInput,
+) => Promise<RemoveProfileMediaResult>;
+
 export interface MediaUploadActions {
   activate?: ActivateProfileMediaAction;
   finalize: FinalizeMediaUploadAction;
   prepare: PrepareMediaUploadAction;
+  remove?: RemoveProfileMediaAction;
 }
 
 export interface InfluencerMediaFormState {

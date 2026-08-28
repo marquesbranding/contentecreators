@@ -193,14 +193,18 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
           city: "Florianópolis",
           creatorType: "UGC",
           displayName: "Diego em Movimento",
-          engagementRate: 6.75,
           expectedVersion: initial.version,
-          followers: 54_321,
           legalName: "Diego Exemplo",
-          nicheSlugs: ["viagem", "outros"],
+          nicheSlugs: ["viagens-e-turismo", "outros"],
           otherNiche: "Artesanato sustentável",
-          socialPlatform: "YOUTUBE",
-          socialUrl: "https://youtube.com/@diego-em-movimento",
+          socialChannels: [
+            {
+              followerCount: 54_321,
+              isPrimary: true,
+              platform: "YOUTUBE",
+              url: "https://youtube.com/@diego-em-movimento",
+            },
+          ],
           state: "SC",
           whatsapp: "(48) 99999-1111",
         } satisfies InfluencerProfileEditInput;
@@ -314,11 +318,13 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
       },
       accountStatus: "APPROVED",
       metric: {
-        engagementRate: "6.7500",
         followerCount: 54_321,
         platform: "YOUTUBE",
       },
-      nicheSlugs: ["personalizado-artesanato-sustentavel", "viagem"],
+      nicheSlugs: [
+        "personalizado-artesanato-sustentavel",
+        "viagens-e-turismo",
+      ],
       profile: {
         creatorType: "UGC",
         displayName: "Diego em Movimento",

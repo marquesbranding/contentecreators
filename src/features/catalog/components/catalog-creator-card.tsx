@@ -9,6 +9,7 @@ import Link from "next/link";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { buttonVariants } from "@/shared/components/ui/button";
+import { SocialPlatformIcon } from "@/shared/components/social-platform-icon";
 import {
   Card,
   CardContent,
@@ -51,6 +52,8 @@ const socialPlatformLabels: Record<CatalogSocialPlatform, string> = {
   INSTAGRAM: "Instagram",
   LINKEDIN: "LinkedIn",
   OTHER: "Outra rede",
+  TELEGRAM: "Telegram",
+  THREADS: "Threads",
   TIKTOK: "TikTok",
   X: "X",
   YOUTUBE: "YouTube",
@@ -134,10 +137,11 @@ export function CatalogCreatorCard({
           </Badge>
           {creator.socialPlatforms.map((platform) => (
             <Badge
-              className="border-white/15 bg-white/5 text-white/70"
+              className="gap-1.5 border-white/15 bg-white/5 text-white/70"
               key={platform}
               variant="outline"
             >
+              <SocialPlatformIcon className="size-3.5" platform={platform} />
               {socialPlatformLabels[platform]}
             </Badge>
           ))}

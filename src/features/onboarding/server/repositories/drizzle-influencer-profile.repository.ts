@@ -12,6 +12,7 @@ import {
 } from "@/db/schema";
 import { applyVerifiedAuditContext } from "@/features/audit/server";
 
+import { SOCIAL_CHANNEL_PLATFORMS } from "../../domain/social-channels-form-data";
 import type { InfluencerProfileEditInput } from "../../schemas/influencer-profile-edit-schema";
 import type { InfluencerProfileDto } from "../../types/influencer-profile.types";
 import type { InfluencerProfileRepository } from "../services/influencer-profile.service";
@@ -24,6 +25,22 @@ import {
 function normalizeWhatsapp(value: string) {
   const digits = value.replace(/\D/gu, "");
   return digits.startsWith("55") ? `+${digits}` : `+55${digits}`;
+}
+
+/**
+ * Channels declared before the fixed-platform picker (e.g. a custom "Outra"
+ * network) aren't representable in the current form and are intentionally
+ * left out of the edit view — `updateSocialAndMetric` never archives them,
+ * so they stay exactly as stored and keep appearing in the catalog.
+ */
+function isManageableSocialChannel<
+  T extends { platform: string },
+>(socialProfile: T): socialProfile is T & {
+  platform: (typeof SOCIAL_CHANNEL_PLATFORMS)[number];
+} {
+  return (SOCIAL_CHANNEL_PLATFORMS as readonly string[]).includes(
+    socialProfile.platform,
+  );
 }
 
 async function loadProfile(
@@ -45,7 +62,7 @@ async function loadProfile(
     return null;
   }
 
-  const [socialProfile] = await transaction
+  const ownedSocialProfiles = await transaction
     .select()
     .from(socialProfiles)
     .where(
@@ -54,35 +71,53 @@ async function loadProfile(
         isNull(socialProfiles.archivedAt),
       ),
     )
-    .orderBy(socialProfiles.sortOrder, socialProfiles.id)
-    .limit(1);
-  const [metric] = await transaction
+    .orderBy(socialProfiles.sortOrder, socialProfiles.id);
+
+  if (ownedSocialProfiles.length === 0) {
+    return null;
+  }
+
+  const metricRows = await transaction
     .select()
     .from(creatorMetricSnapshots)
     .where(
       and(
         eq(creatorMetricSnapshots.creatorProfileId, profile.id),
-        eq(creatorMetricSnapshots.socialProfileId, socialProfile.id),
-        eq(creatorMetricSnapshots.platform, socialProfile.platform),
+        inArray(
+          creatorMetricSnapshots.socialProfileId,
+          ownedSocialProfiles.map((socialProfile) => socialProfile.id),
+        ),
       ),
     )
     .orderBy(
       desc(creatorMetricSnapshots.observedOn),
       desc(creatorMetricSnapshots.createdAt),
       desc(creatorMetricSnapshots.id),
-    )
-    .limit(1);
+    );
+
+  if (metricRows.length === 0) {
+    return null;
+  }
+
+  const latestMetricBySocialProfileId = new Map<
+    string,
+    (typeof metricRows)[number]
+  >();
+  for (const row of metricRows) {
+    if (
+      row.socialProfileId &&
+      !latestMetricBySocialProfileId.has(row.socialProfileId)
+    ) {
+      latestMetricBySocialProfileId.set(row.socialProfileId, row);
+    }
+  }
+
   const selectedNiches = await transaction
     .select({ id: niches.id, name: niches.name, slug: niches.slug })
     .from(creatorNiches)
     .innerJoin(niches, eq(niches.id, creatorNiches.nicheId))
     .where(eq(creatorNiches.creatorProfileId, profile.id))
     .orderBy(niches.sortOrder, niches.slug);
-
-  if (!socialProfile || !metric) {
-    return null;
-  }
-
   const nicheSelection = mapCreatorNicheSelection(selectedNiches);
 
   return {
@@ -92,13 +127,30 @@ async function loadProfile(
     coverAssetId: profile.coverAssetId,
     creatorType: profile.creatorType,
     displayName: profile.displayName,
-    engagementRate: Number(metric.engagementRate ?? 0),
-    followers: metric.followerCount ?? 0,
     legalName: profile.legalName,
     nicheSlugs: nicheSelection.nicheSlugs,
     otherNiche: nicheSelection.otherNiche,
-    socialPlatform: socialProfile.platform,
-    socialUrl: socialProfile.normalizedUrl,
+    socialChannels: ownedSocialProfiles.filter(isManageableSocialChannel).map((socialProfile) => {
+      const metric = latestMetricBySocialProfileId.get(socialProfile.id);
+      const isInstagram = socialProfile.platform === "INSTAGRAM";
+
+      return {
+        followerCount: metric?.followerCount ?? 0,
+        interactions: isInstagram
+          ? (metric?.interactionCount ?? undefined)
+          : undefined,
+        isPrimary: socialProfile.isPrimary,
+        newFollowers: isInstagram
+          ? (metric?.newFollowerCount ?? undefined)
+          : undefined,
+        platform: socialProfile.platform,
+        sharedContent: isInstagram
+          ? (metric?.sharedContentDescription ?? undefined)
+          : undefined,
+        url: socialProfile.normalizedUrl,
+        views: isInstagram ? (metric?.viewCount ?? undefined) : undefined,
+      };
+    }),
     state: profile.state ?? "",
     version: profile.version,
     whatsapp: profile.whatsappE164 ?? "",
@@ -153,7 +205,7 @@ async function updateSocialAndMetric(
   profileId: string,
   input: InfluencerProfileEditInput,
 ) {
-  const [currentSocial] = await transaction
+  const currentSocialProfiles = await transaction
     .select()
     .from(socialProfiles)
     .where(
@@ -163,64 +215,141 @@ async function updateSocialAndMetric(
       ),
     )
     .orderBy(socialProfiles.sortOrder, socialProfiles.id)
-    .limit(1)
     .for("update");
-  const [socialProfile] = currentSocial
-    ? await transaction
+  const manageableCurrentSocialProfiles = currentSocialProfiles.filter(
+    isManageableSocialChannel,
+  );
+  const currentByPlatform = new Map(
+    manageableCurrentSocialProfiles.map((socialProfile) => [
+      socialProfile.platform,
+      socialProfile,
+    ]),
+  );
+  const requestedPlatforms = new Set(
+    input.socialChannels.map((channel) => channel.platform),
+  );
+
+  /*
+   * Only reconcile channels on the fixed picker (`SOCIAL_CHANNEL_PLATFORMS`).
+   * A channel on a platform the picker doesn't offer (e.g. a legacy "Outra"
+   * network) isn't representable in `input.socialChannels` at all, so it
+   * must never be archived just because it's absent from the request.
+   */
+  const removedIds = manageableCurrentSocialProfiles
+    .filter((socialProfile) => !requestedPlatforms.has(socialProfile.platform))
+    .map((socialProfile) => socialProfile.id);
+
+  if (removedIds.length > 0) {
+    await transaction
+      .update(socialProfiles)
+      .set({ archivedAt: new Date() })
+      .where(inArray(socialProfiles.id, removedIds));
+  }
+
+  /*
+   * Clear every current primary flag on manageable channels before assigning
+   * the requested one so the partial unique index (at most one primary per
+   * account) never sees two `true` rows at the same time between statements.
+   * Legacy channels outside the picker keep whatever primary status they
+   * already had.
+   */
+  if (manageableCurrentSocialProfiles.length > 0) {
+    await transaction
+      .update(socialProfiles)
+      .set({ isPrimary: false })
+      .where(
+        inArray(
+          socialProfiles.id,
+          manageableCurrentSocialProfiles.map(
+            (socialProfile) => socialProfile.id,
+          ),
+        ),
+      );
+  }
+
+  const activeSocialProfiles: {
+    id: string;
+    platform: (typeof input.socialChannels)[number]["platform"];
+  }[] = [];
+
+  for (const channel of input.socialChannels) {
+    const existing = currentByPlatform.get(channel.platform);
+
+    if (existing) {
+      await transaction
         .update(socialProfiles)
         .set({
-          normalizedUrl: input.socialUrl,
-          platform: input.socialPlatform,
+          isPrimary: channel.isPrimary,
+          normalizedUrl: channel.url,
         })
-        .where(eq(socialProfiles.id, currentSocial.id))
-        .returning({ id: socialProfiles.id })
-    : await transaction
-        .insert(socialProfiles)
-        .values({
-          normalizedUrl: input.socialUrl,
-          ownerAccountId: accountId,
-          platform: input.socialPlatform,
-        })
-        .returning({ id: socialProfiles.id });
+        .where(eq(socialProfiles.id, existing.id));
+      activeSocialProfiles.push({ id: existing.id, platform: channel.platform });
+      continue;
+    }
 
-  if (!socialProfile) {
-    throw new Error("Influencer social profile update failed.");
+    const [inserted] = await transaction
+      .insert(socialProfiles)
+      .values({
+        isPrimary: channel.isPrimary,
+        normalizedUrl: channel.url,
+        ownerAccountId: accountId,
+        platform: channel.platform,
+      })
+      .returning({ id: socialProfiles.id });
+
+    if (!inserted) {
+      throw new Error("Influencer social profile update failed.");
+    }
+
+    activeSocialProfiles.push({ id: inserted.id, platform: channel.platform });
   }
 
   const observedOn = new Date();
-  const [todayMetric] = await transaction
-    .select({ id: creatorMetricSnapshots.id })
-    .from(creatorMetricSnapshots)
-    .where(
-      and(
-        eq(creatorMetricSnapshots.creatorProfileId, profileId),
-        eq(creatorMetricSnapshots.socialProfileId, socialProfile.id),
-        eq(creatorMetricSnapshots.platform, input.socialPlatform),
-        eq(creatorMetricSnapshots.observedOn, observedOn),
-      ),
-    )
-    .limit(1)
-    .for("update");
+  const channelByPlatform = new Map(
+    input.socialChannels.map((channel) => [channel.platform, channel]),
+  );
 
-  if (todayMetric) {
-    await transaction
-      .update(creatorMetricSnapshots)
-      .set({
-        engagementRate: input.engagementRate.toString(),
-        followerCount: input.followers,
-      })
-      .where(eq(creatorMetricSnapshots.id, todayMetric.id));
-    return;
+  for (const socialProfile of activeSocialProfiles) {
+    const channel = channelByPlatform.get(socialProfile.platform);
+    const isInstagram = socialProfile.platform === "INSTAGRAM";
+    const metricValues = {
+      followerCount: channel?.followerCount ?? 0,
+      interactionCount: isInstagram ? channel?.interactions : undefined,
+      newFollowerCount: isInstagram ? channel?.newFollowers : undefined,
+      sharedContentDescription: isInstagram ? channel?.sharedContent : undefined,
+      viewCount: isInstagram ? channel?.views : undefined,
+    };
+
+    const [todayMetric] = await transaction
+      .select({ id: creatorMetricSnapshots.id })
+      .from(creatorMetricSnapshots)
+      .where(
+        and(
+          eq(creatorMetricSnapshots.creatorProfileId, profileId),
+          eq(creatorMetricSnapshots.socialProfileId, socialProfile.id),
+          eq(creatorMetricSnapshots.platform, socialProfile.platform),
+          eq(creatorMetricSnapshots.observedOn, observedOn),
+        ),
+      )
+      .limit(1)
+      .for("update");
+
+    if (todayMetric) {
+      await transaction
+        .update(creatorMetricSnapshots)
+        .set(metricValues)
+        .where(eq(creatorMetricSnapshots.id, todayMetric.id));
+      continue;
+    }
+
+    await transaction.insert(creatorMetricSnapshots).values({
+      creatorProfileId: profileId,
+      observedOn,
+      platform: socialProfile.platform,
+      socialProfileId: socialProfile.id,
+      ...metricValues,
+    });
   }
-
-  await transaction.insert(creatorMetricSnapshots).values({
-    creatorProfileId: profileId,
-    engagementRate: input.engagementRate.toString(),
-    followerCount: input.followers,
-    observedOn,
-    platform: input.socialPlatform,
-    socialProfileId: socialProfile.id,
-  });
 }
 
 export function createDrizzleInfluencerProfileRepository(): InfluencerProfileRepository {
@@ -280,7 +409,7 @@ export function createDrizzleInfluencerProfileRepository(): InfluencerProfileRep
           bio: input.bio,
           city: input.city,
           creatorType: input.creatorType,
-          displayName: input.displayName,
+          displayName: input.displayName || input.legalName,
           legalName: input.legalName,
           state: input.state,
           whatsappE164: normalizeWhatsapp(input.whatsapp),

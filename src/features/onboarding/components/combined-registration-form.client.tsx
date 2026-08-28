@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, CircleAlert, UserRound } from "lucide-react";
+import { Building2, CircleAlert, Sparkles, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useActionState, useState } from "react";
 
@@ -37,12 +37,18 @@ import { FormErrorSummary, mergeFieldErrors } from "./form-error-summary";
 import { OnboardingSubmitConfirmation } from "./onboarding-submit-confirmation";
 import { ProfileFormFields } from "./profile-form-fields.client";
 
-const roleOptions = [
+const accountTypeOptions = [
   {
     description: "Quero cadastrar meu perfil, audiência e canais.",
     icon: UserRound,
-    label: "Sou creator",
+    label: "Sou influencer",
     value: "INFLUENCER",
+  },
+  {
+    description: "Crio conteúdo autêntico para marcas, com poucos seguidores.",
+    icon: Sparkles,
+    label: "Sou UGC",
+    value: "UGC",
   },
   {
     description: "Quero cadastrar minha empresa para encontrar creators.",
@@ -51,6 +57,8 @@ const roleOptions = [
     value: "COMPANY",
   },
 ] as const;
+
+type AccountType = (typeof accountTypeOptions)[number]["value"];
 
 export function CombinedRegistrationForm({
   action,
@@ -63,9 +71,15 @@ export function CombinedRegistrationForm({
   initialRole?: "INFLUENCER" | "COMPANY";
   resendAction: OnboardingAction;
 }) {
-  const [role, setRole] = useState<"INFLUENCER" | "COMPANY" | null>(
+  const [accountType, setAccountType] = useState<AccountType | null>(
     initialRole ?? null,
   );
+  const role: "INFLUENCER" | "COMPANY" | null =
+    accountType === null ? null : accountType === "COMPANY" ? "COMPANY" : "INFLUENCER";
+  const creatorType: "INFLUENCER" | "UGC" | undefined =
+    accountType === "COMPANY" || accountType === null
+      ? undefined
+      : accountType;
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [state, formAction, pending] = useActionState(
     action,
@@ -109,6 +123,10 @@ export function CombinedRegistrationForm({
     state.fieldErrors?.passwordConfirmation,
   );
   const accountAlreadyExists = state.errorCode === "account_already_exists";
+  const whatsappErrors = getFieldErrors(
+    "whatsapp",
+    state.fieldErrors?.whatsapp,
+  );
 
   if (state.status === "confirmation_required" && state.values?.email) {
     return (
@@ -214,23 +232,27 @@ export function CombinedRegistrationForm({
               aria-invalid={Boolean(roleErrors?.length)}
               aria-labelledby="registration-role-label"
               aria-required="true"
-              className="grid gap-4 md:grid-cols-2"
+              className="grid gap-4 md:grid-cols-3"
               data-field-kind="radio-group"
-              data-field-name="role"
+              data-field-name="accountType"
               data-required-field="true"
               data-required-message="Escolha como você vai usar a plataforma."
-              name="role"
+              name="accountType"
               onValueChange={(value) => {
-                if (value === "INFLUENCER" || value === "COMPANY") {
-                  setRole(value);
+                if (
+                  value === "INFLUENCER" ||
+                  value === "UGC" ||
+                  value === "COMPANY"
+                ) {
+                  setAccountType(value);
                   clearFieldError("role");
                 }
               }}
-              value={role}
+              value={accountType}
             >
-              {roleOptions.map((option) => {
+              {accountTypeOptions.map((option) => {
                 const Icon = option.icon;
-                const selected = role === option.value;
+                const selected = accountType === option.value;
 
                 return (
                   <label
@@ -242,7 +264,7 @@ export function CombinedRegistrationForm({
                     )}
                     htmlFor={`registration-${option.value.toLowerCase()}`}
                     key={option.value}
-                    onClick={() => setRole(option.value)}
+                    onClick={() => setAccountType(option.value)}
                   >
                     <span
                       className={cn(
@@ -288,10 +310,13 @@ export function CombinedRegistrationForm({
           </Field>
         </FieldSet>
 
+        <input name="role" type="hidden" value={role ?? ""} />
+
         <FieldSet>
           <FieldLegend>Dados de acesso</FieldLegend>
           <FieldDescription>
-            Você usará este e-mail para entrar e acompanhar a análise.
+            Você usará este e-mail para entrar, acompanhar e receber
+            atualizações sobre a sua análise.
           </FieldDescription>
           <FieldGroup className="grid gap-5 md:grid-cols-2">
             <Field
@@ -307,7 +332,7 @@ export function CombinedRegistrationForm({
                 }
                 aria-invalid={Boolean(emailErrors?.length)}
                 autoComplete="email"
-                className="h-12 rounded-xl"
+                className="rounded-xl"
                 id="registration-email"
                 inputMode="email"
                 maxLength={320}
@@ -341,16 +366,60 @@ export function CombinedRegistrationForm({
               matchMessage="As senhas precisam ser iguais."
               name="passwordConfirmation"
             />
+            <Field
+              className="md:col-span-2"
+              data-invalid={Boolean(whatsappErrors?.length)}
+            >
+              <FieldLabel htmlFor="registration-whatsapp" required>
+                WhatsApp com DDD
+              </FieldLabel>
+              <FieldDescription id="registration-whatsapp-description">
+                Mínimo de 10 caracteres, incluindo o DDD.
+              </FieldDescription>
+              <Input
+                aria-describedby={
+                  [
+                    "registration-whatsapp-description",
+                    whatsappErrors?.length
+                      ? "registration-whatsapp-error"
+                      : undefined,
+                  ]
+                    .filter(Boolean)
+                    .join(" ") || undefined
+                }
+                aria-invalid={Boolean(whatsappErrors?.length)}
+                autoComplete="tel"
+                className="rounded-xl"
+                data-validation-message="Informe um WhatsApp com DDD."
+                id="registration-whatsapp"
+                inputMode="tel"
+                maxLength={20}
+                minLength={10}
+                name="whatsapp"
+                placeholder="(11) 99999-9999"
+                required
+                type="tel"
+              />
+              <FieldError id="registration-whatsapp-error">
+                {whatsappErrors?.map((message) => (
+                  <span className="block" key={message}>
+                    {message}
+                  </span>
+                ))}
+              </FieldError>
+            </Field>
           </FieldGroup>
         </FieldSet>
 
         {role ? (
           <ProfileFormFields
+            creatorType={creatorType}
             fieldErrors={state.fieldErrors}
             getFieldErrors={getFieldErrors}
             key={role}
             onFieldChange={clearFieldError}
             role={role}
+            showWhatsappField={false}
           />
         ) : (
           <Alert>

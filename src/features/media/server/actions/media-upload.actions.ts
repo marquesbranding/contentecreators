@@ -8,11 +8,13 @@ import {
   activateProfileMediaSchema,
   finalizeMediaUploadSchema,
   prepareMediaUploadSchema,
+  removeProfileMediaSchema,
 } from "../../schemas/media-upload.schemas";
 import type {
   ActivateProfileMediaResult,
   FinalizeMediaUploadResult,
   PrepareMediaUploadResult,
+  RemoveProfileMediaResult,
 } from "../../types/media-upload.types";
 import { createServerProfileMediaReplacementService } from "../services/server-profile-media-replacement.service";
 import { createServerMediaUploadService } from "../services/server-media-upload.service";
@@ -37,6 +39,38 @@ export async function activateProfileMediaAction(
     });
 
     if (result.kind === "activated") {
+      revalidatePath("/app/profile");
+    }
+
+    return result;
+  } catch {
+    return {
+      code: "STORAGE_UNAVAILABLE",
+      kind: "error",
+    };
+  }
+}
+
+export async function removeProfileMediaAction(
+  input: unknown,
+): Promise<RemoveProfileMediaResult> {
+  const parsed = removeProfileMediaSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      code: "INVALID_INPUT",
+      kind: "error",
+    };
+  }
+
+  try {
+    const service = await createServerProfileMediaReplacementService();
+    const result = await service.removeProfileMedia({
+      ...parsed.data,
+      requestId: crypto.randomUUID(),
+    });
+
+    if (result.kind === "removed") {
       revalidatePath("/app/profile");
     }
 

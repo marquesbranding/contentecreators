@@ -86,7 +86,11 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
   }
 
   if (props.response.items.length === 0) {
-    return null;
+    return (
+      <p className="text-muted-foreground text-sm">
+        Nenhuma empresa encontrada para esses filtros.
+      </p>
+    );
   }
 
   return (

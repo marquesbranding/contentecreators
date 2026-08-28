@@ -39,9 +39,12 @@ const detail: CatalogCreatorDetailViewDto = {
     {
       engagementRate: 3.5,
       followerCount: 12500,
+      interactionCount: 640,
+      isPrimary: true,
       observedOn: "2026-07-20",
       platform: "INSTAGRAM",
       source: "SELF_REPORTED",
+      viewCount: 84000,
     },
   ],
   niches: [{ name: "Beleza", slug: "beleza" }],
@@ -59,6 +62,8 @@ describe("CatalogDetailView", () => {
       screen.getByRole("heading", { name: "Creator Exemplo" }),
     ).toBeVisible();
     expect(screen.getByText("12.500 seguidores")).toBeVisible();
+    expect(screen.getByText("84.000 visualizações")).toBeVisible();
+    expect(screen.getByText("640 interações")).toBeVisible();
     expect(screen.getByText("Métrica autodeclarada")).toBeVisible();
     expect(
       screen.getByRole("link", { name: /enviar e-mail/iu }),

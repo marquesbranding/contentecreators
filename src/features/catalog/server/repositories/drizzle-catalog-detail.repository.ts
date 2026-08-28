@@ -10,6 +10,7 @@ import {
   isNull,
   lte,
   ne,
+  sql,
 } from "drizzle-orm";
 
 import type { ApplicationTransaction } from "@/db/client";
@@ -73,11 +74,18 @@ async function loadPresentationCollections(
     .select({
       engagementRate: creatorMetricSnapshots.engagementRate,
       followerCount: creatorMetricSnapshots.followerCount,
+      interactionCount: creatorMetricSnapshots.interactionCount,
+      isPrimary: sql<boolean>`coalesce(${socialProfiles.isPrimary}, false)`,
       observedOn: creatorMetricSnapshots.observedOn,
       platform: creatorMetricSnapshots.platform,
       source: creatorMetricSnapshots.source,
+      viewCount: creatorMetricSnapshots.viewCount,
     })
     .from(creatorMetricSnapshots)
+    .leftJoin(
+      socialProfiles,
+      eq(socialProfiles.id, creatorMetricSnapshots.socialProfileId),
+    )
     .where(eq(creatorMetricSnapshots.creatorProfileId, profile.creatorId))
     .orderBy(
       asc(creatorMetricSnapshots.platform),

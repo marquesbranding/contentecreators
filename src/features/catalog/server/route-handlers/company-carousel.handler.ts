@@ -43,11 +43,13 @@ export function createCompanyCarouselRouteHandler(
     const requestId = safeRequestId(request, dependencies.requestIdFactory);
     const rawLimit = request.nextUrl.searchParams.get("limit");
     const numericLimit = rawLimit === null ? undefined : Number(rawLimit);
-    const input = {
+    const input: CompanyCarouselRequest = {
       limit:
         numericLimit !== undefined && Number.isFinite(numericLimit)
           ? numericLimit
           : undefined,
+      search: request.nextUrl.searchParams.get("search") ?? undefined,
+      segment: request.nextUrl.searchParams.get("segment") ?? undefined,
     };
 
     try {

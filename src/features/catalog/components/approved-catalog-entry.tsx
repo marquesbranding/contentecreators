@@ -5,12 +5,17 @@ import { AuthenticatedProductShell } from "@/features/identity";
 export function ApprovedCatalogEntry({
   children,
   signOutAction,
+  viewerRole,
 }: {
   children?: ReactNode;
   signOutAction: () => Promise<void>;
+  viewerRole?: "COMPANY" | "INFLUENCER";
 }) {
   return (
-    <AuthenticatedProductShell signOutAction={signOutAction}>
+    <AuthenticatedProductShell
+      signOutAction={signOutAction}
+      viewerRole={viewerRole}
+    >
       <main
         className="px-4 py-4 sm:px-8 sm:py-6"
         id="main-content"

@@ -49,3 +49,7 @@ export const activateProfileMediaSchema = z.object({
   expectedCurrentAssetId: z.uuid().nullable(),
   purpose: mediaPurposeSchema.exclude(["SPONSORSHIP_CREATIVE"]),
 });
+
+export const removeProfileMediaSchema = z.object({
+  purpose: mediaPurposeSchema.exclude(["SPONSORSHIP_CREATIVE"]),
+});

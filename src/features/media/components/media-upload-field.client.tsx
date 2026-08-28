@@ -4,12 +4,12 @@ import {
   CheckCircle2,
   CircleAlert,
   Crop,
-  ImagePlus,
+  ImageOff,
   RotateCcw,
   Trash2,
   Upload,
 } from "lucide-react";
-import { useId } from "react";
+import { useId, useRef, useState } from "react";
 
 import {
   Alert,
@@ -17,7 +17,6 @@ import {
   AlertTitle,
 } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent } from "@/shared/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -68,6 +67,7 @@ interface MediaUploadFieldProps {
   label: string;
   onComplete?: (assetId: string) => void;
   onProfileVersionChange?: (version: number) => void;
+  onRemove?: () => void;
   purpose: MediaPurpose;
   required?: boolean;
 }
@@ -79,19 +79,25 @@ export function MediaUploadField({
   label,
   onComplete,
   onProfileVersionChange,
+  onRemove,
   purpose,
   required = false,
 }: MediaUploadFieldProps) {
   const inputId = useId();
   const descriptionId = `${inputId}-description`;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const upload = useMediaUpload({
     actions,
     activateOnUpload,
     currentAssetId,
     onComplete,
     onProfileVersionChange,
+    onRemove,
     purpose,
   });
+  const editing =
+    Boolean(upload.previewUrl && upload.file) && upload.phase !== "success";
 
   return (
     <Field data-invalid={Boolean(upload.error)}>
@@ -101,226 +107,280 @@ export function MediaUploadField({
       <FieldDescription id={descriptionId}>
         {descriptionByPurpose[purpose]}
       </FieldDescription>
-      <Card className="rounded-2xl py-0">
-        <CardContent className="space-y-4 p-4">
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-            <Input
-              accept="image/jpeg,image/png,image/webp"
-              aria-describedby={descriptionId}
-              aria-invalid={Boolean(upload.error)}
-              className="sr-only"
-              disabled={upload.isBusy}
-              id={inputId}
-              onChange={(event) =>
-                upload.selectFile(event.target.files?.[0] ?? null)
-              }
-              required={required}
-              type="file"
-            />
-            <label
-              className={cn(
-                "border-input bg-background hover:bg-muted/70 focus-within:ring-ring/40 flex min-h-12 min-w-0 cursor-pointer items-center gap-3 rounded-xl border px-4 transition-colors focus-within:ring-3",
-                upload.isBusy && "pointer-events-none opacity-50",
-              )}
-              htmlFor={inputId}
-            >
-              <span className="bg-brand-blue-soft text-brand-blue flex size-8 shrink-0 items-center justify-center rounded-lg">
-                <ImagePlus aria-hidden="true" className="size-4" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold">
-                  Selecionar imagem
-                </span>
-                <span className="text-muted-foreground block truncate text-sm">
-                  {upload.file?.name ?? "Nenhum arquivo selecionado"}
-                </span>
-              </span>
-            </label>
 
-            <Button
-              className="w-full sm:w-fit"
-              disabled={!upload.file || upload.isBusy}
-              onClick={upload.upload}
-              type="button"
-            >
-              {upload.isBusy ? (
-                <Spinner aria-label="Enviando imagem" />
-              ) : (
-                <Upload aria-hidden="true" />
-              )}
-              {upload.isBusy ? "Enviando..." : "Enviar imagem"}
-            </Button>
-          </div>
+      <Input
+        accept="image/jpeg,image/png,image/webp"
+        aria-describedby={descriptionId}
+        aria-invalid={Boolean(upload.error)}
+        className="sr-only"
+        disabled={upload.isBusy}
+        id={inputId}
+        onChange={(event) => {
+          upload.selectFile(event.target.files?.[0] ?? null);
+        }}
+        ref={fileInputRef}
+        required={required}
+        tabIndex={-1}
+        type="file"
+      />
 
-          {upload.previewUrl && upload.file ? (
-            <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-              <div
-                className={cn(
-                  "bg-muted relative w-full max-w-md overflow-hidden rounded-xl border",
-                  previewAspectByPurpose[purpose],
-                )}
-              >
-                {/* Blob previews cannot use next/image. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  alt={`Prévia de ${upload.file.name}`}
-                  className="size-full object-cover"
-                  src={upload.previewUrl}
-                  style={{
-                    objectPosition: `${upload.crop.horizontal}% ${upload.crop.vertical}%`,
-                    transform: `scale(${upload.crop.zoom})`,
-                  }}
-                />
-              </div>
-              <div className="grid gap-2 sm:min-w-48">
-                <Dialog>
-                  <DialogTrigger
-                    render={
-                      <Button
-                        className="w-full justify-start"
-                        disabled={upload.isBusy}
-                        type="button"
-                        variant="outline"
-                      />
-                    }
-                  >
-                    <Crop aria-hidden="true" />
-                    Ajustar recorte
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-xl">
-                    <DialogHeader>
-                      <DialogTitle>Ajustar recorte</DialogTitle>
-                      <DialogDescription>
-                        Amplie e reposicione a imagem. O recorte final respeita
-                        o formato desta mídia.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-5">
-                      <div
-                        className={cn(
-                          "bg-muted relative mx-auto w-full max-w-md overflow-hidden rounded-xl border",
-                          previewAspectByPurpose[purpose],
-                        )}
-                      >
-                        {/* Blob previews cannot use next/image. */}
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          alt=""
-                          aria-hidden="true"
-                          className="size-full object-cover"
-                          src={upload.previewUrl}
-                          style={{
-                            objectPosition: `${upload.crop.horizontal}% ${upload.crop.vertical}%`,
-                            transform: `scale(${upload.crop.zoom})`,
-                          }}
-                        />
-                      </div>
-                      <CropControl
-                        label="Ampliação"
-                        max={2}
-                        min={1}
-                        onChange={(zoom) =>
-                          upload.setCrop((current) => ({
-                            ...current,
-                            zoom,
-                          }))
-                        }
-                        step={0.1}
-                        value={upload.crop.zoom}
-                      />
-                      <CropControl
-                        label="Posição horizontal"
-                        max={100}
-                        min={0}
-                        onChange={(horizontal) =>
-                          upload.setCrop((current) => ({
-                            ...current,
-                            horizontal,
-                          }))
-                        }
-                        step={1}
-                        value={upload.crop.horizontal}
-                      />
-                      <CropControl
-                        label="Posição vertical"
-                        max={100}
-                        min={0}
-                        onChange={(vertical) =>
-                          upload.setCrop((current) => ({
-                            ...current,
-                            vertical,
-                          }))
-                        }
-                        step={1}
-                        value={upload.crop.vertical}
-                      />
-                    </div>
-                    <DialogFooter showCloseButton />
-                  </DialogContent>
-                </Dialog>
-                <Button
-                  className="w-full justify-start"
-                  disabled={upload.isBusy}
-                  onClick={upload.reset}
-                  type="button"
-                  variant="outline"
-                >
-                  <Trash2 aria-hidden="true" />
-                  Remover seleção
-                </Button>
-              </div>
-            </div>
-          ) : null}
-
-          {upload.isBusy ? (
-            <Progress
-              aria-live="polite"
-              aria-label="Progresso do envio"
-              value={upload.progress}
-            >
-              <ProgressLabel>{upload.statusMessage}</ProgressLabel>
-              <ProgressValue>{() => `${upload.progress}%`}</ProgressValue>
-            </Progress>
-          ) : null}
-
-          {upload.error ? (
-            <Alert aria-live="assertive" variant="destructive">
-              <CircleAlert aria-hidden="true" />
-              <AlertTitle>Não foi possível enviar</AlertTitle>
-              <AlertDescription>{upload.error}</AlertDescription>
-            </Alert>
-          ) : null}
-
-          {upload.phase === "success" ? (
-            <Alert aria-live="polite">
+      {!editing ? (
+        <div className="flex items-center gap-4">
+          <div
+            className={cn(
+              "bg-muted text-muted-foreground flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border",
+              previewAspectByPurpose[purpose] === "aspect-video" &&
+                "w-24 rounded-lg",
+            )}
+          >
+            {currentAssetId ? (
               <CheckCircle2
                 aria-hidden="true"
                 className="text-[var(--brand-success)]"
               />
-              <AlertTitle>Imagem atualizada</AlertTitle>
-              <AlertDescription>
-                {activateOnUpload
-                  ? "Imagem atualizada com sucesso."
-                  : "Imagem pronta para o envio do perfil."}
-              </AlertDescription>
-            </Alert>
-          ) : null}
+            ) : (
+              <ImageOff aria-hidden="true" />
+            )}
+          </div>
 
-          {upload.phase === "error" && upload.file ? (
-            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-              <Button
-                disabled={upload.isBusy}
-                onClick={upload.retry}
-                type="button"
-                variant="outline"
+          <Dialog onOpenChange={setMenuOpen} open={menuOpen}>
+            <DialogTrigger
+              render={
+                <Button disabled={upload.isBusy} type="button" variant="outline" />
+              }
+            >
+              Mudar foto
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-sm">
+              <DialogHeader>
+                <DialogTitle>Alterar {label.toLowerCase()}</DialogTitle>
+                <DialogDescription>
+                  Escolha o que fazer com esta imagem.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-2">
+                <Button
+                  className="justify-start"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    fileInputRef.current?.click();
+                  }}
+                  type="button"
+                  variant="outline"
+                >
+                  Carregar foto
+                </Button>
+                {upload.canRemove ? (
+                  <Button
+                    className="justify-start"
+                    disabled={upload.isRemoving}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      void upload.removeCurrent();
+                    }}
+                    type="button"
+                    variant="outline"
+                  >
+                    {upload.isRemoving ? (
+                      <Spinner aria-label="Removendo imagem" />
+                    ) : (
+                      <Trash2 aria-hidden="true" />
+                    )}
+                    Remover foto atual
+                  </Button>
+                ) : null}
+              </div>
+              <DialogFooter>
+                <Button
+                  onClick={() => setMenuOpen(false)}
+                  type="button"
+                  variant="ghost"
+                >
+                  Cancelar
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+          <div
+            className={cn(
+              "bg-muted relative w-full max-w-md overflow-hidden rounded-xl border",
+              previewAspectByPurpose[purpose],
+            )}
+          >
+            {/* Blob previews cannot use next/image. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              alt={`Prévia de ${upload.file?.name}`}
+              className="size-full object-cover"
+              src={upload.previewUrl ?? undefined}
+              style={{
+                objectPosition: `${upload.crop.horizontal}% ${upload.crop.vertical}%`,
+                transform: `scale(${upload.crop.zoom})`,
+              }}
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Dialog>
+              <DialogTrigger
+                render={
+                  <Button
+                    disabled={upload.isBusy}
+                    type="button"
+                    variant="outline"
+                  />
+                }
               >
-                <RotateCcw aria-hidden="true" />
-                Tentar novamente
-              </Button>
-            </div>
+                <Crop aria-hidden="true" />
+                Ajustar recorte
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-xl">
+                <DialogHeader>
+                  <DialogTitle>Ajustar recorte</DialogTitle>
+                  <DialogDescription>
+                    Amplie e reposicione a imagem. O recorte final respeita o
+                    formato desta mídia.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-5">
+                  <div
+                    className={cn(
+                      "bg-muted relative mx-auto w-full max-w-md overflow-hidden rounded-xl border",
+                      previewAspectByPurpose[purpose],
+                    )}
+                  >
+                    {/* Blob previews cannot use next/image. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      alt=""
+                      aria-hidden="true"
+                      className="size-full object-cover"
+                      src={upload.previewUrl ?? undefined}
+                      style={{
+                        objectPosition: `${upload.crop.horizontal}% ${upload.crop.vertical}%`,
+                        transform: `scale(${upload.crop.zoom})`,
+                      }}
+                    />
+                  </div>
+                  <CropControl
+                    label="Ampliação"
+                    max={2}
+                    min={1}
+                    onChange={(zoom) =>
+                      upload.setCrop((current) => ({
+                        ...current,
+                        zoom,
+                      }))
+                    }
+                    step={0.1}
+                    value={upload.crop.zoom}
+                  />
+                  <CropControl
+                    label="Posição horizontal"
+                    max={100}
+                    min={0}
+                    onChange={(horizontal) =>
+                      upload.setCrop((current) => ({
+                        ...current,
+                        horizontal,
+                      }))
+                    }
+                    step={1}
+                    value={upload.crop.horizontal}
+                  />
+                  <CropControl
+                    label="Posição vertical"
+                    max={100}
+                    min={0}
+                    onChange={(vertical) =>
+                      upload.setCrop((current) => ({
+                        ...current,
+                        vertical,
+                      }))
+                    }
+                    step={1}
+                    value={upload.crop.vertical}
+                  />
+                </div>
+                <DialogFooter showCloseButton />
+              </DialogContent>
+            </Dialog>
+            <Button
+              disabled={upload.isBusy}
+              onClick={upload.reset}
+              type="button"
+              variant="ghost"
+            >
+              <Trash2 aria-hidden="true" />
+              Remover seleção
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {upload.isBusy ? (
+        <Progress
+          aria-live="polite"
+          aria-label="Progresso do envio"
+          value={upload.progress}
+        >
+          <ProgressLabel>{upload.statusMessage}</ProgressLabel>
+          <ProgressValue>{() => `${upload.progress}%`}</ProgressValue>
+        </Progress>
+      ) : null}
+
+      {upload.error ? (
+        <Alert aria-live="assertive" variant="destructive">
+          <CircleAlert aria-hidden="true" />
+          <AlertTitle>Não foi possível concluir</AlertTitle>
+          <AlertDescription>{upload.error}</AlertDescription>
+        </Alert>
+      ) : null}
+
+      {upload.phase === "success" ? (
+        <Alert aria-live="polite">
+          <CheckCircle2
+            aria-hidden="true"
+            className="text-[var(--brand-success)]"
+          />
+          <AlertTitle>Imagem atualizada</AlertTitle>
+          <AlertDescription>
+            {activateOnUpload
+              ? "Imagem atualizada com sucesso."
+              : "Imagem pronta para o envio do perfil."}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      {editing ? (
+        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+          {upload.phase === "error" && upload.file ? (
+            <Button
+              disabled={upload.isBusy}
+              onClick={upload.retry}
+              type="button"
+              variant="outline"
+            >
+              <RotateCcw aria-hidden="true" />
+              Tentar novamente
+            </Button>
           ) : null}
-        </CardContent>
-      </Card>
+          <Button
+            disabled={!upload.file || upload.isBusy}
+            onClick={upload.upload}
+            type="button"
+          >
+            {upload.isBusy ? (
+              <Spinner aria-label="Enviando imagem" />
+            ) : (
+              <Upload aria-hidden="true" />
+            )}
+            {upload.isBusy ? "Enviando..." : "Enviar imagem"}
+          </Button>
+        </div>
+      ) : null}
     </Field>
   );
 }

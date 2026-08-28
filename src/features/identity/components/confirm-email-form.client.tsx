@@ -48,7 +48,7 @@ export function ConfirmEmailForm({ action }: { action: AuthFormAction }) {
               aria-describedby={errorId}
               aria-invalid={Boolean(emailErrors?.length)}
               autoComplete="email"
-              className="h-12 rounded-xl"
+              className="rounded-xl"
               id="confirmation-email"
               inputMode="email"
               name="email"

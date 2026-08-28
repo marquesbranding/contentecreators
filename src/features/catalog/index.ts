@@ -4,6 +4,7 @@ export { HydratedCreatorCatalog } from "./components/hydrated-creator-catalog.cl
 export { CatalogDetailScreen } from "./components/catalog-detail-screen.client";
 export { CompanyDetailView } from "./components/company-detail-view";
 export { CompanyCarouselScreen } from "./components/company-carousel-screen.client";
+export { CatalogTipsPanel } from "./components/catalog-tips-panel";
 export {
   creatorCatalogKeys,
   clearProtectedCatalogQueries,

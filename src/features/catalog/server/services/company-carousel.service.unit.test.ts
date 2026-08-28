@@ -80,6 +80,7 @@ describe("company carousel service", () => {
     expect(repository.listEligibleCompanies).toHaveBeenCalledWith(
       expect.anything(),
       24,
+      { search: undefined, segment: undefined },
     );
 
     const serialized = JSON.stringify(result);
@@ -109,16 +110,19 @@ describe("company carousel service", () => {
       1,
       expect.anything(),
       12,
+      { search: undefined, segment: undefined },
     );
     expect(repository.listEligibleCompanies).toHaveBeenNthCalledWith(
       2,
       expect.anything(),
       12,
+      { search: undefined, segment: undefined },
     );
     expect(repository.listEligibleCompanies).toHaveBeenNthCalledWith(
       3,
       expect.anything(),
       24,
+      { search: undefined, segment: undefined },
     );
   });
 

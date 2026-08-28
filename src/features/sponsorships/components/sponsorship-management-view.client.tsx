@@ -57,13 +57,7 @@ import {
   RequiredFieldsNotice,
 } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
+import { SearchableSelect } from "@/shared/components/ui/searchable-select";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
   Table,
@@ -449,28 +443,16 @@ function PlacementFormDialog({
                 control={form.control}
                 name="placementType"
                 render={({ field }) => (
-                  <Select
+                  <SearchableSelect
+                    aria-invalid={Boolean(
+                      form.formState.errors.placementType,
+                    )}
+                    aria-required="true"
+                    id="sponsorship-placement-type"
                     items={typeLabels}
                     onValueChange={field.onChange}
                     value={field.value}
-                  >
-                    <SelectTrigger
-                      aria-required="true"
-                      aria-invalid={Boolean(
-                        form.formState.errors.placementType,
-                      )}
-                      id="sponsorship-placement-type"
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(typeLabels).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  />
                 )}
               />
               <FieldError errors={[form.formState.errors.placementType]} />
@@ -484,26 +466,14 @@ function PlacementFormDialog({
                 control={form.control}
                 name="audience"
                 render={({ field }) => (
-                  <Select
+                  <SearchableSelect
+                    aria-invalid={Boolean(form.formState.errors.audience)}
+                    aria-required="true"
+                    id="sponsorship-placement-audience"
                     items={audienceLabels}
                     onValueChange={field.onChange}
                     value={field.value}
-                  >
-                    <SelectTrigger
-                      aria-required="true"
-                      aria-invalid={Boolean(form.formState.errors.audience)}
-                      id="sponsorship-placement-audience"
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(audienceLabels).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  />
                 )}
               />
               <FieldError errors={[form.formState.errors.audience]} />
@@ -1112,7 +1082,6 @@ export function SponsorshipManagementView({
                 Buscar patrocínio
               </FieldLabel>
               <Input
-                className="h-11"
                 id="sponsorship-search"
                 onChange={(event) =>
                   setSearchDraft({
@@ -1127,7 +1096,8 @@ export function SponsorshipManagementView({
             </Field>
             <Field>
               <FieldLabel htmlFor="sponsorship-filter-type">Tipo</FieldLabel>
-              <Select
+              <SearchableSelect
+                id="sponsorship-filter-type"
                 items={{ ALL: "Todos os tipos", ...typeLabels }}
                 onValueChange={(value) =>
                   update({
@@ -1138,25 +1108,14 @@ export function SponsorshipManagementView({
                   })
                 }
                 value={filters.type ?? "ALL"}
-              >
-                <SelectTrigger className="h-11" id="sponsorship-filter-type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">Todos os tipos</SelectItem>
-                  {Object.entries(typeLabels).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             </Field>
             <Field>
               <FieldLabel htmlFor="sponsorship-filter-audience">
                 Audiência
               </FieldLabel>
-              <Select
+              <SearchableSelect
+                id="sponsorship-filter-audience"
                 items={{ ALL_FILTER: "Todas as audiências", ...audienceLabels }}
                 onValueChange={(value) =>
                   update({
@@ -1167,28 +1126,12 @@ export function SponsorshipManagementView({
                   })
                 }
                 value={filters.audience ?? "ALL_FILTER"}
-              >
-                <SelectTrigger
-                  className="h-11"
-                  id="sponsorship-filter-audience"
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL_FILTER">
-                    Todas as audiências
-                  </SelectItem>
-                  {Object.entries(audienceLabels).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             </Field>
             <Field>
               <FieldLabel htmlFor="sponsorship-filter-state">Status</FieldLabel>
-              <Select
+              <SearchableSelect
+                id="sponsorship-filter-state"
                 items={{ ALL: "Todos os status", ...stateLabels }}
                 onValueChange={(value) =>
                   update({
@@ -1199,19 +1142,7 @@ export function SponsorshipManagementView({
                   })
                 }
                 value={filters.state ?? "ALL"}
-              >
-                <SelectTrigger className="h-11" id="sponsorship-filter-state">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">Todos os status</SelectItem>
-                  {Object.entries(stateLabels).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             </Field>
             <div className="grid grid-cols-[minmax(0,1fr)_3rem] gap-2 self-end">
               <Button

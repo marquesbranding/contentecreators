@@ -38,6 +38,8 @@ describe("useCompanyCarousel", () => {
       "catalog",
       "company-carousel",
       12,
+      "",
+      "",
     ]);
     expect(fetchCarousel).not.toHaveBeenCalled();
   });
@@ -57,7 +59,11 @@ describe("useCompanyCarousel", () => {
     });
 
     await waitFor(() =>
-      expect(fetchCarousel).toHaveBeenCalledWith(12, expect.any(AbortSignal)),
+      expect(fetchCarousel).toHaveBeenCalledWith(
+        12,
+        expect.any(AbortSignal),
+        {},
+      ),
     );
   });
 });

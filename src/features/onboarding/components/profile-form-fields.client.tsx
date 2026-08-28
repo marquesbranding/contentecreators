@@ -1,8 +1,8 @@
 "use client";
 
-import { MapPin, Plus, Search, Trash2 } from "lucide-react";
+import { MapPin, Plus, Search, Star, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -13,6 +13,16 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Checkbox } from "@/shared/components/ui/checkbox";
+import {
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxContent,
+  ComboboxIcon,
+  ComboboxInput,
+  ComboboxInputGroup,
+  ComboboxItem,
+} from "@/shared/components/ui/combobox";
 import {
   Field,
   FieldDescription,
@@ -32,6 +42,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
+import { SocialPlatformIcon } from "@/shared/components/social-platform-icon";
 
 import { isValidCnpj, normalizeCnpj } from "../domain/cnpj";
 import { useCnpjLookup } from "../hooks/use-cnpj-lookup";
@@ -41,6 +52,7 @@ import {
   isPredefinedCompanySegment,
   OTHER_NICHE_SLUG,
 } from "../domain/profile-segments";
+import { SOCIAL_CHANNEL_PLATFORMS } from "../domain/social-channels-form-data";
 import type {
   CompanyOnboardingDraftPayload,
   CreatorOnboardingDraftPayload,
@@ -77,6 +89,19 @@ const states = [
   "SE",
   "TO",
 ] as const;
+
+const socialChannelPlatformLabels: Record<
+  (typeof SOCIAL_CHANNEL_PLATFORMS)[number],
+  string
+> = {
+  FACEBOOK: "Facebook",
+  INSTAGRAM: "Instagram",
+  LINKEDIN: "LinkedIn",
+  TELEGRAM: "Telegram",
+  THREADS: "Threads",
+  X: "X",
+  YOUTUBE: "YouTube",
+};
 
 interface AdditionalLocationEditorValue {
   city: string;
@@ -194,7 +219,7 @@ function TextField({
         aria-describedby={describedBy || undefined}
         aria-invalid={Boolean(errors?.length)}
         autoComplete={autoComplete}
-        className="h-12 rounded-xl"
+        className="rounded-xl"
         data-validation-message={validationMessage}
         id={id}
         inputMode={inputMode}
@@ -288,7 +313,7 @@ function ControlledSelect({
           aria-describedby={describedBy || undefined}
           aria-invalid={Boolean(errors?.length)}
           aria-required={required}
-          className="h-12 w-full rounded-xl"
+          className="w-full rounded-xl"
           data-field-name={validationName ?? name}
           data-field-value={value ?? ""}
           data-required-field={required}
@@ -310,14 +335,109 @@ function ControlledSelect({
   );
 }
 
+interface ComboboxOption {
+  label: string;
+  value: string;
+}
+
+function ControlledCombobox({
+  errors,
+  id,
+  label,
+  name,
+  options,
+  placeholder,
+  selectedValue,
+  initialValue,
+  onFieldChange,
+  onValueChange,
+  required = true,
+  validationName,
+}: {
+  errors?: string[];
+  id: string;
+  label: string;
+  name: string;
+  options: readonly (readonly [string, string])[];
+  placeholder: string;
+  selectedValue?: string;
+  initialValue?: string;
+  onFieldChange?: (fieldName: string) => void;
+  onValueChange?: (value: string) => void;
+  required?: boolean;
+  validationName?: string;
+}) {
+  const items = useMemo<ComboboxOption[]>(
+    () => options.map(([optionValue, optionLabel]) => ({
+      label: optionLabel,
+      value: optionValue,
+    })),
+    [options],
+  );
+  const [internalValue, setInternalValue] = useState<string | null>(
+    initialValue || null,
+  );
+  const value =
+    selectedValue === undefined ? internalValue : selectedValue || null;
+  const selectedItem = items.find((item) => item.value === value) ?? null;
+  const errorId = errors?.length ? `${id}-error` : undefined;
+
+  return (
+    <Field data-invalid={Boolean(errors?.length)}>
+      <FieldLabel htmlFor={id} required={required}>
+        {label}
+      </FieldLabel>
+      <Combobox
+        items={items}
+        name={name}
+        onValueChange={(nextItem: ComboboxOption | null) => {
+          const nextValue = nextItem?.value ?? "";
+          setInternalValue(nextValue || null);
+          onValueChange?.(nextValue);
+          onFieldChange?.(validationName ?? name);
+        }}
+        value={selectedItem}
+      >
+        <ComboboxInputGroup
+          className="rounded-xl"
+          data-field-name={validationName ?? name}
+          data-field-value={value ?? ""}
+          data-required-field={required}
+          data-required-message="Selecione uma opção."
+        >
+          <ComboboxInput
+            aria-describedby={errorId}
+            aria-invalid={Boolean(errors?.length)}
+            aria-required={required}
+            id={id}
+            placeholder={placeholder}
+          />
+          <ComboboxIcon />
+        </ComboboxInputGroup>
+        <ComboboxContent>
+          {(item: ComboboxOption) => (
+            <ComboboxItem key={item.value} value={item}>
+              {item.label}
+            </ComboboxItem>
+          )}
+        </ComboboxContent>
+      </Combobox>
+      <ErrorMessages errors={errors} id={errorId ?? `${id}-error`} />
+    </Field>
+  );
+}
+
 export function ProfileFormFields({
+  creatorType,
   fieldErrors,
   getFieldErrors,
   initialValues,
   onFieldChange,
   role,
   showLegalConsents = true,
+  showWhatsappField = true,
 }: {
+  creatorType?: "INFLUENCER" | "UGC";
   fieldErrors?: Record<string, string[]>;
   getFieldErrors?: (
     fieldName: string,
@@ -327,6 +447,7 @@ export function ProfileFormFields({
   onFieldChange?: (fieldName: string) => void;
   role: "INFLUENCER" | "COMPANY";
   showLegalConsents?: boolean;
+  showWhatsappField?: boolean;
 }) {
   const creatorInitialValues =
     role === "INFLUENCER"
@@ -364,8 +485,125 @@ export function ProfileFormFields({
   const [companySocialUrl, setCompanySocialUrl] = useState(
     companyInitialValues?.socialUrl ?? "",
   );
+  interface ChannelState {
+    checked: boolean;
+    followers: string;
+    interactions: string;
+    newFollowers: string;
+    primary: boolean;
+    sharedContent: string;
+    url: string;
+    views: string;
+  }
+  const [channelState, setChannelState] = useState<
+    Record<(typeof SOCIAL_CHANNEL_PLATFORMS)[number], ChannelState>
+  >(() => {
+    const initialChannels = new Map(
+      (creatorInitialValues?.socialChannels ?? []).map((channel) => [
+        channel.platform,
+        channel,
+      ]),
+    );
+
+    return Object.fromEntries(
+      SOCIAL_CHANNEL_PLATFORMS.map((platform) => {
+        const existing = initialChannels.get(platform);
+        return [
+          platform,
+          {
+            checked: Boolean(existing),
+            followers:
+              existing?.followerCount === undefined
+                ? ""
+                : String(existing.followerCount),
+            interactions:
+              existing?.interactions === undefined
+                ? ""
+                : String(existing.interactions),
+            newFollowers:
+              existing?.newFollowers === undefined
+                ? ""
+                : String(existing.newFollowers),
+            primary: existing?.isPrimary ?? false,
+            sharedContent: existing?.sharedContent ?? "",
+            url: existing?.url ?? "",
+            views:
+              existing?.views === undefined ? "" : String(existing.views),
+          } satisfies ChannelState,
+        ];
+      }),
+    ) as Record<(typeof SOCIAL_CHANNEL_PLATFORMS)[number], ChannelState>;
+  });
+
+  function updateChannelField(
+    platform: (typeof SOCIAL_CHANNEL_PLATFORMS)[number],
+    field: keyof Omit<ChannelState, "checked" | "primary">,
+    value: string,
+  ) {
+    setChannelState((current) => ({
+      ...current,
+      [platform]: { ...current[platform], [field]: value },
+    }));
+    onFieldChange?.("socialChannels");
+  }
+
+  function handleChannelCheck(
+    platform: (typeof SOCIAL_CHANNEL_PLATFORMS)[number],
+    checked: boolean,
+  ) {
+    setChannelState((current) => {
+      let next: typeof current = {
+        ...current,
+        [platform]: {
+          ...current[platform],
+          checked,
+          primary: checked ? current[platform].primary : false,
+        },
+      };
+
+      const hasPrimaryChecked = Object.values(next).some(
+        (entry) => entry.checked && entry.primary,
+      );
+
+      if (!hasPrimaryChecked) {
+        const firstChecked = Object.entries(next).find(
+          ([, entry]) => entry.checked,
+        )?.[0] as (typeof SOCIAL_CHANNEL_PLATFORMS)[number] | undefined;
+
+        if (firstChecked) {
+          next = {
+            ...next,
+            [firstChecked]: { ...next[firstChecked], primary: true },
+          };
+        }
+      }
+
+      return next;
+    });
+    onFieldChange?.("socialChannels");
+  }
+
+  function markPrimaryChannel(platform: (typeof SOCIAL_CHANNEL_PLATFORMS)[number]) {
+    setChannelState((current) =>
+      Object.fromEntries(
+        Object.entries(current).map(([key, entry]) => [
+          key,
+          { ...entry, primary: key === platform },
+        ]),
+      ) as typeof current,
+    );
+    onFieldChange?.("socialChannels");
+  }
   const [selectedNicheSlugs, setSelectedNicheSlugs] = useState(
     () => new Set(creatorInitialValues?.nicheSlugs ?? []),
+  );
+  const selectedNicheSlugsList = useMemo(
+    () => [...selectedNicheSlugs],
+    [selectedNicheSlugs],
+  );
+  const nicheItems = useMemo<ComboboxOption[]>(
+    () => creatorNicheOptions.map(([value, label]) => ({ label, value })),
+    [],
   );
   const otherNicheSelected = selectedNicheSlugs.has(OTHER_NICHE_SLUG);
   const [otherNiche, setOtherNiche] = useState(
@@ -581,7 +819,7 @@ export function ProfileFormFields({
                 onChange={updateCompanyField("tradeName")}
                 validationMessage="Use pelo menos 2 caracteres."
               />
-              <ControlledSelect
+              <ControlledCombobox
                 errors={
                   companySegmentChoice === "OTHER"
                     ? undefined
@@ -624,7 +862,7 @@ export function ProfileFormFields({
                   value={companyFields.segment}
                 />
               )}
-              <ControlledSelect
+              <ControlledCombobox
                 errors={resolveFieldErrors("employeeRange")}
                 id="company-employee-range"
                 label="Tamanho da empresa"
@@ -643,76 +881,47 @@ export function ProfileFormFields({
             </>
           ) : (
             <>
-              <TextField
-                defaultValue={creatorInitialValues?.displayName}
-                description="Mínimo de 2 caracteres."
-                errors={resolveFieldErrors("displayName")}
-                id="creator-display-name"
-                label="Nome de creator"
-                name="displayName"
-                maxLength={120}
-                minLength={2}
-                placeholder="Como você quer aparecer"
-                validationMessage="Use pelo menos 2 caracteres."
-              />
-              <ControlledSelect
-                errors={resolveFieldErrors("creatorType")}
-                id="creator-type"
-                label="Tipo de atuação"
-                name="creatorType"
-                initialValue={creatorInitialValues?.creatorType}
-                options={[
-                  ["INFLUENCER", "Influencer"],
-                  ["UGC", "Creator UGC"],
-                ]}
-                onFieldChange={onFieldChange}
-                placeholder="Selecione uma opção"
-              />
-              <TextField
-                defaultValue={creatorInitialValues?.followers}
-                errors={resolveFieldErrors("followers")}
-                id="creator-followers"
-                inputMode="numeric"
-                label="Número de seguidores"
-                min={0}
-                name="followers"
-                placeholder="Ex.: 12500"
-                type="number"
-              />
-              <TextField
-                defaultValue={creatorInitialValues?.engagementRate}
-                errors={resolveFieldErrors("engagementRate")}
-                id="creator-engagement"
-                inputMode="decimal"
-                label="Taxa de engajamento (%)"
-                max={100}
-                min={0}
-                name="engagementRate"
-                placeholder="Ex.: 4,25"
-                step="0.01"
-                type="number"
-              />
+              {creatorType === undefined ? (
+                <ControlledSelect
+                  errors={resolveFieldErrors("creatorType")}
+                  id="creator-type"
+                  label="Tipo de atuação"
+                  name="creatorType"
+                  initialValue={creatorInitialValues?.creatorType}
+                  options={[
+                    ["INFLUENCER", "Influencer"],
+                    ["UGC", "Creator UGC"],
+                  ]}
+                  onFieldChange={onFieldChange}
+                  placeholder="Selecione uma opção"
+                />
+              ) : (
+                <input name="creatorType" type="hidden" value={creatorType} />
+              )}
             </>
           )}
 
-          <TextField
-            autoComplete="tel"
-            errors={resolveFieldErrors("whatsapp")}
-            id={`${role.toLowerCase()}-whatsapp`}
-            inputMode="tel"
-            label="WhatsApp com DDD"
-            name="whatsapp"
-            maxLength={20}
-            minLength={10}
-            placeholder="(11) 99999-9999"
-            type="tel"
-            defaultValue={
-              role === "COMPANY"
-                ? companyInitialValues?.whatsapp
-                : creatorInitialValues?.whatsapp
-            }
-            validationMessage="Informe um WhatsApp com DDD."
-          />
+          {showWhatsappField ? (
+            <TextField
+              autoComplete="tel"
+              description="Mínimo de 10 caracteres, incluindo o DDD."
+              errors={resolveFieldErrors("whatsapp")}
+              id={`${role.toLowerCase()}-whatsapp`}
+              inputMode="tel"
+              label="WhatsApp com DDD"
+              name="whatsapp"
+              maxLength={20}
+              minLength={10}
+              placeholder="(11) 99999-9999"
+              type="tel"
+              defaultValue={
+                role === "COMPANY"
+                  ? companyInitialValues?.whatsapp
+                  : creatorInitialValues?.whatsapp
+              }
+              validationMessage="Informe um WhatsApp com DDD."
+            />
+          ) : null}
 
           {role === "COMPANY" ? (
             <>
@@ -729,7 +938,7 @@ export function ProfileFormFields({
                 type="url"
                 defaultValue={companyInitialValues?.websiteUrl}
               />
-              <ControlledSelect
+              <ControlledCombobox
                 errors={resolveFieldErrors("socialPlatform")}
                 id="company-social-platform"
                 label={
@@ -835,97 +1044,315 @@ export function ProfileFormFields({
             Os números são autodeclarados e serão identificados dessa forma no
             catálogo.
           </FieldDescription>
-          <FieldGroup className="grid gap-5 md:grid-cols-2">
-            <ControlledSelect
-              errors={resolveFieldErrors("socialPlatform")}
-              id="creator-social-platform"
-              label="Canal principal"
-              name="socialPlatform"
-              initialValue={creatorInitialValues?.socialPlatform}
-              options={[
-                ["INSTAGRAM", "Instagram"],
-                ["TIKTOK", "TikTok"],
-                ["YOUTUBE", "YouTube"],
-                ["FACEBOOK", "Facebook"],
-                ["X", "X"],
-                ["LINKEDIN", "LinkedIn"],
-                ["OTHER", "Outro"],
-              ]}
-              onFieldChange={onFieldChange}
-              placeholder="Selecione uma rede"
+          <Field
+            data-invalid={Boolean(resolveFieldErrors("socialChannels")?.length)}
+          >
+            <FieldLabel id="creator-social-channels-label" required>
+              Redes sociais
+            </FieldLabel>
+            <div
+              aria-describedby="creator-social-channels-error"
+              aria-labelledby="creator-social-channels-label"
+              className="data-[invalid=true]:ring-destructive/20 mx-auto w-full max-w-2xl overflow-x-auto data-[invalid=true]:rounded-xl data-[invalid=true]:ring-3"
+              data-field-kind="checkbox-group"
+              data-field-name="socialChannels"
+              data-invalid={Boolean(
+                resolveFieldErrors("socialChannels")?.length,
+              )}
+              data-required-field="true"
+              data-required-message="Selecione pelo menos uma rede social e informe o link."
+              role="group"
+            >
+              <div className="min-w-[28rem] space-y-1">
+                <div className="text-muted-foreground grid grid-cols-[3.5rem_8rem_6rem_1fr] gap-3 px-1 text-xs font-semibold tracking-wide uppercase">
+                  <span className="text-left">Principal</span>
+                  <span className="text-left">Rede social</span>
+                  <span className="text-center">Seguidores</span>
+                  <span className="text-left">Link do perfil</span>
+                </div>
+
+                {SOCIAL_CHANNEL_PLATFORMS.map((platform) => {
+                  const entry = channelState[platform];
+                  const followersInputId = `creator-channel-${platform.toLowerCase()}-followers`;
+                  const urlInputId = `creator-channel-${platform.toLowerCase()}-url`;
+                  const platformLabel = socialChannelPlatformLabels[platform];
+
+                  return (
+                    <div
+                      className="grid grid-cols-[3.5rem_8rem_6rem_1fr] items-center gap-3 px-1 py-3"
+                      key={platform}
+                    >
+                      <div className="flex items-center justify-start">
+                        <button
+                          aria-label={
+                            entry.primary
+                              ? `${platformLabel} é a rede principal`
+                              : `Marcar ${platformLabel} como principal`
+                          }
+                          aria-pressed={entry.primary}
+                          className={`flex size-9 items-center justify-center rounded-full transition-colors ${
+                            entry.primary
+                              ? "text-amber-500"
+                              : "text-muted-foreground/40 hover:text-muted-foreground disabled:hover:text-muted-foreground/40"
+                          }`}
+                          disabled={!entry.checked}
+                          onClick={() => markPrimaryChannel(platform)}
+                          type="button"
+                        >
+                          <Star
+                            aria-hidden="true"
+                            className="size-5"
+                            fill={entry.primary ? "currentColor" : "none"}
+                          />
+                        </button>
+                        <input
+                          name={`socialChannels.${platform}.primary`}
+                          type="hidden"
+                          value={entry.primary ? "on" : ""}
+                        />
+                      </div>
+
+                      <label className="flex min-h-9 cursor-pointer items-center gap-2 font-semibold">
+                        <Checkbox
+                          checked={entry.checked}
+                          name={`socialChannels.${platform}.selected`}
+                          onCheckedChange={(checked) =>
+                            handleChannelCheck(platform, Boolean(checked))
+                          }
+                        />
+                        <SocialPlatformIcon
+                          className="size-5 shrink-0"
+                          platform={platform}
+                        />
+                        {platformLabel}
+                      </label>
+
+                      <Input
+                        aria-label={`Seguidores no ${platformLabel}`}
+                        className="rounded-xl text-center tabular-nums"
+                        disabled={!entry.checked}
+                        id={followersInputId}
+                        inputMode="numeric"
+                        min={0}
+                        name={`socialChannels.${platform}.followers`}
+                        onChange={(event) =>
+                          updateChannelField(
+                            platform,
+                            "followers",
+                            event.target.value,
+                          )
+                        }
+                        placeholder="0"
+                        required={entry.checked}
+                        type="number"
+                        value={entry.followers}
+                      />
+
+                      <Input
+                        aria-label={`Link do perfil no ${platformLabel}`}
+                        className="rounded-xl"
+                        disabled={!entry.checked}
+                        id={urlInputId}
+                        inputMode="url"
+                        name={`socialChannels.${platform}.url`}
+                        onChange={(event) =>
+                          updateChannelField(platform, "url", event.target.value)
+                        }
+                        placeholder="https://..."
+                        required={entry.checked}
+                        type="url"
+                        value={entry.url}
+                      />
+
+                    {platform === "INSTAGRAM" && entry.checked ? (
+                      <div className="col-span-4 grid gap-3 pt-1 sm:grid-cols-2 lg:grid-cols-4">
+                        <div>
+                          <label
+                            className="mb-1 block text-xs font-medium"
+                            htmlFor="creator-instagram-views"
+                          >
+                            Visualizações
+                          </label>
+                          <Input
+                            className="rounded-xl"
+                            id="creator-instagram-views"
+                            inputMode="numeric"
+                            min={0}
+                            name="socialChannels.INSTAGRAM.views"
+                            onChange={(event) =>
+                              updateChannelField(
+                                "INSTAGRAM",
+                                "views",
+                                event.target.value,
+                              )
+                            }
+                            placeholder="Ex.: 50000"
+                            type="number"
+                            value={entry.views}
+                          />
+                        </div>
+                        <div>
+                          <label
+                            className="mb-1 block text-xs font-medium"
+                            htmlFor="creator-instagram-interactions"
+                          >
+                            Interações
+                          </label>
+                          <Input
+                            className="rounded-xl"
+                            id="creator-instagram-interactions"
+                            inputMode="numeric"
+                            min={0}
+                            name="socialChannels.INSTAGRAM.interactions"
+                            onChange={(event) =>
+                              updateChannelField(
+                                "INSTAGRAM",
+                                "interactions",
+                                event.target.value,
+                              )
+                            }
+                            placeholder="Ex.: 3200"
+                            type="number"
+                            value={entry.interactions}
+                          />
+                        </div>
+                        <div>
+                          <label
+                            className="mb-1 block text-xs font-medium"
+                            htmlFor="creator-instagram-new-followers"
+                          >
+                            Novos seguidores
+                          </label>
+                          <Input
+                            className="rounded-xl"
+                            id="creator-instagram-new-followers"
+                            inputMode="numeric"
+                            min={0}
+                            name="socialChannels.INSTAGRAM.newFollowers"
+                            onChange={(event) =>
+                              updateChannelField(
+                                "INSTAGRAM",
+                                "newFollowers",
+                                event.target.value,
+                              )
+                            }
+                            placeholder="Ex.: 800"
+                            type="number"
+                            value={entry.newFollowers}
+                          />
+                        </div>
+                        <div>
+                          <label
+                            className="mb-1 block text-xs font-medium"
+                            htmlFor="creator-instagram-shared-content"
+                          >
+                            Conteúdo que você compartilhou
+                          </label>
+                          <Input
+                            className="rounded-xl"
+                            id="creator-instagram-shared-content"
+                            maxLength={200}
+                            minLength={2}
+                            name="socialChannels.INSTAGRAM.sharedContent"
+                            onChange={(event) =>
+                              updateChannelField(
+                                "INSTAGRAM",
+                                "sharedContent",
+                                event.target.value,
+                              )
+                            }
+                            placeholder="Ex.: Reels, vlogs, unboxings"
+                            value={entry.sharedContent}
+                          />
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+              </div>
+            </div>
+            <ErrorMessages
+              errors={resolveFieldErrors("socialChannels")}
+              id="creator-social-channels-error"
             />
-            <TextField
-              defaultValue={creatorInitialValues?.socialUrl}
-              errors={resolveFieldErrors("socialUrl")}
-              id="creator-social-url"
-              inputMode="url"
-              label="Link do perfil"
-              maxLength={2_000}
-              name="socialUrl"
-              placeholder="https://instagram.com/seuperfil"
-              type="url"
-            />
-          </FieldGroup>
+          </Field>
           <Field
             data-invalid={Boolean(resolveFieldErrors("nicheSlugs")?.length)}
           >
-            <FieldLabel id="creator-niches-label" required>
+            <FieldLabel htmlFor="creator-niches-input" required>
               Principais nichos
             </FieldLabel>
             <FieldDescription>
               Selecione de 1 a 5 nichos que melhor representam seu conteúdo.
             </FieldDescription>
-            <div
-              aria-describedby="creator-niches-error"
-              aria-labelledby="creator-niches-label"
-              className="data-[invalid=true]:ring-destructive/20 grid gap-3 data-[invalid=true]:rounded-xl data-[invalid=true]:ring-3 sm:grid-cols-2 lg:grid-cols-3"
-              data-field-kind="checkbox-group"
-              data-field-name="nicheSlugs"
-              data-invalid={Boolean(resolveFieldErrors("nicheSlugs")?.length)}
-              data-required-field="true"
-              data-required-message="Escolha pelo menos um nicho."
-              role="group"
+            {selectedNicheSlugsList.map((value) => (
+              <input
+                key={value}
+                name="nicheSlugs"
+                type="hidden"
+                value={value}
+              />
+            ))}
+            <Combobox
+              items={nicheItems}
+              multiple
+              onValueChange={(nextValues: string[]) => {
+                setSelectedNicheSlugs(new Set(nextValues));
+                if (!nextValues.includes(OTHER_NICHE_SLUG)) {
+                  setOtherNiche("");
+                  onFieldChange?.("otherNiche");
+                }
+                onFieldChange?.("nicheSlugs");
+              }}
+              value={selectedNicheSlugsList}
             >
-              {creatorNicheOptions.map(([value, label]) => (
-                <label
-                  className="bg-card hover:border-brand-blue/40 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors"
-                  key={value}
-                >
-                  <Checkbox
-                    aria-describedby="creator-niches-error"
-                    aria-invalid={Boolean(
-                      resolveFieldErrors("nicheSlugs")?.length,
-                    )}
-                    checked={selectedNicheSlugs.has(value)}
+              <ComboboxInputGroup
+                className="rounded-xl"
+                data-field-name="nicheSlugs"
+                data-field-value={selectedNicheSlugsList.join(",")}
+                data-required-field="true"
+                data-required-message="Escolha pelo menos um nicho."
+              >
+                <ComboboxChips>
+                  {selectedNicheSlugsList.map((value) => {
+                    const item = nicheItems.find(
+                      (option) => option.value === value,
+                    );
+                    return item ? (
+                      <ComboboxChip key={value}>{item.label}</ComboboxChip>
+                    ) : null;
+                  })}
+                </ComboboxChips>
+                <ComboboxInput
+                  aria-describedby="creator-niches-error"
+                  aria-invalid={Boolean(
+                    resolveFieldErrors("nicheSlugs")?.length,
+                  )}
+                  aria-label="Principais nichos"
+                  id="creator-niches-input"
+                  placeholder={
+                    selectedNicheSlugsList.length === 0
+                      ? "Buscar nichos..."
+                      : undefined
+                  }
+                />
+              </ComboboxInputGroup>
+              <ComboboxContent>
+                {(item: ComboboxOption) => (
+                  <ComboboxItem
                     disabled={
-                      selectedNicheSlugs.size >= 5 &&
-                      !selectedNicheSlugs.has(value)
+                      selectedNicheSlugsList.length >= 5 &&
+                      !selectedNicheSlugsList.includes(item.value)
                     }
-                    name="nicheSlugs"
-                    onCheckedChange={(checked) => {
-                      setSelectedNicheSlugs((current) => {
-                        const next = new Set(current);
-                        if (checked) {
-                          next.add(value);
-                        } else {
-                          next.delete(value);
-                        }
-                        return next;
-                      });
-                      if (value === OTHER_NICHE_SLUG) {
-                        if (!checked) {
-                          setOtherNiche("");
-                          onFieldChange?.("otherNiche");
-                        }
-                      }
-                      onFieldChange?.("nicheSlugs");
-                    }}
-                    value={value}
-                  />
-                  {label}
-                </label>
-              ))}
-            </div>
+                    key={item.value}
+                    value={item.value}
+                  >
+                    {item.label}
+                  </ComboboxItem>
+                )}
+              </ComboboxContent>
+            </Combobox>
             <ErrorMessages
               errors={resolveFieldErrors("nicheSlugs")}
               id="creator-niches-error"
@@ -1175,7 +1602,7 @@ export function ProfileFormFields({
                         value={location.city}
                         validationMessage="Use pelo menos 2 caracteres."
                       />
-                      <ControlledSelect
+                      <ControlledCombobox
                         id={`${idPrefix}-state`}
                         label="UF da localidade"
                         name={`${namePrefix}.state`}
@@ -1215,7 +1642,8 @@ export function ProfileFormFields({
 
       <FieldSet>
         <FieldLegend>Localização</FieldLegend>
-        <FieldGroup className="grid max-w-[44rem] gap-5 md:grid-cols-[minmax(0,34rem)_8rem]">
+        <FieldDescription>Onde você tem base de moradia?</FieldDescription>
+        <FieldGroup className="grid items-end gap-5 md:grid-cols-[1fr_10rem]">
           <TextField
             autoComplete="address-level2"
             errors={resolveFieldErrors("city")}
@@ -1231,7 +1659,7 @@ export function ProfileFormFields({
             }
             validationMessage="Use pelo menos 2 caracteres."
           />
-          <ControlledSelect
+          <ControlledCombobox
             errors={resolveFieldErrors("state")}
             id={`${role.toLowerCase()}-state`}
             label="UF"

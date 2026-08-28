@@ -22,13 +22,17 @@ const influencerInput = {
   city: "São Paulo",
   creatorType: "INFLUENCER",
   displayName: "Creator Exemplo",
-  engagementRate: 4.5,
   expectedVersion: 3,
-  followers: 42_000,
   legalName: "Creator Exemplo da Silva",
-  nicheSlugs: ["tecnologia"],
-  socialPlatform: "INSTAGRAM",
-  socialUrl: "https://instagram.com/creator-exemplo",
+  nicheSlugs: ["tecnologia-games-e-inovacao"],
+  socialChannels: [
+    {
+      followerCount: 42_000,
+      isPrimary: true,
+      platform: "INSTAGRAM",
+      url: "https://instagram.com/creator-exemplo",
+    },
+  ],
   state: "SP",
   whatsapp: "(11) 99999-9999",
 } satisfies InfluencerProfileEditInput;

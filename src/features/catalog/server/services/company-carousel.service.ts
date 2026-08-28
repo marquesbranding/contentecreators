@@ -10,6 +10,8 @@ import {
 import {
   companyCarouselResponseSchema,
   parseCompanyCarouselLimit,
+  parseCompanyCarouselSearch,
+  parseCompanyCarouselSegment,
 } from "../../schemas/company-carousel.schema";
 import type {
   CompanyCarouselRequest,
@@ -35,6 +37,8 @@ export function createCompanyCarouselService({
       requestId: string,
     ): Promise<CompanyCarouselResponseDto> {
       const limit = parseCompanyCarouselLimit(input.limit);
+      const search = parseCompanyCarouselSearch(input.search);
+      const segment = parseCompanyCarouselSegment(input.segment);
 
       return runVerifiedAccountTransaction(
         { requestId },
@@ -51,6 +55,7 @@ export function createCompanyCarouselService({
           const items = await repository.listEligibleCompanies(
             transaction,
             limit,
+            { search, segment },
           );
 
           return companyCarouselResponseSchema.parse({ items, limit });

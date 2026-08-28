@@ -77,7 +77,7 @@ describe("CompanyCarouselView", () => {
     ).toEqual([]);
   });
 
-  it("omits empty results and exposes a recoverable private error", async () => {
+  it("shows an empty-state message and a recoverable private error", async () => {
     const retry = vi.fn();
     const { rerender } = render(
       <CompanyCarouselView
@@ -87,8 +87,8 @@ describe("CompanyCarouselView", () => {
     );
 
     expect(
-      screen.queryByRole("region", { name: /marcas para conhecer/iu }),
-    ).toBeNull();
+      screen.getByText("Nenhuma empresa encontrada para esses filtros."),
+    ).toBeVisible();
 
     rerender(
       <CompanyCarouselView onRetry={retry} response={null} status="error" />,

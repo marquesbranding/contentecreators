@@ -36,16 +36,22 @@ const baseRecord: CatalogCreatorDetailRecord = {
     {
       engagementRate: "4.2500",
       followerCount: 45000,
+      interactionCount: 3200,
+      isPrimary: true,
       observedOn: new Date("2026-07-20T00:00:00.000Z"),
       platform: "INSTAGRAM",
       source: "SELF_REPORTED",
+      viewCount: 98000,
     },
     {
       engagementRate: "3.5000",
       followerCount: 12000,
+      interactionCount: 900,
+      isPrimary: true,
       observedOn: new Date("2026-06-20T00:00:00.000Z"),
       platform: "INSTAGRAM",
       source: "SELF_REPORTED",
+      viewCount: 40000,
     },
   ],
   niches: [
@@ -95,9 +101,12 @@ describe("catalog detail mapper", () => {
         {
           engagementRate: 4.25,
           followerCount: 45000,
+          interactionCount: 3200,
+          isPrimary: true,
           observedOn: "2026-07-20",
           platform: "INSTAGRAM",
           source: "SELF_REPORTED",
+          viewCount: 98000,
         },
       ],
       niches: [

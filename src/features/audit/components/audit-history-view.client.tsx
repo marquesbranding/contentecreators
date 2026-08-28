@@ -20,13 +20,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Field, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
+import { SearchableSelect } from "@/shared/components/ui/searchable-select";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 
 import { useAuditHistory } from "../hooks/use-audit-history";
@@ -234,103 +228,63 @@ export function AuditHistoryView({
 
               <Field>
                 <FieldLabel htmlFor="audit-actor-type">Tipo de ator</FieldLabel>
-                <Select
+                <SearchableSelect
+                  id="audit-actor-type"
                   items={{
-                    ADMIN: "Administrador",
                     ALL: "Todos os tipos",
+                    ADMIN: "Administrador",
+                    USER: "Usuário",
                     SYSTEM: "Sistema",
                     SYSTEM_UNKNOWN: "Sistema não identificado",
-                    USER: "Usuário",
                   }}
                   onValueChange={(value) =>
                     value &&
                     updateDraft("actorType", value as FilterDraft["actorType"])
                   }
                   value={draft.actorType}
-                >
-                  <SelectTrigger className="h-11 w-full" id="audit-actor-type">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">Todos os tipos</SelectItem>
-                    <SelectItem value="ADMIN">Administrador</SelectItem>
-                    <SelectItem value="USER">Usuário</SelectItem>
-                    <SelectItem value="SYSTEM">Sistema</SelectItem>
-                    <SelectItem value="SYSTEM_UNKNOWN">
-                      Sistema não identificado
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                />
               </Field>
 
               <Field>
                 <FieldLabel htmlFor="audit-action">Ação</FieldLabel>
-                <Select
+                <SearchableSelect
+                  id="audit-action"
                   items={{
                     ALL: "Todas as ações",
-                    ARCHIVE: "Arquivamento",
-                    DELETE: "Exclusão",
                     INSERT: "Inclusão",
-                    PRIVILEGED_READ: "Leitura privilegiada",
-                    RESTORE: "Restauração",
                     UPDATE: "Atualização",
+                    ARCHIVE: "Arquivamento",
+                    RESTORE: "Restauração",
+                    DELETE: "Exclusão",
+                    PRIVILEGED_READ: "Leitura privilegiada",
                   }}
                   onValueChange={(value) =>
                     value &&
                     updateDraft("action", value as FilterDraft["action"])
                   }
                   value={draft.action}
-                >
-                  <SelectTrigger className="h-11 w-full" id="audit-action">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">Todas as ações</SelectItem>
-                    <SelectItem value="INSERT">Inclusão</SelectItem>
-                    <SelectItem value="UPDATE">Atualização</SelectItem>
-                    <SelectItem value="ARCHIVE">Arquivamento</SelectItem>
-                    <SelectItem value="RESTORE">Restauração</SelectItem>
-                    <SelectItem value="DELETE">Exclusão</SelectItem>
-                    <SelectItem value="PRIVILEGED_READ">
-                      Leitura privilegiada
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                />
               </Field>
 
               <Field>
                 <FieldLabel htmlFor="audit-source">Origem</FieldLabel>
-                <Select
+                <SearchableSelect
+                  id="audit-source"
                   items={{
                     ALL: "Todas as origens",
                     APPLICATION: "Aplicação",
-                    AUTH_HOOK: "Hook de autenticação",
                     BACKOFFICE: "Backoffice",
+                    AUTH_HOOK: "Hook de autenticação",
                     CRON: "Rotina agendada",
-                    DATABASE: "Banco de dados",
                     SCRIPT: "Script operacional",
+                    DATABASE: "Banco de dados",
                   }}
                   onValueChange={(value) =>
                     value &&
                     updateDraft("source", value as FilterDraft["source"])
                   }
                   value={draft.source}
-                >
-                  <SelectTrigger className="h-11 w-full" id="audit-source">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">Todas as origens</SelectItem>
-                    <SelectItem value="APPLICATION">Aplicação</SelectItem>
-                    <SelectItem value="BACKOFFICE">Backoffice</SelectItem>
-                    <SelectItem value="AUTH_HOOK">
-                      Hook de autenticação
-                    </SelectItem>
-                    <SelectItem value="CRON">Rotina agendada</SelectItem>
-                    <SelectItem value="SCRIPT">Script operacional</SelectItem>
-                    <SelectItem value="DATABASE">Banco de dados</SelectItem>
-                  </SelectContent>
-                </Select>
+                />
               </Field>
 
               <Field>

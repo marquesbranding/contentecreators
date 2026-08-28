@@ -130,9 +130,12 @@ export async function listCreatorCatalog(
               jsonb_build_object(
                 'engagementRate', catalog_metric.engagement_rate,
                 'followerCount', catalog_metric.follower_count,
+                'interactionCount', catalog_metric.interaction_count,
+                'isPrimary', coalesce(catalog_metric.is_primary, false),
                 'observedOn', catalog_metric.observed_on,
                 'platform', catalog_metric.platform,
-                'source', 'SELF_REPORTED'
+                'source', 'SELF_REPORTED',
+                'viewCount', catalog_metric.view_count
               )
               order by catalog_metric.platform
             )
@@ -140,9 +143,14 @@ export async function listCreatorCatalog(
               select distinct on (catalog_metric_snapshot.platform)
                 catalog_metric_snapshot.engagement_rate::double precision as engagement_rate,
                 catalog_metric_snapshot.follower_count,
+                catalog_metric_snapshot.interaction_count,
+                catalog_social_profile.is_primary,
                 catalog_metric_snapshot.observed_on,
-                catalog_metric_snapshot.platform
+                catalog_metric_snapshot.platform,
+                catalog_metric_snapshot.view_count
               from ${creatorMetricSnapshots} catalog_metric_snapshot
+              left join ${socialProfiles} catalog_social_profile
+                on catalog_social_profile.id = catalog_metric_snapshot.social_profile_id
               where catalog_metric_snapshot.creator_profile_id = ${creatorProfiles.id}
               order by
                 catalog_metric_snapshot.platform,

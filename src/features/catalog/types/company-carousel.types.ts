@@ -26,4 +26,6 @@ export interface CompanyCarouselResponseDto {
 
 export interface CompanyCarouselRequest {
   limit?: number;
+  search?: string;
+  segment?: string;
 }

@@ -24,6 +24,8 @@ export const socialPlatformEnum = pgEnum("social_platform", [
   "FACEBOOK",
   "X",
   "LINKEDIN",
+  "THREADS",
+  "TELEGRAM",
   "OTHER",
 ]);
 

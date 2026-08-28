@@ -33,9 +33,12 @@ export interface CatalogCreatorDetailRecord {
   metrics: {
     engagementRate: string | null;
     followerCount: number | null;
+    interactionCount: number | null;
+    isPrimary: boolean;
     observedOn: Date;
     platform: CatalogSocialPlatform;
     source: "SELF_REPORTED";
+    viewCount: number | null;
   }[];
   niches: {
     name: string;
