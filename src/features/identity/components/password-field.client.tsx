@@ -15,6 +15,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/shared/components/ui/input-group";
+import { cn } from "@/shared/lib/cn";
 
 interface PasswordFieldProps {
   autoComplete: "current-password" | "new-password";
@@ -25,6 +26,36 @@ interface PasswordFieldProps {
   matchFieldName?: string;
   matchMessage?: string;
   name: string;
+}
+
+const strengthByLevel = [
+  { color: "bg-border", label: "Mín. 8 caracteres" },
+  { color: "bg-destructive", label: "Fraca" },
+  { color: "bg-amber-500", label: "Média" },
+  { color: "bg-emerald-600", label: "Forte" },
+] as const;
+
+function computePasswordStrengthLevel(password: string) {
+  if (password.length === 0) {
+    return 0;
+  }
+
+  const criteriaMet = [
+    password.length >= 8,
+    /[a-z]/.test(password),
+    /[A-Z]/.test(password),
+    /\d/.test(password),
+  ].filter(Boolean).length;
+
+  if (criteriaMet <= 1) {
+    return 1;
+  }
+
+  if (criteriaMet <= 3) {
+    return 2;
+  }
+
+  return 3;
 }
 
 export function PasswordField({
@@ -38,8 +69,11 @@ export function PasswordField({
   name,
 }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
+  const [password, setPassword] = useState("");
   const enforcesPasswordStrength =
     autoComplete === "new-password" && !matchFieldName;
+  const strengthLevel = computePasswordStrengthLevel(password);
+  const strength = strengthByLevel[strengthLevel];
   const descriptionId = description ? `${id}-description` : undefined;
   const errorId = error?.length ? `${id}-error` : undefined;
   const describedBy = [descriptionId, errorId].filter(Boolean).join(" ");
@@ -65,6 +99,11 @@ export function PasswordField({
           id={id}
           minLength={enforcesPasswordStrength ? 8 : undefined}
           name={name}
+          onChange={
+            enforcesPasswordStrength
+              ? (event) => setPassword(event.target.value)
+              : undefined
+          }
           pattern={
             enforcesPasswordStrength
               ? "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}"
@@ -93,6 +132,24 @@ export function PasswordField({
           </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>
+      {enforcesPasswordStrength ? (
+        <div aria-live="polite" className="flex items-center gap-2">
+          <div className="flex flex-1 gap-1">
+            {[1, 2, 3].map((segment) => (
+              <span
+                className={cn(
+                  "h-1 flex-1 rounded-full",
+                  strengthLevel >= segment ? strength.color : "bg-border",
+                )}
+                key={segment}
+              />
+            ))}
+          </div>
+          <span className="text-muted-foreground text-xs font-medium whitespace-nowrap">
+            {strength.label}
+          </span>
+        </div>
+      ) : null}
       {description ? (
         <FieldDescription id={descriptionId}>{description}</FieldDescription>
       ) : null}

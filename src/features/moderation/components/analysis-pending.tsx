@@ -13,9 +13,11 @@ import {
 
 export function AnalysisPending({
   emailConfirmed = false,
+  mediaSection,
   signOutAction,
 }: {
   emailConfirmed?: boolean;
+  mediaSection?: React.ReactNode;
   signOutAction: () => Promise<void>;
 }) {
   return (
@@ -28,7 +30,9 @@ export function AnalysisPending({
         aria-hidden="true"
         className="bg-brand-blue/15 absolute -top-40 left-1/2 size-[34rem] -translate-x-1/2 rounded-full blur-3xl"
       />
-      <Card className="relative w-full max-w-2xl gap-0 overflow-hidden rounded-3xl py-0 shadow-[0_28px_80px_rgba(8,8,8,0.1)]">
+      <div className="relative w-full max-w-2xl space-y-5">
+      {mediaSection}
+      <Card className="gap-0 overflow-hidden rounded-3xl py-0 shadow-[0_28px_80px_rgba(8,8,8,0.1)]">
         <CardHeader className="items-start gap-4 border-b px-6 py-7 sm:px-9 sm:py-9">
           <span className="bg-brand-night rounded-md">
             <BrandLogo />
@@ -102,6 +106,7 @@ export function AnalysisPending({
           </form>
         </CardContent>
       </Card>
+      </div>
     </main>
   );
 }

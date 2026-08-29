@@ -2,16 +2,20 @@
 
 import { Building2, CircleAlert, Sparkles, UserRound } from "lucide-react";
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 
 import { GoogleAuthOption, PasswordField } from "@/features/identity/client";
 import { ActionSubmitButton } from "@/shared/components/action-submit-button";
+import {
+  ProfileHeaderPreview,
+  type ProfileHeaderPreviewBadge,
+} from "@/shared/components/profile-header-preview";
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from "@/shared/components/ui/alert";
-import { buttonVariants } from "@/shared/components/ui/button";
+import { Button, buttonVariants } from "@/shared/components/ui/button";
 import {
   Field,
   FieldDescription,
@@ -31,11 +35,13 @@ import { useUnsavedChangesGuard } from "@/shared/hooks/use-unsaved-changes-guard
 import { cn } from "@/shared/lib/cn";
 import { dispatchFormActionPreservingValues } from "@/shared/lib/forms/dispatch-form-action-preserving-values";
 
+import { creatorNicheOptions } from "../domain/profile-segments";
 import type { OnboardingAction } from "../types/onboarding-action.types";
 import { initialOnboardingActionState } from "../types/onboarding-action.types";
 import { FormErrorSummary, mergeFieldErrors } from "./form-error-summary";
 import { OnboardingSubmitConfirmation } from "./onboarding-submit-confirmation";
 import { ProfileFormFields } from "./profile-form-fields.client";
+import { RegistrationStepper } from "./registration-stepper.client";
 
 const accountTypeOptions = [
   {
@@ -63,6 +69,23 @@ const accountTypeOptions = [
 
 type AccountType = (typeof accountTypeOptions)[number]["value"];
 
+const TOTAL_STEPS = 4;
+
+function initialsFromName(name: string) {
+  const trimmed = name.trim();
+
+  if (!trimmed) {
+    return "";
+  }
+
+  return trimmed
+    .split(/\s+/u)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 export function CombinedRegistrationForm({
   action,
   googleAction,
@@ -84,6 +107,35 @@ export function CombinedRegistrationForm({
       ? undefined
       : accountType;
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [nameValue, setNameValue] = useState("");
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(
+    null,
+  );
+  const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreviewUrl) {
+        URL.revokeObjectURL(avatarPreviewUrl);
+      }
+    };
+  }, [avatarPreviewUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (coverPreviewUrl) {
+        URL.revokeObjectURL(coverPreviewUrl);
+      }
+    };
+  }, [coverPreviewUrl]);
+  const [preview, setPreview] = useState({
+    location: "",
+    nicheLabels: [] as string[],
+    segment: "",
+  });
   const [state, formAction, pending] = useActionState(
     action,
     initialOnboardingActionState,
@@ -130,6 +182,84 @@ export function CombinedRegistrationForm({
     "whatsapp",
     state.fieldErrors?.whatsapp,
   );
+
+  function readPreviewFromForm() {
+    const form = formRef.current;
+
+    if (!form) {
+      return;
+    }
+
+    const data = new FormData(form);
+    const nicheLabels = data
+      .getAll("nicheSlugs")
+      .map((value) => String(value))
+      .map(
+        (slug) =>
+          creatorNicheOptions.find(([optionSlug]) => optionSlug === slug)?.[1] ??
+          slug,
+      )
+      .slice(0, 3);
+    const city = String(data.get("city") ?? "").trim();
+    const stateAbbreviation = String(data.get("state") ?? "").trim();
+
+    setPreview({
+      location:
+        city && stateAbbreviation
+          ? `${city}, ${stateAbbreviation.toUpperCase()}`
+          : city,
+      nicheLabels,
+      segment: String(data.get("segment") ?? "").trim(),
+    });
+  }
+
+  function handleAvatarFileChange(file: File | null) {
+    setAvatarPreviewUrl((current) => {
+      if (current) {
+        URL.revokeObjectURL(current);
+      }
+      return file ? URL.createObjectURL(file) : null;
+    });
+  }
+
+  function handleCoverFileChange(file: File | null) {
+    setCoverPreviewUrl((current) => {
+      if (current) {
+        URL.revokeObjectURL(current);
+      }
+      return file ? URL.createObjectURL(file) : null;
+    });
+  }
+
+  const goNext = () =>
+    setCurrentStep((step) => Math.min(TOTAL_STEPS, step + 1));
+  const goBack = () => setCurrentStep((step) => Math.max(1, step - 1));
+
+  const stepLabels =
+    role === "COMPANY"
+      ? ["Dados de acesso", "Empresa", "Redes sociais", "Localização e termos"]
+      : ["Dados de acesso", "Perfil", "Redes sociais", "Localização e termos"];
+
+  const headerBadges: ProfileHeaderPreviewBadge[] =
+    role === null
+      ? [{ label: "Escolha um tipo de cadastro", tone: "neutral" }]
+      : role === "COMPANY"
+        ? [
+            { label: "Empresa", tone: "primary" },
+            ...(preview.segment
+              ? [{ label: preview.segment, tone: "neutral" as const }]
+              : []),
+          ]
+        : [
+            {
+              label: accountType === "INFLUENCER" ? "Influenciador" : "Creator UGC",
+              tone: "primary",
+            },
+            ...preview.nicheLabels.map((label) => ({
+              label,
+              tone: "neutral" as const,
+            })),
+          ];
 
   if (state.status === "confirmation_required" && state.values?.email) {
     return (
@@ -202,6 +332,22 @@ export function CombinedRegistrationForm({
         </Alert>
       ) : null}
 
+      <ProfileHeaderPreview
+        avatarUrl={avatarPreviewUrl}
+        badges={headerBadges}
+        coverUrl={coverPreviewUrl}
+        displayName={
+          nameValue ||
+          (role === "COMPANY" ? "Nome fantasia da empresa" : "Seu nome completo")
+        }
+        initials={initialsFromName(nameValue)}
+        location={preview.location}
+        onAvatarClick={
+          role === null ? undefined : () => avatarInputRef.current?.click()
+        }
+        onCoverClick={() => coverInputRef.current?.click()}
+      />
+
       <form
         action={formAction}
         className="space-y-9"
@@ -209,241 +355,343 @@ export function CombinedRegistrationForm({
         onBlur={formValidationProps.onBlur}
         onInput={(event) => {
           setHasUnsavedChanges(true);
+          readPreviewFromForm();
           formValidationProps.onInput(event);
         }}
         onSubmit={(event) => {
+          if (currentStep < TOTAL_STEPS) {
+            event.preventDefault();
+            goNext();
+            return;
+          }
+
           submitConfirmation.handleSubmit(event, formValidationProps.onSubmit);
           dispatchFormActionPreservingValues(event, formAction);
         }}
         ref={formRef}
       >
+        <Input
+          accept="image/jpeg,image/png,image/webp"
+          className="sr-only"
+          name={role === "COMPANY" ? "logoFile" : "avatarFile"}
+          onChange={(event) =>
+            handleAvatarFileChange(event.target.files?.[0] ?? null)
+          }
+          ref={avatarInputRef}
+          tabIndex={-1}
+          type="file"
+        />
+        <Input
+          accept="image/jpeg,image/png,image/webp"
+          className="sr-only"
+          name="coverFile"
+          onChange={(event) =>
+            handleCoverFileChange(event.target.files?.[0] ?? null)
+          }
+          ref={coverInputRef}
+          tabIndex={-1}
+          type="file"
+        />
+
         <RequiredFieldsNotice />
         <FormErrorSummary errors={summaryErrors} />
-        <FieldSet>
-          <FieldLegend id="registration-role-label" required>
-            Como você vai usar a plataforma?
-          </FieldLegend>
-          <FieldDescription>
-            Essa escolha define os dados do cadastro e não poderá ser alterada
-            por você depois do envio.
-          </FieldDescription>
-          <Field data-invalid={Boolean(roleErrors?.length)}>
-            <RadioGroup
-              aria-describedby={
-                roleErrors?.length ? "registration-role-error" : undefined
-              }
-              aria-invalid={Boolean(roleErrors?.length)}
-              aria-labelledby="registration-role-label"
-              aria-required="true"
-              className="grid gap-4 md:grid-cols-3"
-              data-field-kind="radio-group"
-              data-field-name="accountType"
-              data-required-field="true"
-              data-required-message="Escolha como você vai usar a plataforma."
-              name="accountType"
-              onValueChange={(value) => {
-                if (
-                  value === "INFLUENCER" ||
-                  value === "UGC" ||
-                  value === "COMPANY"
-                ) {
-                  setAccountType(value);
-                  clearFieldError("role");
-                }
-              }}
-              value={accountType}
-            >
-              {accountTypeOptions.map((option) => {
-                const Icon = option.icon;
-                const selected = accountType === option.value;
 
-                return (
-                  <label
-                    className={cn(
-                      "focus-within:ring-ring/40 flex cursor-pointer items-start gap-4 rounded-2xl border-2 p-5 transition-colors focus-within:ring-3",
-                      selected
-                        ? "border-brand-blue bg-brand-blue-soft"
-                        : "border-border hover:border-brand-blue/40",
-                    )}
-                    htmlFor={`registration-${option.value.toLowerCase()}`}
-                    key={option.value}
-                    onClick={() => setAccountType(option.value)}
-                  >
-                    <span
-                      className={cn(
-                        "flex size-11 shrink-0 items-center justify-center rounded-xl",
-                        selected
-                          ? "bg-brand-blue text-white"
-                          : "bg-muted text-foreground",
-                      )}
-                    >
-                      <Icon aria-hidden="true" className="size-5" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <strong
-                        className="block"
-                        id={`registration-${option.value.toLowerCase()}-title`}
-                      >
-                        {option.label}
-                      </strong>
-                      <span
-                        className="text-muted-foreground mt-1 block text-sm leading-5"
-                        id={`registration-${option.value.toLowerCase()}-description`}
-                      >
-                        {option.description}
-                      </span>
-                    </span>
-                    <RadioGroupItem
-                      aria-describedby={`registration-${option.value.toLowerCase()}-description`}
-                      aria-labelledby={`registration-${option.value.toLowerCase()}-title`}
-                      id={`registration-${option.value.toLowerCase()}`}
-                      value={option.value}
-                    />
-                  </label>
-                );
-              })}
-            </RadioGroup>
-            <FieldError id="registration-role-error">
-              {roleErrors?.map((message) => (
+        <FieldGroup className="grid gap-5 sm:grid-cols-2">
+          <Field>
+            <FieldLabel htmlFor="registration-display-name" required>
+              {role === "COMPANY" ? "Nome fantasia" : "Nome completo"}
+            </FieldLabel>
+            <FieldDescription>
+              Aparece no cabeçalho do seu perfil, acima.
+            </FieldDescription>
+            <Input
+              className="rounded-xl"
+              data-validation-message={
+                role === "COMPANY"
+                  ? "Use pelo menos 2 caracteres."
+                  : "Use pelo menos 3 caracteres."
+              }
+              disabled={role === null}
+              id="registration-display-name"
+              maxLength={role === "COMPANY" ? 160 : 200}
+              minLength={role === "COMPANY" ? 2 : 3}
+              name={role === "COMPANY" ? "tradeName" : "legalName"}
+              onChange={(event) => setNameValue(event.target.value)}
+              placeholder={
+                role === "COMPANY"
+                  ? "Nome conhecido pelo público"
+                  : "Seu nome completo"
+              }
+              required
+              value={nameValue}
+            />
+          </Field>
+          <Field data-invalid={Boolean(emailErrors?.length)}>
+            <FieldLabel htmlFor="registration-email" required>
+              E-mail
+            </FieldLabel>
+            <FieldDescription id="registration-email-description">
+              Você usará este e-mail para entrar e acompanhar sua análise.
+            </FieldDescription>
+            <Input
+              aria-describedby={
+                [
+                  "registration-email-description",
+                  emailErrors?.length ? "registration-email-error" : undefined,
+                ]
+                  .filter(Boolean)
+                  .join(" ") || undefined
+              }
+              aria-invalid={Boolean(emailErrors?.length)}
+              autoComplete="email"
+              className="rounded-xl"
+              id="registration-email"
+              inputMode="email"
+              maxLength={320}
+              name="email"
+              placeholder="voce@exemplo.com"
+              required
+              type="email"
+            />
+            <FieldError id="registration-email-error">
+              {emailErrors?.map((message) => (
                 <span className="block" key={message}>
                   {message}
                 </span>
               ))}
             </FieldError>
           </Field>
-        </FieldSet>
+        </FieldGroup>
 
-        <input name="role" type="hidden" value={role ?? ""} />
+        <RegistrationStepper
+          currentStep={currentStep}
+          steps={stepLabels.map((label) => ({ label }))}
+        />
 
-        <FieldSet>
-          <FieldLegend>Dados de acesso</FieldLegend>
-          <FieldDescription>
-            Você usará este e-mail para entrar, acompanhar e receber
-            atualizações sobre a sua análise.
-          </FieldDescription>
-          <FieldGroup className="grid gap-5 md:grid-cols-2">
-            <Field
-              className="md:col-span-2"
-              data-invalid={Boolean(emailErrors?.length)}
-            >
-              <FieldLabel htmlFor="registration-email" required>
-                E-mail
-              </FieldLabel>
-              <Input
+        <div hidden={currentStep !== 1}>
+          <FieldSet>
+            <FieldLegend id="registration-role-label" required>
+              Como você vai usar a plataforma?
+            </FieldLegend>
+            <FieldDescription>
+              Essa escolha define os dados do cadastro e não poderá ser
+              alterada por você depois do envio.
+            </FieldDescription>
+            <Field data-invalid={Boolean(roleErrors?.length)}>
+              <RadioGroup
                 aria-describedby={
-                  emailErrors?.length ? "registration-email-error" : undefined
+                  roleErrors?.length ? "registration-role-error" : undefined
                 }
-                aria-invalid={Boolean(emailErrors?.length)}
-                autoComplete="email"
-                className="rounded-xl"
-                id="registration-email"
-                inputMode="email"
-                maxLength={320}
-                name="email"
-                placeholder="voce@exemplo.com"
-                required
-                type="email"
-              />
-              <FieldError id="registration-email-error">
-                {emailErrors?.map((message) => (
+                aria-invalid={Boolean(roleErrors?.length)}
+                aria-labelledby="registration-role-label"
+                aria-required="true"
+                className="grid gap-4 md:grid-cols-3"
+                data-field-kind="radio-group"
+                data-field-name="accountType"
+                data-required-field="true"
+                data-required-message="Escolha como você vai usar a plataforma."
+                name="accountType"
+                onValueChange={(value) => {
+                  if (
+                    value === "INFLUENCER" ||
+                    value === "UGC" ||
+                    value === "COMPANY"
+                  ) {
+                    setAccountType(value);
+                    clearFieldError("role");
+                  }
+                }}
+                value={accountType}
+              >
+                {accountTypeOptions.map((option) => {
+                  const Icon = option.icon;
+                  const selected = accountType === option.value;
+
+                  return (
+                    <label
+                      className={cn(
+                        "focus-within:ring-ring/40 flex cursor-pointer items-start gap-4 rounded-2xl border-2 p-5 transition-colors focus-within:ring-3",
+                        selected
+                          ? "border-brand-blue bg-brand-blue-soft"
+                          : "border-border hover:border-brand-blue/40",
+                      )}
+                      htmlFor={`registration-${option.value.toLowerCase()}`}
+                      key={option.value}
+                      onClick={() => setAccountType(option.value)}
+                    >
+                      <span
+                        className={cn(
+                          "flex size-11 shrink-0 items-center justify-center rounded-xl",
+                          selected
+                            ? "bg-brand-blue text-white"
+                            : "bg-muted text-foreground",
+                        )}
+                      >
+                        <Icon aria-hidden="true" className="size-5" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <strong
+                          className="block"
+                          id={`registration-${option.value.toLowerCase()}-title`}
+                        >
+                          {option.label}
+                        </strong>
+                        <span
+                          className="text-muted-foreground mt-1 block text-sm leading-5"
+                          id={`registration-${option.value.toLowerCase()}-description`}
+                        >
+                          {option.description}
+                        </span>
+                      </span>
+                      <RadioGroupItem
+                        aria-describedby={`registration-${option.value.toLowerCase()}-description`}
+                        aria-labelledby={`registration-${option.value.toLowerCase()}-title`}
+                        id={`registration-${option.value.toLowerCase()}`}
+                        value={option.value}
+                      />
+                    </label>
+                  );
+                })}
+              </RadioGroup>
+              <FieldError id="registration-role-error">
+                {roleErrors?.map((message) => (
                   <span className="block" key={message}>
                     {message}
                   </span>
                 ))}
               </FieldError>
             </Field>
-            <PasswordField
-              autoComplete="new-password"
-              description="Use 8 caracteres, maiúscula, minúscula e número."
-              error={passwordErrors}
-              id="registration-password"
-              label="Senha"
-              name="password"
-            />
-            <PasswordField
-              autoComplete="new-password"
-              error={passwordConfirmationErrors}
-              id="registration-password-confirmation"
-              label="Confirmar senha"
-              matchFieldName="password"
-              matchMessage="As senhas precisam ser iguais."
-              name="passwordConfirmation"
-            />
-            <Field
-              className="md:col-span-2"
-              data-invalid={Boolean(whatsappErrors?.length)}
-            >
-              <FieldLabel htmlFor="registration-whatsapp" required>
-                WhatsApp com DDD
-              </FieldLabel>
-              <FieldDescription id="registration-whatsapp-description">
-                Mínimo de 10 caracteres, incluindo o DDD.
-              </FieldDescription>
-              <Input
-                aria-describedby={
-                  [
-                    "registration-whatsapp-description",
-                    whatsappErrors?.length
-                      ? "registration-whatsapp-error"
-                      : undefined,
-                  ]
-                    .filter(Boolean)
-                    .join(" ") || undefined
-                }
-                aria-invalid={Boolean(whatsappErrors?.length)}
-                autoComplete="tel"
-                className="rounded-xl"
-                data-validation-message="Informe um WhatsApp com DDD."
-                id="registration-whatsapp"
-                inputMode="tel"
-                maxLength={20}
-                minLength={10}
-                name="whatsapp"
-                placeholder="(11) 99999-9999"
-                required
-                type="tel"
+          </FieldSet>
+
+          <input name="role" type="hidden" value={role ?? ""} />
+
+          <FieldSet>
+            <FieldLegend>Senha e contato</FieldLegend>
+            <FieldDescription>
+              Você usará o e-mail informado acima e esta senha para entrar.
+            </FieldDescription>
+            <FieldGroup className="grid gap-5 md:grid-cols-2">
+              <PasswordField
+                autoComplete="new-password"
+                description="Use 8 caracteres, maiúscula, minúscula e número."
+                error={passwordErrors}
+                id="registration-password"
+                label="Senha"
+                name="password"
               />
-              <FieldError id="registration-whatsapp-error">
-                {whatsappErrors?.map((message) => (
-                  <span className="block" key={message}>
-                    {message}
-                  </span>
-                ))}
-              </FieldError>
-            </Field>
-          </FieldGroup>
-        </FieldSet>
+              <PasswordField
+                autoComplete="new-password"
+                error={passwordConfirmationErrors}
+                id="registration-password-confirmation"
+                label="Confirmar senha"
+                matchFieldName="password"
+                matchMessage="As senhas precisam ser iguais."
+                name="passwordConfirmation"
+              />
+              <Field
+                className="md:col-span-2"
+                data-invalid={Boolean(whatsappErrors?.length)}
+              >
+                <FieldLabel htmlFor="registration-whatsapp" required>
+                  WhatsApp com DDD
+                </FieldLabel>
+                <FieldDescription id="registration-whatsapp-description">
+                  Mínimo de 10 caracteres, incluindo o DDD.
+                </FieldDescription>
+                <Input
+                  aria-describedby={
+                    [
+                      "registration-whatsapp-description",
+                      whatsappErrors?.length
+                        ? "registration-whatsapp-error"
+                        : undefined,
+                    ]
+                      .filter(Boolean)
+                      .join(" ") || undefined
+                  }
+                  aria-invalid={Boolean(whatsappErrors?.length)}
+                  autoComplete="tel"
+                  className="rounded-xl"
+                  data-validation-message="Informe um WhatsApp com DDD."
+                  id="registration-whatsapp"
+                  inputMode="tel"
+                  maxLength={20}
+                  minLength={10}
+                  name="whatsapp"
+                  placeholder="(11) 99999-9999"
+                  required
+                  type="tel"
+                />
+                <FieldError id="registration-whatsapp-error">
+                  {whatsappErrors?.map((message) => (
+                    <span className="block" key={message}>
+                      {message}
+                    </span>
+                  ))}
+                </FieldError>
+              </Field>
+            </FieldGroup>
+          </FieldSet>
+        </div>
 
         {role ? (
-          <ProfileFormFields
-            creatorType={creatorType}
-            fieldErrors={state.fieldErrors}
-            getFieldErrors={getFieldErrors}
-            key={role}
-            onFieldChange={clearFieldError}
-            role={role}
-            showWhatsappField={false}
-          />
-        ) : (
+          <div hidden={currentStep === 1}>
+            <ProfileFormFields
+              creatorType={creatorType}
+              hideDisplayNameField
+              currentStep={
+                currentStep === 3
+                  ? "audience"
+                  : currentStep === 4
+                    ? "location"
+                    : "profile"
+              }
+              fieldErrors={state.fieldErrors}
+              getFieldErrors={getFieldErrors}
+              key={role}
+              onFieldChange={clearFieldError}
+              role={role}
+              showWhatsappField={false}
+            />
+          </div>
+        ) : currentStep > 1 ? (
           <Alert>
             <AlertTitle>Escolha seu tipo de cadastro</AlertTitle>
             <AlertDescription>
-              Ao selecionar creator ou empresa, os campos específicos aparecem
-              aqui.
+              Volte para a primeira etapa e selecione creator ou empresa para
+              ver os campos desta etapa.
             </AlertDescription>
           </Alert>
-        )}
+        ) : null}
 
-        <ActionSubmitButton
-          className="w-full"
-          disabled={!isFormValid}
-          pending={pending}
-          pendingLabel="Criando cadastro..."
-          size="lg"
-        >
-          Criar conta e enviar perfil
-        </ActionSubmitButton>
-        {!isFormValid && !pending ? (
+        <div className="flex flex-col-reverse gap-3 sm:flex-row">
+          <Button
+            className="flex-1"
+            disabled={currentStep === 1}
+            onClick={goBack}
+            size="lg"
+            type="button"
+            variant="outline"
+          >
+            Voltar
+          </Button>
+          {currentStep < TOTAL_STEPS ? (
+            <Button className="flex-1" onClick={goNext} size="lg" type="button">
+              Avançar
+            </Button>
+          ) : (
+            <ActionSubmitButton
+              className="flex-1"
+              disabled={!isFormValid}
+              pending={pending}
+              pendingLabel="Criando cadastro..."
+              size="lg"
+            >
+              Criar conta e enviar perfil
+            </ActionSubmitButton>
+          )}
+        </div>
+        {currentStep === TOTAL_STEPS && !isFormValid && !pending ? (
           <p
             aria-live="polite"
             className="text-muted-foreground text-center text-sm"

@@ -8,6 +8,7 @@ import {
   signOutAction,
   type CurrentAccountDto,
 } from "@/features/identity/server";
+import { PendingReviewMediaStep } from "@/features/media/server";
 
 import { AnalysisPending } from "../../components/analysis-pending";
 import { BlockedAccount } from "../../components/blocked-account";
@@ -38,7 +39,12 @@ export async function AccountStatusBoundary({
   }
 
   if (account.status === "PENDING_REVIEW") {
-    return <AnalysisPending signOutAction={signOutAction} />;
+    return (
+      <AnalysisPending
+        mediaSection={<PendingReviewMediaStep role={account.role} />}
+        signOutAction={signOutAction}
+      />
+    );
   }
 
   if (account.status === "SUSPENDED") {

@@ -28,6 +28,11 @@ import {
   withAuditedTransaction,
 } from "@/features/audit/server";
 import type { VerifiedAuditContext } from "@/features/audit/server";
+import {
+  extractImageDimensions,
+  validateImageUpload,
+} from "@/shared/lib/media/image-validation";
+import { createSupabaseAdminClient } from "@/shared/server/supabase/admin-client";
 
 import type {
   EmailRegistrationInput,
@@ -37,7 +42,10 @@ import { calculateProfileCompletionForAccount } from "./drizzle-profile-completi
 import { createDrizzleCompanyProfileRepository } from "./drizzle-company-profile.repository";
 import { createDrizzleInfluencerProfileRepository } from "./drizzle-influencer-profile.repository";
 import { resolveCreatorNiches } from "./creator-niche.repository";
-import type { OnboardingRegistrationRepository } from "../services/onboarding-registration.service";
+import type {
+  OnboardingRegistrationRepository,
+  RegistrationMediaFiles,
+} from "../services/onboarding-registration.service";
 
 type ProfileInput = EmailRegistrationInput | GoogleProfileInput;
 type CreatorProfileInput = Extract<ProfileInput, { role: "INFLUENCER" }>;
@@ -76,6 +84,156 @@ function auditContext(
     reason,
     requestId,
     source: "AUTH_HOOK",
+  };
+}
+
+const registrationMediaFolderByPurpose: Readonly<
+  Record<"AVATAR" | "COVER" | "LOGO", string>
+> = {
+  AVATAR: "avatar",
+  COVER: "cover",
+  LOGO: "logo",
+};
+
+/** Mirrors the object-path convention in `features/media/domain/media-upload-policy.ts` (cross-feature import isn't allowed here). */
+function buildRegistrationMediaObjectPath({
+  accountId,
+  extension,
+  objectId,
+  purpose,
+}: {
+  accountId: string;
+  extension: string;
+  objectId: string;
+  purpose: "AVATAR" | "COVER" | "LOGO";
+}) {
+  return {
+    bucketName: "profile-media" as const,
+    objectPath: `${accountId}/${registrationMediaFolderByPurpose[purpose]}/${objectId}.${extension}`,
+  };
+}
+
+async function uploadPreparedProfileMedia(
+  transaction: ApplicationTransaction,
+  accountId: string,
+  file: File,
+  purpose: "AVATAR" | "COVER" | "LOGO",
+) {
+  if (file.size <= 0) {
+    return null;
+  }
+
+  const buffer = new Uint8Array(await file.arrayBuffer());
+  const validation = validateImageUpload({
+    declaredMimeType: file.type,
+    fileName: file.name,
+    headerBytes: buffer,
+    purpose,
+    sizeBytes: file.size,
+  });
+
+  if (!validation.ok) {
+    return null;
+  }
+
+  const dimensions = extractImageDimensions(buffer, validation.value.mimeType);
+
+  if (!dimensions) {
+    return null;
+  }
+
+  const { bucketName, objectPath } = buildRegistrationMediaObjectPath({
+    accountId,
+    extension: validation.value.extension,
+    objectId: crypto.randomUUID(),
+    purpose,
+  });
+
+  const { error: uploadError } = await createSupabaseAdminClient()
+    .storage.from(bucketName)
+    .upload(objectPath, buffer, {
+      contentType: validation.value.mimeType,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    return null;
+  }
+
+  const [asset] = await transaction
+    .insert(mediaAssets)
+    .values({
+      bucketName,
+      height: dimensions.height,
+      kind: purpose,
+      mimeType: validation.value.mimeType,
+      objectPath,
+      ownerAccountId: accountId,
+      sizeBytes: validation.value.sizeBytes,
+      status: "PENDING",
+      width: dimensions.width,
+    })
+    .returning({ id: mediaAssets.id });
+
+  return asset?.id ?? null;
+}
+
+async function attachUploadedRegistrationMedia(
+  transaction: ApplicationTransaction,
+  accountId: string,
+  input: EmailRegistrationInput,
+  media: RegistrationMediaFiles | undefined,
+): Promise<EmailRegistrationInput> {
+  if (!media) {
+    return input;
+  }
+
+  if (input.role === "COMPANY") {
+    const logoAssetId = media.logoFile
+      ? await uploadPreparedProfileMedia(
+          transaction,
+          accountId,
+          media.logoFile,
+          "LOGO",
+        )
+      : null;
+    const coverAssetId = media.coverFile
+      ? await uploadPreparedProfileMedia(
+          transaction,
+          accountId,
+          media.coverFile,
+          "COVER",
+        )
+      : null;
+
+    return {
+      ...input,
+      coverAssetId: coverAssetId ?? input.coverAssetId,
+      logoAssetId: logoAssetId ?? input.logoAssetId,
+    };
+  }
+
+  const avatarAssetId = media.avatarFile
+    ? await uploadPreparedProfileMedia(
+        transaction,
+        accountId,
+        media.avatarFile,
+        "AVATAR",
+      )
+    : null;
+  const coverAssetId = media.coverFile
+    ? await uploadPreparedProfileMedia(
+        transaction,
+        accountId,
+        media.coverFile,
+        "COVER",
+      )
+    : null;
+
+  return {
+    ...input,
+    avatarAssetId: avatarAssetId ?? input.avatarAssetId,
+    coverAssetId: coverAssetId ?? input.coverAssetId,
   };
 }
 
@@ -662,7 +820,7 @@ export function createDrizzleOnboardingRegistrationRepository(
     ) => withAuditedTransaction(context, work));
 
   return {
-    async prepareEmailRegistration({ identityId, input, requestId }) {
+    async prepareEmailRegistration({ identityId, input, media, requestId }) {
       return runAuditedTransaction(
         auditContext(requestId, "Prepare combined email registration"),
         async (transaction) => {
@@ -679,7 +837,14 @@ export function createDrizzleOnboardingRegistrationRepository(
             throw new Error("Application account was not created.");
           }
 
-          await insertRoleProfile(transaction, account.id, input);
+          const preparedInput = await attachUploadedRegistrationMedia(
+            transaction,
+            account.id,
+            input,
+            media,
+          );
+
+          await insertRoleProfile(transaction, account.id, preparedInput);
           return { accountId: account.id };
         },
       );

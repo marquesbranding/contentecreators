@@ -9,7 +9,7 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import {
   Alert,
@@ -64,8 +64,10 @@ interface MediaUploadFieldProps {
   actions: MediaUploadActions;
   activateOnUpload?: boolean;
   currentAssetId: string | null;
+  initialUrl?: string | null;
   label: string;
   onComplete?: (assetId: string) => void;
+  onPreviewChange?: (url: string | null) => void;
   onProfileVersionChange?: (version: number) => void;
   onRemove?: () => void;
   purpose: MediaPurpose;
@@ -76,8 +78,10 @@ export function MediaUploadField({
   actions,
   activateOnUpload = true,
   currentAssetId,
+  initialUrl = null,
   label,
   onComplete,
+  onPreviewChange,
   onProfileVersionChange,
   onRemove,
   purpose,
@@ -98,6 +102,12 @@ export function MediaUploadField({
   });
   const editing =
     Boolean(upload.previewUrl && upload.file) && upload.phase !== "success";
+  const displayedUrl = upload.previewUrl ?? initialUrl;
+
+  useEffect(() => {
+    onPreviewChange?.(displayedUrl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayedUrl]);
 
   return (
     <Field data-invalid={Boolean(upload.error)}>
@@ -133,7 +143,16 @@ export function MediaUploadField({
                 "w-24 rounded-lg",
             )}
           >
-            {currentAssetId ? (
+            {currentAssetId && initialUrl ? (
+              // Blob/signed previews cannot use next/image.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                alt={`Prévia de ${label.toLowerCase()}`}
+                className="size-full object-cover"
+                referrerPolicy="no-referrer"
+                src={initialUrl}
+              />
+            ) : currentAssetId ? (
               <CheckCircle2
                 aria-hidden="true"
                 className="text-[var(--brand-success)]"

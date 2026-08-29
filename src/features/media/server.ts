@@ -15,3 +15,4 @@ export {
 } from "./server/services/server-signed-media.service";
 export { loadCurrentInfluencerMediaFormState } from "./server/queries/influencer-media-form.queries";
 export { loadCurrentCompanyMediaFormState } from "./server/queries/company-media-form.queries";
+export { PendingReviewMediaStep } from "./server/components/pending-review-media-step";

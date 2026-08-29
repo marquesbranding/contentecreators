@@ -28,10 +28,14 @@ function UploadedAssetBadge({ children }: { children: React.ReactNode }) {
 export function CompanyMediaFields({
   actions,
   initialState,
+  initialUrls,
+  onPreviewChange,
   onProfileVersionChange,
 }: {
   actions: MediaUploadActions;
   initialState: CompanyMediaFormState;
+  initialUrls?: { cover?: string | null; logo?: string | null };
+  onPreviewChange?: (kind: "COVER" | "LOGO", url: string | null) => void;
   onProfileVersionChange?: (version: number) => void;
 }) {
   const [logoAssetId, setLogoAssetId] = useState(initialState.logoAssetId);
@@ -61,8 +65,10 @@ export function CompanyMediaFields({
         actions={actions}
         activateOnUpload={activateOnUpload}
         currentAssetId={activateOnUpload ? logoAssetId : null}
+        initialUrl={initialUrls?.logo}
         label="Logo da empresa (opcional)"
         onComplete={setLogoAssetId}
+        onPreviewChange={(url) => onPreviewChange?.("LOGO", url)}
         onProfileVersionChange={onProfileVersionChange}
         onRemove={() => setLogoAssetId(null)}
         purpose="LOGO"
@@ -75,8 +81,10 @@ export function CompanyMediaFields({
         actions={actions}
         activateOnUpload={activateOnUpload}
         currentAssetId={activateOnUpload ? coverAssetId : null}
+        initialUrl={initialUrls?.cover}
         label="Capa da empresa (opcional)"
         onComplete={setCoverAssetId}
+        onPreviewChange={(url) => onPreviewChange?.("COVER", url)}
         onProfileVersionChange={onProfileVersionChange}
         onRemove={() => setCoverAssetId(null)}
         purpose="COVER"

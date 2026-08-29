@@ -29,6 +29,7 @@ const purposeLocation: Readonly<
 const editableProfileStatuses = new Set([
   "ONBOARDING",
   "CHANGES_REQUESTED",
+  "PENDING_REVIEW",
   "APPROVED",
 ]);
 

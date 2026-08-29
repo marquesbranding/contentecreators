@@ -11,6 +11,12 @@ type OnboardingSubmissionResult =
   | { kind: "already_submitted" | "not_prepared" }
   | { kind: "submitted"; outboxId: string };
 
+export interface RegistrationMediaFiles {
+  avatarFile?: File | null;
+  coverFile?: File | null;
+  logoFile?: File | null;
+}
+
 interface RegistrationIdentityGateway {
   deleteIdentity(identityId: string): Promise<void>;
   signUp(input: {
@@ -35,6 +41,7 @@ interface OnboardingRegistrationRepository {
   prepareEmailRegistration(input: {
     identityId: string;
     input: EmailRegistrationInput;
+    media?: RegistrationMediaFiles;
     requestId: string;
   }): Promise<{ accountId: string }>;
   submitGoogleProfile(input: {
@@ -120,7 +127,10 @@ export function createOnboardingRegistrationService(
       };
     },
 
-    async registerWithEmail(input: EmailRegistrationInput) {
+    async registerWithEmail(
+      input: EmailRegistrationInput,
+      media?: RegistrationMediaFiles,
+    ) {
       if (
         abuseProtection &&
         !(await abuseProtection.consume(input.email)).allowed
@@ -157,6 +167,7 @@ export function createOnboardingRegistrationService(
         await repository.prepareEmailRegistration({
           identityId: identityResult.identityId,
           input,
+          media,
           requestId: crypto.randomUUID(),
         });
       } catch {

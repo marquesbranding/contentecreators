@@ -28,10 +28,14 @@ function UploadedAssetBadge({ children }: { children: React.ReactNode }) {
 export function InfluencerMediaFields({
   actions,
   initialState,
+  initialUrls,
+  onPreviewChange,
   onProfileVersionChange,
 }: {
   actions: MediaUploadActions;
   initialState: InfluencerMediaFormState;
+  initialUrls?: { avatar?: string | null; cover?: string | null };
+  onPreviewChange?: (kind: "AVATAR" | "COVER", url: string | null) => void;
   onProfileVersionChange?: (version: number) => void;
 }) {
   const [avatarAssetId, setAvatarAssetId] = useState(
@@ -63,8 +67,10 @@ export function InfluencerMediaFields({
         actions={actions}
         activateOnUpload={activateOnUpload}
         currentAssetId={activateOnUpload ? avatarAssetId : null}
+        initialUrl={initialUrls?.avatar}
         label="Perfil"
         onComplete={setAvatarAssetId}
+        onPreviewChange={(url) => onPreviewChange?.("AVATAR", url)}
         onProfileVersionChange={onProfileVersionChange}
         onRemove={() => setAvatarAssetId(null)}
         purpose="AVATAR"
@@ -77,8 +83,10 @@ export function InfluencerMediaFields({
         actions={actions}
         activateOnUpload={activateOnUpload}
         currentAssetId={activateOnUpload ? coverAssetId : null}
+        initialUrl={initialUrls?.cover}
         label="Capa"
         onComplete={setCoverAssetId}
+        onPreviewChange={(url) => onPreviewChange?.("COVER", url)}
         onProfileVersionChange={onProfileVersionChange}
         onRemove={() => setCoverAssetId(null)}
         purpose="COVER"

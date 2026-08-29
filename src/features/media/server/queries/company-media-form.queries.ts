@@ -18,6 +18,7 @@ export async function loadCurrentCompanyMediaFormState(): Promise<CompanyMediaFo
         account.role !== "COMPANY" ||
         (account.status !== "ONBOARDING" &&
           account.status !== "CHANGES_REQUESTED" &&
+          account.status !== "PENDING_REVIEW" &&
           account.status !== "APPROVED")
       ) {
         throw new Error("Account cannot load company media form state.");

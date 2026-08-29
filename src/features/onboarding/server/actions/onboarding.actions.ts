@@ -57,6 +57,11 @@ function formPayload(formData: FormData) {
   };
 }
 
+function readOptionalImageFile(formData: FormData, field: string) {
+  const value = formData.get(field);
+  return value instanceof File && value.size > 0 ? value : null;
+}
+
 function validationFailure(
   error: { flatten(): { fieldErrors: Record<string, string[] | undefined> } },
   formData: FormData,
@@ -91,7 +96,11 @@ export async function registerWithEmailAction(
   }
 
   const service = await createServerOnboardingRegistrationService();
-  const result = await service.registerWithEmail(parsed.data);
+  const result = await service.registerWithEmail(parsed.data, {
+    avatarFile: readOptionalImageFile(formData, "avatarFile"),
+    coverFile: readOptionalImageFile(formData, "coverFile"),
+    logoFile: readOptionalImageFile(formData, "logoFile"),
+  });
 
   if (result.kind === "redirect") {
     redirect(result.destination);

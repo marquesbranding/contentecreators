@@ -3,9 +3,11 @@ import { redirect } from "next/navigation";
 
 import {
   createServerRoleSelectionService,
+  getServerCurrentAccount,
   signOutAction,
 } from "@/features/identity/server";
 import { AnalysisPending } from "@/features/moderation";
+import { PendingReviewMediaStep } from "@/features/media/server";
 
 export const metadata: Metadata = {
   title: "Cadastro em análise",
@@ -36,9 +38,16 @@ export default async function AnalysisStatusPage({
     );
   }
 
+  const account = await getServerCurrentAccount();
+  const mediaSection =
+    account?.role === "INFLUENCER" || account?.role === "COMPANY" ? (
+      <PendingReviewMediaStep role={account.role} />
+    ) : undefined;
+
   return (
     <AnalysisPending
       emailConfirmed={confirmedValue === "1"}
+      mediaSection={mediaSection}
       signOutAction={signOutAction}
     />
   );

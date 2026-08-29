@@ -18,6 +18,7 @@ export async function loadCurrentInfluencerMediaFormState(): Promise<InfluencerM
         account.role !== "INFLUENCER" ||
         (account.status !== "ONBOARDING" &&
           account.status !== "CHANGES_REQUESTED" &&
+          account.status !== "PENDING_REVIEW" &&
           account.status !== "APPROVED")
       ) {
         throw new Error("Account cannot load influencer media form state.");
