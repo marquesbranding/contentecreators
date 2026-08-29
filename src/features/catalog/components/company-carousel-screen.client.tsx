@@ -1,9 +1,12 @@
 "use client";
 
+import { Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { companySegmentOptions } from "@/features/onboarding/domain/profile-segments";
+import { Input } from "@/shared/components/ui/input";
+import { InputGroup, InputGroupAddon } from "@/shared/components/ui/input-group";
 import { SearchableSelect } from "@/shared/components/ui/searchable-select";
 import { BrowserQueryProvider } from "@/shared/query/browser-query-provider";
 
@@ -12,6 +15,58 @@ import { COMPANY_CAROUSEL_DEFAULT_LIMIT } from "../types/company-carousel.types"
 import { useCompanyCarousel } from "../hooks/use-company-carousel";
 import type { CompanyCarouselViewResponseDto } from "../types/company-carousel-view.types";
 import { CompanyCarouselView } from "./company-carousel";
+
+const SEARCH_DEBOUNCE_MS = 300;
+
+function CompanyNameSearch() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+  const [value, setValue] = useState(searchParams.get("companySearch") ?? "");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+
+  useEffect(() => {
+    return () => clearTimeout(debounceRef.current);
+  }, []);
+
+  return (
+    <InputGroup className="w-full sm:w-72">
+      <InputGroupAddon>
+        <Search aria-hidden="true" className="text-muted-foreground size-4" />
+      </InputGroupAddon>
+      <Input
+        aria-label="Buscar empresas por nome ou segmento"
+        className="rounded-xl"
+        disabled={isPending}
+        onChange={(event) => {
+          const nextValue = event.target.value;
+          setValue(nextValue);
+          clearTimeout(debounceRef.current);
+          debounceRef.current = setTimeout(() => {
+            const nextParams = new URLSearchParams(searchParams.toString());
+
+            if (nextValue.trim()) {
+              nextParams.set("companySearch", nextValue.trim());
+            } else {
+              nextParams.delete("companySearch");
+            }
+
+            startTransition(() => {
+              const query = nextParams.toString();
+              router.replace(query ? `${pathname}?${query}` : pathname);
+            });
+          }, SEARCH_DEBOUNCE_MS);
+        }}
+        placeholder="Buscar empresas por nome ou segmento"
+        type="search"
+        value={value}
+      />
+    </InputGroup>
+  );
+}
 
 function CompanySegmentFilter() {
   const router = useRouter();
@@ -75,20 +130,9 @@ function CompanyCarouselScreenContent({
   const query = useCompanyCarousel(limit, initialData, filters);
 
   return (
-    <section aria-labelledby="company-grid-heading" className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h2
-            className="text-xl font-bold tracking-[-0.02em]"
-            id="company-grid-heading"
-          >
-            Empresas na comunidade
-          </h2>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Conheça as empresas cadastradas na Contente Creators e entre em
-            contato para apresentar seu trabalho.
-          </p>
-        </div>
+    <section aria-labelledby="company-carousel-heading" className="space-y-4">
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        <CompanyNameSearch />
         <CompanySegmentFilter />
       </div>
 

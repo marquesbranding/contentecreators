@@ -32,7 +32,24 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
   return (
     <OnboardingFormShell
       currentStep={1}
-      description="Preencha seu acesso e as informações do perfil. Depois de confirmar o e-mail, o cadastro será enviado para análise."
+      description={
+        <>
+          <p>
+            Preencha suas informações para a criação de uma nova conta. Seu
+            cadastro será enviado para análise e você será notificado(a)
+            sobre o seu processo de aprovação no e-mail informado.
+          </p>
+          <p>
+            Após aprovado seu perfil estará público nesta plataforma.
+            Empresas poderão te encontrar e entrar em contato.
+          </p>
+          <p>
+            O cadastro e toda interação dentro da plataforma é gratuito e se
+            manterá assim durante a fase BETA. Qualquer alteração será
+            notificada e só será aplicada após a sua aprovação.
+          </p>
+        </>
+      }
       progressLabel="Conta e perfil"
       title="Crie sua conta e seu perfil"
       totalSteps={1}

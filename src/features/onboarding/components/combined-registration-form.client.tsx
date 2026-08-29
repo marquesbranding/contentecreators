@@ -39,19 +39,22 @@ import { ProfileFormFields } from "./profile-form-fields.client";
 
 const accountTypeOptions = [
   {
-    description: "Quero cadastrar meu perfil, audiência e canais.",
+    description:
+      "Influenciador é uma pessoa com muitos seguidores que compartilha opiniões e conteúdos capazes de impactar decisões, comportamentos e compras de seus seguidores.",
     icon: UserRound,
     label: "Sou influencer",
     value: "INFLUENCER",
   },
   {
-    description: "Crio conteúdo autêntico para marcas, com poucos seguidores.",
+    description:
+      "UGC é conteúdo criado por pessoas comuns, geralmente com poucos seguidores, que compartilham experiências reais com uma marca ou produto.",
     icon: Sparkles,
     label: "Sou UGC",
     value: "UGC",
   },
   {
-    description: "Quero cadastrar minha empresa para encontrar creators.",
+    description:
+      "Marcas que querem buscar e contratar UGCs ou influenciadores para divulgar seus produtos ou serviços, buscando alcançar, engajar e influenciar a compra do seu público-alvo.",
     icon: Building2,
     label: "Sou empresa",
     value: "COMPANY",

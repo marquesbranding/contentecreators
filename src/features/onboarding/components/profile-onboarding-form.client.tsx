@@ -19,6 +19,7 @@ import { BrowserQueryProvider } from "@/shared/query/browser-query-provider";
 
 import { useOnboardingAutosave } from "../hooks/use-onboarding-autosave";
 import type { CorrectedProfileResubmissionCommand } from "../schemas/corrected-profile-resubmission-schema";
+import type { CreatorOnboardingDraftPayload } from "../schemas/onboarding-draft-schema";
 import type { OnboardingAction } from "../types/onboarding-action.types";
 import { initialOnboardingActionState } from "../types/onboarding-action.types";
 import type {
@@ -81,6 +82,14 @@ function ProfileOnboardingFormContent({
   useActionSuccessToast(state, {
     title: correctionCommand ? "Correções reenviadas" : "Perfil enviado",
   });
+  const resolvedInitialValues =
+    initialValues ??
+    (initialDraft?.role === role ? initialDraft.payload : undefined);
+  const knownCreatorType =
+    role === "INFLUENCER"
+      ? (resolvedInitialValues as CreatorOnboardingDraftPayload | undefined)
+          ?.creatorType
+      : undefined;
 
   return (
     <>
@@ -130,12 +139,10 @@ function ProfileOnboardingFormContent({
         <RequiredFieldsNotice />
         <FormErrorSummary errors={summaryErrors} />
         <ProfileFormFields
+          creatorType={knownCreatorType}
           fieldErrors={state.fieldErrors}
           getFieldErrors={getFieldErrors}
-          initialValues={
-            initialValues ??
-            (initialDraft?.role === role ? initialDraft.payload : undefined)
-          }
+          initialValues={resolvedInitialValues}
           onFieldChange={clearFieldError}
           role={role}
         />

@@ -100,18 +100,17 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
       role="region"
     >
       <div>
-        <p className="text-brand-blue text-sm font-extrabold tracking-[0.12em] uppercase">
-          Empresas aprovadas
-        </p>
         <h2
-          className="mt-2 text-3xl font-extrabold tracking-[-0.035em]"
+          className="text-3xl font-extrabold tracking-[-0.035em]"
           id="company-carousel-heading"
         >
           Marcas para conhecer
         </h2>
         <p className="text-muted-foreground mt-2 max-w-2xl text-base leading-7">
-          Empresas cadastradas na Contente Creators. Entre em contato para
-          apresentar seu trabalho e abrir novas oportunidades.
+          Essas são as empresas cadastradas na Contente Creators. Conheça
+          cada uma delas e fique à vontade para entrar em contato e
+          apresentar seu trabalho. Queremos ser a sua conexão com novas
+          oportunidades.
         </p>
       </div>
       <ul

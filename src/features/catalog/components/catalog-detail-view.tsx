@@ -391,6 +391,9 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
                   </div>
                 )}
               </div>
+              <CardTitle className="text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
+                <h1>{detail.displayName}</h1>
+              </CardTitle>
               <div className="flex flex-wrap gap-2">
                 <Badge>
                   {detail.creatorType === "UGC"
@@ -403,9 +406,6 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
                   </Badge>
                 ))}
               </div>
-              <CardTitle className="text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
-                <h1>{detail.displayName}</h1>
-              </CardTitle>
               <CardDescription className="flex items-center gap-2 text-base">
                 <MapPin aria-hidden="true" className="size-4" />
                 {detail.location.city}, {detail.location.state}
