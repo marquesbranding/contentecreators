@@ -137,6 +137,12 @@ function toCardViewModel(
 
   return {
     ...creator,
+    cover: creator.cover
+      ? {
+          alt: "",
+          src: creator.cover.url,
+        }
+      : null,
     detailHref: `/app/creators/${creator.creatorId}`,
     media: creator.avatar
       ? {
@@ -145,6 +151,16 @@ function toCardViewModel(
         }
       : null,
     metrics,
+    primarySocial: metric
+      ? {
+          followerLabel:
+            metric.followerCount === null
+              ? null
+              : `${formatMetricValue(metric.followerCount)} seguidores`,
+          handle: metric.handle,
+          platform: metric.platform,
+        }
+      : null,
   };
 }
 

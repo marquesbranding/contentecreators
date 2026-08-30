@@ -42,6 +42,7 @@ export interface CatalogNicheDto {
 export interface CatalogCardMetricDto {
   engagementRate: number | null;
   followerCount: number | null;
+  handle: string | null;
   interactionCount: number | null;
   isPrimary: boolean;
   observedOn: string;
@@ -61,6 +62,11 @@ export interface CreatorCatalogCardDto {
    */
   avatarAssetId?: string | null;
   bioExcerpt: string | null;
+  /**
+   * Server-only reference used to exchange the active cover image for a
+   * short-lived signed URL before the page crosses the browser boundary.
+   */
+  coverAssetId?: string | null;
   city: string | null;
   creatorId: string;
   creatorType: CatalogCreatorType;

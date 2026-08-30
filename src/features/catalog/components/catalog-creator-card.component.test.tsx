@@ -12,6 +12,10 @@ const creator: CatalogCreatorCardViewModel = {
   bioExcerpt:
     "Crio conteúdo sobre rotina, beleza e consumo consciente para marcas.",
   city: "São Paulo",
+  cover: {
+    alt: "",
+    src: "https://media.example.test/signed/cover",
+  },
   creatorId: "10000000-0000-4000-8000-000000000001",
   creatorType: "UGC",
   detailHref: "/app/creators/10000000-0000-4000-8000-000000000001",
@@ -30,13 +34,18 @@ const creator: CatalogCreatorCardViewModel = {
     { name: "Beleza", slug: "beleza" },
     { name: "Lifestyle", slug: "lifestyle" },
   ],
+  primarySocial: {
+    followerLabel: "24 mil seguidores",
+    handle: "@marinaconteudo",
+    platform: "INSTAGRAM",
+  },
   socialPlatforms: ["INSTAGRAM", "TIKTOK"],
   state: "SP",
 };
 
 describe("CatalogCreatorCard", () => {
-  it("presents the approved card fields and labels metrics as self-reported", () => {
-    render(<CatalogCreatorCard creator={creator} />);
+  it("presents the approved card fields and the primary social channel", () => {
+    const { container } = render(<CatalogCreatorCard creator={creator} />);
 
     expect(
       screen.getByRole("heading", { name: "Marina Conteúdo", level: 3 }),
@@ -44,15 +53,15 @@ describe("CatalogCreatorCard", () => {
     expect(screen.getByText("Criador UGC")).toBeVisible();
     expect(screen.getByText("São Paulo, SP")).toBeVisible();
     expect(screen.getByText("Beleza")).toBeVisible();
-    expect(screen.getByText("Instagram")).toBeVisible();
-    expect(screen.getByText("24 mil")).toBeVisible();
-    expect(screen.getByText("Informado pelo criador")).toBeVisible();
+    expect(screen.getByText("@marinaconteudo")).toBeVisible();
+    expect(screen.getByText(/24 mil seguidores/)).toBeVisible();
     expect(
       screen.getByRole("link", { name: "Ver perfil de Marina Conteúdo" }),
     ).toHaveAttribute("href", creator.detailHref);
     expect(
       screen.getByRole("img", { name: creator.media?.alt }),
     ).toHaveAttribute("src", creator.media?.src);
+    expect(container.querySelector(`img[src="${creator.cover?.src}"]`)).not.toBeNull();
   });
 
   it("uses a safe media fallback without inventing a participant image", () => {
@@ -60,6 +69,7 @@ describe("CatalogCreatorCard", () => {
       <CatalogCreatorCard
         creator={{
           ...creator,
+          cover: null,
           media: null,
           metrics: [],
         }}

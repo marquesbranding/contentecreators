@@ -37,6 +37,7 @@ export const creatorCatalogBrowserCardSchema = z
     avatar: catalogSignedImageSchema.nullable(),
     bioExcerpt: z.string().trim().max(280).nullable(),
     city: z.string().trim().max(120).nullable(),
+    cover: catalogSignedImageSchema.nullable(),
     creatorId: z.uuid(),
     creatorType: catalogCreatorTypeSchema,
     displayName: z.string().trim().min(2).max(120),
@@ -46,6 +47,7 @@ export const creatorCatalogBrowserCardSchema = z
           .object({
             engagementRate: z.number().min(0).max(100).nullable(),
             followerCount: z.number().int().nonnegative().nullable(),
+            handle: z.string().trim().max(160).nullable(),
             interactionCount: z.number().int().nonnegative().nullable(),
             isPrimary: z.boolean(),
             observedOn: z.iso.date(),
@@ -96,9 +98,10 @@ export const creatorCatalogBrowserPageSchema = z
 
 export interface CreatorCatalogBrowserCardDto extends Omit<
   CreatorCatalogCardDto,
-  "avatarAssetId"
+  "avatarAssetId" | "coverAssetId"
 > {
   avatar: CatalogSignedImageDto | null;
+  cover: CatalogSignedImageDto | null;
 }
 
 export interface CreatorCatalogBrowserPageDto extends Omit<

@@ -21,6 +21,7 @@ const firstPage: CreatorCatalogBrowserPageDto = {
       avatar: null,
       bioExcerpt: "Conteúdo sobre moda.",
       city: "Recife",
+      cover: null,
       creatorId: "a0000000-0000-4000-8000-000000000001",
       creatorType: "INFLUENCER",
       displayName: "Ana",

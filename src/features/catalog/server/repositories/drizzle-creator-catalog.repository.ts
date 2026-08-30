@@ -113,6 +113,7 @@ export async function listCreatorCatalog(
   const rows = await transaction
     .select({
       avatarAssetId: creatorProfiles.avatarAssetId,
+      coverAssetId: creatorProfiles.coverAssetId,
       bioExcerpt: sql<string | null>`
         case
           when ${creatorProfiles.bio} is null then null
@@ -130,6 +131,7 @@ export async function listCreatorCatalog(
               jsonb_build_object(
                 'engagementRate', catalog_metric.engagement_rate,
                 'followerCount', catalog_metric.follower_count,
+                'handle', catalog_metric.handle,
                 'interactionCount', catalog_metric.interaction_count,
                 'isPrimary', coalesce(catalog_metric.is_primary, false),
                 'observedOn', catalog_metric.observed_on,
@@ -143,6 +145,7 @@ export async function listCreatorCatalog(
               select distinct on (catalog_metric_snapshot.platform)
                 catalog_metric_snapshot.engagement_rate::double precision as engagement_rate,
                 catalog_metric_snapshot.follower_count,
+                catalog_social_profile.handle,
                 catalog_metric_snapshot.interaction_count,
                 catalog_social_profile.is_primary,
                 catalog_metric_snapshot.observed_on,

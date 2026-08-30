@@ -1,10 +1,4 @@
-import {
-  BarChart3,
-  ImageOff,
-  MapPin,
-  ShieldCheck,
-  SquareArrowOutUpRight,
-} from "lucide-react";
+import { ImageOff, MapPin, SquareArrowOutUpRight } from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "@/shared/components/ui/badge";
@@ -12,7 +6,6 @@ import { buttonVariants } from "@/shared/components/ui/button";
 import { SocialPlatformIcon } from "@/shared/components/social-platform-icon";
 import {
   Card,
-  CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -35,46 +28,37 @@ export interface CatalogSelfReportedMetricViewModel {
   value: string;
 }
 
+export interface CatalogPrimarySocialViewModel {
+  followerLabel: string | null;
+  handle: string | null;
+  platform: CatalogSocialPlatform;
+}
+
 export interface CatalogCreatorCardViewModel extends Omit<
   CreatorCatalogCardDto,
   "creatorType" | "metrics"
 > {
+  cover?: CatalogCreatorMediaViewModel | null;
   creatorType: CatalogCreatorType;
   detailHref: string;
   media?: CatalogCreatorMediaViewModel | null;
   metrics?: CatalogSelfReportedMetricViewModel[];
   niches: CatalogNicheDto[];
+  primarySocial?: CatalogPrimarySocialViewModel | null;
   socialPlatforms: CatalogSocialPlatform[];
 }
-
-const socialPlatformLabels: Record<CatalogSocialPlatform, string> = {
-  FACEBOOK: "Facebook",
-  INSTAGRAM: "Instagram",
-  LINKEDIN: "LinkedIn",
-  OTHER: "Outra rede",
-  TELEGRAM: "Telegram",
-  THREADS: "Threads",
-  TIKTOK: "TikTok",
-  X: "X",
-  YOUTUBE: "YouTube",
-};
 
 function creatorTypeLabel(creatorType: CatalogCreatorType) {
   return creatorType === "UGC" ? "Criador UGC" : "Influenciador";
 }
 
-function CreatorMedia({ creator }: { creator: CatalogCreatorCardViewModel }) {
-  if (!creator.media) {
+function CreatorCover({ creator }: { creator: CatalogCreatorCardViewModel }) {
+  if (!creator.cover) {
     return (
       <div
-        aria-label={`${creator.displayName} está sem foto de perfil`}
-        className="from-brand-blue/35 to-brand-night text-brand-blue flex aspect-[16/9] items-center justify-center border-b border-white/10 bg-gradient-to-br"
-        role="img"
-      >
-        <span className="flex size-16 items-center justify-center rounded-2xl border border-white/10 bg-white/10">
-          <ImageOff aria-hidden="true" className="size-8" />
-        </span>
-      </div>
+        aria-hidden="true"
+        className="from-brand-blue/30 via-brand-pink/15 to-brand-lime/25 relative z-0 h-20 bg-gradient-to-br sm:h-24"
+      />
     );
   }
 
@@ -83,15 +67,39 @@ function CreatorMedia({ creator }: { creator: CatalogCreatorCardViewModel }) {
     // Next Image host allowlists; the server view model owns URL expiry.
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      alt={creator.media.alt}
-      className="aspect-[16/9] w-full object-cover"
+      alt=""
+      className="relative z-0 h-20 w-full object-cover sm:h-24"
       decoding="async"
-      height="480"
       loading="lazy"
       referrerPolicy="no-referrer"
-      src={creator.media.src}
-      width="640"
+      src={creator.cover.src}
     />
+  );
+}
+
+function CreatorAvatar({ creator }: { creator: CatalogCreatorCardViewModel }) {
+  return (
+    <div className="absolute -bottom-7 left-4 z-10 size-16 overflow-hidden rounded-2xl border-4 border-white bg-white shadow-md">
+      {creator.media ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          alt={creator.media.alt}
+          className="size-full object-cover"
+          decoding="async"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          src={creator.media.src}
+        />
+      ) : (
+        <div
+          aria-label={`${creator.displayName} está sem foto de perfil`}
+          className="bg-muted text-muted-foreground flex size-full items-center justify-center"
+          role="img"
+        >
+          <ImageOff aria-hidden="true" className="size-6" />
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -106,9 +114,37 @@ function CreatorLocation({
   }
 
   return (
-    <p className="flex items-center gap-1.5 text-sm text-white/55">
-      <MapPin aria-hidden="true" className="size-4 shrink-0" />
+    <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
+      <MapPin aria-hidden="true" className="size-3.5 shrink-0" />
       {location}
+    </p>
+  );
+}
+
+function CreatorPrimarySocial({
+  primarySocial,
+}: {
+  primarySocial: CatalogCreatorCardViewModel["primarySocial"];
+}) {
+  if (!primarySocial) {
+    return null;
+  }
+
+  return (
+    <p className="flex items-center gap-1.5 text-xs">
+      <SocialPlatformIcon
+        className="size-3.5 shrink-0"
+        platform={primarySocial.platform}
+      />
+      {primarySocial.handle ? (
+        <span className="font-semibold">{primarySocial.handle}</span>
+      ) : null}
+      {primarySocial.followerLabel ? (
+        <span className="text-muted-foreground">
+          {primarySocial.handle ? "· " : ""}
+          {primarySocial.followerLabel}
+        </span>
+      ) : null}
     </p>
   );
 }
@@ -118,103 +154,55 @@ export function CatalogCreatorCard({
 }: {
   creator: CatalogCreatorCardViewModel;
 }) {
-  const metrics = creator.metrics ?? [];
+  const visibleNiches = creator.niches.slice(0, 2);
+  const hiddenNicheCount = creator.niches.length - visibleNiches.length;
 
   return (
     <Card
-      className="bg-brand-night-surface h-full gap-0 overflow-hidden rounded-2xl border-white/10 py-0 text-white shadow-md transition-transform duration-200 hover:-translate-y-0.5 hover:border-white/20"
+      className="hover:border-brand-blue/30 h-full gap-0 overflow-hidden rounded-2xl border-border py-0 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
       role="article"
     >
-      <CreatorMedia creator={creator} />
+      <div className="relative">
+        <CreatorCover creator={creator} />
+        <CreatorAvatar creator={creator} />
+      </div>
 
-      <CardHeader className="gap-3 px-5 pt-5">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge
-            className="bg-brand-blue/30 border-transparent text-white"
-            variant="ghost"
-          >
+      <CardHeader className="gap-2.5 px-4 pt-9 pb-3">
+        <CardTitle>
+          <h3 className="truncate text-base font-extrabold tracking-[-0.01em]">
+            {creator.displayName}
+          </h3>
+        </CardTitle>
+        <CreatorLocation city={creator.city} state={creator.state} />
+        <CreatorPrimarySocial primarySocial={creator.primarySocial} />
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Badge className="text-[11px]">
             {creatorTypeLabel(creator.creatorType)}
           </Badge>
-          {creator.socialPlatforms.map((platform) => (
-            <Badge
-              className="gap-1.5 border-white/15 bg-white/5 text-white/70"
-              key={platform}
-              variant="outline"
-            >
-              <SocialPlatformIcon className="size-3.5" platform={platform} />
-              {socialPlatformLabels[platform]}
+          {visibleNiches.map((niche) => (
+            <Badge className="text-[11px]" key={niche.slug} variant="secondary">
+              {niche.name}
             </Badge>
           ))}
-        </div>
-        <div className="space-y-1.5">
-          <CardTitle>
-            <h3 className="text-xl font-bold tracking-[-0.02em]">
-              {creator.displayName}
-            </h3>
-          </CardTitle>
-          <CreatorLocation city={creator.city} state={creator.state} />
+          {hiddenNicheCount > 0 ? (
+            <Badge className="text-[11px]" variant="secondary">
+              +{hiddenNicheCount}
+            </Badge>
+          ) : null}
         </div>
       </CardHeader>
 
-      <CardContent className="flex flex-1 flex-col gap-4 px-5 py-4">
-        {creator.bioExcerpt ? (
-          <p className="line-clamp-3 leading-6 text-white/60">
-            {creator.bioExcerpt}
-          </p>
-        ) : null}
-
-        {creator.niches.length > 0 ? (
-          <ul aria-label="Nichos" className="flex flex-wrap gap-2">
-            {creator.niches.map((niche) => (
-              <li key={niche.slug}>
-                <Badge
-                  className="bg-white/10 text-white/70"
-                  variant="secondary"
-                >
-                  {niche.name}
-                </Badge>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-
-        {metrics.length > 0 ? (
-          <div className="mt-auto rounded-xl border border-white/10 bg-black/10 p-3">
-            <p className="mb-3 flex items-center gap-1.5 text-xs font-semibold text-white/50">
-              <BarChart3 aria-hidden="true" className="size-4" />
-              Informado pelo criador
-            </p>
-            <dl className="grid grid-cols-2 gap-3">
-              {metrics.map((metric) => (
-                <div
-                  className="min-w-0"
-                  key={`${metric.label}-${metric.value}`}
-                >
-                  <dd className="text-lg font-bold text-white">
-                    {metric.value}
-                  </dd>
-                  <dt className="mt-0.5 truncate text-xs text-white/60">
-                    {metric.label}
-                  </dt>
-                </div>
-              ))}
-            </dl>
-          </div>
-        ) : null}
-      </CardContent>
-
-      <CardFooter className="border-t border-white/10 bg-transparent px-5 py-4">
+      <CardFooter className="px-4 pt-0 pb-4">
         <Link
           aria-label={`Ver perfil de ${creator.displayName}`}
           className={buttonVariants({
-            className: "w-full",
-            size: "lg",
+            className: "h-9 w-full text-sm",
+            size: "sm",
           })}
           href={creator.detailHref}
         >
-          <ShieldCheck aria-hidden="true" />
           Conhecer creator
-          <SquareArrowOutUpRight aria-hidden="true" />
+          <SquareArrowOutUpRight aria-hidden="true" className="size-3.5" />
         </Link>
       </CardFooter>
     </Card>

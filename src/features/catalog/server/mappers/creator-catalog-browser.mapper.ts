@@ -10,7 +10,7 @@ export type CatalogSignedImageResolver = (
   assetId: string,
 ) => Promise<CatalogSignedImageDto | null>;
 
-async function resolveAvatar(
+async function resolveCatalogImage(
   assetId: string | null | undefined,
   resolveImage: CatalogSignedImageResolver,
 ) {
@@ -32,10 +32,18 @@ export async function toCreatorCatalogBrowserPage(
   resolveImage: CatalogSignedImageResolver,
 ): Promise<CreatorCatalogBrowserPageDto> {
   const items = await Promise.all(
-    page.items.map(async ({ avatarAssetId, ...creator }) => ({
-      ...creator,
-      avatar: await resolveAvatar(avatarAssetId, resolveImage),
-    })),
+    page.items.map(async ({ avatarAssetId, coverAssetId, ...creator }) => {
+      const [avatar, cover] = await Promise.all([
+        resolveCatalogImage(avatarAssetId, resolveImage),
+        resolveCatalogImage(coverAssetId, resolveImage),
+      ]);
+
+      return {
+        ...creator,
+        avatar,
+        cover,
+      };
+    }),
   );
 
   return {
