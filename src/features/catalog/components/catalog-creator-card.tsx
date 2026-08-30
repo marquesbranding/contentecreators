@@ -176,7 +176,7 @@ export function CatalogCreatorCard({
         <CreatorLocation city={creator.city} state={creator.state} />
         <CreatorPrimarySocial primarySocial={creator.primarySocial} />
         <div className="flex flex-wrap items-center gap-1.5">
-          <Badge className="text-[11px]">
+          <Badge className="bg-brand-night border-transparent text-[11px] text-white">
             {creatorTypeLabel(creator.creatorType)}
           </Badge>
           {visibleNiches.map((niche) => (
@@ -196,7 +196,7 @@ export function CatalogCreatorCard({
         <Link
           aria-label={`Ver perfil de ${creator.displayName}`}
           className={buttonVariants({
-            className: "h-9 w-full text-sm",
+            className: "bg-brand-night hover:bg-brand-night/90 h-9 w-full text-sm text-white",
             size: "sm",
           })}
           href={creator.detailHref}

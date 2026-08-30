@@ -73,39 +73,54 @@ export function ProfileHeaderPreview({
           />
         )}
         {onCoverClick ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition group-hover:bg-black/40 group-hover:opacity-100">
-            <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-black">
+          <>
+            <div className="absolute inset-0 hidden items-center justify-center bg-black/40 opacity-0 transition group-hover:opacity-100 sm:flex">
+              <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-black">
+                <Camera aria-hidden="true" className="size-3.5" />
+                {coverUrl ? "Alterar capa" : "Adicionar capa"}
+              </span>
+            </div>
+            <span className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-black shadow-sm backdrop-blur-sm">
               <Camera aria-hidden="true" className="size-3.5" />
-              {coverUrl ? "Alterar capa" : "Adicionar capa"}
+              {coverUrl
+                ? "Alterar capa"
+                : "Toque ou clique para adicionar uma capa"}
             </span>
-          </div>
+          </>
         ) : null}
       </div>
       <CardHeader className="relative gap-3 px-5 pt-12 pb-5 sm:px-8 sm:pt-14">
         <div
           className={cn(
-            "group/avatar absolute -top-9 left-5 size-18 overflow-hidden rounded-3xl border-4 border-white bg-white shadow-lg sm:-top-10 sm:left-8 sm:size-20",
+            "group/avatar absolute -top-9 left-5 size-18 sm:-top-10 sm:left-8 sm:size-20",
             onAvatarClick && "cursor-pointer",
           )}
           onClick={onAvatarClick}
           role={onAvatarClick ? "button" : undefined}
           tabIndex={onAvatarClick ? 0 : undefined}
         >
-          {avatarUrl ? (
-            <PrivateImage alt="" className="size-full object-cover" src={avatarUrl} />
-          ) : initials ? (
-            <div className="from-brand-blue to-brand-royal flex size-full items-center justify-center bg-gradient-to-br text-lg font-extrabold tracking-wide text-white">
-              {initials}
-            </div>
-          ) : (
-            <div className="bg-muted flex size-full items-center justify-center">
-              <UsersRound aria-hidden="true" className="text-muted-foreground size-8" />
-            </div>
-          )}
+          <div className="size-full overflow-hidden rounded-3xl border-4 border-white bg-white shadow-lg">
+            {avatarUrl ? (
+              <PrivateImage alt="" className="size-full object-cover" src={avatarUrl} />
+            ) : initials ? (
+              <div className="from-brand-blue to-brand-royal flex size-full items-center justify-center bg-gradient-to-br text-lg font-extrabold tracking-wide text-white">
+                {initials}
+              </div>
+            ) : (
+              <div className="bg-muted flex size-full items-center justify-center">
+                <UsersRound aria-hidden="true" className="text-muted-foreground size-8" />
+              </div>
+            )}
+            {onAvatarClick ? (
+              <div className="absolute inset-0 hidden items-center justify-center bg-black/40 opacity-0 transition group-hover/avatar:opacity-100 sm:flex">
+                <Camera aria-hidden="true" className="size-5 text-white" />
+              </div>
+            ) : null}
+          </div>
           {onAvatarClick ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition group-hover/avatar:bg-black/40 group-hover/avatar:opacity-100">
-              <Camera aria-hidden="true" className="size-5 text-white" />
-            </div>
+            <span className="absolute -right-1 -bottom-1 flex size-7 items-center justify-center rounded-full border-2 border-white bg-brand-blue text-white shadow-sm">
+              <Camera aria-hidden="true" className="size-3.5" />
+            </span>
           ) : null}
         </div>
 

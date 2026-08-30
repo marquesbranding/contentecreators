@@ -347,6 +347,9 @@ export function CombinedRegistrationForm({
         }
         onCoverClick={() => coverInputRef.current?.click()}
       />
+      <p className="text-muted-foreground -mt-4 text-center text-xs">
+        Toque ou clique na capa e na foto de perfil para adicioná-las.
+      </p>
 
       <form
         action={formAction}
