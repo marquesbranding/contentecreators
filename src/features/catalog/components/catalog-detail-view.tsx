@@ -1,7 +1,6 @@
 import {
   AlertCircle,
   ArrowLeft,
-  AtSign,
   ExternalLink,
   Mail,
   MapPin,
@@ -27,6 +26,7 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { SocialPlatformIcon } from "@/shared/components/social-platform-icon";
 import { formatNumber } from "@/shared/lib/formatting/formatters";
 
 function formatMetricLine(
@@ -278,6 +278,10 @@ function MetricCards({ detail }: { detail: CatalogCreatorDetailViewDto }) {
             >
               <CardHeader>
                 <CardTitle className="flex items-center gap-1.5">
+                  <SocialPlatformIcon
+                    className="size-4"
+                    platform={metric.platform}
+                  />
                   {socialLabels[metric.platform]}
                   {metric.isPrimary ? (
                     <Badge className="gap-1" variant="outline">
@@ -410,6 +414,23 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
                 <MapPin aria-hidden="true" className="size-4" />
                 {detail.location.city}, {detail.location.state}
               </CardDescription>
+              {detail.socialProfiles.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {detail.socialProfiles.map((social) => (
+                    <Badge
+                      className="gap-1.5"
+                      key={`${social.platform}-${social.handle ?? "sem-handle"}`}
+                      variant="outline"
+                    >
+                      <SocialPlatformIcon
+                        className="size-3.5"
+                        platform={social.platform}
+                      />
+                      {social.handle ? social.handle : socialLabels[social.platform]}
+                    </Badge>
+                  ))}
+                </div>
+              ) : null}
             </CardHeader>
           </Card>
 
@@ -423,24 +444,6 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
                 </CardHeader>
                 <CardContent>
                   <p className="leading-7 whitespace-pre-line">{detail.bio}</p>
-                  {detail.socialProfiles.length > 0 ? (
-                    <div className="mt-5 border-t pt-5">
-                      <h3 className="font-semibold">Presença nas redes</h3>
-                      <ul className="mt-3 flex flex-wrap gap-2">
-                        {detail.socialProfiles.map((social) => (
-                          <li
-                            key={`${social.platform}-${social.handle ?? "sem-handle"}`}
-                          >
-                            <Badge variant="outline">
-                              <AtSign aria-hidden="true" />
-                              {socialLabels[social.platform]}
-                              {social.handle ? ` — ${social.handle}` : ""}
-                            </Badge>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
                 </CardContent>
               </Card>
               <MetricCards detail={detail} />

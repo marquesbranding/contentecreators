@@ -192,7 +192,7 @@ export function CatalogCreatorCard({
         </div>
       </CardHeader>
 
-      <CardFooter className="px-4 pt-0 pb-4">
+      <CardFooter className="border-t-0 bg-card px-4 pt-0 pb-4">
         <Link
           aria-label={`Ver perfil de ${creator.displayName}`}
           className={buttonVariants({
