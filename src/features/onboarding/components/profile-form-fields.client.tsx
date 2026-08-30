@@ -1675,7 +1675,11 @@ export function ProfileFormFields({
       <div hidden={currentStep !== undefined && currentStep !== "location"}>
       <FieldSet>
         <FieldLegend>Localização</FieldLegend>
-        <FieldDescription>Onde você tem base de moradia?</FieldDescription>
+        <FieldDescription>
+          {role === "COMPANY"
+            ? "Confirme a cidade e o estado da empresa."
+            : "Onde você tem base de moradia?"}
+        </FieldDescription>
         <FieldGroup className="grid items-end gap-5 md:grid-cols-[1fr_10rem]">
           <TextField
             autoComplete="address-level2"

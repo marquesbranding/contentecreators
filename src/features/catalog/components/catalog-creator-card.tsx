@@ -1,6 +1,7 @@
 import { ImageOff, MapPin, SquareArrowOutUpRight } from "lucide-react";
 import Link from "next/link";
 
+import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
 import { buttonVariants } from "@/shared/components/ui/button";
 import { SocialPlatformIcon } from "@/shared/components/social-platform-icon";
@@ -66,14 +67,11 @@ function CreatorCover({ creator }: { creator: CatalogCreatorCardViewModel }) {
   return (
     // Signed catalog media is already authorized and intentionally bypasses
     // Next Image host allowlists; the server view model owns URL expiry.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <SignedImage
       alt=""
-      className="relative z-0 h-20 w-full object-cover sm:h-24"
-      decoding="async"
-      loading="lazy"
-      referrerPolicy="no-referrer"
+      className="object-cover"
       src={creator.cover.src}
+      wrapperClassName="z-0 h-20 w-full sm:h-24"
     />
   );
 }
@@ -82,13 +80,9 @@ function CreatorAvatar({ creator }: { creator: CatalogCreatorCardViewModel }) {
   return (
     <div className="absolute -bottom-7 left-4 z-10 size-16 overflow-hidden rounded-2xl border-4 border-white bg-white shadow-md">
       {creator.media ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <SignedImage
           alt={creator.media.alt}
           className="size-full object-cover"
-          decoding="async"
-          loading="lazy"
-          referrerPolicy="no-referrer"
           src={creator.media.src}
         />
       ) : (

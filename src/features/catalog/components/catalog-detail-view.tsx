@@ -23,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import { SignedImage } from "@/shared/components/signed-image";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { SocialPlatformIcon } from "@/shared/components/social-platform-icon";
 import { cn } from "@/shared/lib/cn";
@@ -73,40 +74,6 @@ const socialLabels = {
   X: "X",
   YOUTUBE: "YouTube",
 } as const;
-
-function CatalogPrivateImage({
-  alt,
-  className,
-  fetchPriority = "auto",
-  height,
-  loading = "lazy",
-  src,
-  width,
-}: {
-  alt: string;
-  className: string;
-  fetchPriority?: "auto" | "high" | "low";
-  height: number | null;
-  loading?: "eager" | "lazy";
-  src: string;
-  width: number | null;
-}) {
-  /* A short-lived bearer URL intentionally bypasses the shared image optimizer. */
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      alt={alt}
-      className={className}
-      decoding="async"
-      fetchPriority={fetchPriority}
-      height={height ?? 640}
-      loading={loading}
-      referrerPolicy="no-referrer"
-      src={src}
-      width={width ?? 640}
-    />
-  );
-}
 
 function DetailLoading() {
   return (
@@ -296,14 +263,15 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
         <article className="mt-5 space-y-5">
           <Card className="gap-0 overflow-hidden rounded-3xl py-0">
             {detail.media.cover ? (
-              <CatalogPrivateImage
+              <SignedImage
                 alt={detail.media.cover.alt}
-                className="h-36 w-full object-cover sm:h-44 lg:h-52"
+                className="object-cover"
                 fetchPriority="high"
                 height={detail.media.cover.height}
                 loading="eager"
                 src={detail.media.cover.url}
                 width={detail.media.cover.width}
+                wrapperClassName="h-36 w-full sm:h-44 lg:h-52"
               />
             ) : (
               <div
@@ -314,7 +282,7 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
             <CardHeader className="relative gap-4 px-5 pt-14 pb-6 sm:px-8 sm:pt-16">
               <div className="absolute -top-10 left-5 size-20 overflow-hidden rounded-3xl border-4 border-white bg-white shadow-lg sm:-top-12 sm:left-8 sm:size-24">
                 {detail.media.avatar ? (
-                  <CatalogPrivateImage
+                  <SignedImage
                     alt={detail.media.avatar.alt}
                     className="size-full object-cover"
                     height={detail.media.avatar.height}

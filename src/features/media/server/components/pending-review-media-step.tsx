@@ -1,8 +1,8 @@
 import "server-only";
 
 import {
-  loadCurrentCompanyProfile,
-  loadCurrentInfluencerProfile,
+  loadCurrentCompanyReviewProfile,
+  loadCurrentInfluencerReviewProfile,
 } from "@/features/onboarding/server";
 import {
   ProfileHeaderPreview,
@@ -54,7 +54,7 @@ export async function PendingReviewMediaStep({
 }) {
   if (role === "INFLUENCER") {
     const [profile, mediaState] = await Promise.all([
-      loadCurrentInfluencerProfile(),
+      loadCurrentInfluencerReviewProfile(),
       loadCurrentInfluencerMediaFormState(),
     ]);
     const [avatarMedia, coverMedia] = await Promise.all([
@@ -65,13 +65,15 @@ export async function PendingReviewMediaStep({
         ? getServerSignedMedia(mediaState.coverAssetId)
         : null,
     ]);
-    const displayName = profile.displayName || profile.legalName;
-    const badges: ProfileHeaderPreviewBadge[] = [
-      {
-        label: profile.creatorType === "INFLUENCER" ? "Influenciador" : "Creator UGC",
-        tone: "primary",
-      },
-    ];
+    const displayName = profile?.displayName || profile?.legalName || "";
+    const badges: ProfileHeaderPreviewBadge[] = profile
+      ? [
+          {
+            label: profile.creatorType === "INFLUENCER" ? "Influenciador" : "Creator UGC",
+            tone: "primary",
+          },
+        ]
+      : [];
 
     return (
       <div className="space-y-5">
@@ -81,7 +83,9 @@ export async function PendingReviewMediaStep({
           coverUrl={coverMedia?.url ?? null}
           displayName={displayName}
           initials={initialsFromName(displayName)}
-          location={formatLocation(profile.city, profile.state)}
+          location={
+            profile ? formatLocation(profile.city, profile.state) : ""
+          }
         />
         <InfluencerMediaFields actions={mediaActions} initialState={mediaState} />
       </div>
@@ -89,13 +93,14 @@ export async function PendingReviewMediaStep({
   }
 
   const [profile, mediaState] = await Promise.all([
-    loadCurrentCompanyProfile(),
+    loadCurrentCompanyReviewProfile(),
     loadCurrentCompanyMediaFormState(),
   ]);
   const [logoMedia, coverMedia] = await Promise.all([
     mediaState.logoAssetId ? getServerSignedMedia(mediaState.logoAssetId) : null,
     mediaState.coverAssetId ? getServerSignedMedia(mediaState.coverAssetId) : null,
   ]);
+  const displayName = profile?.tradeName ?? "";
 
   return (
     <div className="space-y-5">
@@ -103,9 +108,9 @@ export async function PendingReviewMediaStep({
         avatarUrl={logoMedia?.url ?? null}
         badges={[{ label: "Empresa", tone: "primary" }]}
         coverUrl={coverMedia?.url ?? null}
-        displayName={profile.tradeName}
-        initials={initialsFromName(profile.tradeName)}
-        location={formatLocation(profile.city, profile.state)}
+        displayName={displayName}
+        initials={initialsFromName(displayName)}
+        location={profile ? formatLocation(profile.city, profile.state) : ""}
       />
       <CompanyMediaFields actions={mediaActions} initialState={mediaState} />
     </div>

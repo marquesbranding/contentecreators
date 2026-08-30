@@ -13,6 +13,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/shared/components/ui/alert";
+import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
 import { buttonVariants } from "@/shared/components/ui/button";
 import {
@@ -24,39 +25,6 @@ import {
 } from "@/shared/components/ui/card";
 
 import type { CompanyDetailViewDto } from "../types/company-detail.types";
-
-function CompanyPrivateImage({
-  alt,
-  className,
-  fetchPriority = "auto",
-  height,
-  loading = "lazy",
-  src,
-  width,
-}: {
-  alt: string;
-  className: string;
-  fetchPriority?: "auto" | "high" | "low";
-  height: number | null;
-  loading?: "eager" | "lazy";
-  src: string;
-  width: number | null;
-}) {
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      alt={alt}
-      className={className}
-      decoding="async"
-      fetchPriority={fetchPriority}
-      height={height ?? 640}
-      loading={loading}
-      referrerPolicy="no-referrer"
-      src={src}
-      width={width ?? 640}
-    />
-  );
-}
 
 function CompanyUnavailable() {
   return (
@@ -161,14 +129,15 @@ export function CompanyDetailView({
         <article className="mt-5 space-y-5">
           <Card className="gap-0 overflow-hidden rounded-3xl py-0">
             {detail.media.cover ? (
-              <CompanyPrivateImage
+              <SignedImage
                 alt={detail.media.cover.alt}
-                className="h-36 w-full object-cover sm:h-44 lg:h-52"
+                className="object-cover"
                 fetchPriority="high"
                 height={detail.media.cover.height}
                 loading="eager"
                 src={detail.media.cover.url}
                 width={detail.media.cover.width}
+                wrapperClassName="h-36 w-full sm:h-44 lg:h-52"
               />
             ) : (
               <div
@@ -179,7 +148,7 @@ export function CompanyDetailView({
             <CardHeader className="relative gap-4 px-5 pt-14 pb-6 sm:px-8 sm:pt-16">
               <div className="absolute -top-10 left-5 flex size-20 items-center justify-center overflow-hidden rounded-3xl border-4 border-white bg-white shadow-lg sm:-top-12 sm:left-8 sm:size-24">
                 {detail.media.logo ? (
-                  <CompanyPrivateImage
+                  <SignedImage
                     alt={detail.media.logo.alt}
                     className="max-h-[70%] max-w-[78%] object-contain"
                     height={detail.media.logo.height}

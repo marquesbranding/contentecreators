@@ -16,6 +16,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/shared/components/ui/alert";
+import { SignedImage } from "@/shared/components/signed-image";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -138,18 +139,16 @@ export function MediaUploadField({
         <div className="flex items-center gap-4">
           <div
             className={cn(
-              "bg-muted text-muted-foreground flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border",
+              "bg-muted text-muted-foreground relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border",
               previewAspectByPurpose[purpose] === "aspect-video" &&
                 "w-24 rounded-lg",
             )}
           >
             {currentAssetId && initialUrl ? (
               // Blob/signed previews cannot use next/image.
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <SignedImage
                 alt={`Prévia de ${label.toLowerCase()}`}
                 className="size-full object-cover"
-                referrerPolicy="no-referrer"
                 src={initialUrl}
               />
             ) : currentAssetId ? (

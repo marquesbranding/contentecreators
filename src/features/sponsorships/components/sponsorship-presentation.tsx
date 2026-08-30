@@ -1,5 +1,6 @@
 import { ExternalLink, Eye, Megaphone } from "lucide-react";
 
+import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
 import { buttonVariants } from "@/shared/components/ui/button";
 import {
@@ -108,16 +109,13 @@ export function SponsorshipMedia({
 }) {
   return (
     // The server supplies a short-lived authorized media URL.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <SignedImage
       alt={media.alt}
-      className={cn("w-full object-cover", className)}
-      decoding="async"
-      height={media.height ?? 900}
-      loading="lazy"
-      referrerPolicy="no-referrer"
+      className="object-cover"
+      height={media.height}
       src={media.url}
-      width={media.width ?? 1_600}
+      width={media.width}
+      wrapperClassName={cn("w-full", className)}
     />
   );
 }

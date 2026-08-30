@@ -1,31 +1,9 @@
 import { Camera, MapPin, UsersRound } from "lucide-react";
 
+import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { cn } from "@/shared/lib/cn";
-
-/** A short-lived bearer URL intentionally bypasses the shared image optimizer. */
-function PrivateImage({
-  alt,
-  className,
-  src,
-}: {
-  alt: string;
-  className: string;
-  src: string;
-}) {
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      alt={alt}
-      className={className}
-      decoding="async"
-      loading="eager"
-      referrerPolicy="no-referrer"
-      src={src}
-    />
-  );
-}
 
 export interface ProfileHeaderPreviewBadge {
   label: string;
@@ -61,10 +39,12 @@ export function ProfileHeaderPreview({
         tabIndex={onCoverClick ? 0 : undefined}
       >
         {coverUrl ? (
-          <PrivateImage
+          <SignedImage
             alt=""
-            className="h-36 w-full object-cover sm:h-44"
+            className="object-cover"
+            loading="eager"
             src={coverUrl}
+            wrapperClassName="h-36 w-full sm:h-44"
           />
         ) : (
           <div
@@ -99,9 +79,14 @@ export function ProfileHeaderPreview({
           role={onAvatarClick ? "button" : undefined}
           tabIndex={onAvatarClick ? 0 : undefined}
         >
-          <div className="size-full overflow-hidden rounded-3xl border-4 border-white bg-white shadow-lg">
+          <div className="relative size-full overflow-hidden rounded-3xl border-4 border-white bg-white shadow-lg">
             {avatarUrl ? (
-              <PrivateImage alt="" className="size-full object-cover" src={avatarUrl} />
+              <SignedImage
+                alt=""
+                className="size-full object-cover"
+                loading="eager"
+                src={avatarUrl}
+              />
             ) : initials ? (
               <div className="from-brand-blue to-brand-royal flex size-full items-center justify-center bg-gradient-to-br text-lg font-extrabold tracking-wide text-white">
                 {initials}

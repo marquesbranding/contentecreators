@@ -9,6 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
 import {
   Alert,
@@ -124,22 +125,16 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
             key={`${company.displayName}-${company.email}`}
           >
             <Card className="bg-brand-night-surface h-full gap-0 overflow-hidden rounded-2xl border-white/10 py-0 text-white shadow-md transition-transform duration-200 hover:-translate-y-0.5 hover:border-white/20">
-              <div className="from-brand-blue/35 to-brand-night flex aspect-[16/9] items-center justify-center border-b border-white/10 bg-gradient-to-br">
+              <div className="from-brand-blue/35 to-brand-night relative flex aspect-[16/9] items-center justify-center border-b border-white/10 bg-gradient-to-br">
                 {company.logo ? (
-                  <>
-                    {/* Signed bearer URLs must not enter the shared image cache. */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      alt={company.logo.alt}
-                      className="max-h-24 max-w-[70%] object-contain sm:max-h-28"
-                      decoding="async"
-                      height={company.logo.height ?? 320}
-                      loading="lazy"
-                      referrerPolicy="no-referrer"
-                      src={company.logo.url}
-                      width={company.logo.width ?? 640}
-                    />
-                  </>
+                  // Signed bearer URLs must not enter the shared image cache.
+                  <SignedImage
+                    alt={company.logo.alt}
+                    className="max-h-24 max-w-[70%] object-contain sm:max-h-28"
+                    height={company.logo.height}
+                    src={company.logo.url}
+                    width={company.logo.width}
+                  />
                 ) : (
                   <span
                     aria-label={`${company.displayName} está sem logo`}
