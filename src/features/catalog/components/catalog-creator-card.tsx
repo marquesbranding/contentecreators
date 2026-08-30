@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import { cn } from "@/shared/lib/cn";
 
 import type {
   CatalogCreatorType,
@@ -195,10 +196,12 @@ export function CatalogCreatorCard({
       <CardFooter className="border-t-0 bg-card px-4 pt-0 pb-4">
         <Link
           aria-label={`Ver perfil de ${creator.displayName}`}
-          className={buttonVariants({
-            className: "bg-brand-night hover:bg-brand-night/90 h-9 w-full text-sm text-white",
-            size: "sm",
-          })}
+          className={cn(
+            buttonVariants({
+              className: "bg-brand-night hover:bg-brand-night/90 h-9 w-full text-sm text-white",
+              size: "sm",
+            }),
+          )}
           href={creator.detailHref}
         >
           Conhecer creator

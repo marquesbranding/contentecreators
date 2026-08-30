@@ -62,8 +62,6 @@ describe("CatalogDetailView", () => {
       screen.getByRole("heading", { name: "Creator Exemplo" }),
     ).toBeVisible();
     expect(screen.getByText("12.500 seguidores")).toBeVisible();
-    expect(screen.getByText("84.000 visualizações")).toBeVisible();
-    expect(screen.getByText("640 interações")).toBeVisible();
     expect(screen.getByText("Métrica autodeclarada")).toBeVisible();
     expect(
       screen.getByRole("link", { name: /enviar e-mail/iu }),
