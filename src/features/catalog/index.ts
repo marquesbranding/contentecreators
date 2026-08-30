@@ -2,6 +2,7 @@ export { ApprovedCatalogEntry } from "./components/approved-catalog-entry";
 export { CreatorCatalogView } from "./components/creator-catalog-view.client";
 export { HydratedCreatorCatalog } from "./components/hydrated-creator-catalog.client";
 export { CatalogDetailScreen } from "./components/catalog-detail-screen.client";
+export { DetailLoading as CatalogDetailLoading } from "./components/catalog-detail-view";
 export { CompanyDetailView } from "./components/company-detail-view";
 export { CompanyCarouselScreen } from "./components/company-carousel-screen.client";
 export { CatalogTipsPanel } from "./components/catalog-tips-panel";

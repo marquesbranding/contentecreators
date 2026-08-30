@@ -8,6 +8,7 @@ import {
   RefreshCw,
   ShieldCheck,
 } from "lucide-react";
+import Link from "next/link";
 
 import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
@@ -186,7 +187,7 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
               </CardContent>
 
               <CardFooter className="border-t border-white/10 bg-transparent px-5 py-4">
-                <a
+                <Link
                   aria-label={`Conhecer marca ${company.displayName}`}
                   className={buttonVariants({
                     className: "w-full",
@@ -197,7 +198,7 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
                   <ShieldCheck aria-hidden="true" />
                   Conhecer marca
                   <ExternalLink aria-hidden="true" />
-                </a>
+                </Link>
               </CardFooter>
             </Card>
           </li>

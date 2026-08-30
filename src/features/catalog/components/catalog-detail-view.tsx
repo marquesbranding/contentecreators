@@ -75,7 +75,7 @@ const socialLabels = {
   YOUTUBE: "YouTube",
 } as const;
 
-function DetailLoading() {
+export function DetailLoading() {
   return (
     <div
       aria-live="polite"

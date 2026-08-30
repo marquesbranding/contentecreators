@@ -4,6 +4,7 @@ import {
   SquareArrowOutUpRight,
   UsersRound,
 } from "lucide-react";
+import Link from "next/link";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { buttonVariants } from "@/shared/components/ui/button";
@@ -42,7 +43,7 @@ function CreatorDetailLink({
 }) {
   if (creator.detailHref.startsWith("/")) {
     return (
-      <a
+      <Link
         aria-label={`Ver perfil de ${creator.displayName}`}
         className={buttonVariants({
           className:
@@ -54,7 +55,7 @@ function CreatorDetailLink({
       >
         <span className="sr-only sm:not-sr-only">Ver perfil</span>
         <SquareArrowOutUpRight aria-hidden="true" />
-      </a>
+      </Link>
     );
   }
 
