@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { isValidCnpj, normalizeCnpj } from "../domain/cnpj";
-import { OTHER_NICHE_SLUG } from "../domain/profile-segments";
+import { OTHER_NICHE_SLUG } from "@/shared/domain/profile-segments";
 import { SOCIAL_CHANNEL_PLATFORMS } from "../domain/social-channels-form-data";
 
 const requiredMessage = "Preencha este campo.";
@@ -121,7 +121,12 @@ const socialChannelEntry = z.object({
   platform: creatorSocialChannelPlatform,
   sharedContent: z.preprocess(
     (value) => (value === null || value === "" ? undefined : value),
-    z.string().trim().min(2, "Use pelo menos 2 caracteres.").max(200).optional(),
+    z
+      .string()
+      .trim()
+      .min(2, "Use pelo menos 2 caracteres.")
+      .max(200)
+      .optional(),
   ),
   url,
   views: optionalNonNegativeInt,

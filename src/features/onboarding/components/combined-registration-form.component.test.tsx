@@ -43,6 +43,7 @@ async function fillAccessFields(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText("Senha"), "SenhaForte1");
   await user.type(screen.getByLabelText("Confirmar senha"), "SenhaForte1");
   await user.type(screen.getByLabelText("WhatsApp com DDD"), "11999999999");
+  await goToNextStep(user);
 }
 
 async function acceptRequiredConsents(
@@ -65,18 +66,21 @@ async function fillCreatorFields(user: ReturnType<typeof userEvent.setup>) {
     screen.getByLabelText("Conte sobre seu conteúdo"),
     "Crio conteúdo sobre tecnologia, cultura e negócios locais.",
   );
+  await goToNextStep(user);
   await user.click(screen.getByRole("checkbox", { name: "Instagram" }));
   await user.type(screen.getByLabelText("Seguidores no Instagram"), "15000");
   await user.type(
     screen.getByLabelText("Link do perfil no Instagram"),
     "https://instagram.com/creator_teste",
   );
-  await user.click(
-    screen.getByRole("combobox", { name: "Principais nichos" }),
-  );
+  await user.click(screen.getByRole("combobox", { name: "Principais nichos" }));
   await user.click(
     await screen.findByRole("option", { name: "Tecnologia, games e inovação" }),
   );
+  /* The niche combobox is multi-select, so it stays open and holds the rest of
+   * the page inert until it is dismissed. */
+  await user.keyboard("{Escape}");
+  await goToNextStep(user);
   await user.type(
     screen.getByLabelText("Cidade", { exact: true }),
     "São Paulo",
@@ -101,10 +105,12 @@ async function fillCompanyFields(user: ReturnType<typeof userEvent.setup>) {
     screen.getByLabelText("Apresente a empresa"),
     "Empresa preparada para validar o fluxo completo de cadastro.",
   );
+  await goToNextStep(user);
   await user.type(screen.getByLabelText("CEP"), "01001000");
   await user.type(screen.getByLabelText("Logradouro"), "Praça da Sé");
   await user.type(screen.getByLabelText("Número"), "100");
   await user.type(screen.getByLabelText("Bairro"), "Sé");
+  await goToNextStep(user);
   await user.type(
     screen.getByLabelText("Cidade", { exact: true }),
     "São Paulo",
@@ -113,8 +119,31 @@ async function fillCompanyFields(user: ReturnType<typeof userEvent.setup>) {
   await acceptRequiredConsents(user);
 }
 
+/**
+ * The form is a four-step wizard. Fields stay mounted but hidden once their
+ * step is left, so `getByRole` only sees the current step and the fill helpers
+ * have to advance as they go.
+ */
+async function goToNextStep(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole("button", { name: "Avançar" }));
+}
+
+/** The submit button only exists on the last step. */
+async function advanceToFinalStep(user: ReturnType<typeof userEvent.setup>) {
+  for (let step = 1; step < 4; step += 1) {
+    await goToNextStep(user);
+  }
+
+  return screen.getByRole("button", { name: "Criar conta e enviar perfil" });
+}
+
+function finalStepSubmit() {
+  return screen.getByRole("button", { name: "Criar conta e enviar perfil" });
+}
+
 describe("combined registration form", () => {
-  it("opens the influencer fields from a landing intent without a second role step", () => {
+  it("opens the influencer fields from a landing intent without a second role step", async () => {
+    const user = userEvent.setup();
     renderRegistration({
       action: vi.fn(),
       googleAction: vi.fn(),
@@ -129,9 +158,7 @@ describe("combined registration form", () => {
       screen.getByLabelText("Seguidores no Instagram"),
     ).toBeInTheDocument();
     expect(screen.queryByLabelText("CNPJ")).not.toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Criar conta e enviar perfil" }),
-    ).toBeDisabled();
+    expect(await advanceToFinalStep(user)).toBeDisabled();
     expect(
       screen.getByText(
         "Preencha corretamente todos os campos obrigatórios para liberar o envio.",
@@ -258,6 +285,7 @@ describe("combined registration form", () => {
   });
 
   it("keeps submission disabled until the required role and fields are valid", async () => {
+    const user = userEvent.setup();
     const action = vi.fn();
 
     renderRegistration({
@@ -266,16 +294,17 @@ describe("combined registration form", () => {
       resendAction: vi.fn(),
     });
 
-    const submit = screen.getByRole("button", {
-      name: "Criar conta e enviar perfil",
-    });
-    expect(action).not.toHaveBeenCalled();
-    expect(submit).toBeDisabled();
+    /* The role picker lives on the first step and is hidden once we move on,
+     * so it has to be asserted before advancing. */
     expect(
       screen.getByRole("radiogroup", {
         name: /como você vai usar a plataforma/iu,
       }),
     ).toHaveAttribute("aria-required", "true");
+
+    const submit = await advanceToFinalStep(user);
+    expect(action).not.toHaveBeenCalled();
+    expect(submit).toBeDisabled();
   });
 
   it("shows minimum lengths and preserves creator values after a server error", async () => {
@@ -305,9 +334,7 @@ describe("combined registration form", () => {
     await fillAccessFields(user);
     await fillCreatorFields(user);
 
-    const submit = screen.getByRole("button", {
-      name: "Criar conta e enviar perfil",
-    });
+    const submit = finalStepSubmit();
     await waitFor(() => expect(submit).toBeEnabled());
     fireEvent.click(submit);
     fireEvent.click(screen.getByRole("button", { name: "Confirmar envio" }));
@@ -345,9 +372,7 @@ describe("combined registration form", () => {
     await fillAccessFields(user);
     await fillCompanyFields(user);
 
-    const submit = screen.getByRole("button", {
-      name: "Criar conta e enviar perfil",
-    });
+    const submit = finalStepSubmit();
     await waitFor(() => expect(submit).toBeEnabled());
     fireEvent.click(submit);
     fireEvent.click(screen.getByRole("button", { name: "Confirmar envio" }));

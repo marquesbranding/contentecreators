@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState, useTransition } from "react";
 
-import { companySegmentOptions } from "@/features/onboarding/domain/profile-segments";
+import { companySegmentOptions } from "@/shared/domain/profile-segments";
 import { Input } from "@/shared/components/ui/input";
 import {
   InputGroup,

@@ -35,7 +35,7 @@ import { useUnsavedChangesGuard } from "@/shared/hooks/use-unsaved-changes-guard
 import { cn } from "@/shared/lib/cn";
 import { dispatchFormActionPreservingValues } from "@/shared/lib/forms/dispatch-form-action-preserving-values";
 
-import { creatorNicheOptions } from "../domain/profile-segments";
+import { creatorNicheOptions } from "@/shared/domain/profile-segments";
 import type { OnboardingAction } from "../types/onboarding-action.types";
 import { initialOnboardingActionState } from "../types/onboarding-action.types";
 import { FormErrorSummary, mergeFieldErrors } from "./form-error-summary";
@@ -101,17 +101,17 @@ export function CombinedRegistrationForm({
     initialRole ?? null,
   );
   const role: "INFLUENCER" | "COMPANY" | null =
-    accountType === null ? null : accountType === "COMPANY" ? "COMPANY" : "INFLUENCER";
+    accountType === null
+      ? null
+      : accountType === "COMPANY"
+        ? "COMPANY"
+        : "INFLUENCER";
   const creatorType: "INFLUENCER" | "UGC" | undefined =
-    accountType === "COMPANY" || accountType === null
-      ? undefined
-      : accountType;
+    accountType === "COMPANY" || accountType === null ? undefined : accountType;
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [nameValue, setNameValue] = useState("");
-  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(
-    null,
-  );
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -196,8 +196,9 @@ export function CombinedRegistrationForm({
       .map((value) => String(value))
       .map(
         (slug) =>
-          creatorNicheOptions.find(([optionSlug]) => optionSlug === slug)?.[1] ??
-          slug,
+          creatorNicheOptions.find(
+            ([optionSlug]) => optionSlug === slug,
+          )?.[1] ?? slug,
       )
       .slice(0, 3);
     const city = String(data.get("city") ?? "").trim();
@@ -252,7 +253,8 @@ export function CombinedRegistrationForm({
           ]
         : [
             {
-              label: accountType === "INFLUENCER" ? "Influenciador" : "Creator UGC",
+              label:
+                accountType === "INFLUENCER" ? "Influenciador" : "Creator UGC",
               tone: "primary",
             },
             ...preview.nicheLabels.map((label) => ({
@@ -338,7 +340,9 @@ export function CombinedRegistrationForm({
         coverUrl={coverPreviewUrl}
         displayName={
           nameValue ||
-          (role === "COMPANY" ? "Nome fantasia da empresa" : "Seu nome completo")
+          (role === "COMPANY"
+            ? "Nome fantasia da empresa"
+            : "Seu nome completo")
         }
         initials={initialsFromName(nameValue)}
         location={preview.location}
@@ -375,6 +379,7 @@ export function CombinedRegistrationForm({
       >
         <Input
           accept="image/jpeg,image/png,image/webp"
+          aria-label={role === "COMPANY" ? "Logo da empresa" : "Foto de perfil"}
           className="sr-only"
           name={role === "COMPANY" ? "logoFile" : "avatarFile"}
           onChange={(event) =>
@@ -386,6 +391,7 @@ export function CombinedRegistrationForm({
         />
         <Input
           accept="image/jpeg,image/png,image/webp"
+          aria-label="Imagem de capa"
           className="sr-only"
           name="coverFile"
           onChange={(event) =>
@@ -477,8 +483,8 @@ export function CombinedRegistrationForm({
               Como você vai usar a plataforma?
             </FieldLegend>
             <FieldDescription>
-              Essa escolha define os dados do cadastro e não poderá ser
-              alterada por você depois do envio.
+              Essa escolha define os dados do cadastro e não poderá ser alterada
+              por você depois do envio.
             </FieldDescription>
             <Field data-invalid={Boolean(roleErrors?.length)}>
               <RadioGroup

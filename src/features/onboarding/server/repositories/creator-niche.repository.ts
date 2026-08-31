@@ -9,7 +9,7 @@ import {
   customNicheSlug,
   isCustomNicheSlug,
   OTHER_NICHE_SLUG,
-} from "../../domain/profile-segments";
+} from "@/shared/domain/profile-segments";
 
 export interface CreatorNicheSelectionRow {
   id: string;

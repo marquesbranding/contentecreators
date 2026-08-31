@@ -275,6 +275,13 @@ describe("onboarding actions", () => {
         socialPlatform: "LINKEDIN",
         socialUrl: "https://linkedin.com/company/empresa-exemplo",
       }),
+      /* Media files travel as a second argument since signup started
+       * accepting a logo and a cover. */
+      expect.objectContaining({
+        avatarFile: null,
+        coverFile: null,
+        logoFile: null,
+      }),
     );
   });
 });

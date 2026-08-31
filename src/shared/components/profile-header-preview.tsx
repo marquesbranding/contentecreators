@@ -2,8 +2,26 @@ import { Camera, MapPin, UsersRound } from "lucide-react";
 
 import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { cn } from "@/shared/lib/cn";
+
+/** These upload targets are divs, so Enter and Space have to be wired by hand. */
+function activateOnKey(
+  event: React.KeyboardEvent<HTMLDivElement>,
+  activate: () => void,
+) {
+  if (event.key !== "Enter" && event.key !== " ") {
+    return;
+  }
+
+  event.preventDefault();
+  activate();
+}
 
 export interface ProfileHeaderPreviewBadge {
   label: string;
@@ -33,8 +51,20 @@ export function ProfileHeaderPreview({
   return (
     <Card className="gap-0 overflow-hidden rounded-3xl py-0">
       <div
+        aria-label={
+          onCoverClick
+            ? coverUrl
+              ? "Alterar imagem de capa"
+              : "Adicionar imagem de capa"
+            : undefined
+        }
         className={cn("group relative", onCoverClick && "cursor-pointer")}
         onClick={onCoverClick}
+        onKeyDown={
+          onCoverClick
+            ? (event) => activateOnKey(event, onCoverClick)
+            : undefined
+        }
         role={onCoverClick ? "button" : undefined}
         tabIndex={onCoverClick ? 0 : undefined}
       >
@@ -71,11 +101,23 @@ export function ProfileHeaderPreview({
       </div>
       <CardHeader className="relative gap-3 px-5 pt-12 pb-5 sm:px-8 sm:pt-14">
         <div
+          aria-label={
+            onAvatarClick
+              ? avatarUrl
+                ? "Alterar foto de perfil"
+                : "Adicionar foto de perfil"
+              : undefined
+          }
           className={cn(
             "group/avatar absolute -top-9 left-5 size-18 sm:-top-10 sm:left-8 sm:size-20",
             onAvatarClick && "cursor-pointer",
           )}
           onClick={onAvatarClick}
+          onKeyDown={
+            onAvatarClick
+              ? (event) => activateOnKey(event, onAvatarClick)
+              : undefined
+          }
           role={onAvatarClick ? "button" : undefined}
           tabIndex={onAvatarClick ? 0 : undefined}
         >
@@ -93,7 +135,10 @@ export function ProfileHeaderPreview({
               </div>
             ) : (
               <div className="bg-muted flex size-full items-center justify-center">
-                <UsersRound aria-hidden="true" className="text-muted-foreground size-8" />
+                <UsersRound
+                  aria-hidden="true"
+                  className="text-muted-foreground size-8"
+                />
               </div>
             )}
             {onAvatarClick ? (
@@ -103,7 +148,7 @@ export function ProfileHeaderPreview({
             ) : null}
           </div>
           {onAvatarClick ? (
-            <span className="absolute -right-1 -bottom-1 flex size-7 items-center justify-center rounded-full border-2 border-white bg-brand-blue text-white shadow-sm">
+            <span className="bg-brand-blue absolute -right-1 -bottom-1 flex size-7 items-center justify-center rounded-full border-2 border-white text-white shadow-sm">
               <Camera aria-hidden="true" className="size-3.5" />
             </span>
           ) : null}
@@ -125,7 +170,10 @@ export function ProfileHeaderPreview({
         </div>
 
         <CardDescription
-          className={cn("flex items-center gap-1.5 text-sm", !location && "italic")}
+          className={cn(
+            "flex items-center gap-1.5 text-sm",
+            !location && "italic",
+          )}
         >
           <MapPin aria-hidden="true" className="size-3.5 shrink-0" />
           {location || "Localização não informada"}
