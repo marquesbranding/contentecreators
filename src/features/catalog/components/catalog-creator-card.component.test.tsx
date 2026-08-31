@@ -25,10 +25,9 @@ const creator: CatalogCreatorCardViewModel = {
     src: "https://media.example.test/signed/avatar",
   },
   metrics: [
-    {
-      label: "Seguidores no Instagram",
-      value: "24 mil",
-    },
+    { kind: "followers", label: "seguidores", value: "24 mil" },
+    { kind: "views", label: "visualizações", value: "180 mil" },
+    { kind: "interactions", label: "interações", value: "9,4 mil" },
   ],
   niches: [
     { name: "Beleza", slug: "beleza" },
@@ -55,6 +54,14 @@ describe("CatalogCreatorCard", () => {
     expect(screen.getByText("Beleza")).toBeVisible();
     expect(screen.getByText("@marinaconteudo")).toBeVisible();
     expect(screen.getByText(/24 mil seguidores/)).toBeVisible();
+    expect(screen.getByText(creator.bioExcerpt ?? "")).toBeVisible();
+    expect(screen.getByText("180 mil")).toBeVisible();
+    expect(screen.getByText("visualizações")).toBeVisible();
+    expect(screen.getByText("9,4 mil")).toBeVisible();
+    expect(screen.getByText("interações")).toBeVisible();
+    /* The follower count already reads on the social line, so the metric
+     * list must not repeat it. */
+    expect(screen.queryAllByText("24 mil")).toHaveLength(0);
     expect(
       screen.getByRole("link", { name: "Ver perfil de Marina Conteúdo" }),
     ).toHaveAttribute("href", creator.detailHref);

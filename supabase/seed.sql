@@ -288,6 +288,8 @@ insert into public.creator_metric_snapshots (
   social_profile_id,
   platform,
   follower_count,
+  view_count,
+  interaction_count,
   engagement_rate,
   observed_on
 )
@@ -297,6 +299,10 @@ select
   social.id,
   'INSTAGRAM',
   10000 + (right(profile.id::text, 2)::integer * 500),
+  -- Views and interactions are shown on the catalog card alongside followers,
+  -- so the fixtures carry plausible ratios instead of nulls.
+  (10000 + (right(profile.id::text, 2)::integer * 500)) * 12,
+  (10000 + (right(profile.id::text, 2)::integer * 500)) / 4,
   4.2500,
   current_date
 from public.creator_profiles profile

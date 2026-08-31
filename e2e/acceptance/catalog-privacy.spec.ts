@@ -148,7 +148,7 @@ test.describe("catalog acceptance and privacy", () => {
     ).toHaveCount(0);
 
     const companies = page.getByRole("list", {
-      name: "Empresas aprovadas",
+      name: "Marcas cadastradas",
     });
     await expect(companies).toBeVisible();
     await expect(companies).toContainText("Empresa Quatro");

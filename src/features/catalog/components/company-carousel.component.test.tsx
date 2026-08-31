@@ -111,7 +111,7 @@ describe("CompanyCarouselView", () => {
       );
 
       expect(
-        screen.getByRole("list", { name: "Empresas aprovadas" }),
+        screen.getByRole("list", { name: "Marcas cadastradas" }),
       ).toHaveClass("grid");
       expect(
         await getBlockingComponentAccessibilityViolations(container),

@@ -25,7 +25,14 @@ export interface CatalogCreatorMediaViewModel {
   src: string;
 }
 
+export type CatalogSelfReportedMetricKind =
+  | "followers"
+  | "interactions"
+  | "views";
+
 export interface CatalogSelfReportedMetricViewModel {
+  /** Discriminates the metric so the card can pick which ones to show. */
+  kind: CatalogSelfReportedMetricKind;
   label: string;
   value: string;
 }
@@ -144,6 +151,34 @@ function CreatorPrimarySocial({
   );
 }
 
+/**
+ * Views and interactions only — the follower count already reads on the
+ * primary-social line, so repeating it here would show the same number twice.
+ */
+function CreatorSelfReportedMetrics({
+  metrics,
+}: {
+  metrics: CatalogCreatorCardViewModel["metrics"];
+}) {
+  const secondaryMetrics =
+    metrics?.filter((metric) => metric.kind !== "followers") ?? [];
+
+  if (secondaryMetrics.length === 0) {
+    return null;
+  }
+
+  return (
+    <ul className="text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 text-xs">
+      {secondaryMetrics.map((metric) => (
+        <li key={metric.kind}>
+          <span className="text-foreground font-semibold">{metric.value}</span>{" "}
+          {metric.label}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function CatalogCreatorCard({
   creator,
 }: {
@@ -170,6 +205,12 @@ export function CatalogCreatorCard({
         </CardTitle>
         <CreatorLocation city={creator.city} state={creator.state} />
         <CreatorPrimarySocial primarySocial={creator.primarySocial} />
+        <CreatorSelfReportedMetrics metrics={creator.metrics} />
+        {creator.bioExcerpt ? (
+          <p className="text-muted-foreground line-clamp-2 text-xs leading-5">
+            {creator.bioExcerpt}
+          </p>
+        ) : null}
         <div className="flex flex-wrap items-center gap-1.5">
           <Badge className="bg-brand-night border-transparent text-[11px] text-white">
             {creatorTypeLabel(creator.creatorType)}

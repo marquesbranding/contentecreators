@@ -25,7 +25,10 @@ import type {
   CatalogFilterOptions,
 } from "./catalog-filter-controls.client";
 import { CatalogFilterControls } from "./catalog-filter-controls.client";
-import type { CatalogCreatorCardViewModel } from "./catalog-creator-card";
+import type {
+  CatalogCreatorCardViewModel,
+  CatalogSelfReportedMetricViewModel,
+} from "./catalog-creator-card";
 import { CatalogResults } from "./catalog-results";
 
 const nicheOptions = [
@@ -106,13 +109,15 @@ function toCardViewModel(
   const metric =
     creator.metrics?.find((candidate) => candidate.isPrimary) ??
     creator.metrics?.[0];
-  const metrics = metric
+  /* Labels stay short because the card renders them under the platform icon. */
+  const metrics: CatalogSelfReportedMetricViewModel[] = metric
     ? [
         ...(metric.followerCount === null
           ? []
           : [
               {
-                label: `${platformLabels[metric.platform]} · seguidores`,
+                kind: "followers" as const,
+                label: "seguidores",
                 value: formatMetricValue(metric.followerCount),
               },
             ]),
@@ -120,7 +125,8 @@ function toCardViewModel(
           ? []
           : [
               {
-                label: `${platformLabels[metric.platform]} · visualizações`,
+                kind: "views" as const,
+                label: "visualizações",
                 value: formatMetricValue(metric.viewCount),
               },
             ]),
@@ -128,7 +134,8 @@ function toCardViewModel(
           ? []
           : [
               {
-                label: `${platformLabels[metric.platform]} · interações`,
+                kind: "interactions" as const,
+                label: "interações",
                 value: formatMetricValue(metric.interactionCount),
               },
             ]),

@@ -161,10 +161,7 @@ export function CatalogResults({
     <section aria-label="Criadores encontrados" className="space-y-4">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-bold tracking-[0.16em] text-[var(--brand-blue-hover)] uppercase">
-            Seleção aprovada
-          </p>
-          <h2 className="text-foreground mt-1 text-2xl font-bold tracking-[-0.03em]">
+          <h2 className="text-foreground text-2xl font-bold tracking-[-0.03em]">
             Creators para conhecer
           </h2>
         </div>
