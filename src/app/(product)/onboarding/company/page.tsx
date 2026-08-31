@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { createServerRoleSelectionService } from "@/features/identity/server";
-import { CompanyMediaFields } from "@/features/media";
 import {
   activateProfileMediaAction,
   finalizeMediaUploadAction,
+  getServerSignedMedia,
   loadCurrentCompanyMediaFormState,
   prepareMediaUploadAction,
 } from "@/features/media/server";
@@ -37,7 +37,7 @@ export default async function CompanyOnboardingPage() {
   if (decision.destination !== "/onboarding/company" && !correctionRequested) {
     redirect(decision.destination);
   }
-  const [initialDraft, initialMediaState, preparedProfile] = await Promise.all([
+  const [initialDraft, mediaFormState, preparedProfile] = await Promise.all([
     loadCurrentOnboardingDraft(),
     loadCurrentCompanyMediaFormState(),
     loadCurrentPreparedCompanyProfile(),
@@ -49,6 +49,15 @@ export default async function CompanyOnboardingPage() {
   if (correctionRequested && !correctionContext) {
     redirect("/app");
   }
+
+  const [logoMedia, coverMedia] = await Promise.all([
+    mediaFormState.logoAssetId
+      ? getServerSignedMedia(mediaFormState.logoAssetId)
+      : null,
+    mediaFormState.coverAssetId
+      ? getServerSignedMedia(mediaFormState.coverAssetId)
+      : null,
+  ]);
 
   return (
     <OnboardingFormShell
@@ -71,16 +80,20 @@ export default async function CompanyOnboardingPage() {
             ? undefined
             : (preparedProfile ?? undefined))
         }
-        mediaFields={
-          <CompanyMediaFields
-            actions={{
-              activate: activateProfileMediaAction,
-              finalize: finalizeMediaUploadAction,
-              prepare: prepareMediaUploadAction,
-            }}
-            initialState={initialMediaState}
-          />
-        }
+        initialMediaState={{
+          coverAssetId: mediaFormState.coverAssetId,
+          primaryAssetId: mediaFormState.logoAssetId,
+          profileExists: mediaFormState.profileExists,
+        }}
+        initialMediaUrls={{
+          cover: coverMedia?.url ?? null,
+          primary: logoMedia?.url ?? null,
+        }}
+        mediaActions={{
+          activate: activateProfileMediaAction,
+          finalize: finalizeMediaUploadAction,
+          prepare: prepareMediaUploadAction,
+        }}
         role="COMPANY"
       />
     </OnboardingFormShell>

@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { createServerRoleSelectionService } from "@/features/identity/server";
-import { InfluencerMediaFields } from "@/features/media";
 import {
   activateProfileMediaAction,
   finalizeMediaUploadAction,
+  getServerSignedMedia,
   loadCurrentInfluencerMediaFormState,
   prepareMediaUploadAction,
 } from "@/features/media/server";
@@ -40,7 +40,7 @@ export default async function InfluencerOnboardingPage() {
   ) {
     redirect(decision.destination);
   }
-  const [initialDraft, initialMediaState, preparedProfile] = await Promise.all([
+  const [initialDraft, mediaFormState, preparedProfile] = await Promise.all([
     loadCurrentOnboardingDraft(),
     loadCurrentInfluencerMediaFormState(),
     loadCurrentPreparedInfluencerProfile(),
@@ -52,6 +52,15 @@ export default async function InfluencerOnboardingPage() {
   if (correctionRequested && !correctionContext) {
     redirect("/app");
   }
+
+  const [avatarMedia, coverMedia] = await Promise.all([
+    mediaFormState.avatarAssetId
+      ? getServerSignedMedia(mediaFormState.avatarAssetId)
+      : null,
+    mediaFormState.coverAssetId
+      ? getServerSignedMedia(mediaFormState.coverAssetId)
+      : null,
+  ]);
 
   return (
     <OnboardingFormShell
@@ -74,16 +83,20 @@ export default async function InfluencerOnboardingPage() {
             ? undefined
             : (preparedProfile ?? undefined))
         }
-        mediaFields={
-          <InfluencerMediaFields
-            actions={{
-              activate: activateProfileMediaAction,
-              finalize: finalizeMediaUploadAction,
-              prepare: prepareMediaUploadAction,
-            }}
-            initialState={initialMediaState}
-          />
-        }
+        initialMediaState={{
+          coverAssetId: mediaFormState.coverAssetId,
+          primaryAssetId: mediaFormState.avatarAssetId,
+          profileExists: mediaFormState.profileExists,
+        }}
+        initialMediaUrls={{
+          cover: coverMedia?.url ?? null,
+          primary: avatarMedia?.url ?? null,
+        }}
+        mediaActions={{
+          activate: activateProfileMediaAction,
+          finalize: finalizeMediaUploadAction,
+          prepare: prepareMediaUploadAction,
+        }}
         role="INFLUENCER"
       />
     </OnboardingFormShell>

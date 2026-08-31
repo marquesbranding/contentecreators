@@ -21,6 +21,15 @@ describe("ProfileOnboardingForm correction mode", () => {
             message: "Rascunho indisponível.",
           }))}
           initialDraft={null}
+          initialMediaState={{
+            coverAssetId: null,
+            primaryAssetId: null,
+            profileExists: true,
+          }}
+          mediaActions={{
+            finalize: vi.fn(),
+            prepare: vi.fn(),
+          }}
           initialValues={{
             bio: "Perfil persistido que precisa de uma correção pontual.",
             city: "Curitiba",

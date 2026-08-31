@@ -1,9 +1,15 @@
 "use client";
 
 import { CircleAlert } from "lucide-react";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
+import {
+  ProfileHeaderMediaEditor,
+  type MediaUploadActions,
+} from "@/features/media";
+import { creatorNicheOptions } from "@/shared/domain/profile-segments";
 import { ActionSubmitButton } from "@/shared/components/action-submit-button";
+import type { ProfileHeaderPreviewBadge } from "@/shared/components/profile-header-preview";
 import {
   Alert,
   AlertDescription,
@@ -19,7 +25,10 @@ import { BrowserQueryProvider } from "@/shared/query/browser-query-provider";
 
 import { useOnboardingAutosave } from "../hooks/use-onboarding-autosave";
 import type { CorrectedProfileResubmissionCommand } from "../schemas/corrected-profile-resubmission-schema";
-import type { CreatorOnboardingDraftPayload } from "../schemas/onboarding-draft-schema";
+import type {
+  CompanyOnboardingDraftPayload,
+  CreatorOnboardingDraftPayload,
+} from "../schemas/onboarding-draft-schema";
 import type { OnboardingAction } from "../types/onboarding-action.types";
 import { initialOnboardingActionState } from "../types/onboarding-action.types";
 import type {
@@ -32,15 +41,38 @@ import { OnboardingAutosaveStatus } from "./onboarding-autosave-status";
 import { OnboardingSubmitConfirmation } from "./onboarding-submit-confirmation";
 import { ProfileFormFields } from "./profile-form-fields.client";
 
+export interface OnboardingMediaState {
+  coverAssetId: string | null;
+  primaryAssetId: string | null;
+  profileExists: boolean;
+}
+
 type ProfileOnboardingFormProps = {
   action: OnboardingAction;
   correctionCommand?: CorrectedProfileResubmissionCommand;
   draftAction: OnboardingDraftAction;
   initialDraft: OnboardingDraftClientDto | null;
+  initialMediaState: OnboardingMediaState;
+  initialMediaUrls?: { cover?: string | null; primary?: string | null };
   initialValues?: OnboardingDraftPayload;
-  mediaFields?: React.ReactNode;
+  mediaActions: MediaUploadActions;
   role: "INFLUENCER" | "COMPANY";
 };
+
+function initialsFromName(name: string) {
+  const trimmed = name.trim();
+
+  if (!trimmed) {
+    return "";
+  }
+
+  return trimmed
+    .split(/\s+/u)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase() ?? "")
+    .join("");
+}
 
 export function ProfileOnboardingForm(props: ProfileOnboardingFormProps) {
   return (
@@ -55,8 +87,10 @@ function ProfileOnboardingFormContent({
   correctionCommand,
   draftAction,
   initialDraft,
+  initialMediaState,
+  initialMediaUrls,
   initialValues,
-  mediaFields,
+  mediaActions,
   role,
 }: ProfileOnboardingFormProps) {
   const [state, formAction, pending] = useActionState(
@@ -90,6 +124,99 @@ function ProfileOnboardingFormContent({
       ? (resolvedInitialValues as CreatorOnboardingDraftPayload | undefined)
           ?.creatorType
       : undefined;
+  const seedName =
+    role === "COMPANY"
+      ? ((resolvedInitialValues as CompanyOnboardingDraftPayload | undefined)
+          ?.tradeName ?? "")
+      : ((resolvedInitialValues as CreatorOnboardingDraftPayload | undefined)
+          ?.legalName ?? "");
+  const seedCity =
+    (resolvedInitialValues as { city?: string } | undefined)?.city ?? "";
+  const seedState =
+    (resolvedInitialValues as { state?: string } | undefined)?.state ?? "";
+  const seedSegment =
+    role === "COMPANY"
+      ? ((resolvedInitialValues as CompanyOnboardingDraftPayload | undefined)
+          ?.segment ?? "")
+      : "";
+  const seedNicheSlugs =
+    role === "INFLUENCER"
+      ? ((resolvedInitialValues as CreatorOnboardingDraftPayload | undefined)
+          ?.nicheSlugs ?? [])
+      : [];
+  const [preview, setPreview] = useState({
+    creatorType: knownCreatorType,
+    location:
+      seedCity && seedState
+        ? `${seedCity}, ${seedState.toUpperCase()}`
+        : seedCity,
+    name: seedName,
+    nicheLabels: seedNicheSlugs
+      .map(
+        (slug) =>
+          creatorNicheOptions.find(
+            ([optionSlug]) => optionSlug === slug,
+          )?.[1] ?? slug,
+      )
+      .slice(0, 3),
+    segment: seedSegment,
+  });
+
+  function readPreviewFromForm() {
+    const form = formRef.current;
+
+    if (!form) {
+      return;
+    }
+
+    const data = new FormData(form);
+    const city = String(data.get("city") ?? "").trim();
+    const stateAbbreviation = String(data.get("state") ?? "").trim();
+    const nicheLabels = data
+      .getAll("nicheSlugs")
+      .map((value) => String(value))
+      .map(
+        (slug) =>
+          creatorNicheOptions.find(
+            ([optionSlug]) => optionSlug === slug,
+          )?.[1] ?? slug,
+      )
+      .slice(0, 3);
+
+    setPreview({
+      creatorType:
+        (data.get("creatorType") as "INFLUENCER" | "UGC" | null) ?? undefined,
+      location:
+        city && stateAbbreviation
+          ? `${city}, ${stateAbbreviation.toUpperCase()}`
+          : city,
+      name: String(
+        data.get(role === "COMPANY" ? "tradeName" : "legalName") ?? "",
+      ),
+      nicheLabels,
+      segment: String(data.get("segment") ?? "").trim(),
+    });
+  }
+
+  const badges: ProfileHeaderPreviewBadge[] =
+    role === "COMPANY"
+      ? [
+          { label: "Empresa", tone: "primary" },
+          ...(preview.segment
+            ? [{ label: preview.segment, tone: "neutral" as const }]
+            : []),
+        ]
+      : [
+          {
+            label:
+              preview.creatorType === "UGC" ? "Creator UGC" : "Influenciador",
+            tone: "primary",
+          },
+          ...preview.nicheLabels.map((label) => ({
+            label,
+            tone: "neutral" as const,
+          })),
+        ];
 
   return (
     <>
@@ -101,6 +228,7 @@ function ProfileOnboardingFormContent({
         onInput={(event) => {
           formValidationProps.onInput(event);
           autosave.onFormInput(event);
+          readPreviewFromForm();
         }}
         onSubmit={(event) => {
           submitConfirmation.handleSubmit(event, formValidationProps.onSubmit);
@@ -136,6 +264,37 @@ function ProfileOnboardingFormContent({
             <AlertDescription>{state.message}</AlertDescription>
           </Alert>
         ) : null}
+
+        <ProfileHeaderMediaEditor
+          activateOnUpload={initialMediaState.profileExists}
+          actions={mediaActions}
+          avatar={{
+            assetIdFieldName:
+              role === "COMPANY" ? "logoAssetId" : "avatarAssetId",
+            currentAssetId: initialMediaState.primaryAssetId,
+            initialUrl: initialMediaUrls?.primary ?? null,
+            label: role === "COMPANY" ? "Logo da empresa" : "Foto de perfil",
+            purpose: role === "COMPANY" ? "LOGO" : "AVATAR",
+          }}
+          badges={badges}
+          cover={{
+            assetIdFieldName: "coverAssetId",
+            currentAssetId: initialMediaState.coverAssetId,
+            initialUrl: initialMediaUrls?.cover ?? null,
+            label: role === "COMPANY" ? "Capa da empresa" : "Imagem de capa",
+            purpose: "COVER",
+          }}
+          displayName={
+            preview.name ||
+            (role === "COMPANY"
+              ? "Nome fantasia da empresa"
+              : "Seu nome completo")
+          }
+          helperText="Toque ou clique na capa e na foto de perfil para adicioná-las. As imagens ficam privadas até o envio do cadastro."
+          initials={initialsFromName(preview.name)}
+          location={preview.location}
+        />
+
         <RequiredFieldsNotice />
         <FormErrorSummary errors={summaryErrors} />
         <ProfileFormFields
@@ -146,7 +305,6 @@ function ProfileOnboardingFormContent({
           onFieldChange={clearFieldError}
           role={role}
         />
-        {mediaFields}
         <ActionSubmitButton
           className="w-full"
           disabled={!isFormValid}

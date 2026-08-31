@@ -325,6 +325,54 @@ function PlacementPreviewDialog({
   );
 }
 
+function LivePlacementPreview({
+  imageUrl,
+  values,
+}: {
+  imageUrl: string | null;
+  values: Pick<
+    PlacementFormValues,
+    "audience" | "body" | "linkLabel" | "linkUrl" | "placementType" | "title"
+  >;
+}) {
+  return (
+    <Card className="border-brand-blue/30 bg-brand-blue-soft overflow-hidden">
+      {imageUrl ? (
+        // Blob/signed previews cannot use next/image.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          alt=""
+          className="aspect-video w-full object-cover"
+          src={imageUrl}
+        />
+      ) : (
+        <div className="text-muted-foreground bg-muted flex aspect-video w-full items-center justify-center text-sm">
+          Sem imagem selecionada
+        </div>
+      )}
+      <CardHeader>
+        <Badge className="w-fit" variant="outline">
+          Prévia ao vivo
+        </Badge>
+        <CardTitle>{values.title || "Título do patrocínio"}</CardTitle>
+        <CardDescription>
+          {values.body || "Texto de apoio aparece aqui."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-wrap items-center justify-between gap-3">
+        <span className="text-muted-foreground text-sm">
+          {typeLabels[values.placementType]} · {audienceLabels[values.audience]}
+        </span>
+        {values.linkUrl ? (
+          <span className={buttonVariants({ variant: "outline" })}>
+            {values.linkLabel || "Abrir link"}
+          </span>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
 function PlacementFormDialog({
   mediaActions,
   mutation,
@@ -336,15 +384,16 @@ function PlacementFormDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [creativePreviewUrl, setCreativePreviewUrl] = useState<string | null>(
+    placement?.creative?.url ?? null,
+  );
   const form = useForm<PlacementFormValues>({
     defaultValues: formDefaults(placement),
     mode: "onTouched",
     resolver: zodResolver(placementFormSchema),
   });
-  const placementType = useWatch({
-    control: form.control,
-    name: "placementType",
-  });
+  const watchedValues = useWatch({ control: form.control });
+  const placementType = watchedValues.placementType ?? "TOP_BANNER";
 
   async function onSubmit(input: PlacementFormValues) {
     const values = placementFormSchema.parse(input);
@@ -381,6 +430,7 @@ function PlacementFormDialog({
       });
       setOpen(false);
       form.reset(formDefaults());
+      setCreativePreviewUrl(null);
     } catch {
       setSubmitError(
         "Não foi possível salvar. Atualize os dados e tente novamente.",
@@ -395,6 +445,7 @@ function PlacementFormDialog({
         if (nextOpen) {
           form.reset(formDefaults(placement));
           setSubmitError(null);
+          setCreativePreviewUrl(placement?.creative?.url ?? null);
         }
       }}
       open={open}
@@ -434,6 +485,18 @@ function PlacementFormDialog({
         >
           <RequiredFieldsNotice />
 
+          <LivePlacementPreview
+            imageUrl={creativePreviewUrl}
+            values={{
+              audience: watchedValues.audience ?? "ALL",
+              body: watchedValues.body ?? "",
+              linkLabel: watchedValues.linkLabel ?? "",
+              linkUrl: watchedValues.linkUrl ?? "",
+              placementType,
+              title: watchedValues.title ?? "",
+            }}
+          />
+
           <div className="grid gap-5 sm:grid-cols-2">
             <Field data-invalid={Boolean(form.formState.errors.placementType)}>
               <FieldLabel htmlFor="sponsorship-placement-type" required>
@@ -444,9 +507,7 @@ function PlacementFormDialog({
                 name="placementType"
                 render={({ field }) => (
                   <SearchableSelect
-                    aria-invalid={Boolean(
-                      form.formState.errors.placementType,
-                    )}
+                    aria-invalid={Boolean(form.formState.errors.placementType)}
                     aria-required="true"
                     id="sponsorship-placement-type"
                     items={typeLabels}
@@ -633,6 +694,7 @@ function PlacementFormDialog({
             actions={mediaActions}
             activateOnUpload={false}
             currentAssetId={placement?.creativeAssetId ?? null}
+            initialUrl={placement?.creative?.url ?? null}
             label="Imagem do criativo (opcional no rascunho)"
             onComplete={(assetId) =>
               form.setValue("creativeAssetId", assetId, {
@@ -640,6 +702,7 @@ function PlacementFormDialog({
                 shouldValidate: true,
               })
             }
+            onPreviewChange={setCreativePreviewUrl}
             purpose="SPONSORSHIP_CREATIVE"
           />
 
