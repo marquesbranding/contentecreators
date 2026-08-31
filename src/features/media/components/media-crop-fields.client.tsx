@@ -100,7 +100,9 @@ export function MediaCropFields({
         label="Posição vertical"
         max={100}
         min={0}
-        onChange={(vertical) => setCrop((current) => ({ ...current, vertical }))}
+        onChange={(vertical) =>
+          setCrop((current) => ({ ...current, vertical }))
+        }
         step={1}
         value={crop.vertical}
       />

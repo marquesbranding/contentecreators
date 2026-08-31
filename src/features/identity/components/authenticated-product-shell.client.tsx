@@ -3,7 +3,7 @@
 import { LogOut, Menu, Search, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { Suspense, useState, useTransition } from "react";
 
 import { BrandLogo } from "@/shared/components/brand-logo";
 import { FormStatusSubmitButton } from "@/shared/components/form-status-submit-button";
@@ -40,6 +40,13 @@ const navigationItems = [
   },
 ] as const;
 
+/** Holds the search's footprint while it waits for the URL to be readable. */
+function CatalogHeaderSearchFallback() {
+  return (
+    <div aria-hidden="true" className="h-11 w-full rounded-xl bg-white/10" />
+  );
+}
+
 function CatalogHeaderSearch({
   viewerRole,
 }: {
@@ -70,9 +77,7 @@ function CatalogHeaderSearch({
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         const nextParams = new URLSearchParams(searchParams.toString());
-        const normalizedSearch = String(
-          formData.get(paramName) ?? "",
-        ).trim();
+        const normalizedSearch = String(formData.get(paramName) ?? "").trim();
 
         if (normalizedSearch) {
           nextParams.set(paramName, normalizedSearch);
@@ -270,7 +275,12 @@ export function AuthenticatedProductShell({
 
           {catalogRoute ? (
             <div className="order-last w-full lg:order-none lg:max-w-md lg:min-w-52 lg:flex-1">
-              <CatalogHeaderSearch viewerRole={viewerRole} />
+              {/* The search reads useSearchParams, which bails out of
+               * prerendering. Without this boundary the shell cannot be
+               * statically rendered inside a route's loading.tsx. */}
+              <Suspense fallback={<CatalogHeaderSearchFallback />}>
+                <CatalogHeaderSearch viewerRole={viewerRole} />
+              </Suspense>
             </div>
           ) : null}
 

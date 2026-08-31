@@ -26,9 +26,7 @@ export interface CatalogCreatorMediaViewModel {
 }
 
 export type CatalogSelfReportedMetricKind =
-  | "followers"
-  | "interactions"
-  | "views";
+  "followers" | "interactions" | "views";
 
 export interface CatalogSelfReportedMetricViewModel {
   /** Discriminates the metric so the card can pick which ones to show. */
@@ -189,7 +187,7 @@ export function CatalogCreatorCard({
 
   return (
     <Card
-      className="hover:border-brand-blue/30 h-full gap-0 overflow-hidden rounded-2xl border-border py-0 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+      className="hover:border-brand-blue/30 border-border h-full gap-0 overflow-hidden rounded-2xl py-0 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
       role="article"
     >
       <div className="relative">
@@ -228,12 +226,13 @@ export function CatalogCreatorCard({
         </div>
       </CardHeader>
 
-      <CardFooter className="border-t-0 bg-card px-4 pt-0 pb-4">
+      <CardFooter className="bg-card border-t-0 px-4 pt-0 pb-4">
         <Link
           aria-label={`Ver perfil de ${creator.displayName}`}
           className={cn(
             buttonVariants({
-              className: "bg-brand-night hover:bg-brand-night/90 h-9 w-full text-sm text-white",
+              className:
+                "bg-brand-night hover:bg-brand-night/90 h-9 w-full text-sm text-white",
               size: "sm",
             }),
           )}

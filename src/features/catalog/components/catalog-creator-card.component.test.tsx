@@ -68,7 +68,9 @@ describe("CatalogCreatorCard", () => {
     expect(
       screen.getByRole("img", { name: creator.media?.alt }),
     ).toHaveAttribute("src", creator.media?.src);
-    expect(container.querySelector(`img[src="${creator.cover?.src}"]`)).not.toBeNull();
+    expect(
+      container.querySelector(`img[src="${creator.cover?.src}"]`),
+    ).not.toBeNull();
   });
 
   it("uses a safe media fallback without inventing a participant image", () => {

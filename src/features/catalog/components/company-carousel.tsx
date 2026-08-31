@@ -68,10 +68,9 @@ function CompanyCarouselHeader({ controls }: { controls?: ReactNode }) {
           Marcas para conhecer
         </h2>
         <p className="text-muted-foreground mt-2 max-w-2xl text-base leading-7">
-          Essas são as empresas cadastradas na Contente Creators. Conheça
-          cada uma delas e fique à vontade para entrar em contato e
-          apresentar seu trabalho. Queremos ser a sua conexão com novas
-          oportunidades.
+          Essas são as empresas cadastradas na Contente Creators. Conheça cada
+          uma delas e fique à vontade para entrar em contato e apresentar seu
+          trabalho. Queremos ser a sua conexão com novas oportunidades.
         </p>
       </div>
       {controls}
@@ -199,82 +198,82 @@ function CompanyGrid({
           data-testid="company-listing"
           key={`${company.displayName}-${company.email}`}
         >
-            <Card className="bg-brand-night-surface h-full gap-0 overflow-hidden rounded-2xl border-white/10 py-0 text-white shadow-md transition-transform duration-200 hover:-translate-y-0.5 hover:border-white/20">
-              <div className="from-brand-blue/35 to-brand-night relative flex aspect-[16/9] items-center justify-center border-b border-white/10 bg-gradient-to-br">
-                {company.logo ? (
-                  // Signed bearer URLs must not enter the shared image cache.
-                  <SignedImage
-                    alt={company.logo.alt}
-                    className="max-h-24 max-w-[70%] object-contain sm:max-h-28"
-                    height={company.logo.height}
-                    src={company.logo.url}
-                    width={company.logo.width}
-                  />
-                ) : (
-                  <span
-                    aria-label={`${company.displayName} está sem logo`}
-                    className="text-brand-blue flex size-16 items-center justify-center rounded-2xl border border-white/10 bg-white/10"
-                    role="img"
-                  >
-                    <Building2 aria-hidden="true" className="size-8" />
-                  </span>
-                )}
+          <Card className="bg-brand-night-surface h-full gap-0 overflow-hidden rounded-2xl border-white/10 py-0 text-white shadow-md transition-transform duration-200 hover:-translate-y-0.5 hover:border-white/20">
+            <div className="from-brand-blue/35 to-brand-night relative flex aspect-[16/9] items-center justify-center border-b border-white/10 bg-gradient-to-br">
+              {company.logo ? (
+                // Signed bearer URLs must not enter the shared image cache.
+                <SignedImage
+                  alt={company.logo.alt}
+                  className="max-h-24 max-w-[70%] object-contain sm:max-h-28"
+                  height={company.logo.height}
+                  src={company.logo.url}
+                  width={company.logo.width}
+                />
+              ) : (
+                <span
+                  aria-label={`${company.displayName} está sem logo`}
+                  className="text-brand-blue flex size-16 items-center justify-center rounded-2xl border border-white/10 bg-white/10"
+                  role="img"
+                >
+                  <Building2 aria-hidden="true" className="size-8" />
+                </span>
+              )}
+            </div>
+
+            <CardHeader className="gap-3 px-5 pt-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  className="bg-brand-blue/30 border-transparent text-white"
+                  variant="ghost"
+                >
+                  Empresa
+                </Badge>
               </div>
-
-              <CardHeader className="gap-3 px-5 pt-5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge
-                    className="bg-brand-blue/30 border-transparent text-white"
-                    variant="ghost"
-                  >
-                    Empresa
-                  </Badge>
-                </div>
-                <div className="space-y-1.5">
-                  <CardTitle>
-                    <h3 className="text-xl font-bold tracking-[-0.02em] break-words">
-                      {company.displayName}
-                    </h3>
-                  </CardTitle>
-                  {company.segment ? (
-                    <p className="line-clamp-2 text-sm leading-5 text-white/55">
-                      {company.segment}
-                    </p>
-                  ) : null}
-                  {[company.city, company.state].filter(Boolean).length > 0 ? (
-                    <p className="flex items-center gap-1.5 text-sm text-white/55">
-                      <MapPin aria-hidden="true" className="size-4 shrink-0" />
-                      {[company.city, company.state].filter(Boolean).join(", ")}
-                    </p>
-                  ) : null}
-                </div>
-              </CardHeader>
-
-              <CardContent className="flex flex-1 flex-col gap-4 px-5 py-4">
-                {company.description ? (
-                  <p className="line-clamp-3 leading-6 break-words text-white/60">
-                    {company.description}
+              <div className="space-y-1.5">
+                <CardTitle>
+                  <h3 className="text-xl font-bold tracking-[-0.02em] break-words">
+                    {company.displayName}
+                  </h3>
+                </CardTitle>
+                {company.segment ? (
+                  <p className="line-clamp-2 text-sm leading-5 text-white/55">
+                    {company.segment}
                   </p>
                 ) : null}
+                {[company.city, company.state].filter(Boolean).length > 0 ? (
+                  <p className="flex items-center gap-1.5 text-sm text-white/55">
+                    <MapPin aria-hidden="true" className="size-4 shrink-0" />
+                    {[company.city, company.state].filter(Boolean).join(", ")}
+                  </p>
+                ) : null}
+              </div>
+            </CardHeader>
 
-                <CompanyContactLinks company={company} />
-              </CardContent>
+            <CardContent className="flex flex-1 flex-col gap-4 px-5 py-4">
+              {company.description ? (
+                <p className="line-clamp-3 leading-6 break-words text-white/60">
+                  {company.description}
+                </p>
+              ) : null}
 
-              <CardFooter className="border-t border-white/10 bg-transparent px-5 py-4">
-                <Link
-                  aria-label={`Conhecer marca ${company.displayName}`}
-                  className={buttonVariants({
-                    className: "w-full",
-                    size: "lg",
-                  })}
-                  href={`/app/companies/${company.companyId}`}
-                >
-                  <ShieldCheck aria-hidden="true" />
-                  Conhecer marca
-                  <ExternalLink aria-hidden="true" />
-                </Link>
-              </CardFooter>
-            </Card>
+              <CompanyContactLinks company={company} />
+            </CardContent>
+
+            <CardFooter className="border-t border-white/10 bg-transparent px-5 py-4">
+              <Link
+                aria-label={`Conhecer marca ${company.displayName}`}
+                className={buttonVariants({
+                  className: "w-full",
+                  size: "lg",
+                })}
+                href={`/app/companies/${company.companyId}`}
+              >
+                <ShieldCheck aria-hidden="true" />
+                Conhecer marca
+                <ExternalLink aria-hidden="true" />
+              </Link>
+            </CardFooter>
+          </Card>
         </li>
       ))}
     </ul>

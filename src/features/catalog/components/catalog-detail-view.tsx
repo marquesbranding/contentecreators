@@ -239,7 +239,9 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
 
   const { detail } = props;
   const primaryMetric =
-    detail.metrics.find((metric) => metric.isPrimary) ?? detail.metrics[0] ?? null;
+    detail.metrics.find((metric) => metric.isPrimary) ??
+    detail.metrics[0] ??
+    null;
   const primaryHandle =
     detail.socialProfiles.find(
       (social) => social.platform === primaryMetric?.platform,

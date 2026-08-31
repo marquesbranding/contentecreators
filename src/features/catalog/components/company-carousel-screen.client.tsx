@@ -7,7 +7,10 @@ import { useEffect, useRef, useState, useTransition } from "react";
 
 import { companySegmentOptions } from "@/features/onboarding/domain/profile-segments";
 import { Input } from "@/shared/components/ui/input";
-import { InputGroup, InputGroupAddon } from "@/shared/components/ui/input-group";
+import {
+  InputGroup,
+  InputGroupAddon,
+} from "@/shared/components/ui/input-group";
 import { SearchableSelect } from "@/shared/components/ui/searchable-select";
 import { BrowserQueryProvider } from "@/shared/query/browser-query-provider";
 
@@ -149,7 +152,11 @@ function CompanyCarouselScreenContent({
   return (
     <section aria-labelledby="company-carousel-heading" className="space-y-4">
       {query.isPending ? (
-        <CompanyCarouselView controls={controls} response={null} status="loading" />
+        <CompanyCarouselView
+          controls={controls}
+          response={null}
+          status="loading"
+        />
       ) : query.isError ? (
         <CompanyCarouselView
           controls={controls}

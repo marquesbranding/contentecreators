@@ -166,7 +166,11 @@ export function MediaUploadField({
           <Dialog onOpenChange={setMenuOpen} open={menuOpen}>
             <DialogTrigger
               render={
-                <Button disabled={upload.isBusy} type="button" variant="outline" />
+                <Button
+                  disabled={upload.isBusy}
+                  type="button"
+                  variant="outline"
+                />
               }
             >
               Mudar foto
@@ -350,4 +354,3 @@ export function MediaUploadField({
     </Field>
   );
 }
-

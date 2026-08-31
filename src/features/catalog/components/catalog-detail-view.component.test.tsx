@@ -76,9 +76,7 @@ describe("CatalogDetailView", () => {
       /assetId|bucket|objectPath|cnpj|operationalEmail/iu,
     );
     await user.tab();
-    expect(
-      screen.getByRole("link", { name: /^voltar$/iu }),
-    ).toHaveFocus();
+    expect(screen.getByRole("link", { name: /^voltar$/iu })).toHaveFocus();
     expect(
       await getBlockingComponentAccessibilityViolations(container),
     ).toEqual([]);
@@ -113,9 +111,10 @@ describe("CatalogDetailView", () => {
       screen.getByRole("heading", { name: /perfil não disponível/iu }),
     ).toBeVisible();
     expect(screen.queryByText(detail.bio)).toBeNull();
-    expect(
-      screen.getByRole("link", { name: /^voltar$/iu }),
-    ).toHaveAttribute("href", "/app/catalog");
+    expect(screen.getByRole("link", { name: /^voltar$/iu })).toHaveAttribute(
+      "href",
+      "/app/catalog",
+    );
   });
 
   it("supports recoverable loading and error states", async () => {

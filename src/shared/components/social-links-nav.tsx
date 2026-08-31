@@ -1,9 +1,4 @@
-import {
-  AtSign,
-  BriefcaseBusiness,
-  MessageCircle,
-  Music2,
-} from "lucide-react";
+import { AtSign, BriefcaseBusiness, MessageCircle, Music2 } from "lucide-react";
 
 import { ptBR } from "@/shared/copy/pt-BR";
 import { cn } from "@/shared/lib/cn";
@@ -23,7 +18,10 @@ const socialIcons = {
 /** The brand's own social accounts, shared by the marketing and product footers. */
 export function SocialLinksNav({ className }: { className?: string }) {
   return (
-    <nav aria-label="Redes sociais" className={cn("flex flex-wrap gap-3", className)}>
+    <nav
+      aria-label="Redes sociais"
+      className={cn("flex flex-wrap gap-3", className)}
+    >
       {ptBR.marketing.footer.socialLinks.map((link) => {
         const Icon = socialIcons[link.label];
 

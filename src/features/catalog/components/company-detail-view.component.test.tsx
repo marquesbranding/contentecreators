@@ -55,9 +55,7 @@ describe("CompanyDetailView", () => {
       /cnpj|legalName|bucket|objectPath|assetId/iu,
     );
     await user.tab();
-    expect(
-      screen.getByRole("link", { name: /^voltar$/iu }),
-    ).toHaveFocus();
+    expect(screen.getByRole("link", { name: /^voltar$/iu })).toHaveFocus();
     expect(
       await getBlockingComponentAccessibilityViolations(container),
     ).toEqual([]);
