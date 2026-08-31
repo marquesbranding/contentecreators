@@ -142,7 +142,7 @@ function DetailUnavailable() {
           href="/app/catalog"
         >
           <ArrowLeft aria-hidden="true" />
-          Voltar ao catálogo
+          Voltar
         </Link>
       </Alert>
     </main>
@@ -257,7 +257,7 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
           href="/app/catalog"
         >
           <ArrowLeft aria-hidden="true" />
-          Voltar ao catálogo
+          Voltar
         </Link>
 
         <article className="mt-5 space-y-5">

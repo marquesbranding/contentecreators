@@ -47,7 +47,7 @@ function CompanyUnavailable() {
           href="/app/catalog"
         >
           <ArrowLeft aria-hidden="true" />
-          Voltar ao catálogo
+          Voltar
         </Link>
       </Alert>
     </main>
@@ -123,7 +123,7 @@ export function CompanyDetailView({
           href="/app/catalog"
         >
           <ArrowLeft aria-hidden="true" />
-          Voltar ao catálogo
+          Voltar
         </Link>
 
         <article className="mt-5 space-y-5">

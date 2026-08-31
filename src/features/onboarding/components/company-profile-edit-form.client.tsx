@@ -34,7 +34,7 @@ import { ProfileFormFields } from "./profile-form-fields.client";
 export function CompanyProfileEditForm({
   action,
   backHref = "/app/catalog",
-  backLabel = "Voltar ao perfil",
+  backLabel = "Voltar",
   changeReason,
   expectedVersion,
   formLabel = "Editar perfil da empresa",

@@ -56,7 +56,7 @@ describe("CompanyDetailView", () => {
     );
     await user.tab();
     expect(
-      screen.getByRole("link", { name: /voltar ao catálogo/iu }),
+      screen.getByRole("link", { name: /^voltar$/iu }),
     ).toHaveFocus();
     expect(
       await getBlockingComponentAccessibilityViolations(container),

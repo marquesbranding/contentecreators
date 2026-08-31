@@ -29,10 +29,18 @@ Clicking "Mudar foto" SHALL open a menu with exactly three actions: "Carregar fo
 - **WHEN** the user selects "Cancelar"
 - **THEN** the menu closes with no changes to the image slot
 
-### Requirement: Back navigation label reads "Voltar ao perfil"
-The profile edit page's back button SHALL read "Voltar ao perfil" instead of "Voltar ao catálogo".
+### Requirement: Back navigation label reads "Voltar"
+Back navigation controls SHALL be labelled with the single word "Voltar", with no
+trailing destination ("ao catálogo", "ao perfil"). The destination is already
+evident from the page the user is leaving, and the shorter label keeps the control
+readable on narrow viewports.
 
 #### Scenario: User views the profile edit page footer controls
 - **WHEN** the profile edit page renders
-- **THEN** the back button label reads "Voltar ao perfil"
+- **THEN** the back button label reads "Voltar"
+
+#### Scenario: A caller supplies its own back label
+- **WHEN** a host page passes an explicit `backLabel` (for example the backoffice's
+  "Cancelar e voltar")
+- **THEN** that label is used instead of the default
 
