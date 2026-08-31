@@ -9,6 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
@@ -29,7 +30,10 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 
 import type { CompanyCarouselViewResponseDto } from "../types/company-carousel-view.types";
 
-type CompanyCarouselViewProps =
+type CompanyCarouselViewProps = {
+  /** Search and segment controls, rendered under the heading they filter. */
+  controls?: ReactNode;
+} & (
   | {
       onRetry?: never;
       response: CompanyCarouselViewResponseDto;
@@ -44,63 +48,12 @@ type CompanyCarouselViewProps =
       onRetry?: () => void;
       response: null;
       status: "error";
-    };
+    }
+);
 
-export function CompanyCarouselView(props: CompanyCarouselViewProps) {
-  if (props.status === "loading") {
-    return (
-      <section
-        aria-label="Empresas na comunidade"
-        aria-live="polite"
-        className="space-y-4"
-        role="status"
-      >
-        <span className="sr-only">Carregando empresas da comunidade</span>
-        <Skeleton className="h-7 w-64" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <Skeleton className="h-72 rounded-2xl" />
-          <Skeleton className="h-72 rounded-2xl" />
-          <Skeleton className="h-72 rounded-2xl" />
-        </div>
-      </section>
-    );
-  }
-
-  if (props.status === "error") {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle aria-hidden="true" />
-        <AlertTitle>Não foi possível carregar as empresas</AlertTitle>
-        <AlertDescription>
-          Tente novamente para confirmar seu acesso a esta área privada.
-        </AlertDescription>
-        <Button
-          className="mt-3 min-h-11 w-fit"
-          onClick={props.onRetry}
-          type="button"
-          variant="outline"
-        >
-          <RefreshCw aria-hidden="true" />
-          Tentar novamente
-        </Button>
-      </Alert>
-    );
-  }
-
-  if (props.response.items.length === 0) {
-    return (
-      <p className="text-muted-foreground text-sm">
-        Nenhuma empresa encontrada para esses filtros.
-      </p>
-    );
-  }
-
+function CompanyCarouselHeader({ controls }: { controls?: ReactNode }) {
   return (
-    <section
-      aria-labelledby="company-carousel-heading"
-      className="space-y-6"
-      role="region"
-    >
+    <div className="space-y-4">
       <div>
         <h2
           className="text-3xl font-extrabold tracking-[-0.035em]"
@@ -115,6 +68,86 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
           oportunidades.
         </p>
       </div>
+      {controls}
+    </div>
+  );
+}
+
+/**
+ * The heading and controls render in every state on purpose: a search that
+ * matches nothing must still leave the user a way to clear it.
+ */
+export function CompanyCarouselView(props: CompanyCarouselViewProps) {
+  if (props.status === "loading") {
+    return (
+      <section
+        aria-labelledby="company-carousel-heading"
+        className="space-y-6"
+        role="region"
+      >
+        <CompanyCarouselHeader controls={props.controls} />
+        <div aria-live="polite" role="status">
+          <span className="sr-only">Carregando empresas da comunidade</span>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <Skeleton className="h-72 rounded-2xl" />
+            <Skeleton className="h-72 rounded-2xl" />
+            <Skeleton className="h-72 rounded-2xl" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (props.status === "error") {
+    return (
+      <section
+        aria-labelledby="company-carousel-heading"
+        className="space-y-6"
+        role="region"
+      >
+        <CompanyCarouselHeader controls={props.controls} />
+        <Alert variant="destructive">
+          <AlertCircle aria-hidden="true" />
+          <AlertTitle>Não foi possível carregar as empresas</AlertTitle>
+          <AlertDescription>
+            Tente novamente para confirmar seu acesso a esta área privada.
+          </AlertDescription>
+          <Button
+            className="mt-3 min-h-11 w-fit"
+            onClick={props.onRetry}
+            type="button"
+            variant="outline"
+          >
+            <RefreshCw aria-hidden="true" />
+            Tentar novamente
+          </Button>
+        </Alert>
+      </section>
+    );
+  }
+
+  if (props.response.items.length === 0) {
+    return (
+      <section
+        aria-labelledby="company-carousel-heading"
+        className="space-y-6"
+        role="region"
+      >
+        <CompanyCarouselHeader controls={props.controls} />
+        <p className="text-muted-foreground text-sm">
+          Nenhuma empresa encontrada para esses filtros.
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section
+      aria-labelledby="company-carousel-heading"
+      className="space-y-6"
+      role="region"
+    >
+      <CompanyCarouselHeader controls={props.controls} />
       <ul
         aria-label="Marcas cadastradas"
         className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"

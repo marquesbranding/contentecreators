@@ -128,24 +128,32 @@ function CompanyCarouselScreenContent({
     segment: searchParams.get("segment") ?? undefined,
   };
   const query = useCompanyCarousel(limit, initialData, filters);
+  /* Handed to the view so the controls sit directly under the section heading
+   * they filter, instead of floating above it. */
+  const controls = (
+    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+      <CompanyNameSearch />
+      <CompanySegmentFilter />
+    </div>
+  );
 
   return (
     <section aria-labelledby="company-carousel-heading" className="space-y-4">
-      <div className="flex flex-wrap items-center justify-end gap-3">
-        <CompanyNameSearch />
-        <CompanySegmentFilter />
-      </div>
-
       {query.isPending ? (
-        <CompanyCarouselView response={null} status="loading" />
+        <CompanyCarouselView controls={controls} response={null} status="loading" />
       ) : query.isError ? (
         <CompanyCarouselView
+          controls={controls}
           onRetry={() => void query.refetch()}
           response={null}
           status="error"
         />
       ) : (
-        <CompanyCarouselView response={query.data} status="success" />
+        <CompanyCarouselView
+          controls={controls}
+          response={query.data}
+          status="success"
+        />
       )}
     </section>
   );
