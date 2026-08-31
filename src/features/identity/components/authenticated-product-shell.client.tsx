@@ -7,6 +7,7 @@ import { useState, useTransition } from "react";
 
 import { BrandLogo } from "@/shared/components/brand-logo";
 import { FormStatusSubmitButton } from "@/shared/components/form-status-submit-button";
+import { SocialLinksNav } from "@/shared/components/social-links-nav";
 import { Button, buttonVariants } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import {
@@ -18,6 +19,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/components/ui/sheet";
+import { ptBR } from "@/shared/copy/pt-BR";
 import { useHydrated } from "@/shared/hooks/use-hydrated";
 import { cn } from "@/shared/lib/cn";
 import { getBrowserQueryClient } from "@/shared/query/browser-query-client";
@@ -203,30 +205,30 @@ function ProductSignOut({
 function AuthenticatedProductFooter() {
   return (
     <footer className="bg-brand-night mt-auto border-t border-white/10 text-white">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-8">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <nav
+            aria-label="Links institucionais"
+            className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold"
+          >
+            <Link
+              className="text-white/70 hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
+              href="/terms"
+            >
+              {ptBR.marketing.footer.terms}
+            </Link>
+            <Link
+              className="text-white/70 hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
+              href="/privacy"
+            >
+              {ptBR.marketing.footer.privacy}
+            </Link>
+          </nav>
+          <SocialLinksNav />
+        </div>
         <p className="text-xs text-white/60">
-          © {new Date().getFullYear()} Contente Creators. Todos os direitos
-          reservados.
+          © {new Date().getFullYear()} {ptBR.marketing.footer.copyright}
         </p>
-        <nav
-          aria-label="Links institucionais"
-          className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold"
-        >
-          <Link
-            className="text-white/70 hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
-            href="/terms"
-          >
-            Termos de Uso
-          </Link>
-          <Link
-            className="text-white/70 hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
-            href="/privacy"
-          >
-            Política de Privacidade
-          </Link>
-          {/* TODO: add links to the brand's official social media accounts
-              once real URLs are available (none exist in the codebase yet). */}
-        </nav>
       </div>
     </footer>
   );

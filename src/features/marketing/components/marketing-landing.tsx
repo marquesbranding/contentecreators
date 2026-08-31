@@ -1,16 +1,13 @@
 import {
   ArrowUpRight,
   ArrowRight,
-  AtSign,
   BadgeCheck,
-  BriefcaseBusiness,
   Building2,
   Check,
   CircleCheck,
   HelpCircle,
   Mail,
   MessageCircle,
-  Music2,
   Search,
   SearchCheck,
   ShieldCheck,
@@ -28,6 +25,7 @@ import {
   ScrollVelocityRow,
 } from "@/registry/magicui/scroll-based-velocity";
 import { TextAnimate } from "@/registry/magicui/text-animate";
+import { SocialLinksNav } from "@/shared/components/social-links-nav";
 import { buttonVariants } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -57,13 +55,6 @@ const journeyIconStyles = [
   "bg-brand-sky text-brand-night",
   "bg-brand-lime text-brand-night",
 ] as const;
-
-const socialIcons = {
-  Facebook: MessageCircle,
-  Instagram: AtSign,
-  LinkedIn: BriefcaseBusiness,
-  TikTok: Music2,
-} as const;
 
 const vevoxFacts = [
   {
@@ -624,27 +615,7 @@ function MarketingFooter({
                 {copy.footer.supportContact}
               </a>
             ) : null}
-            <nav
-              aria-label="Redes sociais"
-              className="mt-5 flex flex-wrap gap-3"
-            >
-              {copy.footer.socialLinks.map((link) => {
-                const Icon = socialIcons[link.label];
-
-                return (
-                  <a
-                    aria-label={link.label}
-                    className="flex size-11 items-center justify-center rounded-full border border-white/15 text-white/70 transition-colors hover:border-white/45 hover:text-white focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
-                    href={link.href}
-                    key={link.label}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    <Icon aria-hidden="true" className="size-5" />
-                  </a>
-                );
-              })}
-            </nav>
+            <SocialLinksNav className="mt-5" />
           </div>
         </div>
 
