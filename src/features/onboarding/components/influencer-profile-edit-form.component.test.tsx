@@ -53,9 +53,10 @@ describe("InfluencerProfileEditForm", () => {
     expect(screen.getByLabelText("Nome completo")).toHaveValue(
       "Joana da Silva",
     );
-    expect(screen.getByLabelText("Tipo de atuação")).toHaveTextContent(
-      "Influencer",
-    );
+    /* Creator type is fixed at signup and can't change here — the edit form
+     * doesn't even submit it, so it must not render a picker for it. */
+    expect(screen.queryByText("Como você cria conteúdo?")).not.toBeInTheDocument();
+    expect(screen.queryByText("Tipo de atuação")).not.toBeInTheDocument();
     expect(screen.queryByText("Termos e privacidade")).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Salvar alterações" }),
@@ -187,18 +188,9 @@ describe("InfluencerProfileEditForm", () => {
     await user.tab();
     expect(screen.getByLabelText("Nome completo")).toHaveFocus();
     await user.tab();
-    const creatorType = screen.getByLabelText("Tipo de atuação");
-    expect(creatorType).toHaveFocus();
-
-    await user.keyboard("{Enter}");
-    expect(
-      await screen.findByRole("option", { name: "Creator UGC" }),
-    ).toBeVisible();
-    await user.keyboard("{ArrowDown}");
-    await user.keyboard("{Enter}");
-
-    await waitFor(() => {
-      expect(creatorType).toHaveTextContent("Creator UGC");
-    });
+    /* Creator type no longer sits here — it's immutable after signup, so the
+     * edit form skips it entirely rather than showing a picker that does
+     * nothing on save. */
+    expect(screen.getByLabelText("WhatsApp com DDD")).toHaveFocus();
   });
 });

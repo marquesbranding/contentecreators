@@ -198,9 +198,10 @@ describe("ProfileFormFields company CNPJ experience", () => {
     expect(screen.getByLabelText("Nome completo")).toHaveValue(
       "Joana Restaurada",
     );
-    expect(screen.getByLabelText("Tipo de atuação")).toHaveTextContent(
-      "Creator UGC",
-    );
+    expect(screen.getByRole("radio", { name: /sou ugc/iu })).toBeChecked();
+    expect(
+      screen.getByRole("radio", { name: /sou influencer/iu }),
+    ).not.toBeChecked();
     expect(
       screen.getByRole("checkbox", { name: "YouTube" }),
     ).toBeChecked();

@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, CircleAlert, Sparkles, UserRound } from "lucide-react";
+import { Building2, CircleAlert } from "lucide-react";
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 
@@ -27,37 +27,24 @@ import {
   RequiredFieldsNotice,
 } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 import { useActionSuccessToast } from "@/shared/hooks/use-action-success-toast";
 import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 import { useSubmitConfirmation } from "@/shared/hooks/use-submit-confirmation";
 import { useUnsavedChangesGuard } from "@/shared/hooks/use-unsaved-changes-guard";
-import { cn } from "@/shared/lib/cn";
 import { dispatchFormActionPreservingValues } from "@/shared/lib/forms/dispatch-form-action-preserving-values";
 
 import { creatorNicheOptions } from "@/shared/domain/profile-segments";
+import { creatorTypeOptions } from "../domain/creator-type-options";
 import type { OnboardingAction } from "../types/onboarding-action.types";
 import { initialOnboardingActionState } from "../types/onboarding-action.types";
+import { DescriptiveRadioCardGroup } from "./descriptive-radio-card-group.client";
 import { FormErrorSummary, mergeFieldErrors } from "./form-error-summary";
 import { OnboardingSubmitConfirmation } from "./onboarding-submit-confirmation";
 import { ProfileFormFields } from "./profile-form-fields.client";
 import { RegistrationStepper } from "./registration-stepper.client";
 
 const accountTypeOptions = [
-  {
-    description:
-      "Influenciador é uma pessoa com muitos seguidores que compartilha opiniões e conteúdos capazes de impactar decisões, comportamentos e compras de seus seguidores.",
-    icon: UserRound,
-    label: "Sou influencer",
-    value: "INFLUENCER",
-  },
-  {
-    description:
-      "UGC é conteúdo criado por pessoas comuns, geralmente com poucos seguidores, que compartilham experiências reais com uma marca ou produto.",
-    icon: Sparkles,
-    label: "Sou UGC",
-    value: "UGC",
-  },
+  ...creatorTypeOptions,
   {
     description:
       "Marcas que querem buscar e contratar UGCs ou influenciadores para divulgar seus produtos ou serviços, buscando alcançar, engajar e influenciar a compra do seu público-alvo.",
@@ -484,89 +471,25 @@ export function CombinedRegistrationForm({
               Essa escolha define os dados do cadastro e não poderá ser alterada
               por você depois do envio.
             </FieldDescription>
-            <Field data-invalid={Boolean(roleErrors?.length)}>
-              <RadioGroup
-                aria-describedby={
-                  roleErrors?.length ? "registration-role-error" : undefined
-                }
-                aria-invalid={Boolean(roleErrors?.length)}
-                aria-labelledby="registration-role-label"
-                aria-required="true"
-                className="grid gap-4 md:grid-cols-3"
-                data-field-kind="radio-group"
-                data-field-name="accountType"
-                data-required-field="true"
-                data-required-message="Escolha como você vai usar a plataforma."
+            <Field
+              data-field-kind="radio-group"
+              data-field-name="accountType"
+              data-invalid={Boolean(roleErrors?.length)}
+              data-required-field="true"
+              data-required-message="Escolha como você vai usar a plataforma."
+            >
+              <DescriptiveRadioCardGroup
+                ariaLabelledBy="registration-role-label"
+                errors={roleErrors}
+                idPrefix="registration"
                 name="accountType"
                 onValueChange={(value) => {
-                  if (
-                    value === "INFLUENCER" ||
-                    value === "UGC" ||
-                    value === "COMPANY"
-                  ) {
-                    setAccountType(value);
-                    clearFieldError("role");
-                  }
+                  setAccountType(value);
+                  clearFieldError("role");
                 }}
+                options={accountTypeOptions}
                 value={accountType}
-              >
-                {accountTypeOptions.map((option) => {
-                  const Icon = option.icon;
-                  const selected = accountType === option.value;
-
-                  return (
-                    <label
-                      className={cn(
-                        "focus-within:ring-ring/40 flex cursor-pointer items-start gap-4 rounded-2xl border-2 p-5 transition-colors focus-within:ring-3",
-                        selected
-                          ? "border-brand-blue bg-brand-blue-soft"
-                          : "border-border hover:border-brand-blue/40",
-                      )}
-                      htmlFor={`registration-${option.value.toLowerCase()}`}
-                      key={option.value}
-                      onClick={() => setAccountType(option.value)}
-                    >
-                      <span
-                        className={cn(
-                          "flex size-11 shrink-0 items-center justify-center rounded-xl",
-                          selected
-                            ? "bg-brand-blue text-white"
-                            : "bg-muted text-foreground",
-                        )}
-                      >
-                        <Icon aria-hidden="true" className="size-5" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <strong
-                          className="block"
-                          id={`registration-${option.value.toLowerCase()}-title`}
-                        >
-                          {option.label}
-                        </strong>
-                        <span
-                          className="text-muted-foreground mt-1 block text-sm leading-5"
-                          id={`registration-${option.value.toLowerCase()}-description`}
-                        >
-                          {option.description}
-                        </span>
-                      </span>
-                      <RadioGroupItem
-                        aria-describedby={`registration-${option.value.toLowerCase()}-description`}
-                        aria-labelledby={`registration-${option.value.toLowerCase()}-title`}
-                        id={`registration-${option.value.toLowerCase()}`}
-                        value={option.value}
-                      />
-                    </label>
-                  );
-                })}
-              </RadioGroup>
-              <FieldError id="registration-role-error">
-                {roleErrors?.map((message) => (
-                  <span className="block" key={message}>
-                    {message}
-                  </span>
-                ))}
-              </FieldError>
+              />
             </Field>
           </FieldSet>
 

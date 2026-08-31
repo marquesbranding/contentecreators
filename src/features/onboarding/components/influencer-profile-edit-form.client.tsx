@@ -132,6 +132,7 @@ export function InfluencerProfileEditForm({
           formValidation.clearFieldError(fieldName);
         }}
         role="INFLUENCER"
+        showCreatorTypeField={false}
         showLegalConsents={false}
       />
       {changeReason ? (

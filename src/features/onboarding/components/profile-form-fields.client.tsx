@@ -34,13 +34,6 @@ import {
   RequiredIndicator,
 } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { SocialPlatformIcon } from "@/shared/components/social-platform-icon";
 
@@ -53,12 +46,17 @@ import {
   OTHER_NICHE_SLUG,
 } from "@/shared/domain/profile-segments";
 import { SOCIAL_CHANNEL_PLATFORMS } from "../domain/social-channels-form-data";
+import {
+  creatorTypeOptions,
+  type CreatorTypeValue,
+} from "../domain/creator-type-options";
 import type {
   CompanyOnboardingDraftPayload,
   CreatorOnboardingDraftPayload,
 } from "../schemas/onboarding-draft-schema";
 import type { OnboardingDraftPayload } from "../types/onboarding-draft.types";
 import { CnpjLookupFeedback } from "./cnpj-lookup-feedback";
+import { DescriptiveRadioCardGroup } from "./descriptive-radio-card-group.client";
 
 const states = [
   "AC",
@@ -248,92 +246,6 @@ function TextField({
   );
 }
 
-function ControlledSelect({
-  description,
-  errors,
-  id,
-  label,
-  name,
-  options,
-  placeholder,
-  selectedValue,
-  initialValue,
-  onFieldChange,
-  onValueChange,
-  required = true,
-  reserveDescriptionSpace = false,
-  validationName,
-}: {
-  description?: string;
-  errors?: string[];
-  id: string;
-  label: string;
-  name: string;
-  options: readonly (readonly [string, string])[];
-  placeholder: string;
-  selectedValue?: string;
-  initialValue?: string;
-  onFieldChange?: (fieldName: string) => void;
-  onValueChange?: (value: string) => void;
-  required?: boolean;
-  reserveDescriptionSpace?: boolean;
-  validationName?: string;
-}) {
-  const [internalValue, setInternalValue] = useState<string | null>(
-    initialValue || null,
-  );
-  const value =
-    selectedValue === undefined ? internalValue : selectedValue || null;
-  const errorId = errors?.length ? `${id}-error` : undefined;
-  const descriptionId = description ? `${id}-description` : undefined;
-  const describedBy = [descriptionId, errorId].filter(Boolean).join(" ");
-
-  return (
-    <Field data-invalid={Boolean(errors?.length)}>
-      <FieldLabel htmlFor={id} required={required}>
-        {label}
-      </FieldLabel>
-      {description ? (
-        <FieldDescription id={descriptionId}>{description}</FieldDescription>
-      ) : reserveDescriptionSpace ? (
-        <FieldDescription aria-hidden="true">&nbsp;</FieldDescription>
-      ) : null}
-      <Select
-        items={Object.fromEntries(options)}
-        name={name}
-        onValueChange={(nextValue) => {
-          setInternalValue(nextValue);
-          onValueChange?.(nextValue ?? "");
-          onFieldChange?.(validationName ?? name);
-        }}
-        value={value}
-      >
-        <SelectTrigger
-          aria-describedby={describedBy || undefined}
-          aria-invalid={Boolean(errors?.length)}
-          aria-required={required}
-          className="w-full rounded-xl"
-          data-field-name={validationName ?? name}
-          data-field-value={value ?? ""}
-          data-required-field={required}
-          data-required-message="Selecione uma opção."
-          id={id}
-        >
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent>
-          {options.map(([optionValue, optionLabel]) => (
-            <SelectItem key={optionValue} value={optionValue}>
-              {optionLabel}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <ErrorMessages errors={errors} id={errorId ?? `${id}-error`} />
-    </Field>
-  );
-}
-
 interface ComboboxOption {
   label: string;
   value: string;
@@ -435,6 +347,7 @@ export function ProfileFormFields({
   initialValues,
   onFieldChange,
   role,
+  showCreatorTypeField = true,
   showLegalConsents = true,
   showWhatsappField = true,
 }: {
@@ -451,6 +364,8 @@ export function ProfileFormFields({
   initialValues?: OnboardingDraftPayload;
   onFieldChange?: (fieldName: string) => void;
   role: "INFLUENCER" | "COMPANY";
+  /** False on the profile editor: the type can't change after signup, and that form doesn't submit it at all. */
+  showCreatorTypeField?: boolean;
   showLegalConsents?: boolean;
   showWhatsappField?: boolean;
 }) {
@@ -462,6 +377,16 @@ export function ProfileFormFields({
     role === "COMPANY"
       ? (initialValues as CompanyOnboardingDraftPayload | undefined)
       : undefined;
+  /* Only used when the caller doesn't already know the creator type (the
+   * post-Google onboarding step, before a draft has one) — signup and the
+   * profile editor pass a concrete value instead. */
+  const [pickedCreatorType, setPickedCreatorType] =
+    useState<CreatorTypeValue | null>(
+      creatorInitialValues?.creatorType === "INFLUENCER" ||
+        creatorInitialValues?.creatorType === "UGC"
+        ? creatorInitialValues.creatorType
+        : null,
+    );
   const [companyFields, setCompanyFields] = useState(() => ({
     city: companyInitialValues?.city ?? "",
     cnpj: companyInitialValues?.cnpj ?? "",
@@ -895,26 +820,28 @@ export function ProfileFormFields({
                   placeholder="Selecione uma faixa"
                 />
               </>
+            ) : !showCreatorTypeField ? null : creatorType === undefined ? (
+              <Field
+                data-invalid={Boolean(resolveFieldErrors("creatorType")?.length)}
+              >
+                <FieldLegend id="creator-type-label" required>
+                  Como você cria conteúdo?
+                </FieldLegend>
+                <DescriptiveRadioCardGroup
+                  ariaLabelledBy="creator-type-label"
+                  errors={resolveFieldErrors("creatorType")}
+                  idPrefix="creator-type"
+                  name="creatorType"
+                  onValueChange={(value) => {
+                    setPickedCreatorType(value);
+                    onFieldChange?.("creatorType");
+                  }}
+                  options={creatorTypeOptions}
+                  value={pickedCreatorType}
+                />
+              </Field>
             ) : (
-              <>
-                {creatorType === undefined ? (
-                  <ControlledSelect
-                    errors={resolveFieldErrors("creatorType")}
-                    id="creator-type"
-                    label="Tipo de atuação"
-                    name="creatorType"
-                    initialValue={creatorInitialValues?.creatorType}
-                    options={[
-                      ["INFLUENCER", "Influencer"],
-                      ["UGC", "Creator UGC"],
-                    ]}
-                    onFieldChange={onFieldChange}
-                    placeholder="Selecione uma opção"
-                  />
-                ) : (
-                  <input name="creatorType" type="hidden" value={creatorType} />
-                )}
-              </>
+              <input name="creatorType" type="hidden" value={creatorType} />
             )}
 
             {showWhatsappField ? (
