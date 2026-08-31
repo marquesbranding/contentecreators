@@ -21,15 +21,12 @@ export default async function ProtectedBackofficeLayout({
   }
 
   const linkedAccount = await getServerCurrentAccount("NON_ADMIN");
-  const appSwitcher = linkedAccount
-    ? {
-        href: getAccountDestination(linkedAccount),
-        label: "Ir para o app",
-      }
-    : {
-        href: "/onboarding/role",
-        label: "Cadastrar como creator ou empresa",
-      };
+  const appSwitcher = {
+    href: linkedAccount
+      ? getAccountDestination(linkedAccount)
+      : "/onboarding/role",
+    label: "Acessar o app",
+  };
 
   return (
     <BackofficeShell appSwitcher={appSwitcher} signOutAction={signOutAction}>

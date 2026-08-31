@@ -3,7 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Archive,
-  ArrowLeftRight,
+  ArrowRight,
   ChevronRight,
   ClipboardCheck,
   FileClock,
@@ -315,7 +315,7 @@ export function BackofficeShell({
                 className="inline-flex h-9 items-center gap-2 rounded-md border border-white/25 bg-transparent px-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 hover:text-white"
                 href={appSwitcher.href}
               >
-                <ArrowLeftRight aria-hidden="true" className="size-4" />
+                <ArrowRight aria-hidden="true" className="size-4" />
                 <span className="hidden sm:inline">{appSwitcher.label}</span>
               </Link>
             ) : null}

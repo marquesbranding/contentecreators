@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, LogOut, Menu, Search, UserRound } from "lucide-react";
+import { ArrowLeft, LogOut, Menu, Search, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, useTransition } from "react";
@@ -227,8 +227,8 @@ function BackofficeSwitcherLink({
       )}
       href="/backoffice"
     >
-      <LayoutDashboard aria-hidden="true" />
-      Ir para o backoffice
+      <ArrowLeft aria-hidden="true" />
+      Acessar backoffice
     </Link>
   );
 }
