@@ -5,8 +5,8 @@ import {
   SponsorshipCarousel,
   type SponsorshipCreativeViewModel,
   SponsorshipFeaturedCreator,
+  SponsorshipHeroBanner,
   SponsorshipSidePlacement,
-  SponsorshipTopBanner,
 } from "@/features/sponsorships";
 
 export interface CatalogSponsorshipSlotDto {
@@ -90,7 +90,7 @@ export function CatalogSponsorshipSlots({
       data-slot="catalog-sponsorship-layout"
     >
       {top ? (
-        <SponsorshipTopBanner creative={toCreativeViewModel(top)} />
+        <SponsorshipHeroBanner creative={toCreativeViewModel(top)} />
       ) : null}
 
       {carousel.length > 0 ? (

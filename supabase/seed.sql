@@ -282,6 +282,35 @@ update public.company_profiles
 set logo_asset_id = '72000000-0000-4000-8000-000000000004'
 where account_id = 'c0000000-0000-4000-8000-000000000004';
 
+-- Creative for the catalog hero banner. The bytes are uploaded to Storage by
+-- scripts/seed-local-storage.ts, which must keep this object path in sync.
+-- Sponsorship creatives must be owned by an ADMIN account and live in the
+-- sponsorship-media bucket, otherwise the placement policy rejects them.
+insert into public.media_assets (
+  id,
+  owner_account_id,
+  bucket_name,
+  object_path,
+  kind,
+  mime_type,
+  size_bytes,
+  width,
+  height,
+  status
+)
+values (
+  '72000000-0000-4000-8000-000000000010',
+  'a0000000-0000-4000-8000-000000000001',
+  'sponsorship-media',
+  'a0000000-0000-4000-8000-000000000001/sponsorship/72000000-0000-4000-8000-000000000010.png',
+  'SPONSORSHIP_CREATIVE',
+  'image/png',
+  77860,
+  1600,
+  600,
+  'ACTIVE'
+);
+
 insert into public.creator_metric_snapshots (
   id,
   creator_profile_id,
@@ -503,7 +532,7 @@ values
     'Criador em destaque — fixture',
     'Posicionamento ativo apenas para desenvolvimento local.',
     now() - interval '1 day',
-    now() + interval '30 days',
+    now() + interval '365 days',
     true,
     10
   ),
@@ -522,6 +551,42 @@ values
     false,
     20
   );
+
+-- Active hero banner so the catalog renders a real example locally. Kept
+-- separate from the draft above, which exists to exercise the inactive state
+-- in the backoffice.
+insert into public.sponsorship_placements (
+  id,
+  placement_type,
+  audience,
+  slot_key,
+  creative_asset_id,
+  advertiser_label,
+  title,
+  body,
+  link_url,
+  link_label,
+  starts_at,
+  ends_at,
+  is_active,
+  sort_order
+)
+values (
+  'f6000000-0000-4000-8000-000000000003',
+  'TOP_BANNER',
+  'ALL',
+  'catalog-top',
+  '72000000-0000-4000-8000-000000000010',
+  'Espaço publicitário',
+  'Sua marca em destaque aqui',
+  'Este é um banner de exemplo para desenvolvimento local. Anuncie para creators e empresas aprovadas da Contente Creators.',
+  'https://contentecreators.com.br',
+  'Quero anunciar',
+  now() - interval '1 day',
+  now() + interval '365 days',
+  true,
+  10
+);
 
 insert into public.email_outbox (
   id,

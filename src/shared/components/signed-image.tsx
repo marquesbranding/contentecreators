@@ -71,6 +71,16 @@ export function SignedImage({
     return () => window.clearTimeout(timeoutId);
   }, [src]);
 
+  /* An image already decoded before hydration (server-rendered markup, or a
+   * warm cache) fires no load event, which would strand it at opacity 0.
+   * A callback ref runs as soon as the node attaches, so we can read the
+   * browser's own completion flags instead of waiting for the event. */
+  function adoptAlreadyLoadedImage(node: HTMLImageElement | null) {
+    if (node?.complete && node.naturalWidth > 0) {
+      setStatus("loaded");
+    }
+  }
+
   const img = (
     // eslint-disable-next-line @next/next/no-img-element
     <img
@@ -87,6 +97,7 @@ export function SignedImage({
       loading={loading}
       onError={() => setStatus("error")}
       onLoad={() => setStatus("loaded")}
+      ref={adoptAlreadyLoadedImage}
       referrerPolicy="no-referrer"
       src={src}
       width={width ?? 640}

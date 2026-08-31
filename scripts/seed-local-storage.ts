@@ -8,6 +8,9 @@ import { parseServerEnv } from "../src/shared/lib/env/server-env-schema";
 
 const COMPANY_LOGO_PATH =
   "c0000000-0000-4000-8000-000000000004/logo/72000000-0000-4000-8000-000000000004.png";
+/* Must match the media_assets row seeded in supabase/seed.sql. */
+const SPONSORSHIP_HERO_PATH =
+  "a0000000-0000-4000-8000-000000000001/sponsorship/72000000-0000-4000-8000-000000000010.png";
 const LOCAL_HOSTS = new Set(["127.0.0.1", "localhost"]);
 
 async function main() {
@@ -29,6 +32,9 @@ async function main() {
       import.meta.url,
     ),
   );
+  const sponsorshipHero = await readFile(
+    new URL("../supabase/fixtures/sponsorship-hero-mock.png", import.meta.url),
+  );
   const client = createClient(
     environment.NEXT_PUBLIC_SUPABASE_URL,
     environment.SUPABASE_SERVICE_ROLE_KEY,
@@ -39,16 +45,25 @@ async function main() {
       },
     },
   );
-  const { error } = await client.storage
-    .from("profile-media")
-    .upload(COMPANY_LOGO_PATH, logo, {
+  const uploads = [
+    client.storage.from("profile-media").upload(COMPANY_LOGO_PATH, logo, {
       cacheControl: "3600",
       contentType: "image/png",
       upsert: true,
-    });
+    }),
+    client.storage
+      .from("sponsorship-media")
+      .upload(SPONSORSHIP_HERO_PATH, sponsorshipHero, {
+        cacheControl: "3600",
+        contentType: "image/png",
+        upsert: true,
+      }),
+  ];
 
-  if (error) {
-    throw error;
+  for (const { error } of await Promise.all(uploads)) {
+    if (error) {
+      throw error;
+    }
   }
 
   process.stdout.write("Local Storage fixtures synchronized.\n");

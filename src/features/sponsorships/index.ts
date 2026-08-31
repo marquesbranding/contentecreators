@@ -26,6 +26,7 @@ export {
 } from "./components/sponsorship-presentation";
 export { SponsorshipSidePlacement } from "./components/sponsorship-side-placement";
 export { SponsorshipCarousel } from "./components/sponsorship-carousel.client";
+export { SponsorshipHeroBanner } from "./components/sponsorship-hero-banner";
 export { PublicSponsorshipPromotion } from "./components/public-sponsorship-promotion";
 export {
   SponsorshipFeaturedCreator,
