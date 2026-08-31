@@ -33,6 +33,12 @@ import type { CompanyCarouselViewResponseDto } from "../types/company-carousel-v
 type CompanyCarouselViewProps = {
   /** Search and segment controls, rendered under the heading they filter. */
   controls?: ReactNode;
+  /**
+   * Advertising rendered partway down the listing. Opaque on purpose: this
+   * feature is not allowed to import the sponsorships feature, so the app
+   * layer builds the node and passes it in.
+   */
+  midlistSlot?: ReactNode;
 } & (
   | {
       onRetry?: never;
@@ -141,6 +147,18 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
     );
   }
 
+  /* Only break the listing when there is actually an ad to slot in, otherwise
+   * the two grids would sit apart for no visible reason. */
+  const splitForMidlist =
+    Boolean(props.midlistSlot) &&
+    props.response.items.length > COMPANIES_BEFORE_MIDLIST;
+  const leadingCompanies = splitForMidlist
+    ? props.response.items.slice(0, COMPANIES_BEFORE_MIDLIST)
+    : props.response.items;
+  const trailingCompanies = splitForMidlist
+    ? props.response.items.slice(COMPANIES_BEFORE_MIDLIST)
+    : [];
+
   return (
     <section
       aria-labelledby="company-carousel-heading"
@@ -148,16 +166,39 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
       role="region"
     >
       <CompanyCarouselHeader controls={props.controls} />
-      <ul
-        aria-label="Marcas cadastradas"
-        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-      >
-        {props.response.items.map((company) => (
-          <li
-            className="min-w-0"
-            data-testid="company-listing"
-            key={`${company.displayName}-${company.email}`}
-          >
+      <CompanyGrid
+        ariaLabel="Marcas cadastradas"
+        companies={leadingCompanies}
+      />
+      {props.midlistSlot}
+      {trailingCompanies.length > 0 ? (
+        <CompanyGrid ariaLabel="Mais marcas" companies={trailingCompanies} />
+      ) : null}
+    </section>
+  );
+}
+
+/** How many brands to show before breaking the listing with a wave of ads. */
+const COMPANIES_BEFORE_MIDLIST = 8;
+
+function CompanyGrid({
+  ariaLabel,
+  companies,
+}: {
+  ariaLabel: string;
+  companies: readonly Company[];
+}) {
+  return (
+    <ul
+      aria-label={ariaLabel}
+      className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+    >
+      {companies.map((company) => (
+        <li
+          className="min-w-0"
+          data-testid="company-listing"
+          key={`${company.displayName}-${company.email}`}
+        >
             <Card className="bg-brand-night-surface h-full gap-0 overflow-hidden rounded-2xl border-white/10 py-0 text-white shadow-md transition-transform duration-200 hover:-translate-y-0.5 hover:border-white/20">
               <div className="from-brand-blue/35 to-brand-night relative flex aspect-[16/9] items-center justify-center border-b border-white/10 bg-gradient-to-br">
                 {company.logo ? (
@@ -234,10 +275,9 @@ export function CompanyCarouselView(props: CompanyCarouselViewProps) {
                 </Link>
               </CardFooter>
             </Card>
-          </li>
-        ))}
-      </ul>
-    </section>
+        </li>
+      ))}
+    </ul>
   );
 }
 

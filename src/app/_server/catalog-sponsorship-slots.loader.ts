@@ -37,7 +37,7 @@ export async function loadCatalogSponsorshipSlots(
     route: "CATALOG",
     viewer,
   } as const;
-  const [top, side, carousel, featured] = await Promise.all([
+  const [top, side, carousel, featured, midlist] = await Promise.all([
     dependencies.load({
       ...baseQuery,
       allowedPlacementTypes: ["TOP_BANNER"],
@@ -62,6 +62,15 @@ export async function loadCatalogSponsorshipSlots(
       limit: 1,
       slotKey: "catalog-featured",
     }),
+    /* A second wave of ads rendered partway down the listing. It reuses the
+     * CAROUSEL type on its own slot key, so no new placement type or
+     * migration is needed — operators just pick this slot key. */
+    dependencies.load({
+      ...baseQuery,
+      allowedPlacementTypes: ["CAROUSEL"],
+      limit: 3,
+      slotKey: "catalog-midlist",
+    }),
   ]);
 
   return {
@@ -71,6 +80,11 @@ export async function loadCatalogSponsorshipSlots(
       routeMatches: true,
     })),
     featured: toSlot(featured[0]),
+    midlist: midlist.map((placement) => ({
+      audienceMatches: true,
+      placement,
+      routeMatches: true,
+    })),
     side: toSlot(side[0]),
     top: toSlot(top[0]),
   };

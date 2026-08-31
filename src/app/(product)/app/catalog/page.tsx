@@ -22,7 +22,10 @@ import { getServerSignedMedia } from "@/features/media/server";
 import { AccountStatusBoundary } from "@/features/moderation/server";
 import { getServerQueryClient } from "@/shared/server/query-client";
 
-import { CatalogSponsorshipSlots } from "@/app/_components/catalog-sponsorship-slots";
+import {
+  CatalogMidlistSponsorship,
+  CatalogSponsorshipSlots,
+} from "@/app/_components/catalog-sponsorship-slots";
 import { loadServerCatalogSponsorshipSlots } from "@/app/_server/catalog-sponsorship-slots.loader";
 import { loadServerCreatorCatalogPage } from "@/app/_server/creator-catalog-page.loader";
 
@@ -85,7 +88,12 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             >
               <CatalogSponsorshipSlots slots={sponsorshipSlots}>
                 <div className="mb-8 space-y-8">
-                  <CompanyCarouselScreen initialData={companyCarousel} />
+                  <CompanyCarouselScreen
+                    initialData={companyCarousel}
+                    midlistSlot={
+                      <CatalogMidlistSponsorship slots={sponsorshipSlots} />
+                    }
+                  />
                   <CatalogTipsPanel />
                 </div>
               </CatalogSponsorshipSlots>

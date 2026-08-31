@@ -2,6 +2,7 @@
 
 import { Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { ReactNode } from "react";
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { companySegmentOptions } from "@/features/onboarding/domain/profile-segments";
@@ -104,13 +105,19 @@ function CompanySegmentFilter() {
 export function CompanyCarouselScreen({
   initialData,
   limit = COMPANY_CAROUSEL_DEFAULT_LIMIT,
+  midlistSlot,
 }: {
   initialData?: CompanyCarouselViewResponseDto;
   limit?: number;
+  midlistSlot?: ReactNode;
 }) {
   return (
     <BrowserQueryProvider>
-      <CompanyCarouselScreenContent initialData={initialData} limit={limit} />
+      <CompanyCarouselScreenContent
+        initialData={initialData}
+        limit={limit}
+        midlistSlot={midlistSlot}
+      />
     </BrowserQueryProvider>
   );
 }
@@ -118,9 +125,11 @@ export function CompanyCarouselScreen({
 function CompanyCarouselScreenContent({
   initialData,
   limit,
+  midlistSlot,
 }: {
   initialData?: CompanyCarouselViewResponseDto;
   limit: number;
+  midlistSlot?: ReactNode;
 }) {
   const searchParams = useSearchParams();
   const filters: CompanyCarouselQueryFilters = {
@@ -151,6 +160,7 @@ function CompanyCarouselScreenContent({
       ) : (
         <CompanyCarouselView
           controls={controls}
+          midlistSlot={midlistSlot}
           response={query.data}
           status="success"
         />

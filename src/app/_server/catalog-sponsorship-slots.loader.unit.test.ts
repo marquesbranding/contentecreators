@@ -22,7 +22,7 @@ function placement(
 }
 
 describe("catalog sponsorship slots loader", () => {
-  it("loads the four fixed catalog slots in parallel for an approved company", async () => {
+  it("loads the five fixed catalog slots in parallel for an approved company", async () => {
     const now = new Date("2026-07-28T12:00:00.000Z");
     const bySlot: Record<string, RendererPlacementDto[]> = {
       "catalog-carousel": [
@@ -35,6 +35,9 @@ describe("catalog sponsorship slots loader", () => {
       "catalog-inline": [
         placement("20000000-0000-4000-8000-000000000001", "INLINE_BANNER"),
       ],
+      "catalog-midlist": [
+        placement("50000000-0000-4000-8000-000000000001", "CAROUSEL"),
+      ],
       "catalog-top": [
         placement("10000000-0000-4000-8000-000000000001", "TOP_BANNER"),
       ],
@@ -46,7 +49,7 @@ describe("catalog sponsorship slots loader", () => {
       now: () => now,
     });
 
-    expect(load).toHaveBeenCalledTimes(4);
+    expect(load).toHaveBeenCalledTimes(5);
     expect(load).toHaveBeenCalledWith(
       expect.objectContaining({
         allowedPlacementTypes: ["TOP_BANNER"],
@@ -56,10 +59,19 @@ describe("catalog sponsorship slots loader", () => {
         viewer: "APPROVED_COMPANY",
       }),
     );
+    expect(load).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allowedPlacementTypes: ["CAROUSEL"],
+        slotKey: "catalog-midlist",
+      }),
+    );
     expect(slots.top?.placement.id).toBe(
       "10000000-0000-4000-8000-000000000001",
     );
     expect(slots.carousel).toHaveLength(2);
+    expect(slots.midlist?.[0]?.placement.id).toBe(
+      "50000000-0000-4000-8000-000000000001",
+    );
   });
 
   it("maps an approved influencer and preserves empty slots", async () => {
@@ -76,6 +88,7 @@ describe("catalog sponsorship slots loader", () => {
     expect(slots).toEqual({
       carousel: [],
       featured: null,
+      midlist: [],
       side: null,
       top: null,
     });

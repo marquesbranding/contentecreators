@@ -5,6 +5,7 @@ import {
   SponsorshipCarousel,
   type SponsorshipCreativeViewModel,
   SponsorshipFeaturedCreator,
+  SponsorshipGridRow,
   SponsorshipHeroBanner,
   SponsorshipSidePlacement,
 } from "@/features/sponsorships";
@@ -18,6 +19,7 @@ export interface CatalogSponsorshipSlotDto {
 export interface CatalogSponsorshipSlotsDto {
   carousel?: readonly CatalogSponsorshipSlotDto[];
   featured?: CatalogSponsorshipSlotDto | null;
+  midlist?: readonly CatalogSponsorshipSlotDto[];
   side?: CatalogSponsorshipSlotDto | null;
   top?: CatalogSponsorshipSlotDto | null;
 }
@@ -60,6 +62,36 @@ function toCreativeViewModel(
     title: placement.title,
     viewerIsPublic: false,
   };
+}
+
+/**
+ * Rendered separately from `CatalogSponsorshipSlots` because it belongs *inside*
+ * the listing, not around it. The catalog feature cannot import sponsorships
+ * (see the boundaries rule in eslint.config.mjs), so the app layer renders the
+ * row here and hands it down as an opaque node.
+ */
+export function CatalogMidlistSponsorship({
+  slots,
+}: {
+  slots?: CatalogSponsorshipSlotsDto;
+}) {
+  const midlist =
+    slots?.midlist?.flatMap((slot) => {
+      const placement = placementForSlot(slot, "CAROUSEL");
+
+      return placement ? [placement] : [];
+    }) ?? [];
+
+  if (midlist.length === 0) {
+    return null;
+  }
+
+  return (
+    <SponsorshipGridRow
+      creatives={midlist.map(toCreativeViewModel)}
+      label="Patrocínios no catálogo"
+    />
+  );
 }
 
 export function CatalogSponsorshipSlots({
