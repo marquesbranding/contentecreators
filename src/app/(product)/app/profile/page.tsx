@@ -6,6 +6,7 @@ import { signOutAction } from "@/features/identity/server";
 import {
   activateProfileMediaAction,
   finalizeMediaUploadAction,
+  getServerSignedMedia,
   loadCurrentCompanyMediaFormState,
   loadCurrentInfluencerMediaFormState,
   prepareMediaUploadAction,
@@ -39,6 +40,16 @@ export default function ProfilePage() {
             loadCurrentCompanyMediaFormState(),
             loadCurrentProfileCompletion(),
           ]);
+          /* The form state only carries asset ids; the header preview needs
+           * displayable URLs. */
+          const [logoMedia, coverMedia] = await Promise.all([
+            mediaState.logoAssetId
+              ? getServerSignedMedia(mediaState.logoAssetId)
+              : null,
+            mediaState.coverAssetId
+              ? getServerSignedMedia(mediaState.coverAssetId)
+              : null,
+          ]);
 
           return (
             <AuthenticatedProductShell signOutAction={signOutAction}>
@@ -56,6 +67,8 @@ export default function ProfilePage() {
                   />
                   <CompanyProfileEditor
                     action={updateCompanyProfileAction}
+                    coverUrl={coverMedia?.url ?? null}
+                    logoUrl={logoMedia?.url ?? null}
                     mediaActions={{
                       activate: activateProfileMediaAction,
                       finalize: finalizeMediaUploadAction,
@@ -80,6 +93,14 @@ export default function ProfilePage() {
           loadCurrentInfluencerMediaFormState(),
           loadCurrentProfileCompletion(),
         ]);
+        const [avatarMedia, coverMedia] = await Promise.all([
+          mediaState.avatarAssetId
+            ? getServerSignedMedia(mediaState.avatarAssetId)
+            : null,
+          mediaState.coverAssetId
+            ? getServerSignedMedia(mediaState.coverAssetId)
+            : null,
+        ]);
 
         return (
           <AuthenticatedProductShell signOutAction={signOutAction}>
@@ -97,6 +118,8 @@ export default function ProfilePage() {
                 />
                 <ProfileEditor
                   action={updateInfluencerProfileAction}
+                  avatarUrl={avatarMedia?.url ?? null}
+                  coverUrl={coverMedia?.url ?? null}
                   mediaActions={{
                     activate: activateProfileMediaAction,
                     finalize: finalizeMediaUploadAction,

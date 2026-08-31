@@ -39,6 +39,8 @@ import {
   ProgressValue,
 } from "@/shared/components/ui/progress";
 import { Spinner } from "@/shared/components/ui/spinner";
+
+import { MediaCropFields } from "./media-crop-fields.client";
 import { cn } from "@/shared/lib/cn";
 
 import { useMediaUpload } from "../hooks/use-media-upload";
@@ -262,66 +264,12 @@ export function MediaUploadField({
                     formato desta mídia.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-5">
-                  <div
-                    className={cn(
-                      "bg-muted relative mx-auto w-full max-w-md overflow-hidden rounded-xl border",
-                      previewAspectByPurpose[purpose],
-                    )}
-                  >
-                    {/* Blob previews cannot use next/image. */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      alt=""
-                      aria-hidden="true"
-                      className="size-full object-cover"
-                      src={upload.previewUrl ?? undefined}
-                      style={{
-                        objectPosition: `${upload.crop.horizontal}% ${upload.crop.vertical}%`,
-                        transform: `scale(${upload.crop.zoom})`,
-                      }}
-                    />
-                  </div>
-                  <CropControl
-                    label="Ampliação"
-                    max={2}
-                    min={1}
-                    onChange={(zoom) =>
-                      upload.setCrop((current) => ({
-                        ...current,
-                        zoom,
-                      }))
-                    }
-                    step={0.1}
-                    value={upload.crop.zoom}
-                  />
-                  <CropControl
-                    label="Posição horizontal"
-                    max={100}
-                    min={0}
-                    onChange={(horizontal) =>
-                      upload.setCrop((current) => ({
-                        ...current,
-                        horizontal,
-                      }))
-                    }
-                    step={1}
-                    value={upload.crop.horizontal}
-                  />
-                  <CropControl
-                    label="Posição vertical"
-                    max={100}
-                    min={0}
-                    onChange={(vertical) =>
-                      upload.setCrop((current) => ({
-                        ...current,
-                        vertical,
-                      }))
-                    }
-                    step={1}
-                    value={upload.crop.vertical}
-                  />
-                </div>
+                <MediaCropFields
+                  aspectClassName={previewAspectByPurpose[purpose]}
+                  crop={upload.crop}
+                  previewUrl={upload.previewUrl}
+                  setCrop={upload.setCrop}
+                />
                 <DialogFooter showCloseButton />
               </DialogContent>
             </Dialog>
@@ -403,35 +351,3 @@ export function MediaUploadField({
   );
 }
 
-function CropControl({
-  label,
-  max,
-  min,
-  onChange,
-  step,
-  value,
-}: {
-  label: string;
-  max: number;
-  min: number;
-  onChange: (value: number) => void;
-  step: number;
-  value: number;
-}) {
-  const id = useId();
-
-  return (
-    <Field>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <Input
-        id={id}
-        max={max}
-        min={min}
-        onChange={(event) => onChange(Number(event.target.value))}
-        step={step}
-        type="range"
-        value={value}
-      />
-    </Field>
-  );
-}
