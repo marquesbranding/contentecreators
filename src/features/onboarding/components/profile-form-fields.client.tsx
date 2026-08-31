@@ -219,7 +219,6 @@ function TextField({
         aria-describedby={describedBy || undefined}
         aria-invalid={Boolean(errors?.length)}
         autoComplete={autoComplete}
-        className="rounded-xl"
         data-validation-message={validationMessage}
         id={id}
         inputMode={inputMode}
@@ -400,7 +399,6 @@ function ControlledCombobox({
         value={selectedItem}
       >
         <ComboboxInputGroup
-          className="rounded-xl"
           data-field-name={validationName ?? name}
           data-field-value={value ?? ""}
           data-required-field={required}
@@ -1189,7 +1187,6 @@ export function ProfileFormFields({
                           </label>
                           <Input
                             aria-label={`Link do perfil no ${platformLabel}`}
-                            className="rounded-xl"
                             disabled={!entry.checked}
                             id={urlInputId}
                             inputMode="url"
@@ -1218,7 +1215,6 @@ export function ProfileFormFields({
                                 Visualizações
                               </label>
                               <Input
-                                className="rounded-xl"
                                 id="creator-instagram-views"
                                 inputMode="numeric"
                                 min={0}
@@ -1243,7 +1239,6 @@ export function ProfileFormFields({
                                 Interações
                               </label>
                               <Input
-                                className="rounded-xl"
                                 id="creator-instagram-interactions"
                                 inputMode="numeric"
                                 min={0}
@@ -1268,7 +1263,6 @@ export function ProfileFormFields({
                                 Novos seguidores
                               </label>
                               <Input
-                                className="rounded-xl"
                                 id="creator-instagram-new-followers"
                                 inputMode="numeric"
                                 min={0}
@@ -1293,7 +1287,6 @@ export function ProfileFormFields({
                                 Conteúdo que você compartilhou
                               </label>
                               <Input
-                                className="rounded-xl"
                                 id="creator-instagram-shared-content"
                                 maxLength={200}
                                 minLength={2}
@@ -1352,7 +1345,6 @@ export function ProfileFormFields({
                 value={selectedNicheSlugsList}
               >
                 <ComboboxInputGroup
-                  className="rounded-xl"
                   data-field-name="nicheSlugs"
                   data-field-value={selectedNicheSlugsList.join(",")}
                   data-required-field="true"

@@ -48,7 +48,6 @@ export function ForgotPasswordForm({ action }: { action: AuthFormAction }) {
               aria-describedby={errorId}
               aria-invalid={Boolean(emailErrors?.length)}
               autoComplete="email"
-              className="rounded-xl"
               id="recovery-email"
               inputMode="email"
               name="email"

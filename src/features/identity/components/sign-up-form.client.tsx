@@ -131,7 +131,6 @@ export function SignUpForm({
               aria-describedby={emailErrorId}
               aria-invalid={Boolean(emailErrors?.length)}
               autoComplete="email"
-              className="rounded-xl"
               id="signup-email"
               inputMode="email"
               name="email"

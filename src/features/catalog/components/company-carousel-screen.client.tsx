@@ -6,10 +6,10 @@ import type { ReactNode } from "react";
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { companySegmentOptions } from "@/shared/domain/profile-segments";
-import { Input } from "@/shared/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
+  InputGroupInput,
 } from "@/shared/components/ui/input-group";
 import { SearchableSelect } from "@/shared/components/ui/searchable-select";
 import { BrowserQueryProvider } from "@/shared/query/browser-query-provider";
@@ -41,9 +41,8 @@ function CompanyNameSearch() {
       <InputGroupAddon>
         <Search aria-hidden="true" className="text-muted-foreground size-4" />
       </InputGroupAddon>
-      <Input
+      <InputGroupInput
         aria-label="Buscar empresas por nome ou segmento"
-        className="rounded-xl"
         disabled={isPending}
         onChange={(event) => {
           const nextValue = event.target.value;

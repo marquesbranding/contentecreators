@@ -91,7 +91,6 @@ export function LoginForm({
               aria-describedby={emailErrorId}
               aria-invalid={Boolean(emailErrors?.length)}
               autoComplete="email"
-              className="rounded-xl"
               id="login-email"
               inputMode="email"
               name="email"

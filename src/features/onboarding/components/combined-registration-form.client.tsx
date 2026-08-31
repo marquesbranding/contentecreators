@@ -414,7 +414,6 @@ export function CombinedRegistrationForm({
               Aparece no cabeçalho do seu perfil, acima.
             </FieldDescription>
             <Input
-              className="rounded-xl"
               data-validation-message={
                 role === "COMPANY"
                   ? "Use pelo menos 2 caracteres."
@@ -453,7 +452,6 @@ export function CombinedRegistrationForm({
               }
               aria-invalid={Boolean(emailErrors?.length)}
               autoComplete="email"
-              className="rounded-xl"
               id="registration-email"
               inputMode="email"
               maxLength={320}
@@ -620,7 +618,6 @@ export function CombinedRegistrationForm({
                   }
                   aria-invalid={Boolean(whatsappErrors?.length)}
                   autoComplete="tel"
-                  className="rounded-xl"
                   data-validation-message="Informe um WhatsApp com DDD."
                   id="registration-whatsapp"
                   inputMode="tel"
