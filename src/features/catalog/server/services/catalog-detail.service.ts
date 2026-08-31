@@ -24,7 +24,7 @@ export function createCatalogDetailService({
       const query = catalogDetailQuerySchema.parse(input);
 
       return runVerifiedAccountTransaction(
-        { requestId: query.requestId },
+        { preferredRole: "NON_ADMIN", requestId: query.requestId },
         async (transaction, context) => {
           const viewer = authorizeCatalogViewer({
             accountId: context.accountId,

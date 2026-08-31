@@ -82,7 +82,7 @@ export function createCompanyDetailService({
       const query = companyDetailQuerySchema.parse(input);
 
       return runVerifiedAccountTransaction(
-        { requestId: query.requestId },
+        { preferredRole: "NON_ADMIN", requestId: query.requestId },
         async (transaction, viewer) => {
           const account = {
             id: viewer.accountId,

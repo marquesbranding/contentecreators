@@ -56,7 +56,7 @@ export function createInfluencerProfileService({
   return {
     async loadOwnerProfile({ requestId }: { requestId: string }) {
       return runVerifiedTransaction(
-        { requestId },
+        { preferredRole: "NON_ADMIN", requestId },
         async (transaction, context) => {
           const account = requireApprovedInfluencer(context);
           const profile = await repository.loadApprovedProfile(
@@ -81,7 +81,7 @@ export function createInfluencerProfileService({
       requestId: string;
     }) {
       return runVerifiedTransaction(
-        { requestId },
+        { preferredRole: "NON_ADMIN", requestId },
         async (transaction, context) => {
           const account = requireApprovedInfluencer(context);
 

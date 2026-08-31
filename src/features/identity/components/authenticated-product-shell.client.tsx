@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Menu, Search, UserRound } from "lucide-react";
+import { LayoutDashboard, LogOut, Menu, Search, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, useTransition } from "react";
@@ -23,6 +23,8 @@ import { ptBR } from "@/shared/copy/pt-BR";
 import { useHydrated } from "@/shared/hooks/use-hydrated";
 import { cn } from "@/shared/lib/cn";
 import { getBrowserQueryClient } from "@/shared/query/browser-query-client";
+
+import { useBackofficeAccess } from "./backoffice-access-context.client";
 
 const navigationItems = [
   {
@@ -207,6 +209,30 @@ function ProductSignOut({
   );
 }
 
+function BackofficeSwitcherLink({
+  presentation,
+}: {
+  presentation: "desktop" | "mobile";
+}) {
+  return (
+    <Link
+      className={cn(
+        buttonVariants({
+          className:
+            presentation === "desktop"
+              ? "border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white"
+              : "h-12 w-full justify-start",
+          variant: "outline",
+        }),
+      )}
+      href="/backoffice"
+    >
+      <LayoutDashboard aria-hidden="true" />
+      Ir para o backoffice
+    </Link>
+  );
+}
+
 function AuthenticatedProductFooter() {
   return (
     <footer className="bg-brand-night mt-auto border-t border-white/10 text-white">
@@ -250,6 +276,7 @@ export function AuthenticatedProductShell({
 }) {
   const pathname = usePathname();
   const hydrated = useHydrated();
+  const hasBackofficeAccess = useBackofficeAccess();
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
   const catalogRoute = pathname === "/app/catalog";
 
@@ -285,6 +312,12 @@ export function AuthenticatedProductShell({
           ) : null}
 
           <ProductNavigation pathname={pathname} presentation="desktop" />
+
+          {hasBackofficeAccess ? (
+            <div className="hidden lg:block">
+              <BackofficeSwitcherLink presentation="desktop" />
+            </div>
+          ) : null}
 
           <div className="hidden lg:block">
             <ProductSignOut action={signOutAction} presentation="desktop" />
@@ -326,6 +359,9 @@ export function AuthenticatedProductShell({
                 />
               </div>
               <SheetFooter className="border-t">
+                {hasBackofficeAccess ? (
+                  <BackofficeSwitcherLink presentation="mobile" />
+                ) : null}
                 <ProductSignOut action={signOutAction} presentation="mobile" />
               </SheetFooter>
             </SheetContent>

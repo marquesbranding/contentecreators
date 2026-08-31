@@ -39,7 +39,10 @@ export async function GET(request: NextRequest) {
   }
 
   const defense = await createServerBannedAccountDefenseService();
-  const access = await defense.enforce(crypto.randomUUID());
+  const access = await defense.enforce(
+    crypto.randomUUID(),
+    destination.startsWith("/backoffice") ? "ADMIN" : "NON_ADMIN",
+  );
 
   if (access.kind === "blocked") {
     return NextResponse.redirect(new URL(access.destination, request.url));

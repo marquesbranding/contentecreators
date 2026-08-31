@@ -21,7 +21,7 @@ export async function AccountStatusBoundary({
     account: CurrentAccountDto,
   ) => Promise<React.ReactNode> | React.ReactNode;
 }) {
-  const account = await getServerCurrentAccount();
+  const account = await getServerCurrentAccount("NON_ADMIN");
 
   if (!account) {
     redirect("/onboarding/role");

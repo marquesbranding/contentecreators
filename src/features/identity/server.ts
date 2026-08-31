@@ -42,6 +42,7 @@ export {
   VerifiedAccountTransactionError,
 } from "./server/services/verified-account-transaction";
 export type {
+  AccountRolePreference,
   VerifiedAccountContext,
   VerifiedAccountTransactionRunner,
   VerifiedAccountTransactionErrorCode,

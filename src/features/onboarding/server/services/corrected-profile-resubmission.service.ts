@@ -77,7 +77,7 @@ export function createCorrectedProfileResubmissionService({
       requestId: string;
     }) {
       const businessResult = await runVerifiedTransaction(
-        { requestId: input.requestId },
+        { preferredRole: "NON_ADMIN", requestId: input.requestId },
         async (transaction, context) => {
           if (
             (context.role !== "INFLUENCER" && context.role !== "COMPANY") ||

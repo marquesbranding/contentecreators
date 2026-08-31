@@ -10,7 +10,7 @@ export async function loadCurrentPreparedCompanyProfile(): Promise<CompanyOnboar
     await createServerVerifiedAccountTransactionRunner();
 
   return runVerifiedTransaction(
-    { requestId: crypto.randomUUID() },
+    { preferredRole: "NON_ADMIN", requestId: crypto.randomUUID() },
     async (transaction, context) => {
       if (context.role !== "COMPANY" || context.status !== "ONBOARDING") {
         return null;

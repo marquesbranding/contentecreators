@@ -14,6 +14,7 @@ import {
   createSupabaseVerifiedAuthUserIdResolver,
   createVerifiedAccountTransactionRunner,
   VerifiedAccountTransactionError,
+  type AccountRolePreference,
   type VerifiedAccountTransactionRunner,
 } from "../services/verified-account-transaction";
 
@@ -26,13 +27,15 @@ export function createCurrentAccountDal({
 }: CurrentAccountDalDependencies) {
   return {
     async resolveCurrentSession({
+      preferredRole,
       requestId,
     }: {
+      preferredRole?: AccountRolePreference;
       requestId: string;
     }): Promise<CurrentSessionDto> {
       try {
         const account = await runVerifiedAccountTransaction(
-          { requestId },
+          { preferredRole, requestId },
           async (_transaction, context) => toCurrentAccountDto(context),
         );
 
@@ -73,19 +76,24 @@ async function createServerCurrentAccountDal() {
 
 export async function resolveFreshServerCurrentSession(
   requestId: string,
+  preferredRole?: AccountRolePreference,
 ): Promise<CurrentSessionDto> {
   const dal = await createServerCurrentAccountDal();
 
-  return dal.resolveCurrentSession({ requestId });
+  return dal.resolveCurrentSession({ preferredRole, requestId });
 }
 
-async function resolveServerCurrentSession(): Promise<CurrentSessionDto> {
-  return resolveFreshServerCurrentSession(crypto.randomUUID());
+async function resolveServerCurrentSession(
+  preferredRole?: AccountRolePreference,
+): Promise<CurrentSessionDto> {
+  return resolveFreshServerCurrentSession(crypto.randomUUID(), preferredRole);
 }
 
 /**
  * Server Component-only request snapshot. React invalidates this cache for
- * every server request; mutations must resolve authorization again.
+ * every server request; mutations must resolve authorization again. Cached
+ * per `preferredRole`, so a request that needs both the admin identity and
+ * the linked creator/company identity resolves each independently.
  */
 export const getServerCurrentSession = cache(resolveServerCurrentSession);
 
@@ -94,8 +102,10 @@ export const getServerCurrentSession = cache(resolveServerCurrentSession);
  * It intentionally omits the Supabase user ID, email and database row fields.
  */
 export const getServerCurrentAccount = cache(
-  async (): Promise<CurrentAccountDto | null> => {
-    const session = await getServerCurrentSession();
+  async (
+    preferredRole?: AccountRolePreference,
+  ): Promise<CurrentAccountDto | null> => {
+    const session = await getServerCurrentSession(preferredRole);
 
     return session.account;
   },

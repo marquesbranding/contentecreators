@@ -52,6 +52,7 @@ interface ModerationActionState {
     | "INVALID_TRANSITION"
     | "NOT_FOUND"
     | "RATE_LIMITED"
+    | "SELF_APPROVAL_FORBIDDEN"
     | "STALE_REVIEW"
     | "UNKNOWN"
     | "VALIDATION_ERROR";

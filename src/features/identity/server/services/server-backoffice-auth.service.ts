@@ -10,7 +10,8 @@ export async function createServerBackofficeAuthService() {
   return createBackofficeAuthService({
     beginGoogleSignIn: (destination) =>
       authentication.beginGoogleSignInAt(destination),
-    resolveCurrentSession: resolveFreshServerCurrentSession,
+    resolveCurrentSession: (requestId) =>
+      resolveFreshServerCurrentSession(requestId, "ADMIN"),
     signIn: (input) => authentication.signIn(input),
     signOut: () => authentication.signOut(),
   });

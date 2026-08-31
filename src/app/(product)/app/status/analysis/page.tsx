@@ -38,7 +38,7 @@ export default async function AnalysisStatusPage({
     );
   }
 
-  const account = await getServerCurrentAccount();
+  const account = await getServerCurrentAccount("NON_ADMIN");
   const mediaSection =
     account?.role === "INFLUENCER" || account?.role === "COMPANY" ? (
       <PendingReviewMediaStep role={account.role} />

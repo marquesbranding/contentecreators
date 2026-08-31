@@ -8,6 +8,7 @@ import { createProfileMediaReplacementService } from "./profile-media-replacemen
 export async function createServerProfileMediaReplacementService() {
   return createProfileMediaReplacementService({
     repository: await createServerProfileMediaReplacementRepository(),
-    resolveCurrentSession: resolveFreshServerCurrentSession,
+    resolveCurrentSession: (requestId) =>
+      resolveFreshServerCurrentSession(requestId, "NON_ADMIN"),
   });
 }

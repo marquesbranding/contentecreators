@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, ne, sql } from "drizzle-orm";
 
 import {
   getDatabaseClient,
@@ -60,12 +60,25 @@ export function createSupabaseVerifiedAuthUserIdResolver(
   };
 }
 
+/**
+ * An identity can now own an ADMIN row and a linked INFLUENCER/COMPANY row at
+ * once. Most callers don't care which one they get (there's only ever one row
+ * for the vast majority of accounts), so this stays optional and defaults to
+ * preferring ADMIN — a superset of the historical single-row behavior. Only
+ * callers that must resolve the caller's own creator/company identity (the
+ * app surface, not the backoffice) need to pass "NON_ADMIN" explicitly.
+ */
+export type AccountRolePreference = "ADMIN" | "NON_ADMIN";
+
 export function createVerifiedAccountTransactionRunner({
   database,
   resolveVerifiedAuthUserId,
 }: VerifiedAccountTransactionDependencies) {
   return async function runVerifiedAccountTransaction<T>(
-    { requestId }: { requestId: string },
+    {
+      preferredRole,
+      requestId,
+    }: { preferredRole?: AccountRolePreference; requestId: string },
     work: (
       transaction: ApplicationTransaction,
       accountContext: VerifiedAccountContext,
@@ -78,6 +91,13 @@ export function createVerifiedAccountTransactionRunner({
     }
 
     return database.transaction(async (transaction) => {
+      const roleFilter =
+        preferredRole === "ADMIN"
+          ? eq(accounts.role, "ADMIN")
+          : preferredRole === "NON_ADMIN"
+            ? ne(accounts.role, "ADMIN")
+            : undefined;
+
       const [account] = await transaction
         .select({
           id: accounts.id,
@@ -86,8 +106,13 @@ export function createVerifiedAccountTransactionRunner({
         })
         .from(accounts)
         .where(
-          and(eq(accounts.authUserId, authUserId), isNull(accounts.archivedAt)),
+          and(
+            eq(accounts.authUserId, authUserId),
+            isNull(accounts.archivedAt),
+            roleFilter,
+          ),
         )
+        .orderBy(sql`case when ${accounts.role} = 'ADMIN' then 0 else 1 end`)
         .limit(1);
 
       if (!account?.role) {

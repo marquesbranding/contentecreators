@@ -125,6 +125,15 @@ function mapModerationError(error: unknown): AdminModerationActionState {
     };
   }
 
+  if (message.includes("moderation_self_approval_forbidden")) {
+    return {
+      code: "SELF_APPROVAL_FORBIDDEN",
+      message:
+        "Você não pode aprovar ou alterar o status do seu próprio cadastro vinculado. Peça a outro administrador.",
+      status: "unauthorized",
+    };
+  }
+
   if (message.includes("moderation_idempotency_conflict")) {
     return {
       code: "IDEMPOTENCY_CONFLICT",

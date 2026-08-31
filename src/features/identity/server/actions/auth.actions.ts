@@ -75,7 +75,7 @@ export async function signInAction(
 
   if (result.kind === "redirect") {
     const defense = await createServerBannedAccountDefenseService();
-    const access = await defense.enforce(requestId);
+    const access = await defense.enforce(requestId, "NON_ADMIN");
 
     if (access.kind === "blocked") {
       operationalLogger.warn({

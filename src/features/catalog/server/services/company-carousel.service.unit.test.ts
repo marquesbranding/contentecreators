@@ -74,7 +74,7 @@ describe("company carousel service", () => {
       limit: 24,
     });
     expect(runVerifiedAccountTransaction).toHaveBeenCalledWith(
-      { requestId: "company-carousel-request" },
+      { preferredRole: "NON_ADMIN", requestId: "company-carousel-request" },
       expect.any(Function),
     );
     expect(repository.listEligibleCompanies).toHaveBeenCalledWith(

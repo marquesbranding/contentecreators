@@ -1,12 +1,16 @@
 import "server-only";
 
 import type { CurrentSessionDto } from "../../types/current-account.types";
+import type { AccountRolePreference } from "./verified-account-transaction";
 
 interface BannedAccountDefenseDependencies {
   banIdentity(identityId: string): Promise<boolean>;
   getCurrentAccessToken(): Promise<string | null>;
   resolveCurrentIdentityId(): Promise<string | null>;
-  resolveCurrentSession(requestId: string): Promise<CurrentSessionDto>;
+  resolveCurrentSession(
+    requestId: string,
+    preferredRole?: AccountRolePreference,
+  ): Promise<CurrentSessionDto>;
   revokeAccessToken(accessToken: string): Promise<boolean>;
   signOut(): Promise<unknown>;
 }
@@ -15,8 +19,11 @@ export function createBannedAccountDefenseService(
   dependencies: BannedAccountDefenseDependencies,
 ) {
   return {
-    async enforce(requestId: string) {
-      const session = await dependencies.resolveCurrentSession(requestId);
+    async enforce(requestId: string, preferredRole?: AccountRolePreference) {
+      const session = await dependencies.resolveCurrentSession(
+        requestId,
+        preferredRole,
+      );
 
       if (session.account?.status !== "BANNED") {
         return { kind: "allowed" as const };

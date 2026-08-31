@@ -12,7 +12,7 @@ export async function loadCurrentInfluencerMediaFormState(): Promise<InfluencerM
     await createServerVerifiedAccountTransactionRunner();
 
   return runVerifiedTransaction(
-    { requestId: crypto.randomUUID() },
+    { preferredRole: "NON_ADMIN", requestId: crypto.randomUUID() },
     async (transaction, account) => {
       if (
         account.role !== "INFLUENCER" ||

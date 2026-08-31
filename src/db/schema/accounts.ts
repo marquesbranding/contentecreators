@@ -42,7 +42,10 @@ export const accounts = pgTable(
     archivedAt: timestamp("archived_at", { withTimezone: true }),
   },
   (table) => [
-    uniqueIndex("accounts_auth_user_id_uidx").on(table.authUserId),
+    uniqueIndex("accounts_auth_user_id_role_uidx").on(
+      table.authUserId,
+      table.role,
+    ),
     index("accounts_role_status_idx")
       .on(table.role, table.status)
       .where(sql`${table.archivedAt} is null`),

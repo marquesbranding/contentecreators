@@ -1,8 +1,12 @@
 import { redirect } from "next/navigation";
 
 import { BackofficeShell } from "@/features/backoffice";
-import { createServerBackofficeAuthService } from "@/features/identity/server";
-import { signOutAction } from "@/features/identity/server";
+import { getAccountDestination } from "@/features/identity";
+import {
+  createServerBackofficeAuthService,
+  getServerCurrentAccount,
+  signOutAction,
+} from "@/features/identity/server";
 
 export default async function ProtectedBackofficeLayout({
   children,
@@ -16,7 +20,20 @@ export default async function ProtectedBackofficeLayout({
     redirect("/backoffice/login?error=unauthorized");
   }
 
+  const linkedAccount = await getServerCurrentAccount("NON_ADMIN");
+  const appSwitcher = linkedAccount
+    ? {
+        href: getAccountDestination(linkedAccount),
+        label: "Ir para o app",
+      }
+    : {
+        href: "/onboarding/role",
+        label: "Cadastrar como creator ou empresa",
+      };
+
   return (
-    <BackofficeShell signOutAction={signOutAction}>{children}</BackofficeShell>
+    <BackofficeShell appSwitcher={appSwitcher} signOutAction={signOutAction}>
+      {children}
+    </BackofficeShell>
   );
 }

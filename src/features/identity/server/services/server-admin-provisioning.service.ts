@@ -17,6 +17,7 @@ export async function createServerAdminProvisioningService() {
     inviteIdentity: (email) => identity.inviteIdentity(email),
     provisionAdditionalAdmin: (input) =>
       repository.provisionAdditionalAdmin(input),
-    resolveCurrentSession: resolveFreshServerCurrentSession,
+    resolveCurrentSession: (requestId: string) =>
+      resolveFreshServerCurrentSession(requestId, "ADMIN"),
   });
 }

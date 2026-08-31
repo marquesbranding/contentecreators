@@ -21,7 +21,7 @@ export async function loadCurrentCorrectionContext(): Promise<CorrectedProfileRe
     await createServerVerifiedAccountTransactionRunner();
 
   return runVerifiedTransaction(
-    { requestId: crypto.randomUUID() },
+    { preferredRole: "NON_ADMIN", requestId: crypto.randomUUID() },
     async (transaction, context) => {
       if (
         context.status !== "CHANGES_REQUESTED" ||

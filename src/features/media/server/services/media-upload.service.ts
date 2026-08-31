@@ -3,6 +3,7 @@ import "server-only";
 import {
   AccountAccessError,
   requireAccount,
+  type AccountRolePreference,
   type CurrentSessionDto,
 } from "@/features/identity/server";
 import {
@@ -47,7 +48,10 @@ export interface MediaUploadRepository {
 interface MediaUploadServiceDependencies {
   createObjectId(): string;
   repository: MediaUploadRepository;
-  resolveCurrentSession(requestId: string): Promise<CurrentSessionDto>;
+  resolveCurrentSession(
+    requestId: string,
+    preferredRole?: AccountRolePreference,
+  ): Promise<CurrentSessionDto>;
   storage: MediaStorageGateway;
 }
 
@@ -83,7 +87,10 @@ export function createMediaUploadService({
     requestId: string,
     purpose: PendingMediaMetadata["kind"],
   ) {
-    const session = await resolveCurrentSession(requestId);
+    const session = await resolveCurrentSession(
+      requestId,
+      purpose === "SPONSORSHIP_CREATIVE" ? "ADMIN" : "NON_ADMIN",
+    );
     const account = requireAccount(session);
 
     if (!isMediaPurposeAllowed(account, purpose)) {

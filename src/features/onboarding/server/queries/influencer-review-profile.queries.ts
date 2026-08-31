@@ -16,7 +16,7 @@ export async function loadCurrentInfluencerReviewProfile(): Promise<InfluencerPr
     await createServerVerifiedAccountTransactionRunner();
 
   return runVerifiedTransaction(
-    { requestId: crypto.randomUUID() },
+    { preferredRole: "NON_ADMIN", requestId: crypto.randomUUID() },
     async (transaction, context) => {
       if (
         context.role !== "INFLUENCER" ||

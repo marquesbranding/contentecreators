@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { ApplicationTransaction } from "@/db/client";
+import type { AccountRolePreference } from "@/features/identity/server";
 
 import {
   onboardingDraftSaveSchema,
@@ -31,7 +32,7 @@ interface OwnerDraftContext {
 }
 
 export type OwnerDraftTransactionRunner = <T>(
-  request: { requestId: string },
+  request: { preferredRole?: AccountRolePreference; requestId: string },
   work: (
     transaction: ApplicationTransaction,
     owner: OwnerDraftContext,
@@ -88,10 +89,13 @@ export function createOnboardingDraftService({
 }) {
   return {
     async loadOwnerDraft({ requestId }: { requestId: string }) {
-      return runOwnerTransaction({ requestId }, (transaction, owner) => {
-        requireDraftOwner(owner);
-        return repository.loadOwnerDraft(transaction, owner.accountId);
-      });
+      return runOwnerTransaction(
+        { preferredRole: "NON_ADMIN", requestId },
+        (transaction, owner) => {
+          requireDraftOwner(owner);
+          return repository.loadOwnerDraft(transaction, owner.accountId);
+        },
+      );
     },
 
     async saveOwnerDraft(
@@ -108,7 +112,7 @@ export function createOnboardingDraftService({
       }
 
       return runOwnerTransaction(
-        { requestId: input.requestId },
+        { preferredRole: "NON_ADMIN", requestId: input.requestId },
         async (transaction, owner) => {
           requireDraftOwner(owner);
 

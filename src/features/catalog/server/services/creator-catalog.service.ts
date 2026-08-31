@@ -37,7 +37,7 @@ export function createCreatorCatalogService({
       const decodedCursor = decodeCreatorCatalogCursor(filters.cursor);
 
       return runVerifiedAccountTransaction(
-        { requestId },
+        { preferredRole: "NON_ADMIN", requestId },
         (transaction, actor) => {
           const viewer = authorizeCatalogViewer({
             accountId: actor.accountId,

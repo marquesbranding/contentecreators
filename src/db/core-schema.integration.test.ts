@@ -113,7 +113,7 @@ describeLocalStack("core database schema", () => {
       from pg_indexes
       where schemaname = 'public'
         and indexname in (
-          'accounts_auth_user_id_uidx',
+          'accounts_auth_user_id_role_uidx',
           'company_profiles_cnpj_uidx',
           'email_outbox_idempotency_key_uidx',
           'identity_auth_effects_idempotency_key_uidx',
@@ -124,7 +124,7 @@ describeLocalStack("core database schema", () => {
     `;
 
     expect(uniqueIndexes.map(({ index_name }) => index_name)).toEqual([
-      "accounts_auth_user_id_uidx",
+      "accounts_auth_user_id_role_uidx",
       "company_profiles_cnpj_uidx",
       "email_outbox_idempotency_key_uidx",
       "identity_auth_effects_idempotency_key_uidx",

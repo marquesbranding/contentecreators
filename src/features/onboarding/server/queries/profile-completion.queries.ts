@@ -9,7 +9,7 @@ export async function loadCurrentProfileCompletion() {
     await createServerVerifiedAccountTransactionRunner();
 
   return runVerifiedTransaction(
-    { requestId: crypto.randomUUID() },
+    { preferredRole: "NON_ADMIN", requestId: crypto.randomUUID() },
     async (transaction, account) => {
       if (account.role !== "INFLUENCER" && account.role !== "COMPANY") {
         throw new Error("Account does not own a participant profile.");

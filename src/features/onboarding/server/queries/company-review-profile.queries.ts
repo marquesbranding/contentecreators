@@ -16,7 +16,7 @@ export async function loadCurrentCompanyReviewProfile(): Promise<CompanyProfileD
     await createServerVerifiedAccountTransactionRunner();
 
   return runVerifiedTransaction(
-    { requestId: crypto.randomUUID() },
+    { preferredRole: "NON_ADMIN", requestId: crypto.randomUUID() },
     async (transaction, context) => {
       if (
         context.role !== "COMPANY" ||

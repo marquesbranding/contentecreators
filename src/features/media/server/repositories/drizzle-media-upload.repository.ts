@@ -27,7 +27,11 @@ export function createDrizzleMediaUploadRepository({
   return {
     async createPendingMedia(input) {
       return runVerifiedAccountTransaction(
-        { requestId: input.requestId },
+        {
+          preferredRole:
+            input.kind === "SPONSORSHIP_CREATIVE" ? "ADMIN" : "NON_ADMIN",
+          requestId: input.requestId,
+        },
         async (transaction, context) => {
           const account: CurrentAccountDto = {
             id: context.accountId,

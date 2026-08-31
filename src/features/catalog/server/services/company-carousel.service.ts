@@ -41,7 +41,7 @@ export function createCompanyCarouselService({
       const segment = parseCompanyCarouselSegment(input.segment);
 
       return runVerifiedAccountTransaction(
-        { requestId },
+        { preferredRole: "NON_ADMIN", requestId },
         async (transaction, viewer) => {
           const account = {
             id: viewer.accountId,

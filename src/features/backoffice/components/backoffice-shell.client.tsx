@@ -3,6 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Archive,
+  ArrowLeftRight,
   ChevronRight,
   ClipboardCheck,
   FileClock,
@@ -240,9 +241,11 @@ function BackofficeSignOutButton({ action }: { action: () => Promise<void> }) {
 }
 
 export function BackofficeShell({
+  appSwitcher,
   children,
   signOutAction,
 }: {
+  appSwitcher?: { href: string; label: string };
   children: React.ReactNode;
   signOutAction: () => Promise<void>;
 }) {
@@ -307,6 +310,15 @@ export function BackofficeShell({
               <ShieldCheck aria-hidden="true" className="size-4" />
               Ambiente protegido
             </span>
+            {appSwitcher ? (
+              <Link
+                className="inline-flex h-9 items-center gap-2 rounded-md border border-white/25 bg-transparent px-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 hover:text-white"
+                href={appSwitcher.href}
+              >
+                <ArrowLeftRight aria-hidden="true" className="size-4" />
+                <span className="hidden sm:inline">{appSwitcher.label}</span>
+              </Link>
+            ) : null}
             <BackofficeSignOutButton action={signOutAction} />
           </div>
         </div>

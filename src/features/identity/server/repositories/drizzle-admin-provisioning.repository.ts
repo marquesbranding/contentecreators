@@ -193,7 +193,7 @@ export function createDrizzleAdminProvisioningRepository(
                 submittedAt: new Date(),
               })
               .onConflictDoNothing({
-                target: accounts.authUserId,
+                target: [accounts.authUserId, accounts.role],
               })
               .returning({ id: accounts.id });
 

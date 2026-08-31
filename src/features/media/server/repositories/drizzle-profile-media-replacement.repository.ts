@@ -112,7 +112,7 @@ export function createDrizzleProfileMediaReplacementRepository({
   return {
     async removeProfileMedia(input) {
       return runVerifiedAccountTransaction(
-        { requestId: input.requestId },
+        { preferredRole: "NON_ADMIN", requestId: input.requestId },
         async (transaction, context) => {
           const account: CurrentAccountDto = {
             id: context.accountId,
@@ -200,7 +200,7 @@ export function createDrizzleProfileMediaReplacementRepository({
 
     async activateProfileMedia(input) {
       return runVerifiedAccountTransaction(
-        { requestId: input.requestId },
+        { preferredRole: "NON_ADMIN", requestId: input.requestId },
         async (transaction, context) => {
           const account: CurrentAccountDto = {
             id: context.accountId,

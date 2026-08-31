@@ -29,17 +29,14 @@ function toAccountSummary(
   };
 }
 
-async function findAccount(
-  database: ApplicationTransaction,
+async function findAccountsForIdentity(
+  database: ApplicationDatabase | ApplicationTransaction,
   identityId: string,
 ) {
-  const [account] = await database
+  return database
     .select()
     .from(accounts)
-    .where(eq(accounts.authUserId, identityId))
-    .limit(1);
-
-  return account ?? null;
+    .where(eq(accounts.authUserId, identityId));
 }
 
 interface DrizzleRoleSelectionDependencies {
@@ -60,13 +57,19 @@ export function createDrizzleRoleSelectionRepository(
 
   return {
     async findByIdentityId(identityId) {
-      const [account] = await database
-        .select()
-        .from(accounts)
-        .where(eq(accounts.authUserId, identityId))
-        .limit(1);
+      const identityAccounts = await findAccountsForIdentity(
+        database,
+        identityId,
+      );
+      // An identity can now own an ADMIN row and a linked INFLUENCER/COMPANY
+      // row. Onboarding entry only cares about the linked, non-admin role: an
+      // admin with no linked profile yet should still see "ready" (pick a
+      // role) rather than being routed off by their admin row.
+      const relevantAccount = identityAccounts.find(
+        (account) => account.role && account.role !== "ADMIN",
+      );
 
-      return account ? toAccountSummary(account) : null;
+      return relevantAccount ? toAccountSummary(relevantAccount) : null;
     },
 
     async selectInitialRole({ email, identityId, requestId, role }) {
@@ -80,19 +83,37 @@ export function createDrizzleRoleSelectionRepository(
           source: "AUTH_HOOK",
         },
         async (transaction) => {
-          const existingAccount = await findAccount(transaction, identityId);
+          const identityAccounts = await findAccountsForIdentity(
+            transaction,
+            identityId,
+          );
+          const sameRoleAccount = identityAccounts.find(
+            (account) => account.role === role,
+          );
 
-          if (existingAccount?.role) {
+          if (sameRoleAccount) {
             return {
-              account: toAccountSummary(existingAccount),
-              kind:
-                existingAccount.role === role
-                  ? ("already_selected" as const)
-                  : ("conflict" as const),
+              account: toAccountSummary(sameRoleAccount),
+              kind: "already_selected" as const,
             };
           }
 
-          if (existingAccount) {
+          const conflictingAccount = identityAccounts.find(
+            (account) => account.role && account.role !== "ADMIN",
+          );
+
+          if (conflictingAccount) {
+            return {
+              account: toAccountSummary(conflictingAccount),
+              kind: "conflict" as const,
+            };
+          }
+
+          const blankAccount = identityAccounts.find(
+            (account) => !account.role,
+          );
+
+          if (blankAccount) {
             const [updatedAccount] = await transaction
               .update(accounts)
               .set({
@@ -101,7 +122,7 @@ export function createDrizzleRoleSelectionRepository(
                 version: sql`${accounts.version} + 1`,
               })
               .where(
-                and(eq(accounts.id, existingAccount.id), isNull(accounts.role)),
+                and(eq(accounts.id, blankAccount.id), isNull(accounts.role)),
               )
               .returning();
 
@@ -112,6 +133,10 @@ export function createDrizzleRoleSelectionRepository(
               };
             }
           } else {
+            // No blank row and no existing row of this role — either a brand
+            // new identity, or (dual-role) an ADMIN identity linking a
+            // creator/company profile for the first time. Either way, insert
+            // a new row alongside whatever else this identity already owns.
             const [insertedAccount] = await transaction
               .insert(accounts)
               .values({
@@ -120,7 +145,7 @@ export function createDrizzleRoleSelectionRepository(
                 role,
               })
               .onConflictDoNothing({
-                target: accounts.authUserId,
+                target: [accounts.authUserId, accounts.role],
               })
               .returning();
 
@@ -132,18 +157,21 @@ export function createDrizzleRoleSelectionRepository(
             }
           }
 
-          const concurrentAccount = await findAccount(transaction, identityId);
+          const concurrentAccounts = await findAccountsForIdentity(
+            transaction,
+            identityId,
+          );
+          const concurrentAccount = concurrentAccounts.find(
+            (account) => account.role === role,
+          );
 
-          if (!concurrentAccount?.role) {
+          if (!concurrentAccount) {
             throw new Error("Role selection transaction did not converge.");
           }
 
           return {
             account: toAccountSummary(concurrentAccount),
-            kind:
-              concurrentAccount.role === role
-                ? ("already_selected" as const)
-                : ("conflict" as const),
+            kind: "already_selected" as const,
           };
         },
       );

@@ -10,7 +10,7 @@ export async function loadCurrentPreparedInfluencerProfile(): Promise<CreatorOnb
     await createServerVerifiedAccountTransactionRunner();
 
   return runVerifiedTransaction(
-    { requestId: crypto.randomUUID() },
+    { preferredRole: "NON_ADMIN", requestId: crypto.randomUUID() },
     async (transaction, context) => {
       if (context.role !== "INFLUENCER" || context.status !== "ONBOARDING") {
         return null;
