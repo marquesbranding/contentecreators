@@ -2,7 +2,10 @@
 
 import "server-only";
 
+import { revalidatePath } from "next/cache";
+
 import { createServerWhatsappContactRepository } from "../repositories/drizzle-whatsapp-contact.repository";
+import type { ConfirmWhatsappContactActionResult } from "../../types/whatsapp-contact.types";
 
 /**
  * Fired the moment a company clicks "Chamar no WhatsApp" — best-effort, since
@@ -24,11 +27,20 @@ export async function recordWhatsappContactClickAction(
   }
 }
 
-export async function confirmWhatsappContactAction(confirmationId: string) {
-  const repository = await createServerWhatsappContactRepository();
+export async function confirmWhatsappContactAction(
+  confirmationId: string,
+): Promise<ConfirmWhatsappContactActionResult> {
+  try {
+    const repository = await createServerWhatsappContactRepository();
+    const result = await repository.confirm({
+      confirmationId,
+      requestId: crypto.randomUUID(),
+    });
 
-  return repository.confirm({
-    confirmationId,
-    requestId: crypto.randomUUID(),
-  });
+    revalidatePath("/app/catalog");
+
+    return { kind: "confirmed", ...result };
+  } catch {
+    return { kind: "error" };
+  }
 }

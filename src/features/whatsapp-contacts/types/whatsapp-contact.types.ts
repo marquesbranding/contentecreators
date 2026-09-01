@@ -9,3 +9,6 @@ export interface ConfirmWhatsappContactResult {
   creatorProfileId: string;
   whatsappContactCount: number;
 }
+
+export type ConfirmWhatsappContactActionResult =
+  { kind: "error" } | ({ kind: "confirmed" } & ConfirmWhatsappContactResult);
