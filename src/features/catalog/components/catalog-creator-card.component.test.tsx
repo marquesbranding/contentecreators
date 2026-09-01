@@ -93,6 +93,24 @@ describe("CatalogCreatorCard", () => {
     expect(container.querySelector("img")).not.toBeInTheDocument();
   });
 
+  it("shrinks a long display name instead of overflowing the card", () => {
+    render(
+      <CatalogCreatorCard
+        creator={{
+          ...creator,
+          displayName: "Thomas Marques Ribeiro de Carvalho",
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByRole("heading", {
+        name: "Thomas Marques Ribeiro de Carvalho",
+        level: 3,
+      }),
+    ).toHaveClass("text-xs");
+  });
+
   it("has no blocking accessibility violations", async () => {
     const { container } = render(<CatalogCreatorCard creator={creator} />);
 

@@ -59,6 +59,22 @@ function creatorTypeLabel(creatorType: CatalogCreatorType) {
   return creatorType === "UGC" ? "Criador UGC" : "Influenciador";
 }
 
+/**
+ * Long names shrink instead of wrapping/overflowing, so the card's padding
+ * stays consistent regardless of how long the display name is.
+ */
+function nameSizeClass(displayName: string) {
+  if (displayName.length > 30) {
+    return "text-xs";
+  }
+
+  if (displayName.length > 20) {
+    return "text-sm";
+  }
+
+  return "text-base";
+}
+
 function CreatorCover({ creator }: { creator: CatalogCreatorCardViewModel }) {
   if (!creator.cover) {
     return (
@@ -197,7 +213,12 @@ export function CatalogCreatorCard({
 
       <CardHeader className="gap-2.5 px-4 pt-9 pb-3">
         <CardTitle>
-          <h3 className="truncate text-base font-extrabold tracking-[-0.01em]">
+          <h3
+            className={cn(
+              "truncate font-extrabold tracking-[-0.01em]",
+              nameSizeClass(creator.displayName),
+            )}
+          >
             {creator.displayName}
           </h3>
         </CardTitle>
