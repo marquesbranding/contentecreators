@@ -37,6 +37,8 @@ const genericPlacement: SponsorshipPlacementCandidate = {
   audience: "ALL",
   body: promotion.body,
   creativeAssetId: assetId,
+  creativeAssetMobileId: null,
+  creativeAssetTabletId: null,
   endsAt: new Date("2026-09-01T00:00:00.000Z"),
   featuredCreatorProfileId: null,
   id: placementId,
@@ -64,6 +66,8 @@ function deliveryRepository(
       ownerAccountRole: "ADMIN",
       status: "ACTIVE",
     },
+    mediaMobile: null,
+    mediaTablet: null,
     placement,
   };
 

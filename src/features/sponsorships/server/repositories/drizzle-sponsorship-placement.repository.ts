@@ -286,7 +286,11 @@ async function archiveReplacedCreativeIfUnreferenced(
             .from(sponsorshipPlacements)
             .where(
               and(
-                eq(sponsorshipPlacements.creativeAssetId, assetId),
+                or(
+                  eq(sponsorshipPlacements.creativeAssetId, assetId),
+                  eq(sponsorshipPlacements.creativeAssetTabletId, assetId),
+                  eq(sponsorshipPlacements.creativeAssetMobileId, assetId),
+                )!,
                 isNull(sponsorshipPlacements.archivedAt),
               ),
             ),
@@ -318,6 +322,37 @@ async function reorderPlacements(
   return updated;
 }
 
+async function resolveCreativeEvidence(
+  transaction: ApplicationTransaction,
+  assetId: string | null,
+) {
+  if (!assetId) {
+    return null;
+  }
+
+  const [media] = await transaction
+    .select({
+      archivedAt: mediaAssets.archivedAt,
+      bucketName: mediaAssets.bucketName,
+      height: mediaAssets.height,
+      id: mediaAssets.id,
+      kind: mediaAssets.kind,
+      mimeType: mediaAssets.mimeType,
+      ownerAccountId: mediaAssets.ownerAccountId,
+      ownerAccountRole: accounts.role,
+      sizeBytes: mediaAssets.sizeBytes,
+      status: mediaAssets.status,
+      width: mediaAssets.width,
+    })
+    .from(mediaAssets)
+    .innerJoin(accounts, eq(accounts.id, mediaAssets.ownerAccountId))
+    .where(eq(mediaAssets.id, assetId))
+    .limit(1)
+    .for("update", { of: mediaAssets });
+
+  return media ?? null;
+}
+
 async function findActivationEvidence(
   transaction: ApplicationTransaction,
   placementId: string,
@@ -338,27 +373,11 @@ async function findActivationEvidence(
     return null;
   }
 
-  const [media] = placement.creativeAssetId
-    ? await transaction
-        .select({
-          archivedAt: mediaAssets.archivedAt,
-          bucketName: mediaAssets.bucketName,
-          height: mediaAssets.height,
-          id: mediaAssets.id,
-          kind: mediaAssets.kind,
-          mimeType: mediaAssets.mimeType,
-          ownerAccountId: mediaAssets.ownerAccountId,
-          ownerAccountRole: accounts.role,
-          sizeBytes: mediaAssets.sizeBytes,
-          status: mediaAssets.status,
-          width: mediaAssets.width,
-        })
-        .from(mediaAssets)
-        .innerJoin(accounts, eq(accounts.id, mediaAssets.ownerAccountId))
-        .where(eq(mediaAssets.id, placement.creativeAssetId))
-        .limit(1)
-        .for("update", { of: mediaAssets })
-    : [];
+  const [media, mediaTablet, mediaMobile] = await Promise.all([
+    resolveCreativeEvidence(transaction, placement.creativeAssetId),
+    resolveCreativeEvidence(transaction, placement.creativeAssetTabletId),
+    resolveCreativeEvidence(transaction, placement.creativeAssetMobileId),
+  ]);
   const [featuredCreator] = placement.featuredCreatorProfileId
     ? await transaction
         .select({
@@ -376,7 +395,9 @@ async function findActivationEvidence(
 
   return {
     featuredCreator: featuredCreator ?? null,
-    media: media ?? null,
+    media,
+    mediaMobile,
+    mediaTablet,
     placement,
   };
 }

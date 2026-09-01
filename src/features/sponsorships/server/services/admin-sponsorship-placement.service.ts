@@ -60,6 +60,8 @@ function toActivationInput(evidence: SponsorshipActivationEvidence) {
   return {
     featuredCreator: evidence.featuredCreator,
     media: evidence.media,
+    mediaMobile: evidence.mediaMobile,
+    mediaTablet: evidence.mediaTablet,
     placement: {
       advertiserAccountId: evidence.placement.advertiserAccountId,
       advertiserLabel: evidence.placement.advertiserLabel,
@@ -67,6 +69,8 @@ function toActivationInput(evidence: SponsorshipActivationEvidence) {
       audience: evidence.placement.audience,
       body: evidence.placement.body,
       creativeAssetId: evidence.placement.creativeAssetId,
+      creativeAssetMobileId: evidence.placement.creativeAssetMobileId,
+      creativeAssetTabletId: evidence.placement.creativeAssetTabletId,
       endsAt: evidence.placement.endsAt,
       featuredCreatorProfileId: evidence.placement.featuredCreatorProfileId,
       id: evidence.placement.id,
@@ -99,16 +103,14 @@ function requireExpectedVersion(value: number) {
 }
 
 function isOwnedPendingSponsorshipCreative(
-  evidence: SponsorshipActivationEvidence,
+  assetId: string | null,
+  media: SponsorshipActivationMediaEvidence | null,
   actorAccountId: string,
-): evidence is SponsorshipActivationEvidence & {
-  media: SponsorshipActivationMediaEvidence;
-} {
-  const { media, placement } = evidence;
-
+): media is SponsorshipActivationMediaEvidence {
   return Boolean(
     media &&
-    media.id === placement.creativeAssetId &&
+    assetId &&
+    media.id === assetId &&
     media.ownerAccountId === actorAccountId &&
     media.ownerAccountRole === "ADMIN" &&
     media.bucketName === "sponsorship-media" &&
@@ -129,14 +131,14 @@ function isOwnedPendingSponsorshipCreative(
 }
 
 function isEligibleReplacementCreative(
-  evidence: SponsorshipActivationEvidence,
+  assetId: string | null,
+  media: SponsorshipActivationMediaEvidence | null,
   actorAccountId: string,
 ): boolean {
-  const { media, placement } = evidence;
-
   if (
     !media ||
-    media.id !== placement.creativeAssetId ||
+    !assetId ||
+    media.id !== assetId ||
     media.ownerAccountRole !== "ADMIN" ||
     media.bucketName !== "sponsorship-media" ||
     media.kind !== "SPONSORSHIP_CREATIVE" ||
@@ -147,8 +149,39 @@ function isEligibleReplacementCreative(
 
   return (
     media.status === "ACTIVE" ||
-    isOwnedPendingSponsorshipCreative(evidence, actorAccountId)
+    isOwnedPendingSponsorshipCreative(assetId, media, actorAccountId)
   );
+}
+
+/** Promotes a slot's pending creative to ACTIVE during activation, or passes
+ * an already-active one through unchanged. Throws when a pending asset
+ * doesn't actually belong to (or pass validation for) this admin. */
+async function promoteIfPending(
+  repository: AdminSponsorshipPlacementRepository,
+  transaction: ApplicationTransaction,
+  assetId: string | null,
+  media: SponsorshipActivationMediaEvidence | null,
+  actorAccountId: string,
+): Promise<SponsorshipActivationMediaEvidence | null> {
+  if (!media || media.status !== "PENDING") {
+    return media;
+  }
+
+  if (!isOwnedPendingSponsorshipCreative(assetId, media, actorAccountId)) {
+    throw new SponsorshipPlacementServiceError("INVALID_ACTIVATION");
+  }
+
+  const promoted = await repository.promotePendingCreative(
+    transaction,
+    media.id,
+    actorAccountId,
+  );
+
+  if (!promoted) {
+    throw new SponsorshipPlacementServiceError("INVALID_ACTIVATION");
+  }
+
+  return promoted;
 }
 
 export function createAdminSponsorshipPlacementService({
@@ -252,26 +285,31 @@ export function createAdminSponsorshipPlacementService({
           throw new SponsorshipPlacementServiceError("VERSION_CONFLICT");
         }
 
-        if (evidence.media?.status === "PENDING") {
-          if (!isOwnedPendingSponsorshipCreative(evidence, actor.accountId)) {
-            throw new SponsorshipPlacementServiceError("INVALID_ACTIVATION");
-          }
-
-          const promotedMedia = await repository.promotePendingCreative(
+        const [media, mediaTablet, mediaMobile] = await Promise.all([
+          promoteIfPending(
+            repository,
             transaction,
-            evidence.media.id,
+            evidence.placement.creativeAssetId,
+            evidence.media,
             actor.accountId,
-          );
+          ),
+          promoteIfPending(
+            repository,
+            transaction,
+            evidence.placement.creativeAssetTabletId,
+            evidence.mediaTablet,
+            actor.accountId,
+          ),
+          promoteIfPending(
+            repository,
+            transaction,
+            evidence.placement.creativeAssetMobileId,
+            evidence.mediaMobile,
+            actor.accountId,
+          ),
+        ]);
 
-          if (!promotedMedia) {
-            throw new SponsorshipPlacementServiceError("INVALID_ACTIVATION");
-          }
-
-          evidence = {
-            ...evidence,
-            media: promotedMedia,
-          };
-        }
+        evidence = { ...evidence, media, mediaMobile, mediaTablet };
 
         if (
           !validatePlacementForActivation(toActivationInput(evidence)).eligible
@@ -401,6 +439,8 @@ export function createAdminSponsorshipPlacementService({
           audience: current.audience,
           body: current.body,
           creativeAssetId: current.creativeAssetId,
+          creativeAssetMobileId: current.creativeAssetMobileId,
+          creativeAssetTabletId: current.creativeAssetTabletId,
           endsAt: current.endsAt,
           featuredCreatorProfileId: current.featuredCreatorProfileId,
           isActive: current.isActive,
@@ -427,30 +467,59 @@ export function createAdminSponsorshipPlacementService({
           patch,
         );
 
-        const creativeWasReplaced =
-          Object.hasOwn(command.patch, "creativeAssetId") &&
-          current.creativeAssetId !== updated.creativeAssetId &&
-          current.creativeAssetId !== null &&
-          updated.creativeAssetId !== null;
+        const creativeSlots = [
+          {
+            current: current.creativeAssetId,
+            field: "creativeAssetId" as const,
+            media: (e: SponsorshipActivationEvidence) => e.media,
+            updated: updated.creativeAssetId,
+          },
+          {
+            current: current.creativeAssetTabletId,
+            field: "creativeAssetTabletId" as const,
+            media: (e: SponsorshipActivationEvidence) => e.mediaTablet,
+            updated: updated.creativeAssetTabletId,
+          },
+          {
+            current: current.creativeAssetMobileId,
+            field: "creativeAssetMobileId" as const,
+            media: (e: SponsorshipActivationEvidence) => e.mediaMobile,
+            updated: updated.creativeAssetMobileId,
+          },
+        ];
         let evidence: SponsorshipActivationEvidence | null = null;
 
-        if (creativeWasReplaced) {
-          evidence = await repository.findActivationEvidence(
+        for (const slot of creativeSlots) {
+          const wasReplaced =
+            Object.hasOwn(command.patch, slot.field) &&
+            slot.current !== slot.updated &&
+            slot.current !== null &&
+            slot.updated !== null;
+
+          if (!wasReplaced) {
+            continue;
+          }
+
+          evidence ??= await repository.findActivationEvidence(
             transaction,
             command.placementId,
           );
 
           if (
             !evidence ||
-            !isEligibleReplacementCreative(evidence, actor.accountId)
+            !isEligibleReplacementCreative(
+              slot.updated,
+              slot.media(evidence),
+              actor.accountId,
+            )
           ) {
             throw new SponsorshipPlacementServiceError("INVALID_ACTIVATION");
           }
 
           await repository.archiveReplacedCreativeIfUnreferenced(
             transaction,
-            current.creativeAssetId!,
-            updated.creativeAssetId!,
+            slot.current!,
+            slot.updated!,
           );
         }
 

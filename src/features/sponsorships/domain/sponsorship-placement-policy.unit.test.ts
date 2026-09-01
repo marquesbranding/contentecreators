@@ -22,6 +22,8 @@ const placement: SponsorshipPlacementCandidate = {
   audience: "ALL",
   body: null,
   creativeAssetId,
+  creativeAssetMobileId: null,
+  creativeAssetTabletId: null,
   endsAt: new Date("2026-08-31T23:59:59.000Z"),
   featuredCreatorProfileId: null,
   id: placementId,
@@ -51,6 +53,8 @@ function evaluation(
     allowedPlacementTypes: ["TOP_BANNER"],
     featuredCreator: null,
     media: eligibleMedia,
+    mediaMobile: null,
+    mediaTablet: null,
     now: new Date("2026-08-15T12:00:00.000Z"),
     placement,
     route: "PUBLIC_LANDING",
@@ -66,6 +70,8 @@ describe("sponsorship placement policy", () => {
       validatePlacementForActivation({
         featuredCreator: null,
         media: eligibleMedia,
+        mediaMobile: null,
+        mediaTablet: null,
         placement: { ...placement, isActive: false },
       }),
     ).toEqual({ eligible: true, issues: [] });
@@ -183,6 +189,8 @@ describe("sponsorship placement policy", () => {
       validatePlacementForActivation({
         featuredCreator: null,
         media,
+        mediaMobile: null,
+        mediaTablet: null,
         placement,
       }),
     ).toMatchObject({
@@ -278,6 +286,8 @@ describe("sponsorship placement policy", () => {
       validatePlacementForActivation({
         featuredCreator: null,
         media: eligibleMedia,
+        mediaMobile: null,
+        mediaTablet: null,
         placement: {
           ...placement,
           featuredCreatorProfileId: creatorProfileId,

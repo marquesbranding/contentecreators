@@ -49,6 +49,8 @@ const sponsorshipPlacementDraftBaseSchema = z
     audience: z.enum(PLACEMENT_AUDIENCES),
     body: nullableText(500).default(null),
     creativeAssetId: nullableUuid.default(null),
+    creativeAssetMobileId: nullableUuid.default(null),
+    creativeAssetTabletId: nullableUuid.default(null),
     endsAt: nullableInstant.default(null),
     featuredCreatorProfileId: nullableUuid.default(null),
     isActive: z.boolean().default(false),

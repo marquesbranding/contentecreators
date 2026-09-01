@@ -51,6 +51,8 @@ export function PublicSponsorshipPromotion({
           id: promotion.id,
           link,
           media: promotion.media,
+          mediaMobile: promotion.mediaMobile,
+          mediaTablet: promotion.mediaTablet,
           participantDerived: false,
           publicSocialProofEnabled: false,
           routeMatches: true,

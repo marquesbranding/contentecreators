@@ -36,6 +36,14 @@ export const sponsorshipPlacements = pgTable(
       () => mediaAssets.id,
       { onDelete: "restrict" },
     ),
+    creativeAssetTabletId: uuid("creative_asset_tablet_id").references(
+      () => mediaAssets.id,
+      { onDelete: "restrict" },
+    ),
+    creativeAssetMobileId: uuid("creative_asset_mobile_id").references(
+      () => mediaAssets.id,
+      { onDelete: "restrict" },
+    ),
     title: varchar("title", { length: 160 }),
     body: varchar("body", { length: 500 }),
     linkUrl: text("link_url"),

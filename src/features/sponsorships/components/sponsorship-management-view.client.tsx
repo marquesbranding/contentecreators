@@ -28,11 +28,14 @@ import {
   Eye,
   GripVertical,
   Megaphone,
+  Monitor,
   Pencil,
   Plus,
   Power,
   RotateCcw,
   Search,
+  Smartphone,
+  Tablet,
   Upload,
   X,
 } from "lucide-react";
@@ -173,6 +176,8 @@ const placementFormSchema = z
     audience: sponsorshipAudienceSchema,
     body: z.string().trim().max(500),
     creativeAssetId: z.string(),
+    creativeAssetMobileId: z.string(),
+    creativeAssetTabletId: z.string(),
     endsAt: z.string(),
     featuredCreatorProfileId: z.string(),
     linkLabel: z.string().trim().max(80),
@@ -202,13 +207,28 @@ const placementFormSchema = z
       });
     }
 
+    for (const field of [
+      "creativeAssetId",
+      "creativeAssetTabletId",
+      "creativeAssetMobileId",
+    ] as const) {
+      if (values[field] && !z.uuid().safeParse(values[field]).success) {
+        context.addIssue({
+          code: "custom",
+          message: "A mídia selecionada é inválida.",
+          path: [field],
+        });
+      }
+    }
+
     if (
-      values.creativeAssetId &&
-      !z.uuid().safeParse(values.creativeAssetId).success
+      (values.creativeAssetTabletId || values.creativeAssetMobileId) &&
+      !values.creativeAssetId
     ) {
       context.addIssue({
         code: "custom",
-        message: "A mídia selecionada é inválida.",
+        message:
+          "Envie a imagem desktop antes de enviar as versões tablet ou mobile.",
         path: ["creativeAssetId"],
       });
     }
@@ -291,6 +311,8 @@ function formDefaults(
     audience: placement?.audience ?? "ALL",
     body: placement?.body ?? "",
     creativeAssetId: placement?.creativeAssetId ?? "",
+    creativeAssetMobileId: placement?.creativeAssetMobileId ?? "",
+    creativeAssetTabletId: placement?.creativeAssetTabletId ?? "",
     endsAt: toDateTimeLocal(placement?.endsAt ?? null),
     featuredCreatorProfileId: placement?.featuredCreatorProfileId ?? "",
     linkLabel: placement?.linkLabel ?? "",
@@ -462,6 +484,14 @@ function LivePlacementPreview({
           </Button>
         ) : null}
       </div>
+      <p className="text-muted-foreground px-6 pt-3 text-xs">
+        <Monitor
+          aria-hidden="true"
+          className="mr-1 inline size-3.5 align-text-bottom"
+        />
+        Desktop · exibida a partir de 1024px de largura · sugerido 1600×500px
+        (16:5)
+      </p>
       <CardHeader>
         <Badge className="w-fit" variant="outline">
           Prévia ao vivo
@@ -482,6 +512,98 @@ function LivePlacementPreview({
         ) : null}
       </CardContent>
     </Card>
+  );
+}
+
+function SecondaryCreativeSlot({
+  disabledReason,
+  Icon,
+  imageSlot,
+  label,
+  resolutionHint,
+}: {
+  disabledReason?: string;
+  Icon: typeof Monitor;
+  imageSlot: ReturnType<typeof useHeaderMediaSlot>;
+  label: string;
+  resolutionHint: string;
+}) {
+  const imageUrl = imageSlot.displayedUrl;
+  const disabled = Boolean(disabledReason);
+
+  return (
+    <div className="space-y-2">
+      {imageSlot.fileInput}
+      <div
+        aria-disabled={disabled}
+        aria-label={
+          imageUrl
+            ? `Alterar imagem do criativo (${label.toLowerCase()})`
+            : `Adicionar imagem do criativo (${label.toLowerCase()})`
+        }
+        className={cn(
+          "group bg-muted relative aspect-video w-full overflow-hidden rounded-lg border",
+          disabled ? "cursor-not-allowed" : "cursor-pointer",
+        )}
+        onClick={disabled ? undefined : imageSlot.openPicker}
+        onKeyDown={(event) => {
+          if (disabled) {
+            return;
+          }
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            imageSlot.openPicker();
+          }
+        }}
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+      >
+        {imageUrl ? (
+          // Blob/signed previews cannot use next/image.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            alt=""
+            className={cn("size-full object-cover", disabled && "opacity-50")}
+            src={imageUrl}
+          />
+        ) : (
+          <div className="text-muted-foreground flex size-full flex-col items-center justify-center gap-1 p-2 text-center text-xs">
+            <Icon aria-hidden="true" className="size-4" />
+            {disabledReason ?? "Sem imagem selecionada"}
+          </div>
+        )}
+        {!disabled ? (
+          <div className="absolute inset-0 hidden items-center justify-center bg-black/40 opacity-0 transition group-hover:opacity-100 sm:flex">
+            <span className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-black">
+              <Camera aria-hidden="true" className="size-3" />
+              {imageUrl ? "Alterar" : "Adicionar"}
+            </span>
+          </div>
+        ) : null}
+        {!disabled && imageUrl ? (
+          <Button
+            aria-label={`Remover imagem do criativo (${label.toLowerCase()})`}
+            className="absolute top-1.5 right-1.5 size-7 rounded-full"
+            onClick={(event) => {
+              event.stopPropagation();
+              imageSlot.clear();
+            }}
+            size="icon"
+            type="button"
+            variant="secondary"
+          >
+            <X aria-hidden="true" className="size-3.5" />
+          </Button>
+        ) : null}
+      </div>
+      <p className="text-muted-foreground text-xs">
+        <Icon
+          aria-hidden="true"
+          className="mr-1 inline size-3.5 align-text-bottom"
+        />
+        {label} (opcional) · {resolutionHint}
+      </p>
+    </div>
   );
 }
 
@@ -509,10 +631,41 @@ function PlacementFormDialog({
     slot: {
       currentAssetId: placement?.creativeAssetId ?? null,
       initialUrl: placement?.creative?.url ?? null,
-      label: "Imagem do criativo",
+      label: "Imagem do criativo (desktop)",
       purpose: "SPONSORSHIP_CREATIVE",
     },
   });
+  const creativeTabletSlot = useHeaderMediaSlot({
+    actions: mediaActions,
+    activateOnUpload: false,
+    slot: {
+      currentAssetId: placement?.creativeAssetTabletId ?? null,
+      initialUrl: placement?.creativeTablet?.url ?? null,
+      label: "Imagem do criativo (tablet)",
+      purpose: "SPONSORSHIP_CREATIVE",
+    },
+  });
+  const creativeMobileSlot = useHeaderMediaSlot({
+    actions: mediaActions,
+    activateOnUpload: false,
+    slot: {
+      currentAssetId: placement?.creativeAssetMobileId ?? null,
+      initialUrl: placement?.creativeMobile?.url ?? null,
+      label: "Imagem do criativo (mobile)",
+      purpose: "SPONSORSHIP_CREATIVE",
+    },
+  });
+  /* Tablet/mobile are optional enhancements of the required desktop image —
+   * clearing the desktop slot also drops them so the form can never end up
+   * with a narrower variant but no desktop to fall back to. */
+  const desktopSlotForPreview = {
+    ...creativeSlot,
+    clear: () => {
+      creativeSlot.clear();
+      creativeTabletSlot.clear();
+      creativeMobileSlot.clear();
+    },
+  };
 
   useEffect(() => {
     form.setValue("creativeAssetId", creativeSlot.assetId ?? "", {
@@ -521,6 +674,22 @@ function PlacementFormDialog({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [creativeSlot.assetId]);
+
+  useEffect(() => {
+    form.setValue("creativeAssetTabletId", creativeTabletSlot.assetId ?? "", {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [creativeTabletSlot.assetId]);
+
+  useEffect(() => {
+    form.setValue("creativeAssetMobileId", creativeMobileSlot.assetId ?? "", {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [creativeMobileSlot.assetId]);
 
   useEffect(() => {
     const validSlots = slotOptionsByPlacementType[placementType];
@@ -537,6 +706,8 @@ function PlacementFormDialog({
       audience: values.audience,
       body: nullable(values.body),
       creativeAssetId: nullable(values.creativeAssetId),
+      creativeAssetMobileId: nullable(values.creativeAssetMobileId),
+      creativeAssetTabletId: nullable(values.creativeAssetTabletId),
       endsAt: toIso(values.endsAt),
       // The write schema is `.strict()`, and `createSponsorshipPlacement`
       // omits this key from validation for new placements — an explicit
@@ -576,6 +747,8 @@ function PlacementFormDialog({
       setOpen(false);
       form.reset(formDefaults());
       creativeSlot.clear();
+      creativeTabletSlot.clear();
+      creativeMobileSlot.clear();
     } catch {
       setSubmitError(
         "Não foi possível salvar. Atualize os dados e tente novamente.",
@@ -591,6 +764,8 @@ function PlacementFormDialog({
           form.reset(formDefaults(placement));
           setSubmitError(null);
           creativeSlot.resetToInitial();
+          creativeTabletSlot.resetToInitial();
+          creativeMobileSlot.resetToInitial();
         }
       }}
       open={open}
@@ -631,7 +806,7 @@ function PlacementFormDialog({
           <RequiredFieldsNotice />
 
           <LivePlacementPreview
-            imageSlot={creativeSlot}
+            imageSlot={desktopSlotForPreview}
             values={{
               audience: watchedValues.audience ?? "ALL",
               body: watchedValues.body ?? "",
@@ -645,11 +820,61 @@ function PlacementFormDialog({
             slot={{
               currentAssetId: placement?.creativeAssetId ?? null,
               initialUrl: placement?.creative?.url ?? null,
-              label: "Imagem do criativo",
+              label: "Imagem do criativo (desktop)",
               purpose: "SPONSORSHIP_CREATIVE",
             }}
             state={creativeSlot}
           />
+          <CropDialog
+            slot={{
+              currentAssetId: placement?.creativeAssetTabletId ?? null,
+              initialUrl: placement?.creativeTablet?.url ?? null,
+              label: "Imagem do criativo (tablet)",
+              purpose: "SPONSORSHIP_CREATIVE",
+            }}
+            state={creativeTabletSlot}
+          />
+          <CropDialog
+            slot={{
+              currentAssetId: placement?.creativeAssetMobileId ?? null,
+              initialUrl: placement?.creativeMobile?.url ?? null,
+              label: "Imagem do criativo (mobile)",
+              purpose: "SPONSORSHIP_CREATIVE",
+            }}
+            state={creativeMobileSlot}
+          />
+
+          <Field data-invalid={Boolean(form.formState.errors.creativeAssetId)}>
+            <FieldDescription>
+              Versões opcionais para telas menores — a versão desktop é exibida
+              quando uma variante específica não é enviada.
+            </FieldDescription>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <SecondaryCreativeSlot
+                disabledReason={
+                  creativeSlot.assetId
+                    ? undefined
+                    : "Envie a imagem desktop primeiro"
+                }
+                Icon={Tablet}
+                imageSlot={creativeTabletSlot}
+                label="Tablet"
+                resolutionHint="640–1023px de largura · sugerido 1024×384px"
+              />
+              <SecondaryCreativeSlot
+                disabledReason={
+                  creativeSlot.assetId
+                    ? undefined
+                    : "Envie a imagem desktop primeiro"
+                }
+                Icon={Smartphone}
+                imageSlot={creativeMobileSlot}
+                label="Mobile"
+                resolutionHint="até 639px de largura · sugerido 640×360px"
+              />
+            </div>
+            <FieldError errors={[form.formState.errors.creativeAssetId]} />
+          </Field>
 
           <div className="grid gap-5 sm:grid-cols-2">
             <Field data-invalid={Boolean(form.formState.errors.placementType)}>

@@ -31,7 +31,12 @@ export interface SponsorshipCreativeViewModel {
   eligible: boolean;
   id: string;
   link?: SponsorshipLinkViewModel | null;
+  /** The mandatory desktop (≥1024px viewport) variant. */
   media?: SponsorshipMediaViewModel | null;
+  /** Optional narrower variant (<640px viewport); falls back to `media` when absent. */
+  mediaMobile?: SponsorshipMediaViewModel | null;
+  /** Optional mid-width variant (640–1023px viewport); falls back to `media` when absent. */
+  mediaTablet?: SponsorshipMediaViewModel | null;
   participantDerived?: boolean;
   previewMode?: boolean;
   publicSocialProofEnabled?: boolean;
@@ -39,6 +44,11 @@ export interface SponsorshipCreativeViewModel {
   title: string;
   viewerIsPublic?: boolean;
 }
+
+/** Below this, the mobile creative variant applies (when uploaded). */
+export const SPONSORSHIP_TABLET_BREAKPOINT = "(min-width: 640px)";
+/** At or above this, the desktop creative variant applies. */
+export const SPONSORSHIP_DESKTOP_BREAKPOINT = "(min-width: 1024px)";
 
 export function isSponsorshipCreativeVisible(
   creative: SponsorshipCreativeViewModel,
@@ -103,16 +113,29 @@ export function SponsorshipLabels({
 export function SponsorshipMedia({
   className,
   media,
+  mediaMobile,
+  mediaTablet,
 }: {
   className?: string;
   media: SponsorshipMediaViewModel;
+  mediaMobile?: SponsorshipMediaViewModel | null;
+  mediaTablet?: SponsorshipMediaViewModel | null;
 }) {
+  const sources = [
+    mediaMobile && { media: "(max-width: 639px)", src: mediaMobile.url },
+    mediaTablet && {
+      media: `${SPONSORSHIP_TABLET_BREAKPOINT} and (max-width: 1023px)`,
+      src: mediaTablet.url,
+    },
+  ].filter((source) => source !== null && source !== undefined);
+
   return (
-    // The server supplies a short-lived authorized media URL.
+    // The server supplies short-lived authorized media URLs.
     <SignedImage
       alt={media.alt}
       className="object-cover"
       height={media.height}
+      sources={sources.length > 0 ? sources : undefined}
       src={media.url}
       width={media.width}
       wrapperClassName={cn("w-full", className)}
@@ -169,6 +192,8 @@ export function SponsorshipTopBanner({
           <SponsorshipMedia
             className="aspect-[16/8] h-full max-h-80 border-b md:order-2 md:border-b-0 md:border-l"
             media={creative.media}
+            mediaMobile={creative.mediaMobile}
+            mediaTablet={creative.mediaTablet}
           />
         ) : null}
         <div className="flex min-w-0 flex-col justify-center py-5 md:order-1 md:py-7">

@@ -40,6 +40,22 @@ const signingCreatorAccounts = alias(
   accounts,
   "sponsorship_signing_creator_account",
 );
+const tabletMediaAssets = alias(
+  mediaAssets,
+  "sponsorship_delivery_tablet_media",
+);
+const tabletMediaOwnerAccounts = alias(
+  accounts,
+  "sponsorship_delivery_tablet_media_owner",
+);
+const mobileMediaAssets = alias(
+  mediaAssets,
+  "sponsorship_delivery_mobile_media",
+);
+const mobileMediaOwnerAccounts = alias(
+  accounts,
+  "sponsorship_delivery_mobile_media_owner",
+);
 
 function allowedAudiences(query: SponsorshipDeliveryQuery) {
   if (query.viewer === "PUBLIC") {
@@ -128,6 +144,26 @@ function mapCandidate(
           status: row.mediaStatus ?? "",
         }
       : null,
+    mediaMobile: row.mediaMobileId
+      ? {
+          archivedAt: row.mediaMobileArchivedAt,
+          bucketName: row.mediaMobileBucketName ?? "",
+          id: row.mediaMobileId,
+          kind: row.mediaMobileKind ?? "",
+          ownerAccountRole: row.mediaMobileOwnerAccountRole,
+          status: row.mediaMobileStatus ?? "",
+        }
+      : null,
+    mediaTablet: row.mediaTabletId
+      ? {
+          archivedAt: row.mediaTabletArchivedAt,
+          bucketName: row.mediaTabletBucketName ?? "",
+          id: row.mediaTabletId,
+          kind: row.mediaTabletKind ?? "",
+          ownerAccountRole: row.mediaTabletOwnerAccountRole,
+          status: row.mediaTabletStatus ?? "",
+        }
+      : null,
     placement: {
       advertiserAccountId: row.advertiserAccountId,
       advertiserLabel: row.advertiserLabel,
@@ -135,6 +171,8 @@ function mapCandidate(
       audience: row.audience,
       body: row.body,
       creativeAssetId: row.creativeAssetId,
+      creativeAssetMobileId: row.creativeAssetMobileId,
+      creativeAssetTabletId: row.creativeAssetTabletId,
       endsAt: row.endsAt,
       featuredCreatorProfileId: row.featuredCreatorProfileId,
       id: row.id,
@@ -166,6 +204,8 @@ function selectCandidates(
       audience: sponsorshipPlacements.audience,
       body: sponsorshipPlacements.body,
       creativeAssetId: sponsorshipPlacements.creativeAssetId,
+      creativeAssetMobileId: sponsorshipPlacements.creativeAssetMobileId,
+      creativeAssetTabletId: sponsorshipPlacements.creativeAssetTabletId,
       creatorAccountArchivedAt: creatorAccounts.archivedAt,
       creatorAccountRole: creatorAccounts.role,
       creatorAccountStatus: creatorAccounts.status,
@@ -184,8 +224,20 @@ function selectCandidates(
       mediaBucketName: mediaAssets.bucketName,
       mediaId: mediaAssets.id,
       mediaKind: mediaAssets.kind,
+      mediaMobileArchivedAt: mobileMediaAssets.archivedAt,
+      mediaMobileBucketName: mobileMediaAssets.bucketName,
+      mediaMobileId: mobileMediaAssets.id,
+      mediaMobileKind: mobileMediaAssets.kind,
+      mediaMobileOwnerAccountRole: mobileMediaOwnerAccounts.role,
+      mediaMobileStatus: mobileMediaAssets.status,
       mediaOwnerAccountRole: mediaOwnerAccounts.role,
       mediaStatus: mediaAssets.status,
+      mediaTabletArchivedAt: tabletMediaAssets.archivedAt,
+      mediaTabletBucketName: tabletMediaAssets.bucketName,
+      mediaTabletId: tabletMediaAssets.id,
+      mediaTabletKind: tabletMediaAssets.kind,
+      mediaTabletOwnerAccountRole: tabletMediaOwnerAccounts.role,
+      mediaTabletStatus: tabletMediaAssets.status,
       placementType: sponsorshipPlacements.placementType,
       slotKey: sponsorshipPlacements.slotKey,
       sortOrder: sponsorshipPlacements.sortOrder,
@@ -200,6 +252,22 @@ function selectCandidates(
     .leftJoin(
       mediaOwnerAccounts,
       eq(mediaOwnerAccounts.id, mediaAssets.ownerAccountId),
+    )
+    .leftJoin(
+      tabletMediaAssets,
+      eq(tabletMediaAssets.id, sponsorshipPlacements.creativeAssetTabletId),
+    )
+    .leftJoin(
+      tabletMediaOwnerAccounts,
+      eq(tabletMediaOwnerAccounts.id, tabletMediaAssets.ownerAccountId),
+    )
+    .leftJoin(
+      mobileMediaAssets,
+      eq(mobileMediaAssets.id, sponsorshipPlacements.creativeAssetMobileId),
+    )
+    .leftJoin(
+      mobileMediaOwnerAccounts,
+      eq(mobileMediaOwnerAccounts.id, mobileMediaAssets.ownerAccountId),
     )
     .leftJoin(
       creatorProfiles,
@@ -264,6 +332,20 @@ async function findSigningTarget(
         or(
           and(
             eq(sponsorshipPlacements.creativeAssetId, input.assetId),
+            eq(mediaAssets.bucketName, "sponsorship-media"),
+            eq(mediaAssets.kind, "SPONSORSHIP_CREATIVE"),
+            eq(signingMediaOwnerAccounts.role, "ADMIN"),
+            isNull(signingMediaOwnerAccounts.archivedAt),
+          ),
+          and(
+            eq(sponsorshipPlacements.creativeAssetTabletId, input.assetId),
+            eq(mediaAssets.bucketName, "sponsorship-media"),
+            eq(mediaAssets.kind, "SPONSORSHIP_CREATIVE"),
+            eq(signingMediaOwnerAccounts.role, "ADMIN"),
+            isNull(signingMediaOwnerAccounts.archivedAt),
+          ),
+          and(
+            eq(sponsorshipPlacements.creativeAssetMobileId, input.assetId),
             eq(mediaAssets.bucketName, "sponsorship-media"),
             eq(mediaAssets.kind, "SPONSORSHIP_CREATIVE"),
             eq(signingMediaOwnerAccounts.role, "ADMIN"),

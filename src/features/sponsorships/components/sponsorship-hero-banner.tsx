@@ -4,9 +4,15 @@ import { cn } from "@/shared/lib/cn";
 import {
   getSafeSponsorshipExternalHref,
   isSponsorshipCreativeVisible,
+  SPONSORSHIP_TABLET_BREAKPOINT,
   SponsorshipLabels,
   type SponsorshipCreativeViewModel,
 } from "./sponsorship-presentation";
+
+/* Roughly 60px shorter than the previous 4/3 · 16/7 · 16/6 ratios at typical
+ * viewport widths. */
+const heroAspectClassName =
+  "aspect-[16/9] w-full sm:aspect-[16/6] lg:aspect-[16/5]";
 
 /**
  * A full-bleed promotional banner for the logged-in catalog: the creative fills
@@ -41,14 +47,27 @@ export function SponsorshipHeroBanner({
           fetchPriority="high"
           height={creative.media.height}
           loading="eager"
+          sources={[
+            creative.mediaMobile && {
+              media: "(max-width: 639px)",
+              src: creative.mediaMobile.url,
+            },
+            creative.mediaTablet && {
+              media: `${SPONSORSHIP_TABLET_BREAKPOINT} and (max-width: 1023px)`,
+              src: creative.mediaTablet.url,
+            },
+          ].filter((source) => source !== null && source !== undefined)}
           src={creative.media.url}
           width={creative.media.width}
-          wrapperClassName="aspect-[4/3] w-full sm:aspect-[16/7] lg:aspect-[16/6]"
+          wrapperClassName={heroAspectClassName}
         />
       ) : (
         <div
           aria-hidden="true"
-          className="from-brand-night via-brand-royal to-brand-blue aspect-[4/3] w-full bg-gradient-to-br sm:aspect-[16/7] lg:aspect-[16/6]"
+          className={cn(
+            "from-brand-night via-brand-royal to-brand-blue bg-gradient-to-br",
+            heroAspectClassName,
+          )}
         />
       )}
 

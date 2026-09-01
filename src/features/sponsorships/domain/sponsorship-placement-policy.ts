@@ -7,6 +7,7 @@ import {
   type PlacementEvaluationResult,
   type PlacementIssueCode,
   type PlacementViewer,
+  type SponsorshipMediaReference,
   type SponsorshipPlacementCandidate,
 } from "../types/sponsorship-placement.types";
 
@@ -43,12 +44,39 @@ function activationPayload(placement: SponsorshipPlacementCandidate) {
   };
 }
 
-function isMediaEligible({ media, placement }: PlacementActivationInput) {
-  if (placement.placementType === "FEATURED_CREATOR") {
+/** Desktop is validated unconditionally elsewhere (`CREATIVE_INCOMPLETE`
+ * already requires it); tablet/mobile are optional — absent is fine, present
+ * must be a genuinely eligible asset. */
+function isOptionalSlotMediaEligible(
+  assetId: string | null,
+  media: SponsorshipMediaReference | null,
+) {
+  if (!assetId) {
     return true;
   }
 
   return Boolean(
+    media &&
+    assetId === media.id &&
+    media.bucketName === "sponsorship-media" &&
+    media.kind === "SPONSORSHIP_CREATIVE" &&
+    media.ownerAccountRole === "ADMIN" &&
+    media.status === "ACTIVE" &&
+    media.archivedAt === null,
+  );
+}
+
+function isMediaEligible({
+  media,
+  mediaMobile,
+  mediaTablet,
+  placement,
+}: PlacementActivationInput) {
+  if (placement.placementType === "FEATURED_CREATOR") {
+    return true;
+  }
+
+  const desktopEligible = Boolean(
     media &&
     placement.creativeAssetId === media.id &&
     media.bucketName === "sponsorship-media" &&
@@ -56,6 +84,12 @@ function isMediaEligible({ media, placement }: PlacementActivationInput) {
     media.ownerAccountRole === "ADMIN" &&
     media.status === "ACTIVE" &&
     media.archivedAt === null,
+  );
+
+  return (
+    desktopEligible &&
+    isOptionalSlotMediaEligible(placement.creativeAssetTabletId, mediaTablet) &&
+    isOptionalSlotMediaEligible(placement.creativeAssetMobileId, mediaMobile)
   );
 }
 

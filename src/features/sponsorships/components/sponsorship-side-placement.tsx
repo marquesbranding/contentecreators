@@ -34,6 +34,8 @@ export function SponsorshipSidePlacement({
           <SponsorshipMedia
             className="aspect-[16/8] border-b lg:aspect-[4/3]"
             media={creative.media}
+            mediaMobile={creative.mediaMobile}
+            mediaTablet={creative.mediaTablet}
           />
         ) : null}
         <CardHeader className="gap-3 px-5 pt-5">

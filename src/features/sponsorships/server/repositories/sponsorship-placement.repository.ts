@@ -28,6 +28,8 @@ export type SponsorshipPlacementCreateData = Pick<
   | "audience"
   | "body"
   | "creativeAssetId"
+  | "creativeAssetMobileId"
+  | "creativeAssetTabletId"
   | "endsAt"
   | "featuredCreatorProfileId"
   | "linkLabel"
@@ -46,6 +48,8 @@ export type SponsorshipPlacementUpdateData = Partial<
 export interface SponsorshipActivationEvidence {
   featuredCreator: FeaturedCreatorEligibility | null;
   media: SponsorshipActivationMediaEvidence | null;
+  mediaMobile: SponsorshipActivationMediaEvidence | null;
+  mediaTablet: SponsorshipActivationMediaEvidence | null;
   placement: SponsorshipPlacementRecord;
 }
 

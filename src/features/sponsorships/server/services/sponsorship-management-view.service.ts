@@ -81,14 +81,36 @@ function creativeAlt(placement: SponsorshipPlacementRecord) {
     : (placement.title ?? "Criativo patrocinado");
 }
 
+function toAdminMedia(
+  placement: SponsorshipPlacementRecord,
+  media: SignedAdminMedia | null,
+) {
+  return media
+    ? {
+        alt: creativeAlt(placement),
+        height: media.height,
+        url: media.url,
+        width: media.width,
+      }
+    : null;
+}
+
 async function toDto(
   placement: SponsorshipPlacementRecord,
   getSignedMedia: SponsorshipManagementViewDependencies["getSignedMedia"],
   now: Date,
 ): Promise<SponsorshipAdminPlacementDto> {
-  const media = placement.creativeAssetId
-    ? await getSignedMedia(placement.creativeAssetId)
-    : null;
+  const [media, mediaTablet, mediaMobile] = await Promise.all([
+    placement.creativeAssetId
+      ? getSignedMedia(placement.creativeAssetId)
+      : Promise.resolve(null),
+    placement.creativeAssetTabletId
+      ? getSignedMedia(placement.creativeAssetTabletId)
+      : Promise.resolve(null),
+    placement.creativeAssetMobileId
+      ? getSignedMedia(placement.creativeAssetMobileId)
+      : Promise.resolve(null),
+  ]);
 
   return {
     activationIssues: [],
@@ -96,15 +118,12 @@ async function toDto(
     archivedAt: placement.archivedAt?.toISOString() ?? null,
     audience: placement.audience,
     body: placement.body,
-    creative: media
-      ? {
-          alt: creativeAlt(placement),
-          height: media.height,
-          url: media.url,
-          width: media.width,
-        }
-      : null,
+    creative: toAdminMedia(placement, media),
     creativeAssetId: placement.creativeAssetId,
+    creativeAssetMobileId: placement.creativeAssetMobileId,
+    creativeAssetTabletId: placement.creativeAssetTabletId,
+    creativeMobile: toAdminMedia(placement, mediaMobile),
+    creativeTablet: toAdminMedia(placement, mediaTablet),
     endsAt: placement.endsAt?.toISOString() ?? null,
     featuredCreatorName: null,
     featuredCreatorProfileId: placement.featuredCreatorProfileId,
@@ -130,6 +149,8 @@ function toPersistenceWrite(input: SponsorshipPlacementWriteInput) {
     audience: input.audience,
     body: input.body,
     creativeAssetId: input.creativeAssetId,
+    creativeAssetMobileId: input.creativeAssetMobileId,
+    creativeAssetTabletId: input.creativeAssetTabletId,
     endsAt: input.endsAt ? new Date(input.endsAt) : null,
     featuredCreatorProfileId: input.featuredCreatorProfileId,
     linkLabel: input.linkLabel,

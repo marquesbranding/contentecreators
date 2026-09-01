@@ -30,6 +30,8 @@ export interface SponsorshipPlacementDraft {
   audience: PlacementAudience;
   body: string | null;
   creativeAssetId: string | null;
+  creativeAssetMobileId: string | null;
+  creativeAssetTabletId: string | null;
   endsAt: Date | null;
   featuredCreatorProfileId: string | null;
   isActive: boolean;
@@ -92,6 +94,8 @@ export interface PlacementEvaluationResult {
 export interface PlacementActivationInput {
   featuredCreator: FeaturedCreatorEligibility | null;
   media: SponsorshipMediaReference | null;
+  mediaMobile: SponsorshipMediaReference | null;
+  mediaTablet: SponsorshipMediaReference | null;
   placement: SponsorshipPlacementCandidate;
 }
 
@@ -121,7 +125,12 @@ export interface RendererPlacementDto {
   id: string;
   linkLabel: string | null;
   linkUrl: string | null;
+  /** The mandatory-when-any-image-uploaded desktop (≥1024px viewport) variant. */
   media: RendererPlacementMediaDto | null;
+  /** Optional narrower variant (<640px viewport); falls back to `media` when absent. */
+  mediaMobile?: RendererPlacementMediaDto | null;
+  /** Optional mid-width variant (640–1023px viewport); falls back to `media` when absent. */
+  mediaTablet?: RendererPlacementMediaDto | null;
   sortOrder: number;
   title: string;
   type: PlacementType;

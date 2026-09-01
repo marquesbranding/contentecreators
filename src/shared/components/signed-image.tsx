@@ -5,6 +5,12 @@ import { useEffect, useState } from "react";
 
 import { cn } from "@/shared/lib/cn";
 
+interface SignedImageSource {
+  /** A `(min-width: …)` media query; the first matching source wins. */
+  media: string;
+  src: string;
+}
+
 interface SignedImageProps {
   alt: string;
   /** Classes for the <img> itself (object-fit, sizing when no wrapperClassName is given). */
@@ -14,6 +20,13 @@ interface SignedImageProps {
   loading?: "eager" | "lazy";
   /** A short-lived bearer URL; intentionally bypasses the shared image optimizer. */
   src: string;
+  /**
+   * Wider-viewport variants, checked top-down — the first whose `media`
+   * query matches wins; `src` is the fallback when none match (or none are
+   * given). Renders as a native `<picture>` so the browser swaps sources on
+   * its own, no JS/resize listener involved.
+   */
+  sources?: SignedImageSource[];
   width?: number | null;
   /**
    * When set, renders a positioned wrapper sized by these classes and makes
@@ -48,6 +61,7 @@ export function SignedImage({
   height,
   loading = "lazy",
   src,
+  sources,
   width,
   wrapperClassName,
 }: SignedImageProps) {
@@ -87,7 +101,11 @@ export function SignedImage({
       alt={alt}
       className={cn(
         className,
-        wrapperClassName && "absolute inset-0",
+        // Without this, the browser falls back to the image's own native
+        // pixel size (via the width/height attributes below) instead of
+        // filling the positioned wrapper — leaving the rest of the box
+        // showing whatever sits behind it.
+        wrapperClassName && "absolute inset-0 size-full",
         "transition-opacity duration-500 ease-out",
         status === "loaded" ? "opacity-100" : "opacity-0",
       )}
@@ -103,12 +121,23 @@ export function SignedImage({
       width={width ?? 640}
     />
   );
+  const picture =
+    sources && sources.length > 0 ? (
+      <picture>
+        {sources.map((source) => (
+          <source key={source.media} media={source.media} srcSet={source.src} />
+        ))}
+        {img}
+      </picture>
+    ) : (
+      img
+    );
 
   if (!wrapperClassName) {
     return (
       <>
         {status === "loading" ? <LoadingSpinnerOverlay /> : null}
-        {img}
+        {picture}
       </>
     );
   }
@@ -116,7 +145,7 @@ export function SignedImage({
   return (
     <div className={cn("bg-muted relative overflow-hidden", wrapperClassName)}>
       {status === "loading" ? <LoadingSpinnerOverlay /> : null}
-      {img}
+      {picture}
     </div>
   );
 }

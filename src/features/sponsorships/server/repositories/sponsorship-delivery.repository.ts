@@ -18,6 +18,8 @@ export interface SponsorshipDeliveryCandidateRecord {
   featuredCreator: FeaturedCreatorEligibility | null;
   featuredPresentation: SponsorshipFeaturedPresentationRecord | null;
   media: SponsorshipMediaReference | null;
+  mediaMobile: SponsorshipMediaReference | null;
+  mediaTablet: SponsorshipMediaReference | null;
   placement: SponsorshipPlacementCandidate;
 }
 

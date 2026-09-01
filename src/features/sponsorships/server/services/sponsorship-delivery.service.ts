@@ -53,6 +53,8 @@ export function createSponsorshipDeliveryService({
             allowedPlacementTypes: query.allowedPlacementTypes,
             featuredCreator: candidate.featuredCreator,
             media: candidate.media,
+            mediaMobile: candidate.mediaMobile,
+            mediaTablet: candidate.mediaTablet,
             now: query.now,
             placement: candidate.placement,
             route: query.route,
@@ -127,15 +129,33 @@ export function createSponsorshipDeliveryService({
               return null;
             }
 
-            const media = await resolveSignedMedia(
-              placement.creativeAssetId,
-              placement.id,
-              query.now,
-            );
+            const [media, mediaTablet, mediaMobile] = await Promise.all([
+              resolveSignedMedia(
+                placement.creativeAssetId,
+                placement.id,
+                query.now,
+              ),
+              placement.creativeAssetTabletId
+                ? resolveSignedMedia(
+                    placement.creativeAssetTabletId,
+                    placement.id,
+                    query.now,
+                  )
+                : Promise.resolve(null),
+              placement.creativeAssetMobileId
+                ? resolveSignedMedia(
+                    placement.creativeAssetMobileId,
+                    placement.id,
+                    query.now,
+                  )
+                : Promise.resolve(null),
+            ]);
 
             if (!media) {
               return null;
             }
+
+            const alt = creativeAlt(candidate);
 
             return {
               body: placement.body,
@@ -144,10 +164,9 @@ export function createSponsorshipDeliveryService({
               id: placement.id,
               linkLabel: placement.linkLabel,
               linkUrl: placement.linkUrl,
-              media: {
-                alt: creativeAlt(candidate),
-                url: media.url,
-              },
+              media: { alt, url: media.url },
+              mediaMobile: mediaMobile ? { alt, url: mediaMobile.url } : null,
+              mediaTablet: mediaTablet ? { alt, url: mediaTablet.url } : null,
               sortOrder: placement.sortOrder,
               title: placement.title,
               type: placement.placementType,

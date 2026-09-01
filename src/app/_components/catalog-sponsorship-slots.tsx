@@ -57,6 +57,8 @@ function toCreativeViewModel(
           }
         : null,
     media: placement.media,
+    mediaMobile: placement.mediaMobile,
+    mediaTablet: placement.mediaTablet,
     participantDerived: placement.type === "FEATURED_CREATOR",
     routeMatches: true,
     title: placement.title,
