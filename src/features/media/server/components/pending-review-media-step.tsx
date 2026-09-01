@@ -4,13 +4,9 @@ import {
   loadCurrentCompanyReviewProfile,
   loadCurrentInfluencerReviewProfile,
 } from "@/features/onboarding/server";
-import {
-  ProfileHeaderPreview,
-  type ProfileHeaderPreviewBadge,
-} from "@/shared/components/profile-header-preview";
+import type { ProfileHeaderPreviewBadge } from "@/shared/components/profile-header-preview";
 
-import { CompanyMediaFields } from "../../components/company-media-fields.client";
-import { InfluencerMediaFields } from "../../components/influencer-media-fields.client";
+import { ProfileHeaderMediaEditor } from "../../components/profile-header-media-editor.client";
 import {
   activateProfileMediaAction,
   finalizeMediaUploadAction,
@@ -69,26 +65,35 @@ export async function PendingReviewMediaStep({
     const badges: ProfileHeaderPreviewBadge[] = profile
       ? [
           {
-            label: profile.creatorType === "INFLUENCER" ? "Influenciador" : "Creator UGC",
+            label:
+              profile.creatorType === "INFLUENCER"
+                ? "Influenciador"
+                : "Creator UGC",
             tone: "primary",
           },
         ]
       : [];
 
     return (
-      <div className="space-y-5">
-        <ProfileHeaderPreview
-          avatarUrl={avatarMedia?.url ?? null}
-          badges={badges}
-          coverUrl={coverMedia?.url ?? null}
-          displayName={displayName}
-          initials={initialsFromName(displayName)}
-          location={
-            profile ? formatLocation(profile.city, profile.state) : ""
-          }
-        />
-        <InfluencerMediaFields actions={mediaActions} initialState={mediaState} />
-      </div>
+      <ProfileHeaderMediaEditor
+        actions={mediaActions}
+        avatar={{
+          currentAssetId: mediaState.avatarAssetId,
+          initialUrl: avatarMedia?.url ?? null,
+          label: "Foto de perfil",
+          purpose: "AVATAR",
+        }}
+        badges={badges}
+        cover={{
+          currentAssetId: mediaState.coverAssetId,
+          initialUrl: coverMedia?.url ?? null,
+          label: "Imagem de capa",
+          purpose: "COVER",
+        }}
+        displayName={displayName}
+        initials={initialsFromName(displayName)}
+        location={profile ? formatLocation(profile.city, profile.state) : ""}
+      />
     );
   }
 
@@ -97,22 +102,34 @@ export async function PendingReviewMediaStep({
     loadCurrentCompanyMediaFormState(),
   ]);
   const [logoMedia, coverMedia] = await Promise.all([
-    mediaState.logoAssetId ? getServerSignedMedia(mediaState.logoAssetId) : null,
-    mediaState.coverAssetId ? getServerSignedMedia(mediaState.coverAssetId) : null,
+    mediaState.logoAssetId
+      ? getServerSignedMedia(mediaState.logoAssetId)
+      : null,
+    mediaState.coverAssetId
+      ? getServerSignedMedia(mediaState.coverAssetId)
+      : null,
   ]);
   const displayName = profile?.tradeName ?? "";
 
   return (
-    <div className="space-y-5">
-      <ProfileHeaderPreview
-        avatarUrl={logoMedia?.url ?? null}
-        badges={[{ label: "Empresa", tone: "primary" }]}
-        coverUrl={coverMedia?.url ?? null}
-        displayName={displayName}
-        initials={initialsFromName(displayName)}
-        location={profile ? formatLocation(profile.city, profile.state) : ""}
-      />
-      <CompanyMediaFields actions={mediaActions} initialState={mediaState} />
-    </div>
+    <ProfileHeaderMediaEditor
+      actions={mediaActions}
+      avatar={{
+        currentAssetId: mediaState.logoAssetId,
+        initialUrl: logoMedia?.url ?? null,
+        label: "Logo da empresa",
+        purpose: "LOGO",
+      }}
+      badges={[{ label: "Empresa", tone: "primary" }]}
+      cover={{
+        currentAssetId: mediaState.coverAssetId,
+        initialUrl: coverMedia?.url ?? null,
+        label: "Capa da empresa",
+        purpose: "COVER",
+      }}
+      displayName={displayName}
+      initials={initialsFromName(displayName)}
+      location={profile ? formatLocation(profile.city, profile.state) : ""}
+    />
   );
 }
