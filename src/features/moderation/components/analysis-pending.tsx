@@ -1,7 +1,18 @@
-import { CheckCircle2, Clock3, FileSearch, LogOut } from "lucide-react";
+"use client";
 
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Clock3,
+  FileSearch,
+  LogOut,
+} from "lucide-react";
+import Link from "next/link";
+
+import { useBackofficeAccess } from "@/features/identity";
 import { BrandLogo } from "@/shared/components/brand-logo";
 import { Badge } from "@/shared/components/ui/badge";
+import { buttonVariants } from "@/shared/components/ui/button";
 import { FormStatusSubmitButton } from "@/shared/components/form-status-submit-button";
 import {
   Card,
@@ -10,6 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import { cn } from "@/shared/lib/cn";
 
 export function AnalysisPending({
   emailConfirmed = false,
@@ -20,6 +32,8 @@ export function AnalysisPending({
   mediaSection?: React.ReactNode;
   signOutAction: () => Promise<void>;
 }) {
+  const hasBackofficeAccess = useBackofficeAccess();
+
   return (
     <main
       className="bg-brand-canvas relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-10"
@@ -31,81 +45,93 @@ export function AnalysisPending({
         className="bg-brand-blue/15 absolute -top-40 left-1/2 size-[34rem] -translate-x-1/2 rounded-full blur-3xl"
       />
       <div className="relative w-full max-w-2xl space-y-5">
-      {mediaSection}
-      <Card className="gap-0 overflow-hidden rounded-3xl py-0 shadow-[0_28px_80px_rgba(8,8,8,0.1)]">
-        <CardHeader className="items-start gap-4 border-b px-6 py-7 sm:px-9 sm:py-9">
-          <span className="bg-brand-night rounded-md">
-            <BrandLogo />
-          </span>
-          <Badge className="gap-2 rounded-full" variant="secondary">
-            <Clock3 aria-hidden="true" />
-            Análise em andamento
-          </Badge>
-          <CardTitle className="text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
-            <h1>Seu cadastro está sendo analisado</h1>
-          </CardTitle>
-          <CardDescription className="max-w-xl text-base leading-7">
-            Recebemos suas informações. Enquanto a revisão não for concluída,
-            nenhuma listagem do catálogo será carregada ou exibida.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6 px-6 py-7 sm:px-9">
-          {emailConfirmed ? (
-            <div className="flex gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-950">
-              <CheckCircle2
-                aria-hidden="true"
-                className="mt-0.5 size-5 shrink-0 text-emerald-600"
-              />
-              <div>
-                <strong className="text-sm">E-mail confirmado</strong>
-                <p className="mt-1 text-sm leading-5 text-emerald-800">
-                  Seu cadastro foi enviado para análise.
-                </p>
+        {mediaSection}
+        <Card className="gap-0 overflow-hidden rounded-3xl py-0 shadow-[0_28px_80px_rgba(8,8,8,0.1)]">
+          <CardHeader className="items-start gap-4 border-b px-6 py-7 sm:px-9 sm:py-9">
+            <span className="bg-brand-night rounded-md">
+              <BrandLogo />
+            </span>
+            <Badge className="gap-2 rounded-full" variant="secondary">
+              <Clock3 aria-hidden="true" />
+              Análise em andamento
+            </Badge>
+            <CardTitle className="text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
+              <h1>Seu cadastro está sendo analisado</h1>
+            </CardTitle>
+            <CardDescription className="max-w-xl text-base leading-7">
+              Recebemos suas informações. Enquanto a revisão não for concluída,
+              nenhuma listagem do catálogo será carregada ou exibida.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6 px-6 py-7 sm:px-9">
+            {emailConfirmed ? (
+              <div className="flex gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-950">
+                <CheckCircle2
+                  aria-hidden="true"
+                  className="mt-0.5 size-5 shrink-0 text-emerald-600"
+                />
+                <div>
+                  <strong className="text-sm">E-mail confirmado</strong>
+                  <p className="mt-1 text-sm leading-5 text-emerald-800">
+                    Seu cadastro foi enviado para análise.
+                  </p>
+                </div>
+              </div>
+            ) : null}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="flex gap-3 rounded-2xl border p-4">
+                <CheckCircle2
+                  aria-hidden="true"
+                  className="mt-0.5 size-5 shrink-0 text-emerald-600"
+                />
+                <div>
+                  <strong className="text-sm">Cadastro recebido</strong>
+                  <p className="text-muted-foreground mt-1 text-sm leading-5">
+                    Seus dados estão salvos com segurança.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3 rounded-2xl border p-4">
+                <FileSearch
+                  aria-hidden="true"
+                  className="text-brand-blue mt-0.5 size-5 shrink-0"
+                />
+                <div>
+                  <strong className="text-sm">Revisão manual</strong>
+                  <p className="text-muted-foreground mt-1 text-sm leading-5">
+                    A equipe confere o perfil antes da liberação.
+                  </p>
+                </div>
               </div>
             </div>
-          ) : null}
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="flex gap-3 rounded-2xl border p-4">
-              <CheckCircle2
-                aria-hidden="true"
-                className="mt-0.5 size-5 shrink-0 text-emerald-600"
-              />
-              <div>
-                <strong className="text-sm">Cadastro recebido</strong>
-                <p className="text-muted-foreground mt-1 text-sm leading-5">
-                  Seus dados estão salvos com segurança.
-                </p>
-              </div>
+            <p className="text-muted-foreground text-sm leading-6">
+              Você receberá um e-mail quando houver uma atualização. Se forem
+              necessárias correções, o formulário será reaberto com as
+              orientações.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {hasBackofficeAccess ? (
+                <Link
+                  className={cn(buttonVariants({ variant: "outline" }))}
+                  href="/backoffice"
+                >
+                  <ArrowLeft aria-hidden="true" />
+                  Acessar backoffice
+                </Link>
+              ) : null}
+              <form action={signOutAction}>
+                <FormStatusSubmitButton
+                  className="w-full"
+                  idleIcon={<LogOut aria-hidden="true" />}
+                  pendingLabel="Saindo da conta..."
+                  variant="outline"
+                >
+                  Sair da conta
+                </FormStatusSubmitButton>
+              </form>
             </div>
-            <div className="flex gap-3 rounded-2xl border p-4">
-              <FileSearch
-                aria-hidden="true"
-                className="text-brand-blue mt-0.5 size-5 shrink-0"
-              />
-              <div>
-                <strong className="text-sm">Revisão manual</strong>
-                <p className="text-muted-foreground mt-1 text-sm leading-5">
-                  A equipe confere o perfil antes da liberação.
-                </p>
-              </div>
-            </div>
-          </div>
-          <p className="text-muted-foreground text-sm leading-6">
-            Você receberá um e-mail quando houver uma atualização. Se forem
-            necessárias correções, o formulário será reaberto com as
-            orientações.
-          </p>
-          <form action={signOutAction}>
-            <FormStatusSubmitButton
-              idleIcon={<LogOut aria-hidden="true" />}
-              pendingLabel="Saindo da conta..."
-              variant="outline"
-            >
-              Sair da conta
-            </FormStatusSubmitButton>
-          </form>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
       </div>
     </main>
   );
