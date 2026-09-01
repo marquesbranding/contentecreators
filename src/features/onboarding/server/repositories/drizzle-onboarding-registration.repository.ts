@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, desc, eq, inArray, isNull, lte, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, lte, ne, sql } from "drizzle-orm";
 
 import {
   getDatabaseClient,
@@ -851,6 +851,9 @@ export function createDrizzleOnboardingRegistrationRepository(
     },
 
     async submitGoogleProfile({ email, identityId, input, requestId }) {
+      // A dual-role admin can own an ADMIN row and a linked
+      // INFLUENCER/COMPANY row for the same identity — filter by the role
+      // being submitted so this never resolves the sibling admin row.
       const [actorAccount] = await database
         .select({
           id: accounts.id,
@@ -858,14 +861,15 @@ export function createDrizzleOnboardingRegistrationRepository(
           status: accounts.status,
         })
         .from(accounts)
-        .where(eq(accounts.authUserId, identityId))
+        .where(
+          and(
+            eq(accounts.authUserId, identityId),
+            eq(accounts.role, input.role),
+          ),
+        )
         .limit(1);
 
-      if (
-        !actorAccount ||
-        actorAccount.role !== input.role ||
-        actorAccount.status !== "ONBOARDING"
-      ) {
+      if (!actorAccount || actorAccount.status !== "ONBOARDING") {
         throw new Error("Account cannot submit this profile.");
       }
 
@@ -878,14 +882,15 @@ export function createDrizzleOnboardingRegistrationRepository(
           const [account] = await transaction
             .select()
             .from(accounts)
-            .where(eq(accounts.authUserId, identityId))
+            .where(
+              and(
+                eq(accounts.authUserId, identityId),
+                eq(accounts.role, input.role),
+              ),
+            )
             .limit(1);
 
-          if (
-            !account ||
-            account.role !== input.role ||
-            account.status !== "ONBOARDING"
-          ) {
+          if (!account || account.status !== "ONBOARDING") {
             throw new Error("Account cannot submit this profile.");
           }
 
@@ -929,10 +934,17 @@ export function createDrizzleOnboardingRegistrationRepository(
       return runAuditedTransaction(
         auditContext(requestId, "Finalize verified email registration"),
         async (transaction) => {
+          // A dual-role admin's linked profile row is what this must find —
+          // never their sibling ADMIN row for the same identity.
           const [account] = await transaction
             .select()
             .from(accounts)
-            .where(eq(accounts.authUserId, identityId))
+            .where(
+              and(
+                eq(accounts.authUserId, identityId),
+                ne(accounts.role, "ADMIN"),
+              ),
+            )
             .limit(1);
 
           if (

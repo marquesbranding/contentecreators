@@ -574,4 +574,92 @@ describeLocalStack("onboarding registration repository", () => {
       status: "PENDING",
     });
   });
+
+  it("resolves the linked company row instead of a sibling ADMIN row for a dual-role identity", async () => {
+    const identityId = "91000000-0000-4000-8000-000000000005";
+    const email = "dual-role-admin@contentecreators.test";
+    await insertConfirmedIdentity(identityId, email);
+    await sqlClient`
+      insert into public.accounts (
+        auth_user_id,
+        role,
+        status,
+        operational_email,
+        approved_at,
+        completion_percentage
+      )
+      values (
+        ${identityId},
+        'ADMIN',
+        'APPROVED',
+        ${email},
+        now(),
+        100
+      )
+    `;
+    const roleSelection = await roleRepository.selectInitialRole({
+      email,
+      identityId,
+      requestId: "dual-role-company-selection",
+      role: "COMPANY",
+    });
+
+    const input = {
+      additionalLocations: [],
+      city: "São Paulo",
+      cnpj: "22333444000155",
+      complement: "",
+      description:
+        "Empresa vinculada a um admin, usada para testar o roteamento por role.",
+      employeeRange: "11_TO_50",
+      legalName: "Dual Role Company Ltda.",
+      neighborhood: "Centro",
+      number: "50",
+      postalCode: "01001000",
+      privacyAccepted: true,
+      role: "COMPANY",
+      segment: "Tecnologia",
+      socialPlatform: undefined,
+      socialUrl: undefined,
+      state: "SP",
+      street: "Praça da Sé",
+      termsAccepted: true,
+      tradeName: "Dual Role Company",
+      websiteUrl: "https://example.com",
+      whatsapp: "(11) 99999-9999",
+    } satisfies GoogleProfileInput;
+
+    await expect(
+      repository.submitGoogleProfile({
+        email,
+        identityId,
+        input,
+        requestId: "dual-role-company-submit",
+      }),
+    ).resolves.toEqual({
+      kind: "submitted",
+      outboxId: expect.any(String),
+    });
+
+    const [result] = await sqlClient<
+      { account_id: string; admin_account_id: string; role: string }[]
+    >`
+      select
+        profile.account_id::text,
+        (
+          select account.id::text
+          from public.accounts account
+          where account.auth_user_id = ${identityId}
+            and account.role = 'ADMIN'
+        ) as admin_account_id,
+        account.role::text
+      from public.company_profiles profile
+      join public.accounts account on account.id = profile.account_id
+      where profile.account_id = ${roleSelection.account.id}
+    `;
+
+    expect(result.role).toBe("COMPANY");
+    expect(result.account_id).toBe(roleSelection.account.id);
+    expect(result.account_id).not.toBe(result.admin_account_id);
+  });
 });
