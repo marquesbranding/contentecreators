@@ -109,7 +109,6 @@ describe("SponsorshipManagementView", () => {
       document.getElementById("sponsorship-placement-audience"),
     ).toHaveAttribute("aria-required", "true");
     expect(screen.getByLabelText("Posição")).toBeRequired();
-    expect(screen.getByLabelText("Ordem")).toBeRequired();
 
     await user.clear(screen.getByLabelText("Título"));
     await user.clear(screen.getByLabelText("Motivo da alteração"));

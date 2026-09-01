@@ -1,6 +1,12 @@
 export { MediaUploadField } from "./components/media-upload-field.client";
-export { ProfileHeaderMediaEditor } from "./components/profile-header-media-editor.client";
+export { MediaCropFields } from "./components/media-crop-fields.client";
+export {
+  CropDialog,
+  ProfileHeaderMediaEditor,
+} from "./components/profile-header-media-editor.client";
 export { useMediaUpload } from "./hooks/use-media-upload";
+export { useHeaderMediaSlot } from "./hooks/use-header-media-slot";
+export type { HeaderMediaSlotConfig } from "./hooks/use-header-media-slot";
 export type {
   ActivateProfileMediaAction,
   ActivateProfileMediaInput,

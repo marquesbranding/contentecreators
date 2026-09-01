@@ -47,7 +47,7 @@ const cropAspectByPurpose: Readonly<Record<MediaPurpose, string>> = {
 
 type SlotConfig = HeaderMediaSlotConfig;
 
-function CropDialog({
+export function CropDialog({
   slot,
   state,
 }: {

@@ -140,9 +140,20 @@ async function createPlacement(
   transaction: ApplicationTransaction,
   data: SponsorshipPlacementCreateData,
 ) {
+  // New placements always land last — order is only ever changed afterward
+  // by dragging the list, so whatever sortOrder the caller passed is
+  // discarded in favor of one past every existing (non-archived) placement.
+  const [{ maxSortOrder }] = await transaction
+    .select({
+      maxSortOrder: sql<number | null>`max(${sponsorshipPlacements.sortOrder})`,
+    })
+    .from(sponsorshipPlacements)
+    .where(isNull(sponsorshipPlacements.archivedAt));
+  const nextSortOrder = (maxSortOrder ?? -10) + 10;
+
   const [created] = await transaction
     .insert(sponsorshipPlacements)
-    .values(data)
+    .values({ ...data, sortOrder: nextSortOrder })
     .returning();
 
   if (!created) {

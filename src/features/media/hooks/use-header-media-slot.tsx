@@ -72,8 +72,24 @@ export function useHeaderMediaSlot({
 
   return {
     assetId,
-    /* While cropping, show the candidate; otherwise the published image. */
-    displayedUrl: upload.previewUrl ?? slot.initialUrl,
+    /** Drops the current selection entirely (not just an in-progress crop) —
+     * distinct from `upload.reset`, which only cancels a pick-in-progress and
+     * would otherwise fall back to showing the previously published image. */
+    clear: () => {
+      setAssetId(null);
+      upload.reset();
+    },
+    /** Discards any in-progress or abandoned pick and returns to whatever
+     * this slot started with — for a host component that stays mounted
+     * across a dialog's open/close cycles (so no natural remount resets it). */
+    resetToInitial: () => {
+      setAssetId(slot.currentAssetId);
+      upload.reset();
+    },
+    /* While cropping, always show the candidate; otherwise fall back to the
+     * published image only if a selection still exists (a clear() call must
+     * not resurrect it). */
+    displayedUrl: upload.previewUrl ?? (assetId ? slot.initialUrl : null),
     fileInput,
     hiddenAssetIdInput,
     isEditing,

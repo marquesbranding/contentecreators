@@ -1,30 +1,52 @@
 "use client";
 
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlertCircle,
   Archive,
-  ArrowDown,
-  ArrowUp,
+  Camera,
   ChevronLeft,
   ChevronRight,
   CircleOff,
   Eye,
+  GripVertical,
   Megaphone,
   Pencil,
   Plus,
   Power,
   RotateCcw,
   Search,
+  Upload,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { MediaUploadField, type MediaUploadActions } from "@/features/media";
+import {
+  CropDialog,
+  useHeaderMediaSlot,
+  type MediaUploadActions,
+} from "@/features/media";
 import { ActionSubmitButton } from "@/shared/components/action-submit-button";
 import {
   Alert,
@@ -68,6 +90,7 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { Textarea } from "@/shared/components/ui/textarea";
+import { cn } from "@/shared/lib/cn";
 
 import {
   sponsorshipAudienceSchema,
@@ -109,6 +132,41 @@ interface SponsorshipMutationCallbacks {
   ): Promise<unknown>;
 }
 
+/**
+ * Every slot the app actually queries for (catalog loaders + the public
+ * landing page). A slot key that doesn't match one of these never renders
+ * anywhere, so the field is a dropdown scoped to the selected type instead
+ * of free text.
+ */
+const slotOptionsByPlacementType = {
+  CAROUSEL: [
+    { label: "Carrossel do catálogo", value: "catalog-carousel" },
+    { label: "Carrossel no meio da listagem", value: "catalog-midlist" },
+  ],
+  FEATURED_CREATOR: [
+    { label: "Criador em destaque no catálogo", value: "catalog-featured" },
+  ],
+  INLINE_BANNER: [
+    { label: "Banner lateral do catálogo", value: "catalog-inline" },
+  ],
+  TOP_BANNER: [
+    { label: "Banner de topo do catálogo", value: "catalog-top" },
+    {
+      label: "Banner de topo da página inicial (pública)",
+      value: "landing-top",
+    },
+  ],
+} as const satisfies Record<string, { label: string; value: string }[]>;
+
+function slotItemsFor(placementType: keyof typeof slotOptionsByPlacementType) {
+  return Object.fromEntries(
+    slotOptionsByPlacementType[placementType].map(({ label, value }) => [
+      value,
+      label,
+    ]),
+  );
+}
+
 const placementFormSchema = z
   .object({
     advertiserLabel: z.string().trim().max(160),
@@ -128,18 +186,7 @@ const placementFormSchema = z
         message: "Explique o motivo em pelo menos 8 caracteres.",
       })
       .max(500, "Use até 500 caracteres."),
-    slotKey: z
-      .string()
-      .trim()
-      .min(1, "Campo obrigatório.")
-      .max(100, "Use até 100 caracteres.")
-      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u, {
-        message: "Use letras minúsculas, números e hífens.",
-      }),
-    sortOrder: z.coerce
-      .number()
-      .int("Informe um número inteiro.")
-      .min(0, "Use um número igual ou maior que zero."),
+    slotKey: z.string().trim().min(1, "Selecione uma posição."),
     startsAt: z.string(),
     title: z.string().trim().min(1, "Campo obrigatório.").max(160),
   })
@@ -163,6 +210,18 @@ const placementFormSchema = z
         code: "custom",
         message: "A mídia selecionada é inválida.",
         path: ["creativeAssetId"],
+      });
+    }
+
+    if (
+      !slotOptionsByPlacementType[values.placementType].some(
+        (option) => option.value === values.slotKey,
+      )
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "Selecione uma posição válida para este tipo.",
+        path: ["slotKey"],
       });
     }
 
@@ -238,8 +297,10 @@ function formDefaults(
     linkUrl: placement?.linkUrl ?? "",
     placementType: placement?.placementType ?? "TOP_BANNER",
     reason: "",
-    slotKey: placement?.slotKey ?? "catalog-top",
-    sortOrder: placement?.sortOrder ?? 0,
+    slotKey:
+      placement?.slotKey ??
+      slotOptionsByPlacementType[placement?.placementType ?? "TOP_BANNER"][0]
+        .value,
     startsAt: toDateTimeLocal(placement?.startsAt ?? null),
     title: placement?.title ?? "",
   };
@@ -335,30 +396,72 @@ function PlacementPreviewDialog({
 }
 
 function LivePlacementPreview({
-  imageUrl,
+  imageSlot,
   values,
 }: {
-  imageUrl: string | null;
+  imageSlot: ReturnType<typeof useHeaderMediaSlot>;
   values: Pick<
     PlacementFormValues,
     "audience" | "body" | "linkLabel" | "linkUrl" | "placementType" | "title"
   >;
 }) {
+  const imageUrl = imageSlot.displayedUrl;
+
   return (
-    <Card className="border-brand-blue/30 bg-brand-blue-soft overflow-hidden">
-      {imageUrl ? (
-        // Blob/signed previews cannot use next/image.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          alt=""
-          className="aspect-video w-full object-cover"
-          src={imageUrl}
-        />
-      ) : (
-        <div className="text-muted-foreground bg-muted flex aspect-video w-full items-center justify-center text-sm">
-          Sem imagem selecionada
+    <Card className="border-brand-blue/30 bg-brand-blue-soft gap-0 overflow-hidden py-0">
+      {imageSlot.fileInput}
+      <div
+        aria-label={
+          imageUrl
+            ? "Alterar imagem do criativo"
+            : "Adicionar imagem do criativo"
+        }
+        className="group relative aspect-video w-full cursor-pointer"
+        onClick={imageSlot.openPicker}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            imageSlot.openPicker();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        {imageUrl ? (
+          // Blob/signed previews cannot use next/image.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img alt="" className="size-full object-cover" src={imageUrl} />
+        ) : (
+          <div className="text-muted-foreground flex size-full items-center justify-center text-sm">
+            Sem imagem selecionada
+          </div>
+        )}
+        <div className="absolute inset-0 hidden items-center justify-center bg-black/40 opacity-0 transition group-hover:opacity-100 sm:flex">
+          <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-black">
+            <Camera aria-hidden="true" className="size-3.5" />
+            {imageUrl ? "Alterar imagem" : "Adicionar imagem"}
+          </span>
         </div>
-      )}
+        <span className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-black shadow-sm backdrop-blur-sm sm:hidden">
+          <Upload aria-hidden="true" className="size-3.5" />
+          {imageUrl ? "Alterar" : "Adicionar"}
+        </span>
+        {imageUrl ? (
+          <Button
+            aria-label="Remover imagem"
+            className="absolute top-3 left-3 size-8 rounded-full"
+            onClick={(event) => {
+              event.stopPropagation();
+              imageSlot.clear();
+            }}
+            size="icon"
+            type="button"
+            variant="secondary"
+          >
+            <X aria-hidden="true" className="size-4" />
+          </Button>
+        ) : null}
+      </div>
       <CardHeader>
         <Badge className="w-fit" variant="outline">
           Prévia ao vivo
@@ -393,9 +496,6 @@ function PlacementFormDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [creativePreviewUrl, setCreativePreviewUrl] = useState<string | null>(
-    placement?.creative?.url ?? null,
-  );
   const form = useForm<PlacementFormValues>({
     defaultValues: formDefaults(placement),
     mode: "onTouched",
@@ -403,6 +503,32 @@ function PlacementFormDialog({
   });
   const watchedValues = useWatch({ control: form.control });
   const placementType = watchedValues.placementType ?? "TOP_BANNER";
+  const creativeSlot = useHeaderMediaSlot({
+    actions: mediaActions,
+    activateOnUpload: false,
+    slot: {
+      currentAssetId: placement?.creativeAssetId ?? null,
+      initialUrl: placement?.creative?.url ?? null,
+      label: "Imagem do criativo",
+      purpose: "SPONSORSHIP_CREATIVE",
+    },
+  });
+
+  useEffect(() => {
+    form.setValue("creativeAssetId", creativeSlot.assetId ?? "", {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [creativeSlot.assetId]);
+
+  useEffect(() => {
+    const validSlots = slotOptionsByPlacementType[placementType];
+    if (!validSlots.some((option) => option.value === watchedValues.slotKey)) {
+      form.setValue("slotKey", validSlots[0].value, { shouldValidate: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [placementType]);
 
   async function onSubmit(input: PlacementFormValues) {
     const values = placementFormSchema.parse(input);
@@ -424,7 +550,9 @@ function PlacementFormDialog({
       placementType: values.placementType,
       reason: values.reason,
       slotKey: values.slotKey,
-      sortOrder: Number(values.sortOrder),
+      // The server always assigns new placements the last position; this
+      // value is only meaningful (and only sent) when editing an existing one.
+      sortOrder: placement?.sortOrder ?? 0,
       startsAt: toIso(values.startsAt),
       title: values.title,
     };
@@ -443,7 +571,7 @@ function PlacementFormDialog({
       });
       setOpen(false);
       form.reset(formDefaults());
-      setCreativePreviewUrl(null);
+      creativeSlot.clear();
     } catch {
       setSubmitError(
         "Não foi possível salvar. Atualize os dados e tente novamente.",
@@ -458,7 +586,7 @@ function PlacementFormDialog({
         if (nextOpen) {
           form.reset(formDefaults(placement));
           setSubmitError(null);
-          setCreativePreviewUrl(placement?.creative?.url ?? null);
+          creativeSlot.resetToInitial();
         }
       }}
       open={open}
@@ -499,7 +627,7 @@ function PlacementFormDialog({
           <RequiredFieldsNotice />
 
           <LivePlacementPreview
-            imageUrl={creativePreviewUrl}
+            imageSlot={creativeSlot}
             values={{
               audience: watchedValues.audience ?? "ALL",
               body: watchedValues.body ?? "",
@@ -508,6 +636,15 @@ function PlacementFormDialog({
               placementType,
               title: watchedValues.title ?? "",
             }}
+          />
+          <CropDialog
+            slot={{
+              currentAssetId: placement?.creativeAssetId ?? null,
+              initialUrl: placement?.creative?.url ?? null,
+              label: "Imagem do criativo",
+              purpose: "SPONSORSHIP_CREATIVE",
+            }}
+            state={creativeSlot}
           />
 
           <div className="grid gap-5 sm:grid-cols-2">
@@ -553,35 +690,32 @@ function PlacementFormDialog({
               <FieldError errors={[form.formState.errors.audience]} />
             </Field>
 
-            <Field data-invalid={Boolean(form.formState.errors.slotKey)}>
+            <Field
+              className="sm:col-span-2"
+              data-invalid={Boolean(form.formState.errors.slotKey)}
+            >
               <FieldLabel htmlFor="sponsorship-slot-key" required>
                 Posição
               </FieldLabel>
-              <Input
-                aria-invalid={Boolean(form.formState.errors.slotKey)}
-                id="sponsorship-slot-key"
-                required
-                {...form.register("slotKey")}
+              <Controller
+                control={form.control}
+                name="slotKey"
+                render={({ field }) => (
+                  <SearchableSelect
+                    aria-invalid={Boolean(form.formState.errors.slotKey)}
+                    aria-required="true"
+                    id="sponsorship-slot-key"
+                    items={slotItemsFor(placementType)}
+                    onValueChange={field.onChange}
+                    value={field.value}
+                  />
+                )}
               />
               <FieldDescription>
-                Identificador técnico, por exemplo `catalog-top`.
+                Onde este patrocínio aparece — as opções mudam conforme o tipo
+                escolhido acima.
               </FieldDescription>
               <FieldError errors={[form.formState.errors.slotKey]} />
-            </Field>
-
-            <Field data-invalid={Boolean(form.formState.errors.sortOrder)}>
-              <FieldLabel htmlFor="sponsorship-sort-order" required>
-                Ordem
-              </FieldLabel>
-              <Input
-                aria-invalid={Boolean(form.formState.errors.sortOrder)}
-                id="sponsorship-sort-order"
-                inputMode="numeric"
-                required
-                type="number"
-                {...form.register("sortOrder")}
-              />
-              <FieldError errors={[form.formState.errors.sortOrder]} />
             </Field>
           </div>
 
@@ -703,22 +837,6 @@ function PlacementFormDialog({
             </Field>
           ) : null}
 
-          <MediaUploadField
-            actions={mediaActions}
-            activateOnUpload={false}
-            currentAssetId={placement?.creativeAssetId ?? null}
-            initialUrl={placement?.creative?.url ?? null}
-            label="Imagem do criativo (opcional no rascunho)"
-            onComplete={(assetId) =>
-              form.setValue("creativeAssetId", assetId, {
-                shouldDirty: true,
-                shouldValidate: true,
-              })
-            }
-            onPreviewChange={setCreativePreviewUrl}
-            purpose="SPONSORSHIP_CREATIVE"
-          />
-
           <Field data-invalid={Boolean(form.formState.errors.reason)}>
             <FieldLabel htmlFor="sponsorship-reason" required>
               Motivo da alteração
@@ -763,14 +881,12 @@ function PlacementCommandDialog({
   label,
   placement,
   run,
-  sortOrder,
   variant = "outline",
 }: {
-  action: SponsorshipPlacementCommand["action"];
+  action: "ACTIVATE" | "ARCHIVE" | "DEACTIVATE";
   label: string;
   placement: SponsorshipAdminPlacementDto;
   run: SponsorshipMutationCallbacks["command"];
-  sortOrder?: number;
   variant?: "destructive" | "outline";
 }) {
   const [open, setOpen] = useState(false);
@@ -792,7 +908,6 @@ function PlacementCommandDialog({
         action,
         expectedVersion: placement.version,
         reason: reason.trim(),
-        sortOrder,
       });
       toast.success(`${label} concluído`, {
         description:
@@ -814,11 +929,7 @@ function PlacementCommandDialog({
       ? Power
       : action === "DEACTIVATE"
         ? CircleOff
-        : action === "ARCHIVE"
-          ? Archive
-          : sortOrder && sortOrder < placement.sortOrder
-            ? ArrowUp
-            : ArrowDown;
+        : Archive;
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
@@ -914,20 +1025,6 @@ function PlacementActions({
         run={mutations.command}
       />
       <PlacementCommandDialog
-        action="REORDER"
-        label="Subir"
-        placement={placement}
-        run={mutations.command}
-        sortOrder={placement.sortOrder - 10}
-      />
-      <PlacementCommandDialog
-        action="REORDER"
-        label="Descer"
-        placement={placement}
-        run={mutations.command}
-        sortOrder={placement.sortOrder + 10}
-      />
-      <PlacementCommandDialog
         action="ARCHIVE"
         label="Arquivar"
         placement={placement}
@@ -935,6 +1032,169 @@ function PlacementActions({
         variant="destructive"
       />
     </div>
+  );
+}
+
+function DragHandle({
+  attributes,
+  disabled,
+  listeners,
+}: {
+  attributes: ReturnType<typeof useSortable>["attributes"];
+  disabled?: boolean;
+  listeners: ReturnType<typeof useSortable>["listeners"];
+}) {
+  if (disabled) {
+    return <span className="block size-4" />;
+  }
+
+  return (
+    <button
+      aria-label="Arrastar para reordenar"
+      className="text-muted-foreground hover:text-foreground focus-visible:ring-ring cursor-grab touch-none rounded outline-none focus-visible:ring-2 active:cursor-grabbing"
+      type="button"
+      {...attributes}
+      {...listeners}
+    >
+      <GripVertical aria-hidden="true" className="size-4" />
+    </button>
+  );
+}
+
+function SortablePlacementRow({
+  mediaActions,
+  mutations,
+  placement,
+}: {
+  mediaActions: MediaUploadActions;
+  mutations: SponsorshipMutationCallbacks;
+  placement: SponsorshipAdminPlacementDto;
+}) {
+  const {
+    attributes,
+    isDragging,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({
+    disabled: Boolean(placement.archivedAt),
+    id: placement.id,
+  });
+
+  return (
+    <TableRow
+      className={isDragging ? "bg-card relative z-10 shadow-lg" : undefined}
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+    >
+      <TableCell>
+        <DragHandle
+          attributes={attributes}
+          disabled={Boolean(placement.archivedAt)}
+          listeners={listeners}
+        />
+      </TableCell>
+      <TableCell className="max-w-xs">
+        <p className="font-semibold">{placement.title ?? "Sem título"}</p>
+        <p className="text-muted-foreground text-sm">
+          {typeLabels[placement.placementType]} · {placement.slotKey}
+        </p>
+      </TableCell>
+      <TableCell>{audienceLabels[placement.audience]}</TableCell>
+      <TableCell>
+        <p className="text-muted-foreground text-xs">
+          {placement.startsAt
+            ? new Date(placement.startsAt).toLocaleString("pt-BR")
+            : "Sem início definido"}
+        </p>
+      </TableCell>
+      <TableCell>
+        <Badge variant={placementStateVariant(placement.state)}>
+          {stateLabels[placement.state]}
+        </Badge>
+      </TableCell>
+      <TableCell>
+        <div className="flex justify-end">
+          <PlacementActions
+            mediaActions={mediaActions}
+            mutations={mutations}
+            placement={placement}
+          />
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+function SortablePlacementCard({
+  mediaActions,
+  mutations,
+  placement,
+}: {
+  mediaActions: MediaUploadActions;
+  mutations: SponsorshipMutationCallbacks;
+  placement: SponsorshipAdminPlacementDto;
+}) {
+  const {
+    attributes,
+    isDragging,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({
+    disabled: Boolean(placement.archivedAt),
+    id: placement.id,
+  });
+
+  return (
+    <Card
+      className={cn(
+        "rounded-2xl [--card-spacing:--spacing(4)]",
+        isDragging && "relative z-10 shadow-lg",
+      )}
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+    >
+      <CardHeader className="gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <DragHandle
+              attributes={attributes}
+              disabled={Boolean(placement.archivedAt)}
+              listeners={listeners}
+            />
+            <Badge variant={placementStateVariant(placement.state)}>
+              {stateLabels[placement.state]}
+            </Badge>
+          </div>
+        </div>
+        <CardTitle className="text-lg">
+          {placement.title ?? "Sem título"}
+        </CardTitle>
+        <CardDescription className="text-base leading-6">
+          {typeLabels[placement.placementType]} ·{" "}
+          {audienceLabels[placement.audience]}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4 pt-1">
+        <p className="line-clamp-3 text-sm leading-6">
+          {placement.body ?? "Sem texto de apoio."}
+        </p>
+        <PlacementActions
+          mediaActions={mediaActions}
+          mutations={mutations}
+          placement={placement}
+        />
+      </CardContent>
+    </Card>
   );
 }
 
@@ -949,7 +1209,62 @@ function PlacementList({
   mutations: SponsorshipMutationCallbacks;
   onPageChange: (page: number) => void;
 }) {
-  if (!data.items.length) {
+  const [items, setItems] = useState(data.items);
+  const [syncedFrom, setSyncedFrom] = useState(data.items);
+  if (data.items !== syncedFrom) {
+    setSyncedFrom(data.items);
+    setItems(data.items);
+  }
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+  const canReorder = data.pagination.totalPages <= 1;
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = items.findIndex((item) => item.id === active.id);
+    const newIndex = items.findIndex((item) => item.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) {
+      return;
+    }
+
+    const reordered = arrayMove(items, oldIndex, newIndex);
+    const previous = items;
+    setItems(reordered);
+
+    const changes = reordered
+      .map((item, index) => ({ item, sortOrder: index * 10 }))
+      .filter(({ item, sortOrder }) => item.sortOrder !== sortOrder);
+
+    try {
+      await Promise.all(
+        changes.map(({ item, sortOrder }) =>
+          mutations.command(item.id, {
+            action: "REORDER",
+            expectedVersion: item.version,
+            reason: "Reordenado por arrastar e soltar no backoffice.",
+            sortOrder,
+          }),
+        ),
+      );
+    } catch {
+      setItems(previous);
+      toast.error("Não foi possível salvar a nova ordem", {
+        description: "Atualize a página e tente novamente.",
+      });
+    }
+  }
+
+  if (!items.length) {
     return (
       <Card>
         <CardContent className="flex min-h-44 flex-col items-center justify-center gap-2 text-center">
@@ -964,99 +1279,69 @@ function PlacementList({
   }
 
   return (
-    <>
+    <DndContext
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+      sensors={canReorder ? sensors : []}
+    >
       <p aria-live="polite" className="sr-only">
         {data.pagination.totalItems}{" "}
         {data.pagination.totalItems === 1
           ? "patrocínio encontrado"
           : "patrocínios encontrados"}
       </p>
+      {!canReorder ? (
+        <p className="text-muted-foreground text-sm">
+          A reordenação por arrastar e soltar fica disponível quando todos os
+          resultados cabem em uma página.
+        </p>
+      ) : null}
       <Card className="hidden overflow-hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <span className="sr-only">Reordenar</span>
+              </TableHead>
               <TableHead>Placement</TableHead>
               <TableHead>Audiência</TableHead>
-              <TableHead>Agenda e ordem</TableHead>
+              <TableHead>Agenda</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.items.map((placement) => (
-              <TableRow key={placement.id}>
-                <TableCell className="max-w-xs">
-                  <p className="font-semibold">
-                    {placement.title ?? "Sem título"}
-                  </p>
-                  <p className="text-muted-foreground text-sm">
-                    {typeLabels[placement.placementType]} · {placement.slotKey}
-                  </p>
-                </TableCell>
-                <TableCell>{audienceLabels[placement.audience]}</TableCell>
-                <TableCell>
-                  <p>Ordem {placement.sortOrder}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {placement.startsAt
-                      ? new Date(placement.startsAt).toLocaleString("pt-BR")
-                      : "Sem início definido"}
-                  </p>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={placementStateVariant(placement.state)}>
-                    {stateLabels[placement.state]}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex justify-end">
-                    <PlacementActions
-                      mediaActions={mediaActions}
-                      mutations={mutations}
-                      placement={placement}
-                    />
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+            <SortableContext
+              items={items.map((item) => item.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {items.map((placement) => (
+                <SortablePlacementRow
+                  key={placement.id}
+                  mediaActions={mediaActions}
+                  mutations={mutations}
+                  placement={placement}
+                />
+              ))}
+            </SortableContext>
           </TableBody>
         </Table>
       </Card>
 
       <div className="grid gap-4 md:hidden">
-        {data.items.map((placement) => (
-          <Card
-            className="rounded-2xl [--card-spacing:--spacing(4)]"
-            key={placement.id}
-          >
-            <CardHeader className="gap-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <Badge variant={placementStateVariant(placement.state)}>
-                  {stateLabels[placement.state]}
-                </Badge>
-                <span className="text-muted-foreground text-xs">
-                  Ordem {placement.sortOrder}
-                </span>
-              </div>
-              <CardTitle className="text-lg">
-                {placement.title ?? "Sem título"}
-              </CardTitle>
-              <CardDescription className="text-base leading-6">
-                {typeLabels[placement.placementType]} ·{" "}
-                {audienceLabels[placement.audience]}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-1">
-              <p className="line-clamp-3 text-sm leading-6">
-                {placement.body ?? "Sem texto de apoio."}
-              </p>
-              <PlacementActions
-                mediaActions={mediaActions}
-                mutations={mutations}
-                placement={placement}
-              />
-            </CardContent>
-          </Card>
-        ))}
+        <SortableContext
+          items={items.map((item) => item.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {items.map((placement) => (
+            <SortablePlacementCard
+              key={placement.id}
+              mediaActions={mediaActions}
+              mutations={mutations}
+              placement={placement}
+            />
+          ))}
+        </SortableContext>
       </div>
 
       {data.pagination.totalPages > 1 ? (
@@ -1091,7 +1376,7 @@ function PlacementList({
           </div>
         </nav>
       ) : null}
-    </>
+    </DndContext>
   );
 }
 
