@@ -538,7 +538,11 @@ function PlacementFormDialog({
       body: nullable(values.body),
       creativeAssetId: nullable(values.creativeAssetId),
       endsAt: toIso(values.endsAt),
-      expectedVersion: placement?.version,
+      // The write schema is `.strict()`, and `createSponsorshipPlacement`
+      // omits this key from validation for new placements — an explicit
+      // `expectedVersion: undefined` property still counts as present and
+      // fails that strict check, so the key must be absent entirely here.
+      ...(placement ? { expectedVersion: placement.version } : {}),
       featuredCreatorProfileId: nullable(
         values.placementType === "FEATURED_CREATOR"
           ? values.featuredCreatorProfileId
