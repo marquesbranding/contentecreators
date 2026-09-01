@@ -19,6 +19,7 @@ const creator: CatalogCreatorCardViewModel = {
   niches: [{ name: "Tecnologia", slug: "tecnologia" }],
   socialPlatforms: ["YOUTUBE"],
   state: "MG",
+  whatsappContactCount: 0,
 };
 
 describe("CatalogResults", () => {

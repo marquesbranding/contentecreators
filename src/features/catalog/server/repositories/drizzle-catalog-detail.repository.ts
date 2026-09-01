@@ -210,6 +210,7 @@ export const findEligibleCatalogCreator: FindEligibleCatalogCreator = async (
       creatorType: creatorProfiles.creatorType,
       displayName: creatorProfiles.displayName,
       state: creatorProfiles.state,
+      whatsappContactCount: creatorProfiles.whatsappContactCount,
     })
     .from(creatorProfiles)
     .innerJoin(accounts, eq(accounts.id, creatorProfiles.accountId))

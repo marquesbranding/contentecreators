@@ -50,6 +50,7 @@ export interface CatalogCreatorDetailRecord {
     platform: CatalogSocialPlatform;
   }[];
   state: string;
+  whatsappContactCount: number;
 }
 
 export type FindEligibleCatalogCreator = (

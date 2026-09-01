@@ -28,6 +28,7 @@ const firstPage: CreatorCatalogBrowserPageDto = {
       niches: [{ name: "Moda", slug: "moda" }],
       socialPlatforms: ["INSTAGRAM"],
       state: "PE",
+      whatsappContactCount: 0,
     },
   ],
   nextCursor: "second_page",

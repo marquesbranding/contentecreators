@@ -49,16 +49,19 @@ type CatalogDetailViewProps =
   | {
       detail: CatalogCreatorDetailViewDto | null;
       onRetry?: never;
+      onWhatsappClick?: () => void;
       status: "success";
     }
   | {
       detail: null;
       onRetry?: never;
+      onWhatsappClick?: never;
       status: "loading";
     }
   | {
       detail: null;
       onRetry?: () => void;
+      onWhatsappClick?: never;
       status: "error";
     };
 
@@ -151,8 +154,10 @@ function DetailUnavailable() {
 
 function ContactCard({
   contact,
+  onWhatsappClick,
 }: {
   contact: CatalogCreatorDetailViewDto["contact"];
+  onWhatsappClick: () => void;
 }) {
   if (contact.status === "UNAVAILABLE") {
     const message = {
@@ -191,6 +196,7 @@ function ContactCard({
               }),
             )}
             href={contact.whatsapp.href}
+            onClick={onWhatsappClick}
             rel="noopener noreferrer"
             target="_blank"
           >
@@ -317,6 +323,16 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
                     {niche.name}
                   </Badge>
                 ))}
+                {detail.whatsappContactCount > 0 ? (
+                  <Badge className="gap-1.5 border-transparent bg-[#25D366] text-white">
+                    <WhatsAppIcon className="size-3" />
+                    {detail.whatsappContactCount}{" "}
+                    {detail.whatsappContactCount === 1
+                      ? "empresa chamou"
+                      : "empresas chamaram"}{" "}
+                    no WhatsApp
+                  </Badge>
+                ) : null}
               </div>
               <CardDescription className="flex items-center gap-2 text-base">
                 <MapPin aria-hidden="true" className="size-4" />
@@ -356,7 +372,12 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
               </CardContent>
             </Card>
             <aside aria-label="Ações de contato">
-              <ContactCard contact={detail.contact} />
+              <ContactCard
+                contact={detail.contact}
+                onWhatsappClick={() => {
+                  props.onWhatsappClick?.();
+                }}
+              />
             </aside>
           </div>
         </article>

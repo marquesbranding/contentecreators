@@ -66,6 +66,7 @@ const baseRecord: CatalogCreatorDetailRecord = {
     },
   ],
   state: "SP",
+  whatsappContactCount: 7,
 };
 
 const companyViewer: CurrentAccountDto = {

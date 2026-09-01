@@ -15,6 +15,7 @@ const page: CreatorCatalogPageDto = {
       niches: [{ name: "Moda", slug: "moda" }],
       socialPlatforms: ["INSTAGRAM"],
       state: "SP",
+      whatsappContactCount: 2,
     },
     {
       avatarAssetId: null,
@@ -26,6 +27,7 @@ const page: CreatorCatalogPageDto = {
       niches: [],
       socialPlatforms: [],
       state: null,
+      whatsappContactCount: 0,
     },
   ],
   nextCursor: "next-page",

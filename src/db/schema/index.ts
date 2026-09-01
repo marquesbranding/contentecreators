@@ -8,3 +8,4 @@ export * from "./profiles";
 export * from "./relations";
 export * from "./security";
 export * from "./sponsorships";
+export * from "./whatsapp-contacts";

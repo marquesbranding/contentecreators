@@ -115,5 +115,6 @@ export const catalogCreatorDetailViewSchema = z
         })
         .strict(),
     ),
+    whatsappContactCount: z.number().int().nonnegative(),
   })
   .strict();

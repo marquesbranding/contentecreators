@@ -49,6 +49,7 @@ const detail: CatalogCreatorDetailViewDto = {
   ],
   niches: [{ name: "Beleza", slug: "beleza" }],
   socialProfiles: [{ handle: "@creator", platform: "INSTAGRAM" }],
+  whatsappContactCount: 5,
 };
 
 describe("CatalogDetailView", () => {
@@ -72,6 +73,7 @@ describe("CatalogDetailView", () => {
     expect(
       screen.getByRole("img", { name: /foto de perfil/iu }),
     ).toHaveAttribute("src", detail.media.avatar?.url);
+    expect(screen.getByText(/5 empresas chamaram no whatsapp/iu)).toBeVisible();
     expect(JSON.stringify(container.innerHTML)).not.toMatch(
       /assetId|bucket|objectPath|cnpj|operationalEmail/iu,
     );

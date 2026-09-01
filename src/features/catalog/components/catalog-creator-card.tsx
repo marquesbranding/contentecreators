@@ -223,6 +223,11 @@ export function CatalogCreatorCard({
               +{hiddenNicheCount}
             </Badge>
           ) : null}
+          {creator.whatsappContactCount > 0 ? (
+            <Badge className="gap-1 border-transparent bg-[#25D366] text-[11px] text-white">
+              {creator.whatsappContactCount} chamaram no WhatsApp
+            </Badge>
+          ) : null}
         </div>
       </CardHeader>
 

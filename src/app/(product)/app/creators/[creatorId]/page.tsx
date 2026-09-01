@@ -7,6 +7,7 @@ import {
 import { AuthenticatedProductShell } from "@/features/identity";
 import { signOutAction } from "@/features/identity/server";
 import { AccountStatusBoundary } from "@/features/moderation/server";
+import { recordWhatsappContactClickAction } from "@/features/whatsapp-contacts/server";
 
 import { loadServerCatalogDetail } from "@/app/_server/catalog-detail.loader";
 
@@ -35,6 +36,7 @@ export default async function CreatorDetailPage({
               <CatalogDetailScreen
                 creatorId={creatorId}
                 initialData={null}
+                onWhatsappContactClick={recordWhatsappContactClickAction}
                 revalidate={false}
               />
             </AuthenticatedProductShell>
@@ -48,6 +50,7 @@ export default async function CreatorDetailPage({
             <CatalogDetailScreen
               creatorId={creatorId}
               initialData={initialData}
+              onWhatsappContactClick={recordWhatsappContactClickAction}
             />
           </AuthenticatedProductShell>
         );

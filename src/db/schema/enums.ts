@@ -110,6 +110,11 @@ export const identityAuthEffectStatusEnum = pgEnum(
   ["PENDING", "SYNCED", "FAILED"],
 );
 
+export const whatsappContactStatusEnum = pgEnum("whatsapp_contact_status", [
+  "PENDING",
+  "CONFIRMED",
+]);
+
 export const auditOperationEnum = pgEnum("audit_operation", [
   "INSERT",
   "UPDATE",

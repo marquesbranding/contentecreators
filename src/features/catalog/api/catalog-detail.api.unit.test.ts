@@ -17,6 +17,7 @@ const response = {
   metrics: [],
   niches: [],
   socialProfiles: [],
+  whatsappContactCount: 0,
 } as const;
 
 describe("catalog detail browser API", () => {

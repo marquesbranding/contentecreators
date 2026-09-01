@@ -120,17 +120,26 @@ const placementFormSchema = z
     linkLabel: z.string().trim().max(80),
     linkUrl: z.union([z.literal(""), safeSponsorshipLinkSchema]),
     placementType: sponsorshipPlacementTypeSchema,
-    reason: z.string().trim().min(1, "Campo obrigatório.").min(8, {
-      message: "Explique o motivo em pelo menos 8 caracteres.",
-    }),
+    reason: z
+      .string()
+      .trim()
+      .min(1, "Campo obrigatório.")
+      .min(8, {
+        message: "Explique o motivo em pelo menos 8 caracteres.",
+      })
+      .max(500, "Use até 500 caracteres."),
     slotKey: z
       .string()
       .trim()
       .min(1, "Campo obrigatório.")
+      .max(100, "Use até 100 caracteres.")
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u, {
         message: "Use letras minúsculas, números e hífens.",
       }),
-    sortOrder: z.coerce.number().int("Informe um número inteiro."),
+    sortOrder: z.coerce
+      .number()
+      .int("Informe um número inteiro.")
+      .min(0, "Use um número igual ou maior que zero."),
     startsAt: z.string(),
     title: z.string().trim().min(1, "Campo obrigatório.").max(160),
   })
@@ -404,7 +413,11 @@ function PlacementFormDialog({
       creativeAssetId: nullable(values.creativeAssetId),
       endsAt: toIso(values.endsAt),
       expectedVersion: placement?.version,
-      featuredCreatorProfileId: nullable(values.featuredCreatorProfileId),
+      featuredCreatorProfileId: nullable(
+        values.placementType === "FEATURED_CREATOR"
+          ? values.featuredCreatorProfileId
+          : "",
+      ),
       isActive: false,
       linkLabel: nullable(values.linkLabel),
       linkUrl: nullable(values.linkUrl),

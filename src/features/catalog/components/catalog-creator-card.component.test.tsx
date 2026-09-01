@@ -40,6 +40,7 @@ const creator: CatalogCreatorCardViewModel = {
   },
   socialPlatforms: ["INSTAGRAM", "TIKTOK"],
   state: "SP",
+  whatsappContactCount: 3,
 };
 
 describe("CatalogCreatorCard", () => {
@@ -59,6 +60,7 @@ describe("CatalogCreatorCard", () => {
     expect(screen.getByText("visualizações")).toBeVisible();
     expect(screen.getByText("9,4 mil")).toBeVisible();
     expect(screen.getByText("interações")).toBeVisible();
+    expect(screen.getByText("3 chamaram no WhatsApp")).toBeVisible();
     /* The follower count already reads on the social line, so the metric
      * list must not repeat it. */
     expect(screen.queryAllByText("24 mil")).toHaveLength(0);

@@ -23,6 +23,7 @@ const detail = {
   metrics: [],
   niches: [],
   socialProfiles: [],
+  whatsappContactCount: 0,
 } as const;
 
 describe("private catalog view schemas", () => {

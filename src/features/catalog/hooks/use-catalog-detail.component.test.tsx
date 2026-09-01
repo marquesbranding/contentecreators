@@ -19,6 +19,7 @@ const detail: CatalogCreatorDetailViewDto = {
   metrics: [],
   niches: [],
   socialProfiles: [],
+  whatsappContactCount: 0,
 };
 
 function createWrapper(client: QueryClient) {

@@ -75,6 +75,7 @@ export interface CreatorCatalogCardDto {
   niches: CatalogNicheDto[];
   socialPlatforms: CatalogSocialPlatform[];
   state: string | null;
+  whatsappContactCount: number;
 }
 
 export interface CreatorCatalogPageDto {

@@ -186,5 +186,6 @@ export function mapCatalogCreatorDetail(
       handle,
       platform,
     })),
+    whatsappContactCount: record.whatsappContactCount,
   };
 }

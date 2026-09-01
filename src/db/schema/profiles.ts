@@ -49,6 +49,9 @@ export const creatorProfiles = pgTable(
     }),
     isFeatured: boolean("is_featured").notNull().default(false),
     featureOrder: integer("feature_order"),
+    whatsappContactCount: integer("whatsapp_contact_count")
+      .notNull()
+      .default(0),
     searchDocument: text("search_document").generatedAlwaysAs(
       sql`public.normalize_search_text(
         coalesce("display_name", '') || ' ' ||
@@ -97,6 +100,10 @@ export const creatorProfiles = pgTable(
       sql`not ${table.isFeatured} or ${table.featureOrder} is not null`,
     ),
     check("creator_profiles_version_check", sql`${table.version} > 0`),
+    check(
+      "creator_profiles_whatsapp_contact_count_check",
+      sql`${table.whatsappContactCount} >= 0`,
+    ),
   ],
 );
 

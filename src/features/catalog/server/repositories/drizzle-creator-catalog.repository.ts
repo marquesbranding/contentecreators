@@ -196,6 +196,7 @@ export async function listCreatorCatalog(
         )
       `,
       state: creatorProfiles.state,
+      whatsappContactCount: creatorProfiles.whatsappContactCount,
     })
     .from(creatorProfiles)
     .innerJoin(accounts, eq(accounts.id, creatorProfiles.accountId))

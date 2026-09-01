@@ -227,6 +227,26 @@ const eslintConfig = defineConfig([
             {
               from: {
                 element: {
+                  type: "feature",
+                  captured: {
+                    featureName: "catalog",
+                  },
+                },
+              },
+              allow: {
+                to: {
+                  element: {
+                    type: "feature",
+                    captured: {
+                      featureName: "whatsapp-contacts",
+                    },
+                  },
+                },
+              },
+            },
+            {
+              from: {
+                element: {
                   type: "shared",
                 },
               },

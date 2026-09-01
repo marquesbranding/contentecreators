@@ -66,4 +66,5 @@ export interface CatalogCreatorDetailDto {
   metrics: CatalogCreatorMetricDto[];
   niches: CatalogCreatorNicheDto[];
   socialProfiles: CatalogCreatorSocialDto[];
+  whatsappContactCount: number;
 }

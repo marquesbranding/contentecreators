@@ -78,6 +78,7 @@ export const creatorCatalogBrowserCardSchema = z
       .trim()
       .regex(/^[A-Z]{2}$/u)
       .nullable(),
+    whatsappContactCount: z.number().int().nonnegative(),
   })
   .strict();
 
