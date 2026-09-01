@@ -44,7 +44,8 @@ export type OperationalEventName =
   | "email_delivery_failure"
   | "health_check"
   | "migration_result"
-  | "moderation_transition";
+  | "moderation_transition"
+  | "onboarding_submission_failure";
 
 export interface OperationalLogInput {
   accountStatus?: string;

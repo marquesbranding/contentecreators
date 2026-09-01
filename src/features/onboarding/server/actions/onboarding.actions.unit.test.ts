@@ -189,6 +189,55 @@ describe("onboarding actions", () => {
     expect(redirect).toHaveBeenCalledWith("/app/status/analysis");
   });
 
+  it("reports a duplicate CNPJ as a field error instead of a generic failure", async () => {
+    const cnpjConflict = Object.assign(new Error("duplicate key"), {
+      code: "23505",
+      constraint_name: "company_profiles_cnpj_uidx",
+    });
+    const submitGoogleProfile = vi.fn().mockRejectedValue(cnpjConflict);
+    mockedCreateRegistrationService.mockResolvedValue({
+      finalizePreparedEmailRegistration: vi.fn(),
+      registerWithEmail: vi.fn(),
+      submitGoogleProfile,
+    });
+
+    const result = await submitGoogleProfileAction(
+      { status: "idle" },
+      completeCompanyRegistration(),
+    );
+
+    expect(result).toEqual({
+      fieldErrors: { cnpj: ["Este CNPJ já está cadastrado."] },
+      message: "Revise os campos destacados para continuar.",
+      status: "error",
+      values: { role: "COMPANY" },
+    });
+    expect(redirect).not.toHaveBeenCalled();
+  });
+
+  it("falls back to a generic message for an unrecognized submission failure", async () => {
+    const submitGoogleProfile = vi
+      .fn()
+      .mockRejectedValue(new Error("Account cannot submit this profile."));
+    mockedCreateRegistrationService.mockResolvedValue({
+      finalizePreparedEmailRegistration: vi.fn(),
+      registerWithEmail: vi.fn(),
+      submitGoogleProfile,
+    });
+
+    const result = await submitGoogleProfileAction(
+      { status: "idle" },
+      completeCompanyRegistration(),
+    );
+
+    expect(result).toEqual({
+      message:
+        "Não foi possível enviar o perfil para análise. Tente novamente.",
+      status: "error",
+      values: { role: "COMPANY" },
+    });
+  });
+
   it("never echoes credentials or private profile fields in an Action validation DTO", async () => {
     const formData = completeCreatorProfile();
     formData.set("email", "joana@example.com");

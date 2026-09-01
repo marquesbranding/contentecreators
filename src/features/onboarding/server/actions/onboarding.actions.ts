@@ -5,6 +5,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { getPublicEnv } from "@/shared/lib/env/public-env";
+import { operationalLogger } from "@/shared/server/observability/operational-logger";
 import { createServerSupabaseClient } from "@/shared/server/supabase/server-client";
 
 import { readAdditionalCompanyLocations } from "../../domain/company-location-form-data";
@@ -55,6 +56,26 @@ function formPayload(formData: FormData) {
     websiteUrl: formData.get("websiteUrl"),
     whatsapp: formData.get("whatsapp"),
   };
+}
+
+/** Walks postgres.js's `cause` chain looking for a specific unique violation. */
+function isUniqueViolation(error: unknown, constraintName: string): boolean {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  if (
+    "code" in error &&
+    error.code === "23505" &&
+    "constraint_name" in error &&
+    error.constraint_name === constraintName
+  ) {
+    return true;
+  }
+
+  return "cause" in error
+    ? isUniqueViolation(error.cause, constraintName)
+    : false;
 }
 
 function readOptionalImageFile(formData: FormData, field: string) {
@@ -192,7 +213,27 @@ export async function submitGoogleProfileAction(
       identityId: user.id,
       profile: parsed.data,
     });
-  } catch {
+  } catch (error) {
+    if (isUniqueViolation(error, "company_profiles_cnpj_uidx")) {
+      return {
+        fieldErrors: { cnpj: ["Este CNPJ já está cadastrado."] },
+        message: "Revise os campos destacados para continuar.",
+        status: "error",
+        values: { role: parsed.data.role },
+      };
+    }
+
+    operationalLogger.error({
+      details: {
+        errorMessage: error instanceof Error ? error.message : String(error),
+        role: parsed.data.role,
+      },
+      event: "onboarding_submission_failure",
+      operation: "submit_google_profile",
+      outcome: "error",
+      requestId: crypto.randomUUID(),
+    });
+
     return {
       message:
         "Não foi possível enviar o perfil para análise. Tente novamente.",
