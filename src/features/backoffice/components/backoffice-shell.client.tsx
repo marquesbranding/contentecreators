@@ -231,7 +231,6 @@ function BackofficeSignOutButton({ action }: { action: () => Promise<void> }) {
         className="border-white/25 bg-transparent text-white hover:bg-white/10 hover:text-white"
         idleIcon={<LogOut aria-hidden="true" />}
         pendingLabel="Saindo..."
-        pendingLogoVariant="white"
         variant="outline"
       >
         <span>Sair</span>

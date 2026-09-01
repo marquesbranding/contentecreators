@@ -2,8 +2,6 @@
 
 import type { ComponentProps } from "react";
 
-import type { BrandLogoVariant } from "@/shared/components/brand-logo";
-import { BrandLogo } from "@/shared/components/brand-logo";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/cn";
 
@@ -14,18 +12,6 @@ interface ActionSubmitButtonProps extends Omit<ButtonProps, "type"> {
   idleIcon?: React.ReactNode;
   pending: boolean;
   pendingLabel: string;
-  pendingLogoVariant?: BrandLogoVariant;
-}
-
-function resolvePendingLogoVariant(
-  variant: ButtonProps["variant"],
-): BrandLogoVariant {
-  return variant === "outline" ||
-    variant === "secondary" ||
-    variant === "ghost" ||
-    variant === "link"
-    ? "blue"
-    : "white";
 }
 
 export function ActionSubmitButton({
@@ -36,12 +22,9 @@ export function ActionSubmitButton({
   idleIcon,
   pending,
   pendingLabel,
-  pendingLogoVariant,
   variant = "default",
   ...props
 }: ActionSubmitButtonProps) {
-  const logoVariant = pendingLogoVariant ?? resolvePendingLogoVariant(variant);
-
   return (
     <Button
       aria-busy={pending}
@@ -57,12 +40,19 @@ export function ActionSubmitButton({
         <span className="flex items-center justify-center gap-2.5">
           <span
             aria-hidden="true"
-            className="submit-brand-pulse inline-flex rounded-md"
+            className={cn(
+              "submit-brand-pulse inline-flex shrink-0 overflow-hidden rounded-full",
+              compactPending ? "size-6" : "size-8",
+            )}
           >
-            <BrandLogo
-              background="transparent"
-              className={compactPending ? "w-8" : "w-[4.75rem] sm:w-20"}
-              variant={logoVariant}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              alt=""
+              className="size-full object-cover"
+              decoding="async"
+              height={379}
+              src="/brand/official/contente-creators-mascot.png"
+              width={369}
             />
           </span>
           <span className={compactPending ? "sr-only" : undefined}>

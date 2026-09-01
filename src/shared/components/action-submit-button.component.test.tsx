@@ -24,7 +24,7 @@ describe("ActionSubmitButton", () => {
     expect(button.querySelector("svg")).toBeInTheDocument();
   });
 
-  it("shows the official pulsing logo and accessible progress label", () => {
+  it("shows the pulsing brand mascot and accessible progress label", () => {
     render(
       <ActionSubmitButton pending pendingLabel="Salvando alterações">
         Salvar
@@ -34,21 +34,19 @@ describe("ActionSubmitButton", () => {
     const button = screen.getByRole("button", {
       name: "Salvando alterações",
     });
-    const image = button.querySelector('img[alt="Contente Creators"]');
+    const image = button.querySelector("img");
 
     expect(button).toBeDisabled();
     expect(button).toHaveAttribute("aria-busy", "true");
     expect(button).toHaveAttribute("data-submit-pending", "true");
     expect(image).toHaveAttribute(
       "src",
-      "/brand/official/contente-creators-white.png",
+      "/brand/official/contente-creators-mascot.png",
     );
-    expect(image?.parentElement?.parentElement).toHaveClass(
-      "submit-brand-pulse",
-    );
+    expect(image?.parentElement).toHaveClass("submit-brand-pulse");
   });
 
-  it("uses the blue logo on an outline submit button", () => {
+  it("shows the same pulsing mascot regardless of button variant", () => {
     render(
       <ActionSubmitButton
         pending
@@ -63,6 +61,6 @@ describe("ActionSubmitButton", () => {
       screen
         .getByRole("button", { name: "Reenviando confirmação" })
         .querySelector("img"),
-    ).toHaveAttribute("src", "/brand/official/contente-creators-blue.png");
+    ).toHaveAttribute("src", "/brand/official/contente-creators-mascot.png");
   });
 });

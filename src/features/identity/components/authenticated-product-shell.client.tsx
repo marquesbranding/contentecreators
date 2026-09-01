@@ -200,7 +200,6 @@ function ProductSignOut({
         )}
         idleIcon={<LogOut aria-hidden="true" />}
         pendingLabel="Saindo da conta..."
-        pendingLogoVariant={presentation === "desktop" ? "white" : "blue"}
         variant="outline"
       >
         Sair
