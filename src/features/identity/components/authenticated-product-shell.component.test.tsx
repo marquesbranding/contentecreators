@@ -88,6 +88,22 @@ describe("AuthenticatedProductShell", () => {
     ).toEqual([]);
   });
 
+  it("labels catalog discovery for companies when the viewer is an influencer", () => {
+    const { container } = renderShell("/app/companies/company-id", "INFLUENCER");
+
+    const navigation = screen.getByRole("navigation", {
+      name: "Navegação principal",
+    });
+
+    expect(
+      within(navigation).getByRole("link", {
+        name: "Encontrar empresas",
+        current: "page",
+      }),
+    ).toHaveAttribute("href", "/app/catalog");
+    expect(container.innerHTML).not.toMatch(/encontrar creators/iu);
+  });
+
   it("marks the profile destination active", () => {
     renderShell("/app/profile");
 

@@ -26,21 +26,33 @@ import { getBrowserQueryClient } from "@/shared/query/browser-query-client";
 
 import { useBackofficeAccess } from "./backoffice-access-context.client";
 
-const navigationItems = [
-  {
-    href: "/app/catalog",
-    icon: Search,
-    isActive: (pathname: string) =>
-      pathname === "/app/catalog" || pathname.startsWith("/app/creators/"),
-    label: "Encontrar creators",
-  },
-  {
-    href: "/app/profile",
-    icon: UserRound,
-    isActive: (pathname: string) => pathname.startsWith("/app/profile"),
-    label: "Meu perfil",
-  },
-] as const;
+/**
+ * Creators browse companies and vice versa, so the catalog nav entry's
+ * label/active-match must follow which detail route the viewer's role
+ * actually lands on ("/app/creators/*" vs "/app/companies/*").
+ */
+function getNavigationItems(viewerRole?: "COMPANY" | "INFLUENCER") {
+  const browsesCompanies = viewerRole === "INFLUENCER";
+
+  return [
+    {
+      href: "/app/catalog",
+      icon: Search,
+      isActive: (pathname: string) =>
+        pathname === "/app/catalog" ||
+        pathname.startsWith(
+          browsesCompanies ? "/app/companies/" : "/app/creators/",
+        ),
+      label: browsesCompanies ? "Encontrar empresas" : "Encontrar creators",
+    },
+    {
+      href: "/app/profile",
+      icon: UserRound,
+      isActive: (pathname: string) => pathname.startsWith("/app/profile"),
+      label: "Meu perfil",
+    },
+  ] as const;
+}
 
 /** Holds the search's footprint while it waits for the URL to be readable. */
 function CatalogHeaderSearchFallback() {
@@ -130,10 +142,12 @@ function ProductNavigation({
   onNavigate,
   pathname,
   presentation,
+  viewerRole,
 }: {
   onNavigate?: () => void;
   pathname: string;
   presentation: "desktop" | "mobile";
+  viewerRole?: "COMPANY" | "INFLUENCER";
 }) {
   return (
     <nav
@@ -144,7 +158,7 @@ function ProductNavigation({
           : "grid gap-2",
       )}
     >
-      {navigationItems.map((item) => {
+      {getNavigationItems(viewerRole).map((item) => {
         const active = item.isActive(pathname);
         const Icon = item.icon;
 
@@ -310,7 +324,11 @@ export function AuthenticatedProductShell({
             </div>
           ) : null}
 
-          <ProductNavigation pathname={pathname} presentation="desktop" />
+          <ProductNavigation
+            pathname={pathname}
+            presentation="desktop"
+            viewerRole={viewerRole}
+          />
 
           {hasBackofficeAccess ? (
             <div className="hidden lg:block">
@@ -347,7 +365,9 @@ export function AuthenticatedProductShell({
                   Navegação principal
                 </SheetTitle>
                 <SheetDescription className="text-white/65">
-                  Encontre creators e mantenha seu perfil atualizado.
+                  {viewerRole === "INFLUENCER"
+                    ? "Encontre empresas e mantenha seu perfil atualizado."
+                    : "Encontre creators e mantenha seu perfil atualizado."}
                 </SheetDescription>
               </SheetHeader>
               <div className="p-5">
@@ -355,6 +375,7 @@ export function AuthenticatedProductShell({
                   onNavigate={() => setMobileNavigationOpen(false)}
                   pathname={pathname}
                   presentation="mobile"
+                  viewerRole={viewerRole}
                 />
               </div>
               <SheetFooter className="border-t">

@@ -24,7 +24,11 @@ export default async function CreatorDetailPage({
 
   return (
     <AccountStatusBoundary
-      renderApproved={async () => {
+      renderApproved={async (account) => {
+        const viewerRole =
+          account.role === "COMPANY" || account.role === "INFLUENCER"
+            ? account.role
+            : undefined;
         const query = catalogDetailQuerySchema.safeParse({
           creatorId,
           requestId: crypto.randomUUID(),
@@ -32,7 +36,10 @@ export default async function CreatorDetailPage({
 
         if (!query.success) {
           return (
-            <AuthenticatedProductShell signOutAction={signOutAction}>
+            <AuthenticatedProductShell
+              signOutAction={signOutAction}
+              viewerRole={viewerRole}
+            >
               <CatalogDetailScreen
                 creatorId={creatorId}
                 initialData={null}
@@ -46,7 +53,10 @@ export default async function CreatorDetailPage({
         const initialData = await loadServerCatalogDetail(query.data);
 
         return (
-          <AuthenticatedProductShell signOutAction={signOutAction}>
+          <AuthenticatedProductShell
+            signOutAction={signOutAction}
+            viewerRole={viewerRole}
+          >
             <CatalogDetailScreen
               creatorId={creatorId}
               initialData={initialData}

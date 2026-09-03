@@ -23,7 +23,11 @@ export default async function CompanyDetailPage({
 
   return (
     <AccountStatusBoundary
-      renderApproved={async () => {
+      renderApproved={async (account) => {
+        const viewerRole =
+          account.role === "COMPANY" || account.role === "INFLUENCER"
+            ? account.role
+            : undefined;
         const query = companyDetailQuerySchema.safeParse({
           companyId,
           requestId: crypto.randomUUID(),
@@ -33,7 +37,10 @@ export default async function CompanyDetailPage({
           : null;
 
         return (
-          <AuthenticatedProductShell signOutAction={signOutAction}>
+          <AuthenticatedProductShell
+            signOutAction={signOutAction}
+            viewerRole={viewerRole}
+          >
             <CompanyDetailView detail={initialData} />
           </AuthenticatedProductShell>
         );
