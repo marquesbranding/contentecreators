@@ -13,6 +13,7 @@ import {
 } from "@/shared/components/ui/card";
 import { cn } from "@/shared/lib/cn";
 
+import { nameSizeClass } from "../lib/name-size";
 import type {
   CatalogCreatorType,
   CatalogNicheDto,
@@ -57,22 +58,6 @@ export interface CatalogCreatorCardViewModel extends Omit<
 
 function creatorTypeLabel(creatorType: CatalogCreatorType) {
   return creatorType === "UGC" ? "Criador UGC" : "Influenciador";
-}
-
-/**
- * Long names shrink instead of wrapping/overflowing, so the card's padding
- * stays consistent regardless of how long the display name is.
- */
-function nameSizeClass(displayName: string) {
-  if (displayName.length > 30) {
-    return "text-xs";
-  }
-
-  if (displayName.length > 20) {
-    return "text-sm";
-  }
-
-  return "text-base";
 }
 
 function CreatorCover({ creator }: { creator: CatalogCreatorCardViewModel }) {
@@ -203,7 +188,7 @@ export function CatalogCreatorCard({
 
   return (
     <Card
-      className="hover:border-brand-blue/30 border-border h-full gap-0 overflow-hidden rounded-2xl py-0 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+      className="hover:border-brand-blue/30 border-border gap-0 overflow-hidden rounded-2xl py-0 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
       role="article"
     >
       <div className="relative">

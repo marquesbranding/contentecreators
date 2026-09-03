@@ -33,7 +33,7 @@ const response: CompanyCarouselViewResponseDto = {
 };
 
 describe("CompanyCarouselView", () => {
-  it("renders a keyboard-accessible company catalog with contact links", async () => {
+  it("renders a keyboard-accessible company catalog linking to each profile", async () => {
     const user = userEvent.setup();
     const { container } = render(
       <CompanyCarouselView response={response} status="success" />,
@@ -45,33 +45,22 @@ describe("CompanyCarouselView", () => {
     expect(
       screen.getByRole("img", { name: "Logo da Marca Segura" }),
     ).toHaveAttribute("src", response.items[0]!.logo!.url);
-    expect(
-      screen.getByRole("link", { name: /conhecer marca marca segura/iu }),
-    ).toHaveAttribute(
+
+    const profileLink = screen.getByRole("link", {
+      name: /ver perfil de marca segura/iu,
+    });
+
+    expect(profileLink).toHaveAttribute(
       "href",
       "/app/companies/20000000-0000-4000-8000-000000000002",
     );
-    expect(screen.getByRole("link", { name: "WhatsApp" })).toHaveAttribute(
-      "href",
-      "https://wa.me/5549999999999",
-    );
-    expect(screen.getByRole("link", { name: "E-mail" })).toHaveAttribute(
-      "href",
-      "mailto:contato@marca.example",
-    );
-    expect(screen.getByRole("link", { name: "Site" })).toHaveAttribute(
-      "target",
-      "_blank",
-    );
-    expect(screen.getByRole("link", { name: "Site" })).toHaveAttribute(
-      "rel",
-      expect.stringContaining("noreferrer"),
-    );
+    // Contact channels (WhatsApp, e-mail, site) live on the profile page now,
+    // not the catalog card — the card only links there.
     expect(container.innerHTML).not.toMatch(
       /cnpj|legalName|bucket|objectPath|assetId/iu,
     );
     await user.tab();
-    expect(screen.getByRole("link", { name: "WhatsApp" })).toHaveFocus();
+    expect(profileLink).toHaveFocus();
     expect(
       await getBlockingComponentAccessibilityViolations(container),
     ).toEqual([]);

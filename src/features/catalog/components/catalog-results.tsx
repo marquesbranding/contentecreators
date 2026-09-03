@@ -16,11 +16,13 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { cn } from "@/shared/lib/cn";
 
 import {
   CatalogCreatorCard,
   type CatalogCreatorCardViewModel,
 } from "./catalog-creator-card";
+import { staggerItemClassName } from "../lib/stagger";
 
 export type CatalogResultsStatus = "error" | "loading" | "success";
 
@@ -175,10 +177,13 @@ export function CatalogResults({
 
       <ul
         aria-label="Lista de criadores"
-        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
       >
-        {items.map((creator) => (
-          <li className="min-w-0" key={creator.creatorId}>
+        {items.map((creator, index) => (
+          <li
+            className={cn("min-w-0", staggerItemClassName(index))}
+            key={creator.creatorId}
+          >
             <CatalogCreatorCard creator={creator} />
           </li>
         ))}
