@@ -17,6 +17,7 @@ import {
   type InfluencerProfileDto,
 } from "@/features/onboarding";
 import type { ProfileHeaderPreviewBadge } from "@/shared/components/profile-header-preview";
+import { accountTypeLabels } from "@/shared/domain/account-type-labels";
 import { BrowserQueryProvider } from "@/shared/query/browser-query-provider";
 
 function initialsFromName(name: string) {
@@ -81,8 +82,7 @@ function InfluencerProfileEditorContent({
   const displayName = profile.displayName || profile.legalName;
   const badges: ProfileHeaderPreviewBadge[] = [
     {
-      label:
-        profile.creatorType === "INFLUENCER" ? "Influenciador" : "Creator UGC",
+      label: accountTypeLabels[profile.creatorType],
       tone: "primary",
     },
   ];

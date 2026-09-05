@@ -138,7 +138,46 @@ function findFocusableField(form: HTMLFormElement, fieldName: string) {
   );
 }
 
-export function useRequiredFieldValidation() {
+function scrollIntoViewAndFocus(target: HTMLElement) {
+  target.scrollIntoView?.({ behavior: "smooth", block: "center" });
+  target.focus({ preventScroll: true });
+}
+
+function focusFieldWithinForm(
+  form: HTMLFormElement,
+  fieldName: string,
+  onRequestStep?: (stepKey: string) => void,
+) {
+  const target = findFocusableField(form, fieldName);
+
+  if (!target) {
+    return;
+  }
+
+  const hiddenStep = target.closest<HTMLElement>("[data-step][hidden]");
+
+  if (hiddenStep && onRequestStep) {
+    onRequestStep(hiddenStep.dataset.step ?? "");
+    setTimeout(() => scrollIntoViewAndFocus(target), 0);
+    return;
+  }
+
+  scrollIntoViewAndFocus(target);
+}
+
+export interface UseRequiredFieldValidationOptions {
+  /**
+   * Called when the first invalid field on submit sits inside a container
+   * marked `[data-step]` that is currently `[hidden]` — lets a multi-step
+   * form switch to that step before the field is scrolled to and focused.
+   */
+  onRequestStep?: (stepKey: string) => void;
+}
+
+export function useRequiredFieldValidation(
+  options: UseRequiredFieldValidationOptions = {},
+) {
+  const { onRequestStep } = options;
   const [clientFieldErrors, setClientFieldErrors] = useState<FieldErrors>({});
   const [isFormValid, setIsFormValid] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -174,6 +213,19 @@ export function useRequiredFieldValidation() {
 
     return () => observer.disconnect();
   }, [refreshFormValidity]);
+
+  const focusInvalidField = useCallback(
+    (fieldName: string) => {
+      const form = formRef.current;
+
+      if (!form) {
+        return;
+      }
+
+      focusFieldWithinForm(form, fieldName, onRequestStep);
+    },
+    [onRequestStep],
+  );
 
   const clearFieldError = useCallback((fieldName: string) => {
     setClientFieldErrors((current) => {
@@ -339,83 +391,87 @@ export function useRequiredFieldValidation() {
     [refreshFormValidity, updateFieldError],
   );
 
-  const onSubmit = useCallback((event: React.FormEvent<HTMLFormElement>) => {
-    const form = event.currentTarget;
-    const nextErrors: FieldErrors = {};
-    const invalidFields: Array<{ element: HTMLElement; name: string }> = [];
+  const onSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      const form = event.currentTarget;
+      const nextErrors: FieldErrors = {};
+      const invalidFields: Array<{ element: HTMLElement; name: string }> = [];
 
-    for (const element of Array.from(form.elements)) {
-      if (
-        !isNativeFormControl(element) ||
-        element.disabled ||
-        (element instanceof HTMLInputElement && element.type === "hidden") ||
-        !element.name
-      ) {
-        continue;
+      for (const element of Array.from(form.elements)) {
+        if (
+          !isNativeFormControl(element) ||
+          element.disabled ||
+          (element instanceof HTMLInputElement && element.type === "hidden") ||
+          !element.name
+        ) {
+          continue;
+        }
+
+        const validationMessage = getControlValidationMessage(element, form);
+
+        if (!validationMessage) {
+          continue;
+        }
+
+        touchedFields.current.add(element.name);
+        nextErrors[element.name] = [validationMessage];
+        invalidFields.push({ element, name: element.name });
       }
 
-      const validationMessage = getControlValidationMessage(element, form);
+      const customRequiredFields = form.querySelectorAll<HTMLElement>(
+        '[data-required-field="true"][data-field-name]',
+      );
 
-      if (!validationMessage) {
-        continue;
+      for (const field of customRequiredFields) {
+        const fieldName = field.dataset.fieldName;
+
+        if (!fieldName || customFieldHasValue(field)) {
+          continue;
+        }
+
+        touchedFields.current.add(fieldName);
+        nextErrors[fieldName] = [
+          field.dataset.requiredMessage ?? defaultRequiredMessage,
+        ];
+        invalidFields.push({ element: field, name: fieldName });
       }
 
-      touchedFields.current.add(element.name);
-      nextErrors[element.name] = [validationMessage];
-      invalidFields.push({ element, name: element.name });
-    }
-
-    const customRequiredFields = form.querySelectorAll<HTMLElement>(
-      '[data-required-field="true"][data-field-name]',
-    );
-
-    for (const field of customRequiredFields) {
-      const fieldName = field.dataset.fieldName;
-
-      if (!fieldName || customFieldHasValue(field)) {
-        continue;
+      if (invalidFields.length === 0) {
+        setClientFieldErrors({});
+        return;
       }
 
-      touchedFields.current.add(fieldName);
-      nextErrors[fieldName] = [
-        field.dataset.requiredMessage ?? defaultRequiredMessage,
-      ];
-      invalidFields.push({ element: field, name: fieldName });
-    }
+      event.preventDefault();
+      invalidFields.sort(({ element: first }, { element: second }) => {
+        if (first === second) {
+          return 0;
+        }
 
-    if (invalidFields.length === 0) {
-      setClientFieldErrors({});
-      return;
-    }
+        const position = first.compareDocumentPosition(second);
 
-    event.preventDefault();
-    invalidFields.sort(({ element: first }, { element: second }) => {
-      if (first === second) {
+        if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
+          return -1;
+        }
+
+        if (position & Node.DOCUMENT_POSITION_PRECEDING) {
+          return 1;
+        }
+
         return 0;
+      });
+      const firstInvalidFieldName = invalidFields[0]?.name;
+      if (firstInvalidFieldName) {
+        focusFieldWithinForm(form, firstInvalidFieldName, onRequestStep);
       }
-
-      const position = first.compareDocumentPosition(second);
-
-      if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
-        return -1;
-      }
-
-      if (position & Node.DOCUMENT_POSITION_PRECEDING) {
-        return 1;
-      }
-
-      return 0;
-    });
-    const firstInvalidFieldName = invalidFields[0]?.name;
-    if (firstInvalidFieldName) {
-      findFocusableField(form, firstInvalidFieldName)?.focus();
-    }
-    setClientFieldErrors(nextErrors);
-  }, []);
+      setClientFieldErrors(nextErrors);
+    },
+    [onRequestStep],
+  );
 
   return {
     clearFieldError,
     clientFieldErrors,
+    focusInvalidField,
     formRef,
     formValidationProps: {
       onBlur,

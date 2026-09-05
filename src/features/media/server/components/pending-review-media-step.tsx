@@ -5,6 +5,7 @@ import {
   loadCurrentInfluencerReviewProfile,
 } from "@/features/onboarding/server";
 import type { ProfileHeaderPreviewBadge } from "@/shared/components/profile-header-preview";
+import { accountTypeLabels } from "@/shared/domain/account-type-labels";
 
 import { ProfileHeaderMediaEditor } from "../../components/profile-header-media-editor.client";
 import {
@@ -65,10 +66,7 @@ export async function PendingReviewMediaStep({
     const badges: ProfileHeaderPreviewBadge[] = profile
       ? [
           {
-            label:
-              profile.creatorType === "INFLUENCER"
-                ? "Influenciador"
-                : "Creator UGC",
+            label: accountTypeLabels[profile.creatorType],
             tone: "primary",
           },
         ]

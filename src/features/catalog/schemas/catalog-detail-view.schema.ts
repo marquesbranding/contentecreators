@@ -92,8 +92,10 @@ export const catalogCreatorDetailViewSchema = z
           followerCount: z.number().int().nonnegative().nullable(),
           interactionCount: z.number().int().nonnegative().nullable(),
           isPrimary: z.boolean(),
+          newFollowerCount: z.number().int().nonnegative().nullable(),
           observedOn: z.iso.date(),
           platform: catalogSocialPlatformSchema,
+          sharedContentDescription: z.string().trim().max(500).nullable(),
           source: z.literal("SELF_REPORTED"),
           viewCount: z.number().int().nonnegative().nullable(),
         })

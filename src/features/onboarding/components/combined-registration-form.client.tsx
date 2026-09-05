@@ -33,6 +33,7 @@ import { useSubmitConfirmation } from "@/shared/hooks/use-submit-confirmation";
 import { useUnsavedChangesGuard } from "@/shared/hooks/use-unsaved-changes-guard";
 import { dispatchFormActionPreservingValues } from "@/shared/lib/forms/dispatch-form-action-preserving-values";
 
+import { accountTypeLabels } from "@/shared/domain/account-type-labels";
 import { creatorNicheOptions } from "@/shared/domain/profile-segments";
 import { creatorTypeOptions } from "../domain/creator-type-options";
 import type { OnboardingAction } from "../types/onboarding-action.types";
@@ -134,11 +135,18 @@ export function CombinedRegistrationForm({
   const {
     clearFieldError,
     clientFieldErrors,
+    focusInvalidField,
     formRef,
     formValidationProps,
     getFieldErrors,
-    isFormValid,
-  } = useRequiredFieldValidation();
+  } = useRequiredFieldValidation({
+    onRequestStep: (stepKey) => {
+      const step = Number(stepKey);
+      if (Number.isFinite(step)) {
+        setCurrentStep(step);
+      }
+    },
+  });
   const submitConfirmation = useSubmitConfirmation();
   useActionSuccessToast(state, {
     successStatuses: ["success", "confirmation_required"],
@@ -233,7 +241,7 @@ export function CombinedRegistrationForm({
       ? [{ label: "Escolha um tipo de cadastro", tone: "neutral" }]
       : role === "COMPANY"
         ? [
-            { label: "Empresa", tone: "primary" },
+            { label: accountTypeLabels.COMPANY, tone: "primary" },
             ...(preview.segment
               ? [{ label: preview.segment, tone: "neutral" as const }]
               : []),
@@ -241,7 +249,9 @@ export function CombinedRegistrationForm({
         : [
             {
               label:
-                accountType === "INFLUENCER" ? "Influenciador" : "Creator UGC",
+                accountType === "INFLUENCER"
+                  ? accountTypeLabels.INFLUENCER
+                  : accountTypeLabels.UGC,
               tone: "primary",
             },
             ...preview.nicheLabels.map((label) => ({
@@ -390,12 +400,19 @@ export function CombinedRegistrationForm({
         />
 
         <RequiredFieldsNotice />
-        <FormErrorSummary errors={summaryErrors} />
+        <FormErrorSummary
+          errors={summaryErrors}
+          onFieldSelect={focusInvalidField}
+        />
 
         <FieldGroup className="grid gap-5 sm:grid-cols-2">
           <Field>
             <FieldLabel htmlFor="registration-display-name" required>
-              {role === "COMPANY" ? "Nome fantasia" : "Nome completo"}
+              {role === null
+                ? "Nome completo ou nome fantasia"
+                : role === "COMPANY"
+                  ? "Nome fantasia"
+                  : "Nome completo"}
             </FieldLabel>
             <FieldDescription>
               Aparece no cabeçalho do seu perfil, acima.
@@ -406,16 +423,17 @@ export function CombinedRegistrationForm({
                   ? "Use pelo menos 2 caracteres."
                   : "Use pelo menos 3 caracteres."
               }
-              disabled={role === null}
               id="registration-display-name"
               maxLength={role === "COMPANY" ? 160 : 200}
-              minLength={role === "COMPANY" ? 2 : 3}
+              minLength={role === null ? 2 : role === "COMPANY" ? 2 : 3}
               name={role === "COMPANY" ? "tradeName" : "legalName"}
               onChange={(event) => setNameValue(event.target.value)}
               placeholder={
-                role === "COMPANY"
-                  ? "Nome conhecido pelo público"
-                  : "Seu nome completo"
+                role === null
+                  ? "Como você quer aparecer no catálogo"
+                  : role === "COMPANY"
+                    ? "Nome conhecido pelo público"
+                    : "Seu nome completo"
               }
               required
               value={nameValue}
@@ -462,7 +480,7 @@ export function CombinedRegistrationForm({
           steps={stepLabels.map((label) => ({ label }))}
         />
 
-        <div hidden={currentStep !== 1}>
+        <div className="space-y-10" data-step="1" hidden={currentStep !== 1}>
           <FieldSet>
             <FieldLegend id="registration-role-label" required>
               Como você vai usar a plataforma?
@@ -611,7 +629,6 @@ export function CombinedRegistrationForm({
           ) : (
             <ActionSubmitButton
               className="flex-1"
-              disabled={!isFormValid}
               pending={pending}
               pendingLabel="Criando cadastro..."
               size="lg"
@@ -620,15 +637,6 @@ export function CombinedRegistrationForm({
             </ActionSubmitButton>
           )}
         </div>
-        {currentStep === TOTAL_STEPS && !isFormValid && !pending ? (
-          <p
-            aria-live="polite"
-            className="text-muted-foreground text-center text-sm"
-          >
-            Preencha corretamente todos os campos obrigatórios para liberar o
-            envio.
-          </p>
-        ) : null}
       </form>
       <OnboardingSubmitConfirmation
         onConfirm={submitConfirmation.confirmSubmission}

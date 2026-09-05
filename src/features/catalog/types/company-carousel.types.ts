@@ -19,7 +19,12 @@ export interface CompanyCarouselItemDto {
   whatsappE164: string | null;
 }
 
+export interface CompanyCarouselFacetsDto {
+  segments: string[];
+}
+
 export interface CompanyCarouselResponseDto {
+  facets: CompanyCarouselFacetsDto;
   items: CompanyCarouselItemDto[];
   limit: number;
 }

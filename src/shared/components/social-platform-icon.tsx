@@ -20,7 +20,9 @@ export type SocialPlatformIconKey =
   | "X"
   | "YOUTUBE";
 
-const brandIcons: Partial<Record<SocialPlatformIconKey, { hex: string; path: string }>> = {
+const brandIcons: Partial<
+  Record<SocialPlatformIconKey, { hex: string; path: string }>
+> = {
   FACEBOOK: siFacebook,
   INSTAGRAM: siInstagram,
   TELEGRAM: siTelegram,
@@ -38,13 +40,19 @@ const LINKEDIN_BRAND_COLOR = "#0A66C2";
  * glyph — LinkedIn issued a trademark takedown that made Simple Icons (and
  * Lucide) drop their LinkedIn icon entirely.
  */
-function LinkedInGlyph({ className }: { className?: string }) {
+function LinkedInGlyph({
+  className,
+  monochrome,
+}: {
+  className?: string;
+  monochrome?: boolean;
+}) {
   return (
     <svg
       aria-hidden="true"
       className={className}
       fill="none"
-      style={{ color: LINKEDIN_BRAND_COLOR }}
+      style={monochrome ? undefined : { color: LINKEDIN_BRAND_COLOR }}
       viewBox="0 0 24 24"
     >
       <rect
@@ -73,13 +81,18 @@ function LinkedInGlyph({ className }: { className?: string }) {
 
 export function SocialPlatformIcon({
   className,
+  monochrome = false,
   platform,
 }: {
   className?: string;
+  /** Draws the glyph in `currentColor` instead of the network's brand color —
+   * for surfaces that want every icon the same neutral tone (e.g. a "tudo
+   * pretinho" contact row) rather than a rainbow of brand marks. */
+  monochrome?: boolean;
   platform: SocialPlatformIconKey | (string & {});
 }) {
   if (platform === "LINKEDIN") {
-    return <LinkedInGlyph className={className} />;
+    return <LinkedInGlyph className={className} monochrome={monochrome} />;
   }
 
   const icon = brandIcons[platform as SocialPlatformIconKey];
@@ -93,7 +106,7 @@ export function SocialPlatformIcon({
       aria-hidden="true"
       className={className}
       fill="currentColor"
-      style={{ color: `#${icon.hex}` }}
+      style={monochrome ? undefined : { color: `#${icon.hex}` }}
       viewBox="0 0 24 24"
     >
       <path d={icon.path} />

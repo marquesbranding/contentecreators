@@ -10,6 +10,7 @@ import type { CompanyCarouselViewResponseDto } from "../../types/company-carouse
 import { createCompanyCarouselRouteHandler } from "./company-carousel.handler";
 
 const responseDto: CompanyCarouselViewResponseDto = {
+  facets: { segments: [] },
   items: [],
   limit: 12,
 };

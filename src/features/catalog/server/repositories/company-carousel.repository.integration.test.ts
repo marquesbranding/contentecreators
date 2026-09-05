@@ -9,7 +9,10 @@ import {
 } from "@/features/identity/server";
 
 import { createCompanyCarouselService } from "../services/company-carousel.service";
-import { listEligibleCarouselCompanies } from "./company-carousel.repository";
+import {
+  listCompanySegmentFacets,
+  listEligibleCarouselCompanies,
+} from "./company-carousel.repository";
 
 const localStackEnabled = process.env.RUN_LOCAL_STACK_TESTS === "true";
 const describeLocalStack = localStackEnabled ? describe : describe.skip;
@@ -103,6 +106,7 @@ describeLocalStack("company carousel repository", () => {
   it("returns the minimal approved company presentation to an approved influencer", async () => {
     const service = createCompanyCarouselService({
       repository: {
+        listCompanySegmentFacets,
         listEligibleCompanies: listEligibleCarouselCompanies,
       },
       runVerifiedAccountTransaction: createRunner(approvedInfluencerAuthUserId),
@@ -113,7 +117,8 @@ describeLocalStack("company carousel repository", () => {
       `carousel-safe-${crypto.randomUUID()}`,
     );
 
-    expect(result).toEqual({
+    expect(result).toMatchObject({
+      facets: { segments: expect.any(Array) },
       items: [
         {
           displayName: "Empresa Quatro",
@@ -134,6 +139,7 @@ describeLocalStack("company carousel repository", () => {
   it("omits the company immediately when account, profile, completion, or logo becomes ineligible", async () => {
     const service = createCompanyCarouselService({
       repository: {
+        listCompanySegmentFacets,
         listEligibleCompanies: listEligibleCarouselCompanies,
       },
       runVerifiedAccountTransaction: createRunner(approvedInfluencerAuthUserId),
@@ -180,9 +186,40 @@ describeLocalStack("company carousel repository", () => {
     }
   });
 
+  it("includes a company's free-text segment in the facets", async () => {
+    const service = createCompanyCarouselService({
+      repository: {
+        listCompanySegmentFacets,
+        listEligibleCompanies: listEligibleCarouselCompanies,
+      },
+      runVerifiedAccountTransaction: createRunner(approvedInfluencerAuthUserId),
+    });
+
+    try {
+      await client.database
+        .update(companyProfiles)
+        .set({ segment: "Marketing" })
+        .where(eq(companyProfiles.id, approvedCompanyProfileId));
+
+      const result = await service.list(
+        { limit: 12 },
+        `carousel-facets-${crypto.randomUUID()}`,
+      );
+
+      expect(result.facets.segments).toContain("Marketing");
+    } finally {
+      await client.database
+        .update(companyProfiles)
+        .set({ segment: "Alimentação" })
+        .where(eq(companyProfiles.id, approvedCompanyProfileId));
+      await restoreEligibleFixture();
+    }
+  });
+
   it("denies an approved company before executing the carousel query", async () => {
     const service = createCompanyCarouselService({
       repository: {
+        listCompanySegmentFacets,
         listEligibleCompanies: listEligibleCarouselCompanies,
       },
       runVerifiedAccountTransaction: createRunner(approvedCompanyAuthUserId),

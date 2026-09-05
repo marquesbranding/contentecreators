@@ -7,6 +7,7 @@ import {
   ProfileHeaderMediaEditor,
   type MediaUploadActions,
 } from "@/features/media";
+import { accountTypeLabels } from "@/shared/domain/account-type-labels";
 import { creatorNicheOptions } from "@/shared/domain/profile-segments";
 import { ActionSubmitButton } from "@/shared/components/action-submit-button";
 import type { ProfileHeaderPreviewBadge } from "@/shared/components/profile-header-preview";
@@ -100,10 +101,10 @@ function ProfileOnboardingFormContent({
   const {
     clearFieldError,
     clientFieldErrors,
+    focusInvalidField,
     formRef,
     formValidationProps,
     getFieldErrors,
-    isFormValid,
   } = useRequiredFieldValidation();
   const submitConfirmation = useSubmitConfirmation();
   const autosave = useOnboardingAutosave({
@@ -201,7 +202,7 @@ function ProfileOnboardingFormContent({
   const badges: ProfileHeaderPreviewBadge[] =
     role === "COMPANY"
       ? [
-          { label: "Empresa", tone: "primary" },
+          { label: accountTypeLabels.COMPANY, tone: "primary" },
           ...(preview.segment
             ? [{ label: preview.segment, tone: "neutral" as const }]
             : []),
@@ -209,7 +210,9 @@ function ProfileOnboardingFormContent({
       : [
           {
             label:
-              preview.creatorType === "UGC" ? "Creator UGC" : "Influenciador",
+              preview.creatorType === "UGC"
+                ? accountTypeLabels.UGC
+                : accountTypeLabels.INFLUENCER,
             tone: "primary",
           },
           ...preview.nicheLabels.map((label) => ({
@@ -296,7 +299,10 @@ function ProfileOnboardingFormContent({
         />
 
         <RequiredFieldsNotice />
-        <FormErrorSummary errors={summaryErrors} />
+        <FormErrorSummary
+          errors={summaryErrors}
+          onFieldSelect={focusInvalidField}
+        />
         <ProfileFormFields
           creatorType={knownCreatorType}
           fieldErrors={state.fieldErrors}
@@ -307,22 +313,12 @@ function ProfileOnboardingFormContent({
         />
         <ActionSubmitButton
           className="w-full"
-          disabled={!isFormValid}
           pending={pending}
           pendingLabel="Enviando para análise..."
           size="lg"
         >
           Enviar perfil para análise
         </ActionSubmitButton>
-        {!isFormValid && !pending ? (
-          <p
-            aria-live="polite"
-            className="text-muted-foreground text-center text-sm"
-          >
-            Preencha corretamente todos os campos obrigatórios para liberar o
-            envio.
-          </p>
-        ) : null}
       </form>
       <OnboardingSubmitConfirmation
         onConfirm={submitConfirmation.confirmSubmission}

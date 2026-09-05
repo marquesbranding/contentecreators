@@ -1,22 +1,23 @@
 "use client";
 
 import { HydrationBoundary, type DehydratedState } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 
 import { BrowserQueryProvider } from "@/shared/query/browser-query-provider";
 
-import { CreatorCatalogView } from "./creator-catalog-view.client";
+import { DirectoryView } from "./directory-view.client";
 
-export function HydratedCreatorCatalog({
+export function HydratedDirectory({
+  midlistSlots,
   state,
-  viewerRole,
 }: {
+  midlistSlots?: ReactNode[];
   state: DehydratedState;
-  viewerRole: "COMPANY" | "INFLUENCER";
 }) {
   return (
     <BrowserQueryProvider>
       <HydrationBoundary state={state}>
-        <CreatorCatalogView viewerRole={viewerRole} />
+        <DirectoryView midlistSlots={midlistSlots} />
       </HydrationBoundary>
     </BrowserQueryProvider>
   );

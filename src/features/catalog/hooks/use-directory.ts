@@ -11,23 +11,24 @@ import { HttpClientError } from "@/shared/api/http-client";
 
 import {
   clearProtectedCatalogQueries,
-  creatorCatalogKeys,
-  fetchCreatorCatalogPage,
-} from "../api/creator-catalog.api";
-import type { CreatorCatalogBrowserPageDto } from "../api/creator-catalog.contract";
-import type { CreatorCatalogFilters } from "../types/creator-catalog.types";
+  directoryKeys,
+  fetchDirectoryPage,
+} from "../api/catalog-directory.api";
+import type { DirectoryBrowserPageDto } from "../api/catalog-directory.contract";
+import { hasDirectoryActiveFilters } from "./directory-url-state";
+import type { DirectoryFilters } from "../types/catalog-directory.types";
 
-const MAX_RETAINED_CATALOG_PAGES = 5;
-const revokedCatalogQueryKey = ["catalog", "revoked"] as const;
+const MAX_RETAINED_DIRECTORY_PAGES = 5;
+const revokedDirectoryQueryKey = ["catalog", "directory-revoked"] as const;
 
-type CreatorCatalogFetcher = (
-  filters: CreatorCatalogFilters,
+type DirectoryFetcher = (
+  filters: DirectoryFilters,
   signal: AbortSignal,
-) => Promise<CreatorCatalogBrowserPageDto>;
+) => Promise<DirectoryBrowserPageDto>;
 
-interface UseCreatorCatalogOptions {
-  filters: CreatorCatalogFilters;
-  initialPage?: CreatorCatalogBrowserPageDto;
+interface UseDirectoryOptions {
+  filters: DirectoryFilters;
+  initialPage?: DirectoryBrowserPageDto;
 }
 
 function isAuthorizationLoss(error: unknown) {
@@ -37,7 +38,7 @@ function isAuthorizationLoss(error: unknown) {
   );
 }
 
-function catalogAnnouncement({
+function directoryAnnouncement({
   accessRevoked,
   error,
   filtered,
@@ -57,38 +58,38 @@ function catalogAnnouncement({
   }
 
   if (isPending) {
-    return "Carregando criadores.";
+    return "Carregando o catálogo.";
   }
 
   if (isFetchingNextPage) {
-    return "Carregando mais criadores.";
+    return "Carregando mais perfis.";
   }
 
   if (error) {
-    return "Não foi possível carregar os criadores. Tente novamente.";
+    return "Não foi possível carregar o catálogo. Tente novamente.";
   }
 
   if (itemCount === 0) {
     return filtered
-      ? "Nenhum criador encontrado com os filtros selecionados."
-      : "Nenhum criador disponível no momento.";
+      ? "Nenhum perfil encontrado com os filtros selecionados."
+      : "Nenhum perfil disponível no momento.";
   }
 
   return itemCount === 1
-    ? "1 criador carregado."
-    : `${itemCount} criadores carregados.`;
+    ? "1 perfil carregado."
+    : `${itemCount} perfis carregados.`;
 }
 
-export function createUseCreatorCatalog(fetchPage: CreatorCatalogFetcher) {
-  return function useCreatorCatalogWithFetcher({
+export function createUseDirectory(fetchPage: DirectoryFetcher) {
+  return function useDirectoryWithFetcher({
     filters,
     initialPage,
-  }: UseCreatorCatalogOptions) {
+  }: UseDirectoryOptions) {
     const queryClient = useQueryClient();
     const [isAuthorizationStale, setIsAuthorizationStale] = useState(false);
     const initialPageParam = filters.cursor ?? null;
     const initialData:
-      InfiniteData<CreatorCatalogBrowserPageDto, string | null> | undefined =
+      InfiniteData<DirectoryBrowserPageDto, string | null> | undefined =
       initialPage
         ? {
             pageParams: [initialPageParam],
@@ -101,7 +102,7 @@ export function createUseCreatorCatalog(fetchPage: CreatorCatalogFetcher) {
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
       initialData,
       initialPageParam,
-      maxPages: MAX_RETAINED_CATALOG_PAGES,
+      maxPages: MAX_RETAINED_DIRECTORY_PAGES,
       queryFn: async ({ pageParam, signal }) => {
         if (isAuthorizationStale) {
           throw new HttpClientError({
@@ -129,40 +130,32 @@ export function createUseCreatorCatalog(fetchPage: CreatorCatalogFetcher) {
         }
       },
       queryKey: isAuthorizationStale
-        ? revokedCatalogQueryKey
-        : creatorCatalogKeys.list(filters),
+        ? revokedDirectoryQueryKey
+        : directoryKeys.list(filters),
     });
 
     const items = useMemo(
       () => query.data?.pages.flatMap((page) => page.items) ?? [],
       [query.data],
     );
-    const filtered = [
-      filters.city,
-      filters.creatorType,
-      filters.niche,
-      filters.platform,
-      filters.search,
-      filters.state,
-    ].some(Boolean);
+    const facets = query.data?.pages.at(-1)?.facets;
 
     return {
       ...query,
-      announcement: catalogAnnouncement({
+      announcement: directoryAnnouncement({
         accessRevoked: isAuthorizationStale,
         error: query.isError,
-        filtered,
+        filtered: hasDirectoryActiveFilters(filters),
         isFetchingNextPage: query.isFetchingNextPage,
         isPending: query.isPending,
         itemCount: items.length,
       }),
       canRetry: !isAuthorizationStale,
+      facets,
       isAuthorizationStale,
       items,
     };
   };
 }
 
-export const useCreatorCatalog = createUseCreatorCatalog(
-  fetchCreatorCatalogPage,
-);
+export const useDirectory = createUseDirectory(fetchDirectoryPage);

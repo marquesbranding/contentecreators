@@ -46,8 +46,15 @@ export const companyCarouselItemSchema = z
   })
   .strict();
 
+export const companyCarouselFacetsSchema = z
+  .object({
+    segments: z.array(z.string().trim().min(1).max(120)),
+  })
+  .strict();
+
 export const companyCarouselResponseSchema = z
   .object({
+    facets: companyCarouselFacetsSchema,
     items: z.array(companyCarouselItemSchema).max(COMPANY_CAROUSEL_MAX_LIMIT),
     limit: z.number().int().min(1).max(COMPANY_CAROUSEL_MAX_LIMIT),
   })

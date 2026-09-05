@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import { accountTypeLabels } from "@/shared/domain/account-type-labels";
 import { cn } from "@/shared/lib/cn";
 
 import { nameSizeClass } from "../lib/name-size";
@@ -57,7 +58,7 @@ export interface CatalogCreatorCardViewModel extends Omit<
 }
 
 function creatorTypeLabel(creatorType: CatalogCreatorType) {
-  return creatorType === "UGC" ? "Criador UGC" : "Influenciador";
+  return accountTypeLabels[creatorType];
 }
 
 function CreatorCover({ creator }: { creator: CatalogCreatorCardViewModel }) {
@@ -188,7 +189,7 @@ export function CatalogCreatorCard({
 
   return (
     <Card
-      className="hover:border-brand-blue/30 border-border gap-0 overflow-hidden rounded-2xl py-0 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+      className="hover:border-brand-blue/30 border-border h-full gap-0 overflow-hidden rounded-2xl py-0 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
       role="article"
     >
       <div className="relative">
@@ -196,7 +197,7 @@ export function CatalogCreatorCard({
         <CreatorAvatar creator={creator} />
       </div>
 
-      <CardHeader className="gap-2.5 px-4 pt-9 pb-3">
+      <CardHeader className="flex-1 gap-2.5 px-4 pt-9 pb-3">
         <CardTitle>
           <h3
             className={cn(

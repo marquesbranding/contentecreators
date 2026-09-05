@@ -91,6 +91,9 @@ export const creatorProfiles = pgTable(
     index("creator_profiles_location_active_idx")
       .on(table.state, table.city, table.displayName, table.id)
       .where(sql`${table.archivedAt} is null`),
+    index("creator_profiles_created_at_active_idx")
+      .on(table.createdAt, table.id)
+      .where(sql`${table.archivedAt} is null`),
     check(
       "creator_profiles_state_check",
       sql`${table.state} is null or ${table.state} ~ '^[A-Z]{2}$'`,
@@ -196,6 +199,9 @@ export const companyProfiles = pgTable(
       "gin",
       table.searchDocument.op("gin_trgm_ops"),
     ),
+    index("company_profiles_created_at_active_idx")
+      .on(table.createdAt, table.id)
+      .where(sql`${table.archivedAt} is null`),
     check("company_profiles_cnpj_check", sql`${table.cnpj} ~ '^[0-9]{14}$'`),
     check(
       "company_profiles_website_url_check",

@@ -16,6 +16,8 @@ const requiredQueryIndexes = [
   "accounts_moderation_role_queue_idx",
   "audit_revisions_entity_period_idx",
   "audit_revisions_source_timeline_idx",
+  "company_profiles_created_at_active_idx",
+  "creator_profiles_created_at_active_idx",
   "creator_profiles_display_name_active_idx",
   "creator_profiles_location_active_idx",
   "creator_profiles_search_active_trgm_idx",

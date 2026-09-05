@@ -19,7 +19,7 @@ const tips = [
     title: "Aproveite as marcas",
   },
   {
-    body: "As marcas que estão aqui passaram por análise de perfil, mas nunca deixe de fazer contrato e formalizar suas parcerias! Nós somos apenas uma plataforma para conectar você e as empresas, o resto é com vocês.",
+    body: "Todas as marcas por análise de perfil, mas nunca deixe de fazer contrato e formalizar suas parcerias! Nosso propósito é de conexão, o resto é com vocês!",
     icon: KeyRound,
     title: "Segurança sempre",
   },
@@ -43,7 +43,7 @@ export function CatalogTipsPanel() {
                 </div>
                 <CardTitle className="text-base">{tip.title}</CardTitle>
               </CardHeader>
-              <CardContent className="text-muted-foreground text-sm leading-6">
+              <CardContent className="text-muted-foreground text-justify text-sm leading-6 text-pretty hyphens-auto">
                 {tip.body}
               </CardContent>
             </Card>

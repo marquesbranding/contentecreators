@@ -1,8 +1,6 @@
 import {
   AlertCircle,
   ArrowLeft,
-  ExternalLink,
-  Mail,
   MapPin,
   RefreshCw,
   UsersRound,
@@ -26,24 +24,12 @@ import {
 import { SignedImage } from "@/shared/components/signed-image";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { SocialPlatformIcon } from "@/shared/components/social-platform-icon";
-import { cn } from "@/shared/lib/cn";
+import { WhatsAppIcon } from "@/shared/components/whatsapp-icon";
+import { accountTypeLabels } from "@/shared/domain/account-type-labels";
 import { formatNumber } from "@/shared/lib/formatting/formatters";
 
 import type { CatalogCreatorDetailViewDto } from "../types/catalog-detail-view.types";
-
-/** WhatsApp's own glyph, drawn in `currentColor` so it sits white on the WhatsApp-green button. */
-function WhatsAppIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      fill="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-    </svg>
-  );
-}
+import { ContactIconRow, type ContactIconChannel } from "./contact-icon-row";
 
 type CatalogDetailViewProps =
   | {
@@ -152,82 +138,67 @@ function DetailUnavailable() {
   );
 }
 
-function ContactCard({
+function contactUnavailableMessage(
+  reason: Extract<
+    CatalogCreatorDetailViewDto["contact"],
+    { status: "UNAVAILABLE" }
+  >["reason"],
+) {
+  return {
+    CONSENT_NOT_GRANTED:
+      "Este creator ainda não habilitou o compartilhamento de contatos.",
+    NO_CONTACT_CHANNELS:
+      "Este creator não possui canais de contato disponíveis no momento.",
+    VIEWER_NOT_COMPANY:
+      "Os contatos ficam disponíveis somente para empresas aprovadas.",
+  }[reason];
+}
+
+function ContactSection({
   contact,
+  displayName,
   onWhatsappClick,
 }: {
   contact: CatalogCreatorDetailViewDto["contact"];
+  displayName: string;
   onWhatsappClick: () => void;
 }) {
   if (contact.status === "UNAVAILABLE") {
-    const message = {
-      CONSENT_NOT_GRANTED:
-        "Este creator ainda não habilitou o compartilhamento de contatos.",
-      NO_CONTACT_CHANNELS:
-        "Este creator não possui canais de contato disponíveis no momento.",
-      VIEWER_NOT_COMPANY:
-        "Os contatos ficam disponíveis somente para empresas aprovadas.",
-    }[contact.reason];
-
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Contato</CardTitle>
-          <CardDescription>{message}</CardDescription>
-        </CardHeader>
-      </Card>
+      <p className="text-muted-foreground text-sm">
+        {contactUnavailableMessage(contact.reason)}
+      </p>
     );
   }
 
-  return (
-    <Card className="h-full">
-      <CardHeader>
-        <CardTitle>Entre em contato</CardTitle>
-        <CardDescription>
-          Canais liberados pelo creator para empresas aprovadas.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-2">
-        {contact.whatsapp ? (
-          <a
-            className={cn(
-              buttonVariants({
-                className: "bg-[#25D366] text-white hover:bg-[#1fb95a]",
-              }),
-            )}
-            href={contact.whatsapp.href}
-            onClick={onWhatsappClick}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <WhatsAppIcon className="size-4" />
-            Chamar no WhatsApp
-          </a>
-        ) : null}
-        {contact.email ? (
-          <a
-            className={buttonVariants({ variant: "outline" })}
-            href={contact.email.href}
-          >
-            <Mail aria-hidden="true" />
-            Enviar e-mail
-          </a>
-        ) : null}
-        {contact.social.map((social) => (
-          <a
-            className={buttonVariants({ variant: "outline" })}
-            href={social.href}
-            key={`${social.platform}-${social.href}`}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <ExternalLink aria-hidden="true" />
-            Abrir {socialLabels[social.platform]}
-          </a>
-        ))}
-      </CardContent>
-    </Card>
-  );
+  const channels: ContactIconChannel[] = [
+    ...(contact.whatsapp
+      ? [
+          {
+            href: contact.whatsapp.href,
+            icon: "whatsapp" as const,
+            label: `Chamar ${displayName} no WhatsApp`,
+            onClick: onWhatsappClick,
+          },
+        ]
+      : []),
+    ...(contact.email
+      ? [
+          {
+            href: contact.email.href,
+            icon: "email" as const,
+            label: `Enviar e-mail para ${displayName}`,
+          },
+        ]
+      : []),
+    ...contact.social.map((social) => ({
+      href: social.href,
+      icon: social.platform,
+      label: `Abrir ${socialLabels[social.platform]} de ${displayName}`,
+    })),
+  ];
+
+  return <ContactIconRow channels={channels} />;
 }
 
 export function CatalogDetailView(props: CatalogDetailViewProps) {
@@ -252,6 +223,19 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
     detail.socialProfiles.find(
       (social) => social.platform === primaryMetric?.platform,
     )?.handle ?? null;
+  const instagramMetric =
+    detail.metrics.find((metric) => metric.platform === "INSTAGRAM") ?? null;
+  const socialNetworks = [...detail.socialProfiles]
+    .map((social) => ({
+      ...social,
+      metric:
+        detail.metrics.find((metric) => metric.platform === social.platform) ??
+        null,
+    }))
+    .sort(
+      (left, right) =>
+        Number(right.metric?.isPrimary) - Number(left.metric?.isPrimary),
+    );
 
   return (
     <main
@@ -311,9 +295,7 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
               </CardTitle>
               <div className="flex flex-wrap gap-2">
                 <Badge className="bg-brand-night border-transparent text-white">
-                  {detail.creatorType === "UGC"
-                    ? "Creator UGC"
-                    : "Influenciador"}
+                  {accountTypeLabels[detail.creatorType]}
                 </Badge>
                 {detail.niches.map((niche) => (
                   <Badge
@@ -334,6 +316,13 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
                   </Badge>
                 ) : null}
               </div>
+              <ContactSection
+                contact={detail.contact}
+                displayName={detail.displayName}
+                onWhatsappClick={() => {
+                  props.onWhatsappClick?.();
+                }}
+              />
               <CardDescription className="flex items-center gap-2 text-base">
                 <MapPin aria-hidden="true" className="size-4" />
                 {detail.location.city}, {detail.location.state}
@@ -360,26 +349,117 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
             </CardHeader>
           </Card>
 
-          <div className="grid gap-5 lg:grid-cols-[2fr_1fr] lg:items-stretch">
-            <Card className="h-full">
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <h2>Sobre o creator</h2>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="leading-7 whitespace-pre-line">{detail.bio}</p>
+            </CardContent>
+          </Card>
+
+          {socialNetworks.length > 0 ? (
+            <Card>
               <CardHeader>
                 <CardTitle>
-                  <h2>Sobre o creator</h2>
+                  <h2>Redes sociais</h2>
                 </CardTitle>
+                <CardDescription>
+                  Métricas autodeclaradas pelo creator.
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="leading-7 whitespace-pre-line">{detail.bio}</p>
+                <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {socialNetworks.map((social) => (
+                    <li
+                      className={`flex items-center gap-3 rounded-2xl border p-3 ${
+                        social.metric?.isPrimary
+                          ? "border-brand-blue bg-brand-blue-soft"
+                          : "border-border"
+                      }`}
+                      key={social.platform}
+                    >
+                      <SocialPlatformIcon
+                        className="size-6 shrink-0"
+                        platform={social.platform}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="flex items-center gap-1.5 truncate text-sm font-semibold">
+                          {social.handle ?? socialLabels[social.platform]}
+                          {social.metric?.isPrimary ? (
+                            <Badge className="text-[10px]" variant="outline">
+                              Principal
+                            </Badge>
+                          ) : null}
+                        </p>
+                        {social.metric?.followerCount !== undefined &&
+                        social.metric?.followerCount !== null ? (
+                          <p className="text-muted-foreground text-xs">
+                            {formatNumber(social.metric.followerCount)}{" "}
+                            seguidores
+                          </p>
+                        ) : null}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </CardContent>
             </Card>
-            <aside aria-label="Ações de contato">
-              <ContactCard
-                contact={detail.contact}
-                onWhatsappClick={() => {
-                  props.onWhatsappClick?.();
-                }}
-              />
-            </aside>
-          </div>
+          ) : null}
+
+          {instagramMetric ? (
+            <Card className="from-brand-blue/5 bg-gradient-to-br to-transparent">
+              <CardHeader>
+                <CardTitle>
+                  <h2>Painel do Instagram</h2>
+                </CardTitle>
+                <CardDescription>Métricas autodeclaradas.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  {[
+                    {
+                      label: "Seguidores",
+                      value: instagramMetric.followerCount,
+                    },
+                    {
+                      label: "Visualizações",
+                      value: instagramMetric.viewCount,
+                    },
+                    {
+                      label: "Interações",
+                      value: instagramMetric.interactionCount,
+                    },
+                    {
+                      label: "Novos seguidores",
+                      value: instagramMetric.newFollowerCount,
+                    },
+                  ]
+                    .filter(({ value }) => value !== null)
+                    .map(({ label, value }) => (
+                      <div key={label}>
+                        <dt className="text-muted-foreground text-xs">
+                          {label}
+                        </dt>
+                        <dd className="text-2xl font-extrabold tracking-[-0.02em]">
+                          {formatNumber(value as number)}
+                        </dd>
+                      </div>
+                    ))}
+                </dl>
+                {instagramMetric.sharedContentDescription ? (
+                  <p className="text-muted-foreground text-sm leading-6">
+                    <span className="text-foreground font-semibold">
+                      Conteúdo que compartilha:
+                    </span>{" "}
+                    {instagramMetric.sharedContentDescription}
+                  </p>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
         </article>
       </div>
     </main>

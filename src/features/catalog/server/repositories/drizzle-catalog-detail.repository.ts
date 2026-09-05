@@ -76,8 +76,10 @@ async function loadPresentationCollections(
       followerCount: creatorMetricSnapshots.followerCount,
       interactionCount: creatorMetricSnapshots.interactionCount,
       isPrimary: sql<boolean>`coalesce(${socialProfiles.isPrimary}, false)`,
+      newFollowerCount: creatorMetricSnapshots.newFollowerCount,
       observedOn: creatorMetricSnapshots.observedOn,
       platform: creatorMetricSnapshots.platform,
+      sharedContentDescription: creatorMetricSnapshots.sharedContentDescription,
       source: creatorMetricSnapshots.source,
       viewCount: creatorMetricSnapshots.viewCount,
     })

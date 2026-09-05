@@ -1,12 +1,13 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useState } from "react";
 
 import { Field, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 import { cn } from "@/shared/lib/cn";
 
 import type { ImageCropSettings } from "../domain/crop-image";
+import type { MediaDisplayFrame } from "../domain/media-display-frames";
 
 function CropControl({
   label,
@@ -49,16 +50,48 @@ function CropControl({
 export function MediaCropFields({
   aspectClassName,
   crop,
+  displayFrames,
   previewUrl,
   setCrop,
 }: {
   aspectClassName: string;
   crop: ImageCropSettings;
+  /** Marks the area that is really shown at each breakpoint, with a tab to
+   * switch between them — the working area stays wider so there is room to
+   * reposition, and only the masked band ends up visible in production. */
+  displayFrames?: Readonly<Record<string, MediaDisplayFrame>>;
   previewUrl: string | null;
   setCrop: (updater: (current: ImageCropSettings) => ImageCropSettings) => void;
 }) {
+  const frameEntries = displayFrames ? Object.entries(displayFrames) : [];
+  const [activeFrameKey, setActiveFrameKey] = useState(
+    frameEntries[0]?.[0] ?? "",
+  );
+  const activeFrame = displayFrames?.[activeFrameKey] ?? frameEntries[0]?.[1];
+
   return (
     <div className="grid gap-5">
+      {frameEntries.length > 0 ? (
+        <div className="flex justify-center gap-1" role="tablist">
+          {frameEntries.map(([key, frame]) => (
+            <button
+              aria-selected={key === activeFrameKey}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                key === activeFrameKey
+                  ? "bg-brand-blue text-white"
+                  : "bg-muted text-muted-foreground hover:text-foreground",
+              )}
+              key={key}
+              onClick={() => setActiveFrameKey(key)}
+              role="tab"
+              type="button"
+            >
+              {frame.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
       <div
         className={cn(
           "bg-muted relative mx-auto w-full max-w-md overflow-hidden rounded-xl border",
@@ -77,6 +110,20 @@ export function MediaCropFields({
             transform: `scale(${crop.zoom})`,
           }}
         />
+        {activeFrame ? (
+          <div className="pointer-events-none absolute inset-0 flex flex-col">
+            <div className="flex-1 bg-black/45" />
+            <div
+              className="relative w-full shrink-0 border-2 border-dashed border-white/90"
+              style={{ aspectRatio: activeFrame.ratio }}
+            >
+              <span className="absolute inset-x-0 top-1 text-center text-[10px] font-semibold text-white drop-shadow">
+                Área visível no seu perfil
+              </span>
+            </div>
+            <div className="flex-1 bg-black/45" />
+          </div>
+        ) : null}
       </div>
       <CropControl
         label="Ampliação"

@@ -108,7 +108,17 @@ export function mergeFieldErrors(
   );
 }
 
-export function FormErrorSummary({ errors }: { errors: FieldErrors }) {
+export function FormErrorSummary({
+  errors,
+  onFieldSelect,
+}: {
+  errors: FieldErrors;
+  /**
+   * Called instead of the built-in focus behavior when a field is clicked —
+   * lets multi-step forms switch to the field's step before scrolling to it.
+   */
+  onFieldSelect?: (fieldName: string) => void;
+}) {
   const entries = Object.entries(errors).filter(
     (entry): entry is [string, string[]] => Boolean(entry[1]?.length),
   );
@@ -130,7 +140,9 @@ export function FormErrorSummary({ errors }: { errors: FieldErrors }) {
               <button
                 className="text-left underline underline-offset-3"
                 onClick={(event) =>
-                  focusField(event.currentTarget.closest("form"), fieldName)
+                  onFieldSelect
+                    ? onFieldSelect(fieldName)
+                    : focusField(event.currentTarget.closest("form"), fieldName)
                 }
                 type="button"
               >

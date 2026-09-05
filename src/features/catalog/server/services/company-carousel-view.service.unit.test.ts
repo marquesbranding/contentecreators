@@ -5,6 +5,7 @@ import { createCompanyCarouselViewService } from "./company-carousel-view.servic
 
 const assetId = "30000000-0000-4000-8000-000000000001";
 const source: CompanyCarouselResponseDto = {
+  facets: { segments: ["Moda"] },
   items: [
     {
       city: "Joaçaba",
@@ -49,6 +50,7 @@ describe("company carousel view service", () => {
     );
     expect(getSignedMedia).toHaveBeenCalledWith(assetId);
     expect(result).toEqual({
+      facets: { segments: ["Moda"] },
       items: [
         {
           city: "Joaçaba",
@@ -86,6 +88,7 @@ describe("company carousel view service", () => {
     await expect(
       service.list({}, "company-carousel-logo-missing"),
     ).resolves.toEqual({
+      facets: { segments: ["Moda"] },
       items: [],
       limit: 12,
     });

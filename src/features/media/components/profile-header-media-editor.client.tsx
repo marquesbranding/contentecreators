@@ -32,6 +32,7 @@ import {
   type HeaderMediaSlot,
   type HeaderMediaSlotConfig,
 } from "../hooks/use-header-media-slot";
+import { coverDisplayFrames } from "../domain/media-display-frames";
 import type {
   MediaPurpose,
   MediaUploadActions,
@@ -75,6 +76,9 @@ export function CropDialog({
         <MediaCropFields
           aspectClassName={cropAspectByPurpose[slot.purpose]}
           crop={state.upload.crop}
+          displayFrames={
+            slot.purpose === "COVER" ? coverDisplayFrames : undefined
+          }
           previewUrl={state.upload.previewUrl}
           setCrop={state.upload.setCrop}
         />

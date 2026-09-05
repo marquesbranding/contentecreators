@@ -20,6 +20,7 @@ interface CompanyCarouselViewServiceDependencies {
     input: CompanyCarouselRequest,
     requestId: string,
   ): Promise<{
+    facets: { segments: string[] };
     items: {
       city: string | null;
       companyId: string;
@@ -82,6 +83,7 @@ export function createCompanyCarouselViewService({
       );
 
       return {
+        facets: response.facets,
         items: resolved.filter(
           (item): item is CompanyCarouselViewItemDto => item !== null,
         ),

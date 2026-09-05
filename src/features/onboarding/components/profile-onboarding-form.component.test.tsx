@@ -73,4 +73,33 @@ describe("ProfileOnboardingForm correction mode", () => {
       ),
     ).toHaveValue("99000000-0000-4000-8000-000000000003");
   });
+
+  it("keeps the submit button enabled even with required fields left empty", () => {
+    render(
+      <QueryTestProvider client={createQueryTestClient()}>
+        <ProfileOnboardingForm
+          action={vi.fn(async () => ({ status: "idle" as const }))}
+          draftAction={vi.fn(async () => ({
+            kind: "unavailable" as const,
+            message: "Rascunho indisponível.",
+          }))}
+          initialDraft={null}
+          initialMediaState={{
+            coverAssetId: null,
+            primaryAssetId: null,
+            profileExists: false,
+          }}
+          mediaActions={{
+            finalize: vi.fn(),
+            prepare: vi.fn(),
+          }}
+          role="INFLUENCER"
+        />
+      </QueryTestProvider>,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Enviar perfil para análise" }),
+    ).toBeEnabled();
+  });
 });

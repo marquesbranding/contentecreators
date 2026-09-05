@@ -1,11 +1,4 @@
-import {
-  ArrowLeft,
-  Building2,
-  ExternalLink,
-  Mail,
-  MapPin,
-  MessageCircle,
-} from "lucide-react";
+import { ArrowLeft, Building2, MapPin } from "lucide-react";
 import Link from "next/link";
 
 import {
@@ -25,6 +18,7 @@ import {
 } from "@/shared/components/ui/card";
 
 import type { CompanyDetailViewDto } from "../types/company-detail.types";
+import { ContactIconRow, type ContactIconChannel } from "./contact-icon-row";
 
 function CompanyUnavailable() {
   return (
@@ -54,52 +48,35 @@ function CompanyUnavailable() {
   );
 }
 
-function CompanyContactCard({
-  contact,
-}: {
-  contact: CompanyDetailViewDto["contact"];
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Entre em contato</CardTitle>
-        <CardDescription>
-          Canais liberados pela marca para creators aprovados.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-2">
-        {contact.whatsapp ? (
-          <a
-            className={buttonVariants({ variant: "default" })}
-            href={contact.whatsapp.href}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <MessageCircle aria-hidden="true" />
-            Chamar no WhatsApp
-          </a>
-        ) : null}
-        <a
-          className={buttonVariants({ variant: "outline" })}
-          href={contact.email.href}
-        >
-          <Mail aria-hidden="true" />
-          Enviar e-mail
-        </a>
-        {contact.site ? (
-          <a
-            className={buttonVariants({ variant: "outline" })}
-            href={contact.site.href}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <ExternalLink aria-hidden="true" />
-            Abrir site
-          </a>
-        ) : null}
-      </CardContent>
-    </Card>
-  );
+function companyContactChannels(
+  contact: CompanyDetailViewDto["contact"],
+  displayName: string,
+): ContactIconChannel[] {
+  return [
+    ...(contact.whatsapp
+      ? [
+          {
+            href: contact.whatsapp.href,
+            icon: "whatsapp" as const,
+            label: `Chamar ${displayName} no WhatsApp`,
+          },
+        ]
+      : []),
+    {
+      href: contact.email.href,
+      icon: "email" as const,
+      label: `Enviar e-mail para ${displayName}`,
+    },
+    ...(contact.site
+      ? [
+          {
+            href: contact.site.href,
+            icon: "site" as const,
+            label: `Abrir site de ${displayName}`,
+          },
+        ]
+      : []),
+  ];
 }
 
 export function CompanyDetailView({
@@ -173,6 +150,12 @@ export function CompanyDetailView({
               <CardTitle className="text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
                 <h1>{detail.displayName}</h1>
               </CardTitle>
+              <ContactIconRow
+                channels={companyContactChannels(
+                  detail.contact,
+                  detail.displayName,
+                )}
+              />
               {detail.location ? (
                 <CardDescription className="flex items-center gap-2 text-base">
                   <MapPin aria-hidden="true" className="size-4" />
@@ -182,29 +165,24 @@ export function CompanyDetailView({
             </CardHeader>
           </Card>
 
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  <h2>Sobre a marca</h2>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {detail.description ? (
-                  <p className="leading-7 whitespace-pre-line">
-                    {detail.description}
-                  </p>
-                ) : (
-                  <p className="text-muted-foreground leading-7">
-                    Esta marca ainda não adicionou uma descrição pública.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-            <aside aria-label="Ações de contato">
-              <CompanyContactCard contact={detail.contact} />
-            </aside>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <h2>Sobre a marca</h2>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {detail.description ? (
+                <p className="leading-7 whitespace-pre-line">
+                  {detail.description}
+                </p>
+              ) : (
+                <p className="text-muted-foreground leading-7">
+                  Esta marca ainda não adicionou uma descrição pública.
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </article>
       </div>
     </main>

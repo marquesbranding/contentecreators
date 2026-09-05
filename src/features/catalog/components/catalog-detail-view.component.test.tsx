@@ -41,14 +41,31 @@ const detail: CatalogCreatorDetailViewDto = {
       followerCount: 12500,
       interactionCount: 640,
       isPrimary: true,
+      newFollowerCount: 300,
       observedOn: "2026-07-20",
       platform: "INSTAGRAM",
+      sharedContentDescription: "Reels e stories de skincare.",
       source: "SELF_REPORTED",
       viewCount: 84000,
     },
+    {
+      engagementRate: null,
+      followerCount: 8200,
+      interactionCount: null,
+      isPrimary: false,
+      newFollowerCount: null,
+      observedOn: "2026-07-18",
+      platform: "TIKTOK",
+      sharedContentDescription: null,
+      source: "SELF_REPORTED",
+      viewCount: null,
+    },
   ],
   niches: [{ name: "Beleza", slug: "beleza" }],
-  socialProfiles: [{ handle: "@creator", platform: "INSTAGRAM" }],
+  socialProfiles: [
+    { handle: "@creator", platform: "INSTAGRAM" },
+    { handle: "@creator_tiktok", platform: "TIKTOK" },
+  ],
   whatsappContactCount: 5,
 };
 
@@ -62,14 +79,21 @@ describe("CatalogDetailView", () => {
     expect(
       screen.getByRole("heading", { name: "Creator Exemplo" }),
     ).toBeVisible();
-    expect(screen.getByText("12.500 seguidores")).toBeVisible();
+    expect(screen.getAllByText("12.500 seguidores")).toHaveLength(2);
     expect(screen.getByText("Métrica autodeclarada")).toBeVisible();
     expect(
-      screen.getByRole("link", { name: /enviar e-mail/iu }),
+      screen.getByRole("link", { name: "Enviar e-mail para Creator Exemplo" }),
     ).toHaveAttribute("href", "mailto:creator@example.test");
     expect(
-      screen.getByRole("link", { name: /chamar no whatsapp/iu }),
+      screen.getByRole("link", {
+        name: "Chamar Creator Exemplo no WhatsApp",
+      }),
     ).toHaveAttribute("rel", expect.stringContaining("noreferrer"));
+    expect(
+      screen.getByRole("link", {
+        name: "Abrir Instagram de Creator Exemplo",
+      }),
+    ).toHaveAttribute("href", "https://instagram.com/creator");
     expect(
       screen.getByRole("img", { name: /foto de perfil/iu }),
     ).toHaveAttribute("src", detail.media.avatar?.url);
@@ -77,6 +101,21 @@ describe("CatalogDetailView", () => {
     expect(JSON.stringify(container.innerHTML)).not.toMatch(
       /assetId|bucket|objectPath|cnpj|operationalEmail/iu,
     );
+
+    expect(
+      screen.getByRole("heading", { name: "Redes sociais" }),
+    ).toBeVisible();
+    expect(screen.getByText("@creator_tiktok")).toBeVisible();
+    expect(screen.getByText("8.200 seguidores")).toBeVisible();
+
+    expect(
+      screen.getByRole("heading", { name: "Painel do Instagram" }),
+    ).toBeVisible();
+    expect(screen.getByText("Visualizações")).toBeVisible();
+    expect(screen.getByText("84.000")).toBeVisible();
+    expect(screen.getByText("300")).toBeVisible();
+    expect(screen.getByText(/Reels e stories de skincare\./iu)).toBeVisible();
+
     await user.tab();
     expect(screen.getByRole("link", { name: /^voltar$/iu })).toHaveFocus();
     expect(
@@ -150,9 +189,9 @@ describe("CatalogDetailView", () => {
       );
 
       expect(screen.getByRole("main")).toBeVisible();
-      expect(screen.getByRole("complementary")).toHaveAccessibleName(
-        "Ações de contato",
-      );
+      expect(
+        screen.getByRole("group", { name: "Entre em contato" }),
+      ).toBeVisible();
       expect(
         await getBlockingComponentAccessibilityViolations(container),
       ).toEqual([]);

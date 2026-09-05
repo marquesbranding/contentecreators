@@ -6,17 +6,13 @@
  * between pushed down) at every breakpoint that has more than one column.
  */
 const OFFSET_CLASS = {
-  lg: "lg:mt-16",
-  sm: "sm:mt-16",
+  lg: "lg:mt-8",
+  sm: "sm:mt-8",
   xl: "xl:mt-16",
 } as const;
 
 const SM_COLUMN_OFFSETS = ["sm:mt-0", OFFSET_CLASS.sm] as const;
-const LG_COLUMN_OFFSETS = [
-  "lg:mt-0",
-  OFFSET_CLASS.lg,
-  "lg:mt-0",
-] as const;
+const LG_COLUMN_OFFSETS = ["lg:mt-0", OFFSET_CLASS.lg, "lg:mt-0"] as const;
 const XL_COLUMN_OFFSETS = [
   "xl:mt-0",
   OFFSET_CLASS.xl,

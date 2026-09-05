@@ -46,8 +46,12 @@ function createRunner(role: TestRole, status: TestStatus) {
   ) as unknown as VerifiedAccountTransactionRunner;
 }
 
-function createRepository(items = [eligibleItem]): CompanyCarouselRepository {
+function createRepository(
+  items = [eligibleItem],
+  segments = ["Moda"],
+): CompanyCarouselRepository {
   return {
+    listCompanySegmentFacets: vi.fn(async () => segments),
     listEligibleCompanies: vi.fn(async () => items),
   };
 }
@@ -70,6 +74,7 @@ describe("company carousel service", () => {
     );
 
     expect(result).toEqual({
+      facets: { segments: ["Moda"] },
       items: [eligibleItem],
       limit: 24,
     });

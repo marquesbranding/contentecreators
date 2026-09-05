@@ -35,8 +35,10 @@ export interface CatalogCreatorDetailRecord {
     followerCount: number | null;
     interactionCount: number | null;
     isPrimary: boolean;
+    newFollowerCount: number | null;
     observedOn: Date;
     platform: CatalogSocialPlatform;
+    sharedContentDescription: string | null;
     source: "SELF_REPORTED";
     viewCount: number | null;
   }[];

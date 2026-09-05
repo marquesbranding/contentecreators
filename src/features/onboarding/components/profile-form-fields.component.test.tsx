@@ -202,15 +202,11 @@ describe("ProfileFormFields company CNPJ experience", () => {
     expect(
       screen.getByRole("radio", { name: /sou influencer/iu }),
     ).not.toBeChecked();
-    expect(
-      screen.getByRole("checkbox", { name: "YouTube" }),
-    ).toBeChecked();
-    expect(
-      screen.getByLabelText("Link do perfil no YouTube"),
-    ).toHaveValue("https://youtube.com/@creator-restaurada");
-    expect(
-      screen.getByText("Tecnologia, games e inovação"),
-    ).toBeVisible();
+    expect(screen.getByRole("checkbox", { name: "YouTube" })).toBeChecked();
+    expect(screen.getByLabelText("Link do perfil no YouTube")).toHaveValue(
+      "https://youtube.com/@creator-restaurada",
+    );
+    expect(screen.getByText("Tecnologia, games e inovação")).toBeVisible();
     expect(screen.getByText("Viagens e turismo")).toBeVisible();
     expect(
       screen.getByRole("checkbox", {
@@ -244,6 +240,32 @@ describe("ProfileFormFields company CNPJ experience", () => {
     expect(otherNiche).toBeRequired();
     await user.type(otherNiche, "Artesanato sustentável");
     expect(otherNiche).toHaveValue("Artesanato sustentável");
+  });
+
+  it("keeps the niche chips and the search input flowing in the same row", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<ProfileFormFields role="INFLUENCER" />);
+
+    const nichesCombobox = screen.getByRole("combobox", {
+      name: "Principais nichos",
+    });
+    await user.click(nichesCombobox);
+    await user.click(
+      await screen.findByRole("option", {
+        name: "Tecnologia, games e inovação",
+      }),
+    );
+
+    const chipsContainer = container.querySelector(
+      '[data-slot="combobox-chips"]',
+    );
+    const chip = chipsContainer?.querySelector('[data-slot="combobox-chip"]');
+    expect(chip).toHaveTextContent("Tecnologia, games e inovação");
+    expect(chip?.querySelector("span")).toHaveAttribute(
+      "title",
+      "Tecnologia, games e inovação",
+    );
+    expect(chipsContainer).toContainElement(nichesCombobox);
   });
 
   it("offers predefined company segments and reveals a required text field for Outros", async () => {
@@ -393,5 +415,72 @@ describe("ProfileFormFields company CNPJ experience", () => {
       screen.queryByText("Localidade adicional 1"),
     ).not.toBeInTheDocument();
     expect(screen.getByText("Localização principal")).toBeInTheDocument();
+  });
+
+  it("orders the social channel columns as rede social, seguidores, link e principal", () => {
+    const { container } = render(<ProfileFormFields role="INFLUENCER" />);
+
+    const header = container.querySelector(
+      '[data-field-name="socialChannels"] .uppercase',
+    );
+    const headerText = header?.textContent ?? "";
+    const order = [
+      "Rede social",
+      "Seguidores",
+      "Link do perfil",
+      "Principal",
+    ].map((label) => headerText.indexOf(label));
+    expect(order.every((index) => index >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+
+    expect(
+      screen.getByRole("button", { name: "O que é a rede principal" }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the primary-network tooltip on hover and on keyboard focus", async () => {
+    const user = userEvent.setup();
+    render(<ProfileFormFields role="INFLUENCER" />);
+
+    const trigger = screen.getByRole("button", {
+      name: "O que é a rede principal",
+    });
+
+    await user.hover(trigger);
+    expect(
+      await screen.findByText(
+        "Escolha sua principal rede social, essa informação ganhará destaque no seu perfil",
+      ),
+    ).toBeVisible();
+    await user.unhover(trigger);
+
+    trigger.focus();
+    expect(
+      await screen.findByText(
+        "Escolha sua principal rede social, essa informação ganhará destaque no seu perfil",
+      ),
+    ).toBeVisible();
+  });
+
+  it("shows the Instagram autodeclared metrics panel with a tooltip on shared content", async () => {
+    const user = userEvent.setup();
+    render(<ProfileFormFields role="INFLUENCER" />);
+
+    await user.click(screen.getByRole("checkbox", { name: "Instagram" }));
+
+    expect(
+      screen.getByText("Métricas do Instagram (autodeclaradas)"),
+    ).toBeInTheDocument();
+
+    const shareTooltipTrigger = screen.getByRole("button", {
+      name: "Sobre Conteúdo que você compartilhou",
+    });
+    await user.hover(shareTooltipTrigger);
+
+    expect(
+      await screen.findByText(
+        "Essa informação você encontra no Painel Profissional, no seu perfil de Instagram",
+      ),
+    ).toBeVisible();
   });
 });

@@ -1,4 +1,5 @@
 import type { CatalogSignedMediaDto } from "./catalog-detail-view.types";
+import type { CompanyCarouselFacetsDto } from "./company-carousel.types";
 
 export interface CompanyCarouselViewItemDto {
   city: string | null;
@@ -14,6 +15,7 @@ export interface CompanyCarouselViewItemDto {
 }
 
 export interface CompanyCarouselViewResponseDto {
+  facets: CompanyCarouselFacetsDto;
   items: CompanyCarouselViewItemDto[];
   limit: number;
 }

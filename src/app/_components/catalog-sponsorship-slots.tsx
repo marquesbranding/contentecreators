@@ -67,16 +67,16 @@ function toCreativeViewModel(
 }
 
 /**
- * Rendered separately from `CatalogSponsorshipSlots` because it belongs *inside*
+ * Built separately from `CatalogSponsorshipSlots` because it belongs *inside*
  * the listing, not around it. The catalog feature cannot import sponsorships
- * (see the boundaries rule in eslint.config.mjs), so the app layer renders the
- * row here and hands it down as an opaque node.
+ * (see the boundaries rule in eslint.config.mjs), so the app layer builds one
+ * row per eligible midlist placement here and hands the list down as opaque
+ * nodes — the catalog listing then repeats and cycles through them every N
+ * items, instead of showing a single combined block once.
  */
-export function CatalogMidlistSponsorship({
-  slots,
-}: {
-  slots?: CatalogSponsorshipSlotsDto;
-}) {
+export function buildCatalogMidlistSlots(
+  slots?: CatalogSponsorshipSlotsDto,
+): ReactNode[] {
   const midlist =
     slots?.midlist?.flatMap((slot) => {
       const placement = placementForSlot(slot, "CAROUSEL");
@@ -84,16 +84,13 @@ export function CatalogMidlistSponsorship({
       return placement ? [placement] : [];
     }) ?? [];
 
-  if (midlist.length === 0) {
-    return null;
-  }
-
-  return (
+  return midlist.map((placement) => (
     <SponsorshipGridRow
-      creatives={midlist.map(toCreativeViewModel)}
+      creatives={[toCreativeViewModel(placement)]}
+      key={placement.id}
       label="Patrocínios no catálogo"
     />
-  );
+  ));
 }
 
 export function CatalogSponsorshipSlots({

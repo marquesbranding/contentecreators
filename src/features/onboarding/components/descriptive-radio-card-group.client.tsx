@@ -81,7 +81,9 @@ export function DescriptiveRadioCardGroup<Value extends string>({
               <span
                 className={cn(
                   "flex size-11 shrink-0 items-center justify-center rounded-xl",
-                  selected ? "bg-brand-blue text-white" : "bg-muted text-foreground",
+                  selected
+                    ? "bg-brand-blue text-white"
+                    : "bg-muted text-foreground",
                 )}
               >
                 <Icon aria-hidden="true" className="size-5" />
@@ -91,7 +93,7 @@ export function DescriptiveRadioCardGroup<Value extends string>({
                   {option.label}
                 </strong>
                 <span
-                  className="text-muted-foreground mt-1 block text-sm leading-5"
+                  className="text-muted-foreground mt-1 block text-justify text-sm leading-5 hyphens-auto"
                   id={descriptionId}
                 >
                   {option.description}

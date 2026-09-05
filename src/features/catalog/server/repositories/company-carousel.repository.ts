@@ -27,6 +27,33 @@ export interface CompanyCarouselRepository {
     limit: number,
     filters?: CompanyCarouselFilters,
   ): Promise<CompanyCarouselItemDto[]>;
+  listCompanySegmentFacets(
+    transaction: ApplicationTransaction,
+  ): Promise<string[]>;
+}
+
+const eligibleCompanyPredicates = [
+  eq(accounts.role, "COMPANY"),
+  eq(accounts.status, "APPROVED"),
+  eq(accounts.completionPercentage, 100),
+  isNull(accounts.archivedAt),
+  isNull(companyProfiles.archivedAt),
+  sql`length(trim(${companyProfiles.tradeName})) > 0`,
+];
+
+export async function listCompanySegmentFacets(
+  transaction: ApplicationTransaction,
+): Promise<string[]> {
+  const rows = await transaction
+    .selectDistinct({ segment: companyProfiles.segment })
+    .from(companyProfiles)
+    .innerJoin(accounts, eq(accounts.id, companyProfiles.accountId))
+    .where(and(...eligibleCompanyPredicates))
+    .orderBy(asc(companyProfiles.segment));
+
+  return rows
+    .map((row) => row.segment?.trim())
+    .filter((segment): segment is string => Boolean(segment));
 }
 
 export async function listEligibleCarouselCompanies(
@@ -34,14 +61,7 @@ export async function listEligibleCarouselCompanies(
   limit: number,
   filters: CompanyCarouselFilters = {},
 ): Promise<CompanyCarouselItemDto[]> {
-  const predicates = [
-    eq(accounts.role, "COMPANY"),
-    eq(accounts.status, "APPROVED"),
-    eq(accounts.completionPercentage, 100),
-    isNull(accounts.archivedAt),
-    isNull(companyProfiles.archivedAt),
-    sql`length(trim(${companyProfiles.tradeName})) > 0`,
-  ];
+  const predicates = [...eligibleCompanyPredicates];
 
   if (filters.search) {
     const normalizedSearch = sql`public.normalize_search_text(${filters.search})`;

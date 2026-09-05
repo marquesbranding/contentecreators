@@ -1,43 +1,29 @@
 export { ApprovedCatalogEntry } from "./components/approved-catalog-entry";
-export { CreatorCatalogView } from "./components/creator-catalog-view.client";
-export { HydratedCreatorCatalog } from "./components/hydrated-creator-catalog.client";
 export { CatalogDetailScreen } from "./components/catalog-detail-screen.client";
 export { DetailLoading as CatalogDetailLoading } from "./components/catalog-detail-view";
 export { CompanyDetailView } from "./components/company-detail-view";
-export { CompanyCarouselScreen } from "./components/company-carousel-screen.client";
 export { CatalogTipsPanel } from "./components/catalog-tips-panel";
+export { HydratedDirectory } from "./components/hydrated-directory.client";
+export { DirectoryView } from "./components/directory-view.client";
 export {
-  creatorCatalogKeys,
-  clearProtectedCatalogQueries,
-  fetchCreatorCatalogPage,
-} from "./api/creator-catalog.api";
+  DirectoryLoadingSkeleton,
+  type DirectoryResultsStatus,
+} from "./components/directory-results";
 export {
-  createCreatorCatalogUrlSearchParams,
-  hasCreatorCatalogActiveFilters,
-  readCreatorCatalogUrlState,
-  useCreatorCatalogUrlState,
-} from "./hooks/catalog-url-state";
+  directoryKeys,
+  fetchDirectoryPage,
+  clearProtectedCatalogQueries as clearProtectedDirectoryQueries,
+} from "./api/catalog-directory.api";
 export {
-  createUseCreatorCatalog,
-  useCreatorCatalog,
-} from "./hooks/use-creator-catalog";
+  useDirectoryUrlState,
+  hasDirectoryActiveFilters,
+} from "./hooks/directory-url-state";
 export {
   CatalogCreatorCard,
   type CatalogCreatorCardViewModel,
   type CatalogCreatorMediaViewModel,
   type CatalogSelfReportedMetricViewModel,
 } from "./components/catalog-creator-card";
-export {
-  CatalogFilterControls,
-  type CatalogActiveFilter,
-  type CatalogFilterOption,
-  type CatalogFilterOptions,
-} from "./components/catalog-filter-controls.client";
-export {
-  CatalogLoadingSkeleton,
-  CatalogResults,
-  type CatalogResultsStatus,
-} from "./components/catalog-results";
 export {
   creatorCatalogBrowserCardSchema,
   creatorCatalogBrowserPageSchema,
@@ -114,3 +100,30 @@ export type {
   CreatorCatalogPageDto,
   CreatorCatalogQuery,
 } from "./types/creator-catalog.types";
+export {
+  DIRECTORY_DEFAULT_PAGE_SIZE,
+  DIRECTORY_MAX_PAGE_SIZE,
+  directoryFiltersSchema,
+  directoryTypeFilterSchema,
+  parseDirectorySearchParams,
+  type DirectoryFiltersInput,
+} from "./schemas/catalog-directory.schema";
+export {
+  directoryBrowserEntrySchema,
+  directoryBrowserPageSchema,
+  directoryFacetsSchema,
+  type CatalogSignedImageDto as DirectorySignedImageDto,
+  type DirectoryBrowserEntryDto,
+  type DirectoryBrowserPageDto,
+  type DirectoryCompanyBrowserEntryDto,
+  type DirectoryCreatorBrowserEntryDto,
+} from "./api/catalog-directory.contract";
+export type {
+  DirectoryCompanyEntryDto,
+  DirectoryCreatorEntryDto,
+  DirectoryEntryDto,
+  DirectoryFacetsDto,
+  DirectoryFilters,
+  DirectoryPageDto,
+  DirectoryTypeFilter,
+} from "./types/catalog-directory.types";

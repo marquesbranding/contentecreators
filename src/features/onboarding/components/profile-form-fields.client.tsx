@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Plus, Search, Star, Trash2 } from "lucide-react";
+import { Info, MapPin, Plus, Search, Star, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -35,6 +35,11 @@ import {
 } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/shared/components/ui/tooltip";
 import { SocialPlatformIcon } from "@/shared/components/social-platform-icon";
 
 import { isValidCnpj, normalizeCnpj } from "../domain/cnpj";
@@ -127,6 +132,68 @@ function emptyAdditionalLocation(
     state: "",
     street: "",
   };
+}
+
+function InfoTooltip({ label, text }: { label: string; text: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        aria-label={label}
+        className="text-muted-foreground hover:text-foreground inline-flex size-5 items-center justify-center rounded-full"
+        type="button"
+      >
+        <Info aria-hidden="true" className="size-3.5" />
+      </TooltipTrigger>
+      <TooltipContent>{text}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+function InstagramMetricField({
+  id,
+  label,
+  maxLength,
+  minLength,
+  onChange,
+  placeholder,
+  tooltip,
+  type = "number",
+  value,
+}: {
+  id: string;
+  label: string;
+  maxLength?: number;
+  minLength?: number;
+  onChange: (value: string) => void;
+  placeholder: string;
+  tooltip?: string;
+  type?: "number" | "text";
+  value: string;
+}) {
+  return (
+    <div className="flex flex-col">
+      <label
+        className="text-muted-foreground mb-1 flex min-h-10 items-start gap-1 text-xs font-medium"
+        htmlFor={id}
+      >
+        <span>{label}</span>
+        {tooltip ? (
+          <InfoTooltip label={`Sobre ${label}`} text={tooltip} />
+        ) : null}
+      </label>
+      <Input
+        id={id}
+        inputMode={type === "number" ? "numeric" : undefined}
+        maxLength={maxLength}
+        min={type === "number" ? 0 : undefined}
+        minLength={minLength}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        type={type}
+        value={value}
+      />
+    </div>
+  );
 }
 
 function ErrorMessages({ errors, id }: { errors?: string[]; id: string }) {
@@ -652,7 +719,10 @@ export function ProfileFormFields({
 
   return (
     <>
-      <div hidden={currentStep !== undefined && currentStep !== "profile"}>
+      <div
+        data-step="2"
+        hidden={currentStep !== undefined && currentStep !== "profile"}
+      >
         <FieldSet>
           <FieldLegend>
             {role === "COMPANY" ? "Dados da empresa" : "Seu perfil de creator"}
@@ -822,7 +892,9 @@ export function ProfileFormFields({
               </>
             ) : !showCreatorTypeField ? null : creatorType === undefined ? (
               <Field
-                data-invalid={Boolean(resolveFieldErrors("creatorType")?.length)}
+                data-invalid={Boolean(
+                  resolveFieldErrors("creatorType")?.length,
+                )}
               >
                 <FieldLegend id="creator-type-label" required>
                   Como você cria conteúdo?
@@ -981,7 +1053,10 @@ export function ProfileFormFields({
         </FieldSet>
       </div>
 
-      <div hidden={currentStep !== undefined && currentStep !== "audience"}>
+      <div
+        data-step="3"
+        hidden={currentStep !== undefined && currentStep !== "audience"}
+      >
         {role === "INFLUENCER" ? (
           <FieldSet>
             <FieldLegend>Audiência e canais</FieldLegend>
@@ -1011,11 +1086,17 @@ export function ProfileFormFields({
                 role="group"
               >
                 <div className="space-y-1">
-                  <div className="text-muted-foreground hidden grid-cols-[3.5rem_8rem_6rem_1fr] gap-3 px-1 text-xs font-semibold tracking-wide uppercase sm:grid">
-                    <span className="text-left">Principal</span>
+                  <div className="text-muted-foreground hidden grid-cols-[minmax(9rem,1fr)_6rem_minmax(0,2fr)_5rem] gap-3 px-1 text-xs font-semibold tracking-wide uppercase sm:grid">
                     <span className="text-left">Rede social</span>
                     <span className="text-center">Seguidores</span>
                     <span className="text-left">Link do perfil</span>
+                    <span className="flex items-center justify-end gap-1 text-right normal-case">
+                      Principal
+                      <InfoTooltip
+                        label="O que é a rede principal"
+                        text="Escolha sua principal rede social, essa informação ganhará destaque no seu perfil"
+                      />
+                    </span>
                   </div>
 
                   {SOCIAL_CHANNEL_PLATFORMS.map((platform) => {
@@ -1026,55 +1107,23 @@ export function ProfileFormFields({
 
                     return (
                       <div
-                        className="flex flex-col gap-3 border-b py-3 last:border-0 sm:grid sm:grid-cols-[3.5rem_8rem_6rem_1fr] sm:items-center sm:border-0"
+                        className="flex flex-col gap-3 border-b py-3 last:border-0 sm:grid sm:grid-cols-[minmax(9rem,1fr)_6rem_minmax(0,2fr)_5rem] sm:items-center sm:border-0"
                         key={platform}
                       >
-                        <div className="flex items-center gap-3 sm:contents">
-                          <div className="flex items-center justify-start">
-                            <button
-                              aria-label={
-                                entry.primary
-                                  ? `${platformLabel} é a rede principal`
-                                  : `Marcar ${platformLabel} como principal`
-                              }
-                              aria-pressed={entry.primary}
-                              className={`flex size-9 items-center justify-center rounded-full transition-colors ${
-                                entry.primary
-                                  ? "text-amber-500"
-                                  : "text-muted-foreground/40 hover:text-muted-foreground disabled:hover:text-muted-foreground/40"
-                              }`}
-                              disabled={!entry.checked}
-                              onClick={() => markPrimaryChannel(platform)}
-                              type="button"
-                            >
-                              <Star
-                                aria-hidden="true"
-                                className="size-5"
-                                fill={entry.primary ? "currentColor" : "none"}
-                              />
-                            </button>
-                            <input
-                              name={`socialChannels.${platform}.primary`}
-                              type="hidden"
-                              value={entry.primary ? "on" : ""}
-                            />
-                          </div>
-
-                          <label className="flex min-h-9 flex-1 cursor-pointer items-center gap-2 font-semibold sm:flex-none">
-                            <Checkbox
-                              checked={entry.checked}
-                              name={`socialChannels.${platform}.selected`}
-                              onCheckedChange={(checked) =>
-                                handleChannelCheck(platform, Boolean(checked))
-                              }
-                            />
-                            <SocialPlatformIcon
-                              className="size-5 shrink-0"
-                              platform={platform}
-                            />
-                            {platformLabel}
-                          </label>
-                        </div>
+                        <label className="flex min-h-9 flex-1 cursor-pointer items-center gap-2 font-semibold sm:flex-none">
+                          <Checkbox
+                            checked={entry.checked}
+                            name={`socialChannels.${platform}.selected`}
+                            onCheckedChange={(checked) =>
+                              handleChannelCheck(platform, Boolean(checked))
+                            }
+                          />
+                          <SocialPlatformIcon
+                            className="size-5 shrink-0"
+                            platform={platform}
+                          />
+                          {platformLabel}
+                        </label>
 
                         <div className="flex flex-col gap-1 sm:contents">
                           <label
@@ -1084,6 +1133,11 @@ export function ProfileFormFields({
                             Seguidores
                           </label>
                           <Input
+                            aria-invalid={Boolean(
+                              resolveFieldErrors(
+                                `socialChannels.${platform}.followers`,
+                              )?.length,
+                            )}
                             aria-label={`Seguidores no ${platformLabel}`}
                             className="rounded-xl sm:text-center sm:tabular-nums"
                             disabled={!entry.checked}
@@ -1113,6 +1167,11 @@ export function ProfileFormFields({
                             Link do perfil
                           </label>
                           <Input
+                            aria-invalid={Boolean(
+                              resolveFieldErrors(
+                                `socialChannels.${platform}.url`,
+                              )?.length,
+                            )}
                             aria-label={`Link do perfil no ${platformLabel}`}
                             disabled={!entry.checked}
                             id={urlInputId}
@@ -1132,100 +1191,101 @@ export function ProfileFormFields({
                           />
                         </div>
 
+                        <div className="flex items-center justify-between gap-2 sm:contents">
+                          <span className="text-muted-foreground text-xs font-medium sm:hidden">
+                            Definir como principal
+                          </span>
+                          <div className="flex items-center justify-end">
+                            <button
+                              aria-label={
+                                entry.primary
+                                  ? `${platformLabel} é a rede principal`
+                                  : `Marcar ${platformLabel} como principal`
+                              }
+                              aria-pressed={entry.primary}
+                              className={`flex size-11 items-center justify-center rounded-full transition-colors ${
+                                entry.primary
+                                  ? "text-amber-500"
+                                  : "text-muted-foreground/40 hover:text-muted-foreground disabled:hover:text-muted-foreground/40"
+                              }`}
+                              disabled={!entry.checked}
+                              onClick={() => markPrimaryChannel(platform)}
+                              type="button"
+                            >
+                              <Star
+                                aria-hidden="true"
+                                className="size-5"
+                                fill={entry.primary ? "currentColor" : "none"}
+                              />
+                            </button>
+                            <input
+                              name={`socialChannels.${platform}.primary`}
+                              type="hidden"
+                              value={entry.primary ? "on" : ""}
+                            />
+                          </div>
+                        </div>
+
                         {platform === "INSTAGRAM" && entry.checked ? (
-                          <div className="col-span-4 grid gap-3 pt-1 sm:grid-cols-2 lg:grid-cols-4">
-                            <div>
-                              <label
-                                className="mb-1 block text-xs font-medium"
-                                htmlFor="creator-instagram-views"
-                              >
-                                Visualizações
-                              </label>
-                              <Input
+                          <div className="bg-muted/40 col-span-4 rounded-xl border p-4">
+                            <p className="text-foreground mb-3 text-xs font-semibold">
+                              Métricas do Instagram (autodeclaradas)
+                            </p>
+                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                              <InstagramMetricField
                                 id="creator-instagram-views"
-                                inputMode="numeric"
-                                min={0}
-                                name="socialChannels.INSTAGRAM.views"
-                                onChange={(event) =>
+                                label="Visualizações"
+                                onChange={(value) =>
                                   updateChannelField(
                                     "INSTAGRAM",
                                     "views",
-                                    event.target.value,
+                                    value,
                                   )
                                 }
                                 placeholder="Ex.: 50000"
-                                type="number"
                                 value={entry.views}
                               />
-                            </div>
-                            <div>
-                              <label
-                                className="mb-1 block text-xs font-medium"
-                                htmlFor="creator-instagram-interactions"
-                              >
-                                Interações
-                              </label>
-                              <Input
+                              <InstagramMetricField
                                 id="creator-instagram-interactions"
-                                inputMode="numeric"
-                                min={0}
-                                name="socialChannels.INSTAGRAM.interactions"
-                                onChange={(event) =>
+                                label="Interações"
+                                onChange={(value) =>
                                   updateChannelField(
                                     "INSTAGRAM",
                                     "interactions",
-                                    event.target.value,
+                                    value,
                                   )
                                 }
                                 placeholder="Ex.: 3200"
-                                type="number"
                                 value={entry.interactions}
                               />
-                            </div>
-                            <div>
-                              <label
-                                className="mb-1 block text-xs font-medium"
-                                htmlFor="creator-instagram-new-followers"
-                              >
-                                Novos seguidores
-                              </label>
-                              <Input
+                              <InstagramMetricField
                                 id="creator-instagram-new-followers"
-                                inputMode="numeric"
-                                min={0}
-                                name="socialChannels.INSTAGRAM.newFollowers"
-                                onChange={(event) =>
+                                label="Novos seguidores"
+                                onChange={(value) =>
                                   updateChannelField(
                                     "INSTAGRAM",
                                     "newFollowers",
-                                    event.target.value,
+                                    value,
                                   )
                                 }
                                 placeholder="Ex.: 800"
-                                type="number"
                                 value={entry.newFollowers}
                               />
-                            </div>
-                            <div>
-                              <label
-                                className="mb-1 block text-xs font-medium"
-                                htmlFor="creator-instagram-shared-content"
-                              >
-                                Conteúdo que você compartilhou
-                              </label>
-                              <Input
+                              <InstagramMetricField
                                 id="creator-instagram-shared-content"
+                                label="Conteúdo que você compartilhou"
                                 maxLength={200}
                                 minLength={2}
-                                name="socialChannels.INSTAGRAM.sharedContent"
-                                onChange={(event) =>
+                                onChange={(value) =>
                                   updateChannelField(
                                     "INSTAGRAM",
                                     "sharedContent",
-                                    event.target.value,
+                                    value,
                                   )
                                 }
                                 placeholder="Ex.: Reels, vlogs, unboxings"
+                                tooltip="Essa informação você encontra no Painel Profissional, no seu perfil de Instagram"
+                                type="text"
                                 value={entry.sharedContent}
                               />
                             </div>
@@ -1286,20 +1346,20 @@ export function ProfileFormFields({
                         <ComboboxChip key={value}>{item.label}</ComboboxChip>
                       ) : null;
                     })}
+                    <ComboboxInput
+                      aria-describedby="creator-niches-error"
+                      aria-invalid={Boolean(
+                        resolveFieldErrors("nicheSlugs")?.length,
+                      )}
+                      aria-label="Principais nichos"
+                      id="creator-niches-input"
+                      placeholder={
+                        selectedNicheSlugsList.length === 0
+                          ? "Buscar nichos..."
+                          : undefined
+                      }
+                    />
                   </ComboboxChips>
-                  <ComboboxInput
-                    aria-describedby="creator-niches-error"
-                    aria-invalid={Boolean(
-                      resolveFieldErrors("nicheSlugs")?.length,
-                    )}
-                    aria-label="Principais nichos"
-                    id="creator-niches-input"
-                    placeholder={
-                      selectedNicheSlugsList.length === 0
-                        ? "Buscar nichos..."
-                        : undefined
-                    }
-                  />
                 </ComboboxInputGroup>
                 <ComboboxContent>
                   {(item: ComboboxOption) => (
@@ -1610,7 +1670,10 @@ export function ProfileFormFields({
         )}
       </div>
 
-      <div hidden={currentStep !== undefined && currentStep !== "location"}>
+      <div
+        data-step="4"
+        hidden={currentStep !== undefined && currentStep !== "location"}
+      >
         <FieldSet>
           <FieldLegend>Localização</FieldLegend>
           <FieldDescription>

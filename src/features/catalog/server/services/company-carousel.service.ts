@@ -19,6 +19,7 @@ import type {
 } from "../../types/company-carousel.types";
 import {
   type CompanyCarouselRepository,
+  listCompanySegmentFacets,
   listEligibleCarouselCompanies,
 } from "../repositories/company-carousel.repository";
 
@@ -52,13 +53,19 @@ export function createCompanyCarouselService({
           requireRole(account, ["INFLUENCER"]);
           requireApproved(account);
 
-          const items = await repository.listEligibleCompanies(
-            transaction,
-            limit,
-            { search, segment },
-          );
+          const [items, segments] = await Promise.all([
+            repository.listEligibleCompanies(transaction, limit, {
+              search,
+              segment,
+            }),
+            repository.listCompanySegmentFacets(transaction),
+          ]);
 
-          return companyCarouselResponseSchema.parse({ items, limit });
+          return companyCarouselResponseSchema.parse({
+            facets: { segments },
+            items,
+            limit,
+          });
         },
       );
     },
@@ -68,6 +75,7 @@ export function createCompanyCarouselService({
 export async function createServerCompanyCarouselService() {
   return createCompanyCarouselService({
     repository: {
+      listCompanySegmentFacets,
       listEligibleCompanies: listEligibleCarouselCompanies,
     },
     runVerifiedAccountTransaction:

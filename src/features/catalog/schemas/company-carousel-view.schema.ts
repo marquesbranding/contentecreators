@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { COMPANY_CAROUSEL_MAX_LIMIT } from "../types/company-carousel.types";
 import { catalogSignedMediaSchema } from "./catalog-detail-view.schema";
+import { companyCarouselFacetsSchema } from "./company-carousel.schema";
 
 function isSafeWebsiteUrl(value: string) {
   try {
@@ -19,6 +20,7 @@ function isSafeWebsiteUrl(value: string) {
 
 export const companyCarouselViewResponseSchema = z
   .object({
+    facets: companyCarouselFacetsSchema,
     items: z.array(
       z
         .object({

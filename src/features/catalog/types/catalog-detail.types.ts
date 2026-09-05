@@ -23,8 +23,10 @@ export interface CatalogCreatorMetricDto {
   followerCount: number | null;
   interactionCount: number | null;
   isPrimary: boolean;
+  newFollowerCount: number | null;
   observedOn: string;
   platform: CatalogSocialPlatform;
+  sharedContentDescription: string | null;
   source: "SELF_REPORTED";
   viewCount: number | null;
 }

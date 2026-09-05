@@ -7,27 +7,22 @@ import { redirect } from "next/navigation";
 import {
   ApprovedCatalogEntry,
   CatalogTipsPanel,
-  CompanyCarouselScreen,
-  creatorCatalogKeys,
-  creatorCatalogFiltersSchema,
-  HydratedCreatorCatalog,
-  type CreatorCatalogBrowserPageDto,
+  directoryFiltersSchema,
+  directoryKeys,
+  HydratedDirectory,
+  type DirectoryBrowserPageDto,
+  type DirectoryFilters,
 } from "@/features/catalog";
 import { signOutAction } from "@/features/identity/server";
-import {
-  createCompanyCarouselViewService,
-  createServerCompanyCarouselService,
-} from "@/features/catalog/server";
-import { getServerSignedMedia } from "@/features/media/server";
 import { AccountStatusBoundary } from "@/features/moderation/server";
 import { getServerQueryClient } from "@/shared/server/query-client";
 
 import {
-  CatalogMidlistSponsorship,
+  buildCatalogMidlistSlots,
   CatalogSponsorshipSlots,
 } from "@/app/_components/catalog-sponsorship-slots";
+import { loadServerCatalogDirectoryPage } from "@/app/_server/catalog-directory-page.loader";
 import { loadServerCatalogSponsorshipSlots } from "@/app/_server/catalog-sponsorship-slots.loader";
-import { loadServerCreatorCatalogPage } from "@/app/_server/creator-catalog-page.loader";
 
 export const metadata: Metadata = {
   title: "Catálogo",
@@ -39,19 +34,27 @@ interface CatalogPageProps {
 
 function parseCatalogPageFilters(
   rawSearchParams: Record<string, string | string[] | undefined>,
-) {
-  const singleValueEntries = Object.entries(rawSearchParams).flatMap(
-    ([key, value]) => {
-      const selected = Array.isArray(value) ? value[0] : value;
+): DirectoryFilters {
+  const entries: Record<string, string | string[]> = {};
 
-      return selected === undefined ? [] : [[key, selected] as const];
-    },
-  );
-  const result = creatorCatalogFiltersSchema.safeParse(
-    Object.fromEntries(singleValueEntries),
-  );
+  for (const [key, value] of Object.entries(rawSearchParams)) {
+    if (value === undefined) {
+      continue;
+    }
 
-  return result.success ? result.data : creatorCatalogFiltersSchema.parse({});
+    entries[key] =
+      key === "type"
+        ? Array.isArray(value)
+          ? value
+          : [value]
+        : Array.isArray(value)
+          ? (value[0] ?? "")
+          : value;
+  }
+
+  const result = directoryFiltersSchema.safeParse(entries);
+
+  return result.success ? result.data : directoryFiltersSchema.parse({});
 }
 
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
@@ -65,56 +68,22 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         }
 
         const queryClient = getServerQueryClient();
-        const requestId = `catalog-page-${randomUUID()}`;
-
-        if (account.role === "INFLUENCER") {
-          const [companyCarousel, sponsorshipSlots] = await Promise.all([
-            (async () => {
-              const service = await createServerCompanyCarouselService();
-              const viewService = createCompanyCarouselViewService({
-                getSignedMedia: getServerSignedMedia,
-                listCompanies: service.list,
-              });
-
-              return viewService.list({}, `company-carousel-${randomUUID()}`);
-            })(),
-            loadServerCatalogSponsorshipSlots(account.role),
-          ]);
-
-          return (
-            <ApprovedCatalogEntry
-              signOutAction={signOutAction}
-              viewerRole={account.role}
-            >
-              <CatalogSponsorshipSlots slots={sponsorshipSlots}>
-                <div className="mb-8 space-y-8">
-                  <CompanyCarouselScreen
-                    initialData={companyCarousel}
-                    midlistSlot={
-                      <CatalogMidlistSponsorship slots={sponsorshipSlots} />
-                    }
-                  />
-                  <CatalogTipsPanel />
-                </div>
-              </CatalogSponsorshipSlots>
-            </ApprovedCatalogEntry>
-          );
-        }
+        const requestId = `catalog-directory-${randomUUID()}`;
 
         const [, sponsorshipSlots] = await Promise.all([
           queryClient.prefetchInfiniteQuery({
-            getNextPageParam: (lastPage: CreatorCatalogBrowserPageDto) =>
+            getNextPageParam: (lastPage: DirectoryBrowserPageDto) =>
               lastPage.nextCursor ?? undefined,
             initialPageParam: filters.cursor ?? null,
             queryFn: ({ pageParam }) =>
-              loadServerCreatorCatalogPage(
+              loadServerCatalogDirectoryPage(
                 {
                   ...filters,
                   cursor: pageParam ?? undefined,
                 },
                 requestId,
               ),
-            queryKey: creatorCatalogKeys.list(filters),
+            queryKey: directoryKeys.list(filters),
           }),
           loadServerCatalogSponsorshipSlots(account.role),
         ]);
@@ -125,10 +94,13 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             viewerRole={account.role}
           >
             <CatalogSponsorshipSlots slots={sponsorshipSlots}>
-              <HydratedCreatorCatalog
-                state={dehydrate(queryClient)}
-                viewerRole={account.role}
-              />
+              <div className="mb-8 space-y-8">
+                <HydratedDirectory
+                  midlistSlots={buildCatalogMidlistSlots(sponsorshipSlots)}
+                  state={dehydrate(queryClient)}
+                />
+                {account.role === "INFLUENCER" ? <CatalogTipsPanel /> : null}
+              </div>
             </CatalogSponsorshipSlots>
           </ApprovedCatalogEntry>
         );

@@ -158,12 +158,7 @@ describe("combined registration form", () => {
       screen.getByLabelText("Seguidores no Instagram"),
     ).toBeInTheDocument();
     expect(screen.queryByLabelText("CNPJ")).not.toBeInTheDocument();
-    expect(await advanceToFinalStep(user)).toBeDisabled();
-    expect(
-      screen.getByText(
-        "Preencha corretamente todos os campos obrigatórios para liberar o envio.",
-      ),
-    ).toBeInTheDocument();
+    expect(await advanceToFinalStep(user)).toBeEnabled();
     expect(screen.queryByText("ADMIN")).not.toBeInTheDocument();
   });
 
@@ -284,7 +279,7 @@ describe("combined registration form", () => {
     expect(confirmation).toHaveAttribute("aria-invalid", "false");
   });
 
-  it("keeps submission disabled until the required role and fields are valid", async () => {
+  it("keeps the submit button enabled and blocks submission until the required role and fields are valid", async () => {
     const user = userEvent.setup();
     const action = vi.fn();
 
@@ -302,9 +297,23 @@ describe("combined registration form", () => {
       }),
     ).toHaveAttribute("aria-required", "true");
 
+    await user.type(
+      screen.getByLabelText("Nome completo ou nome fantasia"),
+      "Fulano de Tal",
+    );
+    await user.type(screen.getByLabelText("E-mail"), "fulano@exemplo.com");
+
     const submit = await advanceToFinalStep(user);
+    expect(submit).toBeEnabled();
+
+    fireEvent.click(submit);
+
     expect(action).not.toHaveBeenCalled();
-    expect(submit).toBeDisabled();
+    /* Role is required and lives on step 1, hidden while on step 4 — the
+     * click should navigate back there and focus the first missing field. */
+    expect(
+      await screen.findByRole("radio", { name: /sou influencer/iu }),
+    ).toHaveFocus();
   });
 
   it("shows minimum lengths and preserves creator values after a server error", async () => {
@@ -390,6 +399,41 @@ describe("combined registration form", () => {
     );
     expect(screen.getByLabelText("CNPJ")).toHaveValue("11444777000161");
     expect(screen.getByLabelText("Logradouro")).toHaveValue("Praça da Sé");
+  });
+
+  it("permite digitar o nome antes de escolher o tipo de cadastro", async () => {
+    const user = userEvent.setup();
+
+    renderRegistration({
+      action: vi.fn(),
+      googleAction: vi.fn(),
+      resendAction: vi.fn(),
+    });
+
+    const nameField = screen.getByLabelText("Nome completo ou nome fantasia");
+    expect(nameField).toBeEnabled();
+
+    await user.type(nameField, "Fulano de Tal");
+
+    expect(nameField).toHaveValue("Fulano de Tal");
+  });
+
+  it("preserva o nome ao trocar creator → empresa", async () => {
+    const user = userEvent.setup();
+
+    renderRegistration({
+      action: vi.fn(),
+      googleAction: vi.fn(),
+      resendAction: vi.fn(),
+    });
+
+    await user.type(
+      screen.getByLabelText("Nome completo ou nome fantasia"),
+      "Fulano de Tal",
+    );
+    await user.click(screen.getByRole("radio", { name: /sou empresa/iu }));
+
+    expect(screen.getByLabelText("Nome fantasia")).toHaveValue("Fulano de Tal");
   });
 
   it("has no serious or critical automated accessibility violations", async () => {

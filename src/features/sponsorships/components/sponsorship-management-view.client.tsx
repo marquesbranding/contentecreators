@@ -339,6 +339,8 @@ function PlacementPreview({
 }: {
   placement: SponsorshipAdminPlacementDto;
 }) {
+  const isMidlist = placement.slotKey === "catalog-midlist";
+
   return (
     <Card className="border-brand-blue/30 bg-brand-blue-soft overflow-hidden">
       {placement.creative ? (
@@ -346,7 +348,10 @@ function PlacementPreview({
         // eslint-disable-next-line @next/next/no-img-element
         <img
           alt={placement.creative.alt}
-          className="aspect-video w-full object-cover"
+          className={cn(
+            "w-full object-cover",
+            isMidlist ? "aspect-[5/4]" : "aspect-video",
+          )}
           decoding="async"
           height={placement.creative.height ?? 900}
           loading="lazy"
@@ -424,10 +429,17 @@ function LivePlacementPreview({
   imageSlot: ReturnType<typeof useHeaderMediaSlot>;
   values: Pick<
     PlacementFormValues,
-    "audience" | "body" | "linkLabel" | "linkUrl" | "placementType" | "title"
+    | "audience"
+    | "body"
+    | "linkLabel"
+    | "linkUrl"
+    | "placementType"
+    | "slotKey"
+    | "title"
   >;
 }) {
   const imageUrl = imageSlot.displayedUrl;
+  const isMidlist = values.slotKey === "catalog-midlist";
 
   return (
     <Card className="border-brand-blue/30 bg-brand-blue-soft gap-0 overflow-hidden py-0">
@@ -438,7 +450,10 @@ function LivePlacementPreview({
             ? "Alterar imagem do criativo"
             : "Adicionar imagem do criativo"
         }
-        className="group relative aspect-video w-full cursor-pointer"
+        className={cn(
+          "group relative w-full cursor-pointer",
+          isMidlist ? "aspect-[5/4]" : "aspect-video",
+        )}
         onClick={imageSlot.openPicker}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
@@ -489,8 +504,9 @@ function LivePlacementPreview({
           aria-hidden="true"
           className="mr-1 inline size-3.5 align-text-bottom"
         />
-        Desktop · exibida a partir de 1024px de largura · sugerido 1600×500px
-        (16:5)
+        {isMidlist
+          ? "Desktop · exibida no meio da listagem do catálogo · sugerido 1000×800px (5:4)"
+          : "Desktop · exibida a partir de 1024px de largura · sugerido 1600×500px (16:5)"}
       </p>
       <CardHeader>
         <Badge className="w-fit" variant="outline">
@@ -813,6 +829,7 @@ function PlacementFormDialog({
               linkLabel: watchedValues.linkLabel ?? "",
               linkUrl: watchedValues.linkUrl ?? "",
               placementType,
+              slotKey: watchedValues.slotKey ?? "",
               title: watchedValues.title ?? "",
             }}
           />

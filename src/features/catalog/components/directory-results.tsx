@@ -7,6 +7,7 @@ import {
   SearchX,
   UsersRound,
 } from "lucide-react";
+import { Fragment, type ReactNode } from "react";
 
 import {
   Alert,
@@ -14,34 +15,45 @@ import {
   AlertTitle,
 } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent, CardTitle } from "@/shared/components/ui/card";
+import { Card, CardContent } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { cn } from "@/shared/lib/cn";
 
-import {
-  CatalogCreatorCard,
-  type CatalogCreatorCardViewModel,
-} from "./catalog-creator-card";
+import type { DirectoryBrowserEntryDto } from "../api/catalog-directory.contract";
+import { CatalogEmptyState } from "./catalog-empty-state";
+import { DirectoryEntryCard } from "./directory-entry-card";
 import { staggerItemClassName } from "../lib/stagger";
 
-export type CatalogResultsStatus = "error" | "loading" | "success";
+export type DirectoryResultsStatus = "error" | "loading" | "success";
 
-interface CatalogResultsProps {
+interface DirectoryResultsProps {
   hasActiveFilters?: boolean;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
-  items: CatalogCreatorCardViewModel[];
+  items: DirectoryBrowserEntryDto[];
+  midlistSlots?: ReactNode[];
   onClearFilters?: () => void;
   onLoadMore?: () => void;
   onRetry?: () => void;
-  status: CatalogResultsStatus;
+  status: DirectoryResultsStatus;
 }
 
-export function CatalogLoadingSkeleton({ count = 6 }: { count?: number }) {
+const ENTRIES_BEFORE_MIDLIST = 8;
+
+function chunkItems<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+
+  for (let start = 0; start < items.length; start += size) {
+    chunks.push(items.slice(start, start + size));
+  }
+
+  return chunks;
+}
+
+export function DirectoryLoadingSkeleton({ count = 8 }: { count?: number }) {
   return (
     <div aria-live="polite" className="space-y-4" role="status">
-      <span className="sr-only">Carregando criadores</span>
-      <Skeleton className="h-5 w-44" />
+      <span className="sr-only">Carregando catálogo</span>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: count }, (_, index) => (
           <Card
@@ -55,7 +67,6 @@ export function CatalogLoadingSkeleton({ count = 6 }: { count?: number }) {
               <Skeleton className="h-7 w-3/4" />
               <Skeleton className="h-4 w-36" />
               <Skeleton className="h-16 w-full" />
-              <Skeleton className="h-12 w-full rounded-xl" />
             </CardContent>
           </Card>
         ))}
@@ -64,7 +75,7 @@ export function CatalogLoadingSkeleton({ count = 6 }: { count?: number }) {
   );
 }
 
-function CatalogError({ onRetry }: Pick<CatalogResultsProps, "onRetry">) {
+function DirectoryError({ onRetry }: Pick<DirectoryResultsProps, "onRetry">) {
   return (
     <Alert
       aria-live="assertive"
@@ -91,103 +102,97 @@ function CatalogError({ onRetry }: Pick<CatalogResultsProps, "onRetry">) {
   );
 }
 
-function FirstCatalogEmpty() {
-  return (
-    <Card className="bg-brand-night items-center rounded-3xl border-white/10 px-5 py-14 text-center text-white shadow-lg">
-      <span className="bg-brand-blue/20 text-brand-blue flex size-14 items-center justify-center rounded-2xl">
-        <UsersRound aria-hidden="true" className="size-7" />
-      </span>
-      <CardTitle>
-        <h2 className="text-xl font-bold">Ainda não há creators aprovados</h2>
-      </CardTitle>
-      <p className="max-w-lg leading-6 text-white/60">
-        Cadastros em análise não aparecem na busca. Assim que a equipe aprovar o
-        primeiro perfil, ele será exibido aqui automaticamente.
-      </p>
-    </Card>
-  );
-}
-
-function FilteredCatalogEmpty({
-  onClearFilters,
-}: Pick<CatalogResultsProps, "onClearFilters">) {
-  return (
-    <Card className="items-center rounded-2xl border bg-white px-5 py-12 text-center shadow-sm">
-      <SearchX aria-hidden="true" className="text-brand-blue size-10" />
-      <CardTitle>
-        <h2 className="text-xl font-bold">Nenhum criador encontrado</h2>
-      </CardTitle>
-      <p className="text-muted-foreground max-w-lg leading-6">
-        Tente ampliar a busca removendo um ou mais filtros ativos.
-      </p>
-      <Button
-        className="mt-2"
-        onClick={onClearFilters}
-        size="lg"
-        type="button"
-        variant="outline"
-      >
-        Limpar filtros
-      </Button>
-    </Card>
-  );
-}
-
-export function CatalogResults({
+export function DirectoryResults({
   hasActiveFilters = false,
   hasNextPage = false,
   isFetchingNextPage = false,
   items,
+  midlistSlots = [],
   onClearFilters,
   onLoadMore,
   onRetry,
   status,
-}: CatalogResultsProps) {
+}: DirectoryResultsProps) {
   if (status === "loading") {
-    return <CatalogLoadingSkeleton />;
+    return <DirectoryLoadingSkeleton />;
   }
 
   if (status === "error") {
-    return <CatalogError onRetry={onRetry} />;
+    return <DirectoryError onRetry={onRetry} />;
   }
 
   if (items.length === 0) {
     return hasActiveFilters ? (
-      <FilteredCatalogEmpty onClearFilters={onClearFilters} />
+      <CatalogEmptyState
+        actions={
+          <Button
+            onClick={onClearFilters}
+            size="lg"
+            type="button"
+            variant="outline"
+          >
+            Limpar filtros
+          </Button>
+        }
+        description="Remova um filtro ou amplie a busca por cidade/UF."
+        icon={SearchX}
+        title="Nenhum perfil com esses filtros"
+        tone="filtered"
+      />
     ) : (
-      <FirstCatalogEmpty />
+      <CatalogEmptyState
+        description="Cadastros em análise não aparecem na busca. Assim que a equipe aprovar o primeiro perfil, ele será exibido aqui automaticamente."
+        icon={UsersRound}
+        title="Ainda não há perfis aprovados"
+        tone="first"
+      />
     );
   }
 
+  const hasMidlist = midlistSlots.length > 0;
+  const itemChunks = hasMidlist
+    ? chunkItems(items, ENTRIES_BEFORE_MIDLIST)
+    : [items];
+
   return (
-    <section aria-label="Criadores encontrados" className="space-y-4">
+    <section aria-label="Catálogo" className="space-y-4">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="text-foreground text-2xl font-bold tracking-[-0.03em]">
-            Creators para conhecer
-          </h2>
-        </div>
+        <h2 className="text-foreground text-2xl font-bold tracking-[-0.03em]">
+          Empresas e criadores
+        </h2>
         <p aria-live="polite" className="text-muted-foreground text-sm">
           {items.length}{" "}
-          {items.length === 1
-            ? "creator nesta página"
-            : "creators nesta página"}
+          {items.length === 1 ? "perfil nesta página" : "perfis nesta página"}
         </p>
       </div>
 
-      <ul
-        aria-label="Lista de criadores"
-        className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-      >
-        {items.map((creator, index) => (
-          <li
-            className={cn("min-w-0", staggerItemClassName(index))}
-            key={creator.creatorId}
+      {itemChunks.map((chunkOfItems, chunkIndex) => (
+        <Fragment key={chunkIndex}>
+          <ul
+            aria-label={
+              chunkIndex === 0
+                ? "Lista do catálogo"
+                : "Lista do catálogo, continuação"
+            }
+            className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
           >
-            <CatalogCreatorCard creator={creator} />
-          </li>
-        ))}
-      </ul>
+            {chunkOfItems.map((entry, index) => (
+              <li
+                className={cn("h-full min-w-0", staggerItemClassName(index))}
+                key={
+                  entry.kind === "COMPANY" ? entry.companyId : entry.creatorId
+                }
+              >
+                <DirectoryEntryCard entry={entry} />
+              </li>
+            ))}
+          </ul>
+
+          {chunkIndex < itemChunks.length - 1
+            ? midlistSlots[chunkIndex % midlistSlots.length]
+            : null}
+        </Fragment>
+      ))}
 
       {hasNextPage ? (
         <div className="flex flex-col items-center gap-2 pt-2">
@@ -212,7 +217,7 @@ export function CatalogResults({
               className="text-muted-foreground text-sm"
               role="status"
             >
-              Carregando mais criadores
+              Carregando mais perfis
             </p>
           ) : null}
         </div>

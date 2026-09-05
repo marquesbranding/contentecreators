@@ -39,15 +39,14 @@ describe("CompanyDetailView", () => {
     expect(screen.getByRole("heading", { name: "Marca Segura" })).toBeVisible();
     expect(screen.getByText("Joaçaba, SC")).toBeVisible();
     expect(
-      screen.getByRole("link", { name: /chamar no whatsapp/iu }),
+      screen.getByRole("link", { name: "Chamar Marca Segura no WhatsApp" }),
     ).toHaveAttribute("href", "https://wa.me/5549999999999");
     expect(
-      screen.getByRole("link", { name: /enviar e-mail/iu }),
+      screen.getByRole("link", { name: "Enviar e-mail para Marca Segura" }),
     ).toHaveAttribute("href", "mailto:marca@example.test");
-    expect(screen.getByRole("link", { name: /abrir site/iu })).toHaveAttribute(
-      "target",
-      "_blank",
-    );
+    expect(
+      screen.getByRole("link", { name: "Abrir site de Marca Segura" }),
+    ).toHaveAttribute("target", "_blank");
     expect(
       screen.getByRole("img", { name: /logo da marca segura/iu }),
     ).toHaveAttribute("src", detail.media.logo?.url);

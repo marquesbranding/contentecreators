@@ -73,8 +73,17 @@ function mapMetrics(
           ? record.interactionCount
           : null,
       isPrimary: record.isPrimary,
+      newFollowerCount:
+        record.newFollowerCount !== null &&
+        Number.isSafeInteger(record.newFollowerCount) &&
+        record.newFollowerCount >= 0
+          ? record.newFollowerCount
+          : null,
       observedOn: record.observedOn.toISOString().slice(0, 10),
       platform: record.platform,
+      sharedContentDescription: record.sharedContentDescription?.trim()
+        ? record.sharedContentDescription.trim()
+        : null,
       source: "SELF_REPORTED",
       viewCount:
         record.viewCount !== null &&
