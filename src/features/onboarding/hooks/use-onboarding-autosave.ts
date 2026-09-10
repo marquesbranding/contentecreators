@@ -76,8 +76,7 @@ function toDraftSocialChannels(
     platform: channel.platform,
     sharedContent: channel.sharedContent,
     url: channel.url,
-    views:
-      channel.views === undefined ? undefined : Number(channel.views) || 0,
+    views: channel.views === undefined ? undefined : Number(channel.views) || 0,
   }));
 }
 

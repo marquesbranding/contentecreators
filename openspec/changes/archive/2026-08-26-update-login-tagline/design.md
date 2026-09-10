@@ -5,9 +5,11 @@ Pure copy change on a single shared component (`AuthPageShell`). No architectura
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Tagline reads "Um acesso simples para conexões felizes." on login and any page sharing `AuthPageShell`.
 
 **Non-Goals:**
+
 - No change to the eyebrow text ("Creators e marcas, no mesmo ritmo") or any other copy/layout on the shell.
 
 ## Decisions

@@ -5,11 +5,13 @@
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Each image slot (profile, cover) is controlled by one "Mudar foto" button instead of a full stacked card.
 - Existing crop, upload, and replace logic is reused, not rewritten.
 - "Voltar ao catálogo" becomes "Voltar ao perfil" (and "catálogo" wording elsewhere on this screen becomes "Perfil").
 
 **Non-Goals:**
+
 - No change to image validation rules, file size limits, or storage/upload backend.
 - No change to the `backHref` destination (`/app/catalog`) — only the label text changes, unless product decides otherwise (flagged as open question).
 

@@ -283,9 +283,7 @@ describe("MediaUploadField", () => {
 
     await user.click(screen.getByRole("button", { name: "Mudar foto" }));
 
-    expect(
-      screen.getByRole("button", { name: "Carregar foto" }),
-    ).toBeVisible();
+    expect(screen.getByRole("button", { name: "Carregar foto" })).toBeVisible();
     const removeButton = screen.getByRole("button", {
       name: "Remover foto atual",
     });

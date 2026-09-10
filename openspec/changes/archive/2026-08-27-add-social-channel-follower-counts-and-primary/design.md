@@ -1,16 +1,18 @@
 ## Context
 
-A creator's social presence is stored as one `social_profiles` row per declared network (platform + link), and one linked `creator_metric_snapshots` row per `social_profiles` row (via `social_profile_id`). `creator_metric_snapshots` already has `follower_count`, `engagement_rate`, `view_count`, `interaction_count`, `new_follower_count`, `shared_content_description` columns, one row per channel — the schema is already "per channel." The bug is purely in the write path: `insertRoleProfile` (and the profile-edit equivalent `updateSocialAndMetric`) take a single flat `followers`/`views`/`interactions`/`newFollowers`/`sharedContent` value off the top-level form input and stamp the *same* numbers onto every channel's snapshot row. There is currently no concept of a "primary" channel; the catalog card/detail pipeline just takes `metrics[0]` (whatever `distinct on (platform) ... order by platform` happens to return first, i.e. alphabetical).
+A creator's social presence is stored as one `social_profiles` row per declared network (platform + link), and one linked `creator_metric_snapshots` row per `social_profiles` row (via `social_profile_id`). `creator_metric_snapshots` already has `follower_count`, `engagement_rate`, `view_count`, `interaction_count`, `new_follower_count`, `shared_content_description` columns, one row per channel — the schema is already "per channel." The bug is purely in the write path: `insertRoleProfile` (and the profile-edit equivalent `updateSocialAndMetric`) take a single flat `followers`/`views`/`interactions`/`newFollowers`/`sharedContent` value off the top-level form input and stamp the _same_ numbers onto every channel's snapshot row. There is currently no concept of a "primary" channel; the catalog card/detail pipeline just takes `metrics[0]` (whatever `distinct on (platform) ... order by platform` happens to return first, i.e. alphabetical).
 
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Each declared channel carries its own follower count.
 - Visualizações/Interações/Novos seguidores/Conteúdo que você compartilhou are collected and stored only against the Instagram channel.
 - A creator can flag exactly one declared channel as "Principal"; that channel drives what the catalog card/detail show.
 - Mobile-first table UI: Rede Social (icon) | Seguidores | Link do Perfil | ★ Principal.
 
 **Non-Goals:**
+
 - No historical time-series UI for metrics (the `observed_on`/snapshot mechanism already exists and is untouched; we're fixing what gets written into a snapshot, not adding metric history browsing).
 - No change to which platforms are supported (still `SOCIAL_CHANNEL_PLATFORMS`).
 - Company social profile (single platform+link, no metrics) is unaffected — company path in `insertRoleProfile` doesn't touch `creator_metric_snapshots`.
@@ -19,12 +21,14 @@ A creator's social presence is stored as one `social_profiles` row per declared 
 
 **Follower count stays on `creator_metric_snapshots`, keyed per `social_profile_id` — no new column needed.** The table is already 1:1 with `social_profiles` at insert time. Fixing the bug is a data-flow change (map each channel's own `followerCount` instead of broadcasting one global number), not a schema change. Alternative considered: move `follower_count` onto `social_profiles` directly (simpler joins for the catalog query). Rejected — it would fork "current declared count" from the metric-snapshot history mechanism that already exists for this exact purpose, creating two sources of truth.
 
-**"Primary" is a new `is_primary boolean not null default false` column on `social_profiles`**, not on `creator_metric_snapshots`. Being primary is a property of the *channel* (which one to feature), independent of any particular metric observation. A partial unique index enforces at most one primary per account:
+**"Primary" is a new `is_primary boolean not null default false` column on `social_profiles`**, not on `creator_metric_snapshots`. Being primary is a property of the _channel_ (which one to feature), independent of any particular metric observation. A partial unique index enforces at most one primary per account:
+
 ```sql
 create unique index social_profiles_owner_primary_uidx
   on social_profiles (owner_account_id)
   where archived_at is null and is_primary;
 ```
+
 This makes "only one primary" a DB-level invariant instead of app-only validation, matching the existing pattern for `company_locations.is_primary` (unindexed there, but same boolean-flag idiom already used elsewhere in this schema).
 
 **Migration backfill**: existing rows get `is_primary = false` by default. A backfill statement sets `is_primary = true` on each account's lowest-`sort_order` non-archived `social_profiles` row, so no existing creator ends up with zero primary channels (which would break the catalog card for already-approved profiles).

@@ -11,9 +11,11 @@ The `BrandLogo` component renders correctly on its own, but two call sites visua
 ## Capabilities
 
 ### New Capabilities
+
 - `brand-logo-rendering`: formalizes the correctness rules for the `BrandLogo` component — it SHALL render without an opaque background box and without cropping regardless of the surrounding container, since neither rule was previously codified and both were violated in production.
 
 ### Modified Capabilities
+
 (none — no spec-level requirements are changing, only rendering correctness of an existing visual element)
 
 ## Impact

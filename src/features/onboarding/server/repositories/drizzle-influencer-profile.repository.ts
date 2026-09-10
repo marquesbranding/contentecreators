@@ -33,9 +33,9 @@ function normalizeWhatsapp(value: string) {
  * left out of the edit view — `updateSocialAndMetric` never archives them,
  * so they stay exactly as stored and keep appearing in the catalog.
  */
-function isManageableSocialChannel<
-  T extends { platform: string },
->(socialProfile: T): socialProfile is T & {
+function isManageableSocialChannel<T extends { platform: string }>(
+  socialProfile: T,
+): socialProfile is T & {
   platform: (typeof SOCIAL_CHANNEL_PLATFORMS)[number];
 } {
   return (SOCIAL_CHANNEL_PLATFORMS as readonly string[]).includes(
@@ -130,27 +130,29 @@ async function loadProfile(
     legalName: profile.legalName,
     nicheSlugs: nicheSelection.nicheSlugs,
     otherNiche: nicheSelection.otherNiche,
-    socialChannels: ownedSocialProfiles.filter(isManageableSocialChannel).map((socialProfile) => {
-      const metric = latestMetricBySocialProfileId.get(socialProfile.id);
-      const isInstagram = socialProfile.platform === "INSTAGRAM";
+    socialChannels: ownedSocialProfiles
+      .filter(isManageableSocialChannel)
+      .map((socialProfile) => {
+        const metric = latestMetricBySocialProfileId.get(socialProfile.id);
+        const isInstagram = socialProfile.platform === "INSTAGRAM";
 
-      return {
-        followerCount: metric?.followerCount ?? 0,
-        interactions: isInstagram
-          ? (metric?.interactionCount ?? undefined)
-          : undefined,
-        isPrimary: socialProfile.isPrimary,
-        newFollowers: isInstagram
-          ? (metric?.newFollowerCount ?? undefined)
-          : undefined,
-        platform: socialProfile.platform,
-        sharedContent: isInstagram
-          ? (metric?.sharedContentDescription ?? undefined)
-          : undefined,
-        url: socialProfile.normalizedUrl,
-        views: isInstagram ? (metric?.viewCount ?? undefined) : undefined,
-      };
-    }),
+        return {
+          followerCount: metric?.followerCount ?? 0,
+          interactions: isInstagram
+            ? (metric?.interactionCount ?? undefined)
+            : undefined,
+          isPrimary: socialProfile.isPrimary,
+          newFollowers: isInstagram
+            ? (metric?.newFollowerCount ?? undefined)
+            : undefined,
+          platform: socialProfile.platform,
+          sharedContent: isInstagram
+            ? (metric?.sharedContentDescription ?? undefined)
+            : undefined,
+          url: socialProfile.normalizedUrl,
+          views: isInstagram ? (metric?.viewCount ?? undefined) : undefined,
+        };
+      }),
     state: profile.state ?? "",
     version: profile.version,
     whatsapp: profile.whatsappE164 ?? "",
@@ -283,7 +285,10 @@ async function updateSocialAndMetric(
           normalizedUrl: channel.url,
         })
         .where(eq(socialProfiles.id, existing.id));
-      activeSocialProfiles.push({ id: existing.id, platform: channel.platform });
+      activeSocialProfiles.push({
+        id: existing.id,
+        platform: channel.platform,
+      });
       continue;
     }
 
@@ -316,7 +321,9 @@ async function updateSocialAndMetric(
       followerCount: channel?.followerCount ?? 0,
       interactionCount: isInstagram ? channel?.interactions : undefined,
       newFollowerCount: isInstagram ? channel?.newFollowers : undefined,
-      sharedContentDescription: isInstagram ? channel?.sharedContent : undefined,
+      sharedContentDescription: isInstagram
+        ? channel?.sharedContent
+        : undefined,
       viewCount: isInstagram ? channel?.views : undefined,
     };
 

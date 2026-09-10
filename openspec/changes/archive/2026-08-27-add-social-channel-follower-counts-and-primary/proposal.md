@@ -15,9 +15,11 @@ Today every channel a creator declares shares one global follower count and one 
 ## Capabilities
 
 ### New Capabilities
+
 - `social-channel-primary-designation`: a creator can mark exactly one declared social channel as "Principal"; that channel is the one surfaced in catalog card/detail views.
 
 ### Modified Capabilities
+
 - `onboarding-social-channels`: each declared channel now also requires a follower count (previously only platform + link).
 - `onboarding-creator-metrics`: Visualizações/Interações/Novos seguidores/Conteúdo que você compartilhou stop being global fields and become Instagram-channel-scoped fields, shown only when Instagram is checked.
 

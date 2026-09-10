@@ -321,10 +321,7 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
         followerCount: 54_321,
         platform: "YOUTUBE",
       },
-      nicheSlugs: [
-        "personalizado-artesanato-sustentavel",
-        "viagens-e-turismo",
-      ],
+      nicheSlugs: ["personalizado-artesanato-sustentavel", "viagens-e-turismo"],
       profile: {
         creatorType: "UGC",
         displayName: "Diego em Movimento",

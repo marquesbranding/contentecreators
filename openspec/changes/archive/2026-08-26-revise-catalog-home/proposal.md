@@ -14,11 +14,13 @@ The client's 2026-08-24 revision doc (R00) flags the authenticated home/catalog 
 ## Capabilities
 
 ### New Capabilities
+
 - `company-search`: search and filter companies by name or segment, replacing/supplementing the creator-only catalog search for company discovery.
 - `catalog-tips-panel`: static guidance content shown to creators browsing the catalog.
 - `app-footer`: footer for the authenticated app shell linking to legal pages and social accounts.
 
 ### Modified Capabilities
+
 (none — no pre-existing specs for catalog/home)
 
 ## Impact

@@ -7,7 +7,7 @@
 
 ## 2. Nav search → companies (role-aware)
 
-- [x] 2.1 `CatalogHeaderSearch` now branches on `viewerRole`: INFLUENCER viewers get company search (`companySearch` param, "Buscar empresas por nome ou segmento"); COMPANY viewers keep the original creator search (`search` param) — **correction from the original plan**: repointing search for *all* viewers would have broken company-role users browsing creators, so the switch is role-conditional, not global. `viewerRole` threaded through `AuthenticatedProductShell` → `ApprovedCatalogEntry` → catalog `page.tsx` (`account.role`).
+- [x] 2.1 `CatalogHeaderSearch` now branches on `viewerRole`: INFLUENCER viewers get company search (`companySearch` param, "Buscar empresas por nome ou segmento"); COMPANY viewers keep the original creator search (`search` param) — **correction from the original plan**: repointing search for _all_ viewers would have broken company-role users browsing creators, so the switch is role-conditional, not global. `viewerRole` threaded through `AuthenticatedProductShell` → `ApprovedCatalogEntry` → catalog `page.tsx` (`account.role`).
 - [x] 2.2 `CompanyCarouselScreenContent` reads `companySearch`/`segment` reactively via `useSearchParams()` (matching the existing `useCreatorCatalogUrlState` pattern used by the creator list)
 - [x] 2.3 Confirmed: "Encontrar creators" nav link and the creator catalog's own `search`/`cursor` params are untouched for COMPANY viewers
 

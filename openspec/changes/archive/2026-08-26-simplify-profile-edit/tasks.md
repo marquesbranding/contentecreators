@@ -3,11 +3,13 @@
 - [x] 1.1 Added a "Mudar foto" trigger + action menu (Carregar foto / Remover foto atual / Cancelar) to `MediaUploadField`, replacing the file-picker-row + always-visible "Enviar imagem" card
 - [x] 1.2 "Carregar foto" triggers the existing hidden file input; selecting a file reuses the existing crop/preview/upload flow unchanged
 - [x] 1.3 "Remover foto atual" wired to a **new** `removeCurrent()` operation — this required backend work beyond the original scope (see below), since no removal capability existed anywhere in the media system before this change
-- [x] 1.4 Shows a placeholder thumbnail (checkmark icon when a photo is set, generic icon when not) next to "Mudar foto" — a real signed-URL thumbnail of the *current* photo was out of scope (would require threading signed media URLs through several new layers); flagged as a deliberate simplification, not silently dropped
+- [x] 1.4 Shows a placeholder thumbnail (checkmark icon when a photo is set, generic icon when not) next to "Mudar foto" — a real signed-URL thumbnail of the _current_ photo was out of scope (would require threading signed media URLs through several new layers); flagged as a deliberate simplification, not silently dropped
 - [x] 1.5 Verified live: `influencer-media-fields.client.tsx` and `company-media-fields.client.tsx` both render correctly with the updated `MediaUploadField` (avatar/cover for influencer, logo/cover for company)
 
 ### 1.6 New backend capability (discovered mid-implementation, not in original scope)
+
 `MediaUploadActions` had `prepare`/`finalize`/`activate` but **no removal operation at all** — there was no way to clear an active avatar/cover/logo without immediately replacing it. Built the missing capability, mirroring the existing `activateProfileMedia` pattern exactly:
+
 - [x] Added `RemoveProfileMediaInput`/`Result`/`Action` types and `remove?` to `MediaUploadActions`
 - [x] Added `removeProfileMediaSchema`
 - [x] Added `removeProfileMedia` to `ProfileMediaReplacementRepository` (archives the current asset, sets the profile column to `null`, bumps version) and the Drizzle implementation

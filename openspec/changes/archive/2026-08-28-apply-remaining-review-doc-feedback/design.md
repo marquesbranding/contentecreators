@@ -5,11 +5,13 @@ Post-merge re-audit of the review doc against current code. Three small, indepen
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Remove the duplicate company-carousel heading.
 - Let users search companies by name (the query param already exists server-side).
 - Move the creator-type badge below the display name on the creator detail page.
 
 **Non-Goals:**
+
 - Catalog card views/interactions metrics — already implemented, no work needed.
 - Footer social links — blocked on real URLs, not implemented here.
 - Any change to the onboarding social-channels table.

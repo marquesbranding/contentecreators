@@ -55,7 +55,9 @@ describe("InfluencerProfileEditForm", () => {
     );
     /* Creator type is fixed at signup and can't change here — the edit form
      * doesn't even submit it, so it must not render a picker for it. */
-    expect(screen.queryByText("Como você cria conteúdo?")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Como você cria conteúdo?"),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("Tipo de atuação")).not.toBeInTheDocument();
     expect(screen.queryByText("Termos e privacidade")).not.toBeInTheDocument();
     expect(

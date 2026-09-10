@@ -5,10 +5,12 @@
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Logo renders cleanly (no dark box) on both the signup header and login mobile header.
 - Logo renders uncropped at its correct aspect ratio in the login page's branded side panel.
 
 **Non-Goals:**
+
 - No changes to `BrandLogo`'s internal implementation, variants, or the logo assets themselves — the assets already have valid alpha channels.
 - No redesign of the onboarding or login page layouts beyond the logo fix.
 

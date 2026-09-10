@@ -9,9 +9,11 @@ The client's 2026-08-24 revision doc (R00) asks for the login page's tagline cop
 ## Capabilities
 
 ### New Capabilities
+
 - `login-page-tagline`: formalizes the expected tagline copy shown on the login page's branded panel, since this text was not previously codified anywhere.
 
 ### Modified Capabilities
+
 (none)
 
 ## Impact

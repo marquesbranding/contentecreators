@@ -5,6 +5,7 @@ The onboarding form (`combined-registration-form.client.tsx` + `profile-form-fie
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Single first-step 3-way account type choice (Influencer / UGC / Empresa) driving both `account_role` and `creator_type`.
 - Multi-network audience capture using the existing `social_profiles` table, extended to support Threads and Telegram.
 - Niche options sourced from a single source of truth (the `niches` table) matching the client's ~20-item list, with a free-text suggestion fallback.
@@ -12,6 +13,7 @@ The onboarding form (`combined-registration-form.client.tsx` + `profile-form-fie
 - Field relocation/removal (WhatsApp moved up, Tipo de atuação/Taxa de engajamento/Nome de creator removed) without breaking existing approved profiles.
 
 **Non-Goals:**
+
 - No change to the moderation/approval workflow itself.
 - No redesign of the catalog card display beyond what already renders the creator-type tag.
 - No retroactive backfill of the new metric fields for already-approved profiles (they remain null/unset until the creator edits their profile).
@@ -45,8 +47,8 @@ No rollback complexity beyond standard migration revert — no destructive colum
 ## Open Questions (resolved during implementation)
 
 - **New metric columns**: added directly to `creator_metric_snapshots` as `viewCount`, `interactionCount`, `newFollowerCount` (bigint, nullable) and `sharedContentDescription` (text, nullable), alongside existing `followerCount`/`engagementRate`.
-- **`displayName` ("Nome de creator") removal**: the DB column (`creator_profiles.display_name`) stays `NOT NULL` — no migration. The server derives it from `legalName` when the field is absent from form input, since the doc only asks to remove the *form field*, not the underlying "how a creator is displayed" concept.
+- **`displayName` ("Nome de creator") removal**: the DB column (`creator_profiles.display_name`) stays `NOT NULL` — no migration. The server derives it from `legalName` when the field is absent from form input, since the doc only asks to remove the _form field_, not the underlying "how a creator is displayed" concept.
 - **WhatsApp relocation is presentation-only**: the field stays inside `ProfileFormFields` (used by both registration and profile-edit flows) behind a new `showWhatsappField` prop (default `true`, preserving edit-flow behavior). `CombinedRegistrationForm` renders its own WhatsApp field in "Dados de acesso" and passes `showWhatsappField={false}` to `ProfileFormFields`, since only the registration flow has an access-step to hoist it into. `profile-onboarding-form.client.tsx` (post-confirmation profile completion) has no access step either, so it keeps the default.
 - **Niches stay a manually-mirrored list, not dynamically DB-sourced**: `creatorNicheOptions` in `profile-segments.ts` is already a hardcoded list whose slugs must exactly match `niches.slug` in the DB (the server rejects unknown slugs in `resolveCreatorNiches`). Making this fully dynamic (fetched at render time) is a bigger architectural change than the client asked for. Instead: update both the hardcoded list and the seed migration to the same ~20-item slug set, preserving the existing pattern.
-- **Multi-network social channels — write-path only change**: the catalog read path (`drizzle-creator-catalog.repository.ts`) already aggregates `social_profiles` and `creator_metric_snapshots` per platform via `jsonb_agg`/`distinct on (platform)` — it was already built for multiple rows per creator. Only the *write* paths (registration, profile-edit, corrected-resubmission repositories) assume a single social profile row and need rework to upsert one `social_profiles` row per checked network, archiving rows for unchecked networks. Since the four new metric fields are collected once (not per network), the same self-reported metric values are written as a `creator_metric_snapshots` row for each selected platform, matching the catalog's per-platform display expectation without asking the creator to enter numbers per network.
+- **Multi-network social channels — write-path only change**: the catalog read path (`drizzle-creator-catalog.repository.ts`) already aggregates `social_profiles` and `creator_metric_snapshots` per platform via `jsonb_agg`/`distinct on (platform)` — it was already built for multiple rows per creator. Only the _write_ paths (registration, profile-edit, corrected-resubmission repositories) assume a single social profile row and need rework to upsert one `social_profiles` row per checked network, archiving rows for unchecked networks. Since the four new metric fields are collected once (not per network), the same self-reported metric values are written as a `creator_metric_snapshots` row for each selected platform, matching the catalog's per-platform display expectation without asking the creator to enter numbers per network.
 - **`accountType` merge is a value-format coincidence worth using**: the three choices (Influencer/UGC/Empresa) map directly — `accountType === "COMPANY"` gives `role="COMPANY"`, otherwise `role="INFLUENCER"` and `creatorType=accountType` (`"INFLUENCER"` or `"UGC"` pass through unchanged), since `creatorType`'s enum values already are `INFLUENCER`/`UGC`. No new enum needed.

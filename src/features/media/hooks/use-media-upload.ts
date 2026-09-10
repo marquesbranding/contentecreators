@@ -259,7 +259,9 @@ export function useMediaUpload({
       const result = await actions.remove({ purpose });
 
       if (result.kind === "error") {
-        setError(errorMessages[result.code] ?? errorMessages.STORAGE_UNAVAILABLE);
+        setError(
+          errorMessages[result.code] ?? errorMessages.STORAGE_UNAVAILABLE,
+        );
         setPhase("error");
         return;
       }

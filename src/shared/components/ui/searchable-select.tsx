@@ -43,10 +43,11 @@ function SearchableSelect({
   "disabled" | "id" | "onChange" | "value"
 >) {
   const options = React.useMemo<SearchableSelectOption[]>(
-    () => Object.entries(items).map(([optionValue, label]) => ({
-      label,
-      value: optionValue,
-    })),
+    () =>
+      Object.entries(items).map(([optionValue, label]) => ({
+        label,
+        value: optionValue,
+      })),
     [items],
   );
   const selected = options.find((option) => option.value === value) ?? null;

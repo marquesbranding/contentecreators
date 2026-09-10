@@ -89,7 +89,10 @@ describe("AuthenticatedProductShell", () => {
   });
 
   it("labels catalog discovery for companies when the viewer is an influencer", () => {
-    const { container } = renderShell("/app/companies/company-id", "INFLUENCER");
+    const { container } = renderShell(
+      "/app/companies/company-id",
+      "INFLUENCER",
+    );
 
     const navigation = screen.getByRole("navigation", {
       name: "Navegação principal",

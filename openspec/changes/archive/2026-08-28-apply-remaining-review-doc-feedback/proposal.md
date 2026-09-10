@@ -13,9 +13,11 @@ A client review document ("Contete Creator - revisão influenciador.pages", 24/0
 ## Capabilities
 
 ### New Capabilities
+
 - `creator-detail-identity-layout`: creator-type badge position on the public creator detail page.
 
 ### Modified Capabilities
+
 - `company-search`: adds a name-search input alongside the existing segment filter, and removes the duplicate heading currently rendered above the company carousel.
 
 ## Impact

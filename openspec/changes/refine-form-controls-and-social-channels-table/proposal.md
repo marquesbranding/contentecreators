@@ -15,11 +15,13 @@ The onboarding/profile forms carry two compounding problems: every form control 
 ## Capabilities
 
 ### New Capabilities
+
 - `compact-form-controls`: shared `Input`/`Select`/`Textarea` base components ship at a smaller, consistent size used everywhere.
 - `searchable-select`: a shared searchable single-select combobox component, used as the system's default dropdown.
 - `multi-select-search-picker`: a shared searchable multi-select combobox component, used for the creator niche picker.
 
 ### Modified Capabilities
+
 - `onboarding-social-channels`: removes the "Outra" custom-network option; table layout requirements change (icon colors, column order, alignment, borders, centering).
 - `onboarding-niche-selection`: niche selection moves from a checkbox list to a searchable multi-select dropdown.
 

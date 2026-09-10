@@ -17,12 +17,14 @@ The client's 2026-08-24 revision doc (R00) flags the cadastro/onboarding form as
 ## Capabilities
 
 ### New Capabilities
+
 - `onboarding-account-type-selection`: the merged 3-way Influencer/UGC/Empresa choice as a single first-step decision that determines both `account_role` and `creator_type`.
 - `onboarding-social-channels`: multi-network audience/channels declaration (checkbox + link per network) replacing the single platform+link pair.
 - `onboarding-creator-metrics`: self-reported creator metric fields (Visualizações, Interações, Novos seguidores, Conteúdo compartilhado) collected during onboarding.
 - `onboarding-niche-selection`: the expanded niche list with free-text suggestion, sourced consistently from the `niches` table.
 
 ### Modified Capabilities
+
 (none — no pre-existing specs for onboarding; this proposal establishes the first specs for these capabilities)
 
 ## Impact

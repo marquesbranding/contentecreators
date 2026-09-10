@@ -10,9 +10,11 @@ The client's 2026-08-24 revision doc (R00) flags the profile edit page's image u
 ## Capabilities
 
 ### New Capabilities
+
 - `profile-photo-upload-flow`: formalizes the single-button "Mudar foto" upload/replace/remove flow for profile and cover images, replacing the previous two-card layout which had no codified behavior.
 
 ### Modified Capabilities
+
 (none — no pre-existing specs for profile editing; the change is UI simplification of existing, unspecified behavior)
 
 ## Impact

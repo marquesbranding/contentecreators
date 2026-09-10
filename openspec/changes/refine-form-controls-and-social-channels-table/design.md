@@ -7,6 +7,7 @@ The social channels table (shipped in the previous change) has its Principal sta
 ## Goals / Non-Goals
 
 **Goals:**
+
 - One-time, base-component-level fix for control sizing so every screen shrinks together.
 - A reusable searchable combobox (single- and multi-select) that becomes the system default, built on the primitive already in `node_modules`.
 - Social channels table matches the requested layout exactly: brand-colored icons, Principal column first, left-aligned headers/content, borderless rows, centered table, centered follower numbers.
@@ -15,6 +16,7 @@ The social channels table (shipped in the previous change) has its Principal sta
 - A mobile-first pass across the main screens (onboarding, catalog, profile, backoffice) using a concrete, repeatable checklist.
 
 **Non-Goals:**
+
 - No visual redesign of colors/typography/branding — this is sizing, alignment, and interaction-pattern only.
 - No change to which platforms are supported at the database level (`social_platform` enum keeps `OTHER` for historical data) — only the onboarding form stops offering it as a new choice.
 - No migration of already-declared "Outra" channels for existing creators; they keep displaying normally in the catalog (their `platform` stays `OTHER`, `SocialPlatformIcon`'s existing generic fallback already renders something reasonable for that case).
@@ -30,6 +32,7 @@ The social channels table (shipped in the previous change) has its Principal sta
 **`Select` is not deleted**: `select.tsx` stays for the few remaining truly-fixed, very-short option lists if any turn up during implementation (e.g. binary-ish choices), but every dropdown migrated in this change (UF, segmento, tamanho da empresa, niches) moves to `Combobox`. Alternative considered: replacing `Select`'s internals in place to add search — rejected, because `Select` and `Combobox` are different Base UI primitives with different keyboard/ARIA models (listbox vs. combobox roles); swapping the primitive underneath the same wrapper would be a bigger, riskier diff than adding a new component and migrating call sites.
 
 **Social channels table**:
+
 - `SOCIAL_CHANNEL_PLATFORMS` drops `"OTHER"`; the "Outra"/custom-name input and `socialChannels[].label` field are removed from the domain parser, both Zod schemas, the repository write paths, and `form-error-summary.tsx`'s label map. The wider `social_platform` DB enum and the `CatalogSocialPlatform` type are untouched (they still need `OTHER` for historical rows and other features).
 - Column order becomes Principal (star, first) → Rede Social (icon + checkbox) → Seguidores → Link do Perfil. The star column gets a fixed narrow track (e.g. `2.25rem`) in the grid template instead of sharing space with the other columns.
 - `SocialPlatformIcon` gains a `color` mode: pass the icon's Simple Icons `.hex` as an inline `style={{ color: '#hex' }}` instead of inheriting `currentColor`, so each brand renders in its own color. LinkedIn's hand-drawn glyph gets a fixed brand-blue (`#0A66C2`, LinkedIn's own brand color) instead of `currentColor`.
