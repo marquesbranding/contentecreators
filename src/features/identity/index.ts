@@ -17,12 +17,16 @@ export { SignUpForm } from "./components/sign-up-form.client";
 export { sanitizeAuthReturnPath } from "./domain/auth-return-path";
 export { sanitizeBackofficeReturnPath } from "./domain/backoffice-return-path";
 export { getAccountDestination } from "./domain/account-route-decision";
-export { parseRegistrationIntent } from "./domain/registration-intent";
+export {
+  parseRegistrationIntent,
+  parseSignUpAccountIntent,
+} from "./domain/registration-intent";
 export type {
   AuthActionState,
   AuthFormAction,
   AuthRedirectAction,
   RegistrationIntent,
+  SignUpAccountIntent,
 } from "./types/auth.types";
 export type {
   RoleSelectionAction,

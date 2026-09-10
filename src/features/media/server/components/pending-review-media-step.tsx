@@ -6,6 +6,7 @@ import {
 } from "@/features/onboarding/server";
 import type { ProfileHeaderPreviewBadge } from "@/shared/components/profile-header-preview";
 import { accountTypeLabels } from "@/shared/domain/account-type-labels";
+import { initialsFromName } from "@/shared/lib/names/display-name";
 
 import { ProfileHeaderMediaEditor } from "../../components/profile-header-media-editor.client";
 import {
@@ -24,21 +25,6 @@ const mediaActions = {
   prepare: prepareMediaUploadAction,
   remove: removeProfileMediaAction,
 };
-
-function initialsFromName(name: string) {
-  const trimmed = name.trim();
-
-  if (!trimmed) {
-    return "";
-  }
-
-  return trimmed
-    .split(/\s+/u)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0]?.toUpperCase() ?? "")
-    .join("");
-}
 
 function formatLocation(city: string, state: string) {
   return city && state ? `${city}, ${state.toUpperCase()}` : city;

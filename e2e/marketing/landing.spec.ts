@@ -19,11 +19,13 @@ test.describe("public marketing landing", () => {
     await expect(
       page.getByRole("heading", {
         level: 1,
-        name: "Creators e marcas, no mesmo ritmo.",
+        name: "Creators e marcas conectados no mesmo ritmo.",
       }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Menos ruído. Mais conexão." }),
+      page.getByRole("heading", {
+        name: "Para quem cria conteúdo e para quem procura resultados.",
+      }),
     ).toBeVisible();
     await expect(
       page.getByRole("heading", {
@@ -38,14 +40,19 @@ test.describe("public marketing landing", () => {
     await page.goto("/");
 
     await expect(
-      page.getByRole("link", { name: "Sou influencer" }).first(),
+      page.getByRole("link", { name: "Sou Influenciador" }).first(),
     ).toHaveAttribute("href", "/sign-up?intent=influencer");
     await expect(
-      page.getByRole("link", { name: "Sou empresa" }).first(),
+      page.getByRole("link", { name: "Sou UGC" }).first(),
+    ).toHaveAttribute("href", "/sign-up?intent=ugc");
+    await expect(
+      page.getByRole("link", { name: "Sou Empresa" }).first(),
     ).toHaveAttribute("href", "/sign-up?intent=company");
 
     await page
-      .getByRole("heading", { name: "Menos ruído. Mais conexão." })
+      .getByRole("heading", {
+        name: "Para quem cria conteúdo e para quem procura resultados.",
+      })
       .scrollIntoViewIfNeeded();
 
     await expect(page.getByRole("link", { name: "Entrar" })).toBeVisible();

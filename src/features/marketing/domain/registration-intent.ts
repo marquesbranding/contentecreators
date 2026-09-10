@@ -1,9 +1,10 @@
 import type { MarketingRegistrationIntent } from "@/features/marketing/types/marketing.types";
 
-const registrationIntentValues = ["influencer", "company"] as const;
+const registrationIntentValues = ["influencer", "ugc", "company"] as const;
 const registrationHrefByIntent = {
   COMPANY: "/sign-up?intent=company",
   INFLUENCER: "/sign-up?intent=influencer",
+  UGC: "/sign-up?intent=ugc",
 } as const satisfies Record<MarketingRegistrationIntent, string>;
 
 export function buildRegistrationHref(

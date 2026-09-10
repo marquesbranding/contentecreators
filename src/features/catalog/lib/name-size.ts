@@ -1,15 +1,5 @@
 /**
- * Long names shrink instead of wrapping/overflowing, so the card's padding
- * stays consistent regardless of how long the display name is.
+ * Re-exported from `@/shared/lib/names` so the public landing card can size
+ * names identically without importing across feature boundaries.
  */
-export function nameSizeClass(displayName: string) {
-  if (displayName.length > 30) {
-    return "text-xs";
-  }
-
-  if (displayName.length > 20) {
-    return "text-sm";
-  }
-
-  return "text-base";
-}
+export { nameSizeClass } from "@/shared/lib/names/display-name";

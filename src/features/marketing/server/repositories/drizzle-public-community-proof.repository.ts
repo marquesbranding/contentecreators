@@ -10,13 +10,15 @@ import {
   creatorMetricSnapshots,
   creatorNiches,
   creatorProfiles,
+  mediaAssets,
   niches,
 } from "@/db/schema";
 
 import type {
+  PublicCommunityAvatarSource,
   PublicCommunityCreatorMetricDto,
   PublicCommunityNicheDto,
-  PublicCommunityProofDto,
+  PublicCommunityProofSource,
 } from "../../types/public-community-proof.types";
 
 const PUBLIC_PROOF_COMPANY_LIMIT = 10;
@@ -26,10 +28,28 @@ const PUBLIC_PROOF_BIO_EXCERPT_LENGTH = 130;
 
 export async function loadPublicCommunityProof(
   database: ApplicationDatabase,
-): Promise<PublicCommunityProofDto> {
+): Promise<PublicCommunityProofSource> {
   const [creators, companies] = await Promise.all([
     database
       .select({
+        /* Photos are limited to creators the backoffice curated
+         * (`is_featured`), who were contacted before being promoted. Everyone
+         * else keeps the initials fallback — see TM-PUBLIC-01. */
+        avatarSource: sql<PublicCommunityAvatarSource | null>`
+          (
+            select jsonb_build_object(
+              'bucketName', ${mediaAssets.bucketName},
+              'height', ${mediaAssets.height},
+              'objectPath', ${mediaAssets.objectPath},
+              'width', ${mediaAssets.width}
+            )
+            from ${mediaAssets}
+            where ${mediaAssets.id} = ${creatorProfiles.avatarAssetId}
+              and ${creatorProfiles.isFeatured}
+              and ${mediaAssets.status} = 'ACTIVE'
+              and ${mediaAssets.archivedAt} is null
+          )
+        `,
         bioExcerpt: sql<string | null>`
           case
             when ${creatorProfiles.bio} is null then null

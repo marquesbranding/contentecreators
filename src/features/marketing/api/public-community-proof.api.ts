@@ -1,4 +1,5 @@
 import type {
+  PublicCommunityAvatarDto,
   PublicCommunityCompanyDto,
   PublicCommunityCreatorDto,
   PublicCommunityCreatorMetricDto,
@@ -17,6 +18,7 @@ const allowedCompanyKeys = new Set([
   "tradeName",
 ]);
 const allowedCreatorKeys = new Set([
+  "avatar",
   "bioExcerpt",
   "city",
   "creatorId",
@@ -32,6 +34,7 @@ const allowedMetricKeys = new Set([
   "platform",
 ]);
 const allowedNicheKeys = new Set(["name", "slug"]);
+const allowedAvatarKeys = new Set(["height", "url", "width"]);
 const allowedCreatorTypes = new Set<PublicCommunityCreatorType>([
   "INFLUENCER",
   "UGC",
@@ -101,6 +104,47 @@ function parseMetric(value: unknown): PublicCommunityCreatorMetricDto | null {
   };
 }
 
+/**
+ * Signed avatar URLs must share the configured Supabase project's exact
+ * origin. That pins scheme, host and port in one comparison — hosted
+ * deployments configure an HTTPS Supabase URL (enforced in
+ * `hosted-deployment-target.ts`), so requiring `https:` separately here would
+ * only break local development, where Supabase serves plain HTTP. Anything
+ * off-origin is a URL this client did not ask for, and the card falls back to
+ * initials rather than loading it.
+ */
+function parseAvatar(value: unknown): PublicCommunityAvatarDto | null {
+  if (!isRecord(value) || !hasOnlyKeys(value, allowedAvatarKeys)) {
+    return null;
+  }
+
+  if (typeof value.url !== "string") {
+    return null;
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  if (!supabaseUrl) {
+    return null;
+  }
+
+  try {
+    const url = new URL(value.url);
+
+    if (url.origin !== new URL(supabaseUrl).origin) {
+      return null;
+    }
+
+    return {
+      height: parseNumber(value.height),
+      url: url.toString(),
+      width: parseNumber(value.width),
+    };
+  } catch {
+    return null;
+  }
+}
+
 function parseNiche(value: unknown): PublicCommunityNicheDto | null {
   if (!isRecord(value) || !hasOnlyKeys(value, allowedNicheKeys)) {
     return null;
@@ -157,6 +201,7 @@ function parseCreator(value: unknown): PublicCommunityCreatorDto | null {
     .slice(0, 4);
 
   return {
+    avatar: value.avatar === undefined ? null : parseAvatar(value.avatar),
     bioExcerpt: parseOptionalText(value.bioExcerpt, 130),
     city: parseOptionalText(value.city, 120),
     creatorId,

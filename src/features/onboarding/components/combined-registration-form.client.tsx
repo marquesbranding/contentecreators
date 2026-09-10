@@ -27,6 +27,7 @@ import {
   RequiredFieldsNotice,
 } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
+import { initialsFromName } from "@/shared/lib/names/display-name";
 import { useActionSuccessToast } from "@/shared/hooks/use-action-success-toast";
 import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 import { useSubmitConfirmation } from "@/shared/hooks/use-submit-confirmation";
@@ -59,34 +60,20 @@ type AccountType = (typeof accountTypeOptions)[number]["value"];
 
 const TOTAL_STEPS = 4;
 
-function initialsFromName(name: string) {
-  const trimmed = name.trim();
-
-  if (!trimmed) {
-    return "";
-  }
-
-  return trimmed
-    .split(/\s+/u)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
 export function CombinedRegistrationForm({
   action,
   googleAction,
-  initialRole,
+  initialAccountType,
   resendAction,
 }: {
   action: OnboardingAction;
   googleAction: (formData: FormData) => Promise<void>;
-  initialRole?: "INFLUENCER" | "COMPANY";
+  /** Seeds the step-1 card from the landing's `?intent=`; the visitor can still change it. */
+  initialAccountType?: AccountType;
   resendAction: OnboardingAction;
 }) {
   const [accountType, setAccountType] = useState<AccountType | null>(
-    initialRole ?? null,
+    initialAccountType ?? null,
   );
   const role: "INFLUENCER" | "COMPANY" | null =
     accountType === null

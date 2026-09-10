@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { parseRegistrationIntent } from "@/features/identity";
+import { parseSignUpAccountIntent } from "@/features/identity";
 import { startGoogleSignInAction } from "@/features/identity/server";
 import {
   CombinedRegistrationForm,
@@ -27,7 +27,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
   const intentValue = Array.isArray(parameters.intent)
     ? parameters.intent[0]
     : parameters.intent;
-  const intent = parseRegistrationIntent(intentValue);
+  const intent = parseSignUpAccountIntent(intentValue);
 
   return (
     <OnboardingFormShell
@@ -36,12 +36,15 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
         <>
           <p>
             Preencha suas informações para a criação de uma nova conta. Seu
-            cadastro será enviado para análise e você será notificado(a)
-            sobre o seu processo de aprovação no e-mail informado.
+            cadastro será enviado para análise e você será notificado(a) sobre o
+            seu processo de aprovação no e-mail informado.
           </p>
           <p>
-            Após aprovado seu perfil estará público nesta plataforma.
-            Empresas poderão te encontrar e entrar em contato.
+            Após aprovado, seu perfil fica visível para as empresas e os
+            creators aprovados desta plataforma, que poderão te encontrar e
+            entrar em contato. Perfis selecionados pela nossa curadoria também
+            podem ser destacados na página pública da Contente Creators, com
+            nome, cidade, nichos, métricas e foto de perfil.
           </p>
           <p>
             O cadastro e toda interação dentro da plataforma é gratuito e se
@@ -57,7 +60,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
       <CombinedRegistrationForm
         action={registerWithEmailAction}
         googleAction={startGoogleSignInAction}
-        initialRole={intent}
+        initialAccountType={intent}
         resendAction={resendPreparedRegistrationConfirmationAction}
       />
     </OnboardingFormShell>

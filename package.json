@@ -51,6 +51,7 @@
     "mail:status": "docker compose -f compose.local.yml ps",
     "local:admins": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/sync-local-admins.ts",
     "local:env": "node --import tsx scripts/sync-local-env.ts",
+    "local:showcase": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/seed-local-landing-showcase.ts",
     "local:storage": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/seed-local-storage.ts",
     "local:start": "npm run mail:start && npm run db:start && npm run local:env && npm run local:storage && npm run local:admins",
     "local:stop": "npm run db:stop && npm run mail:stop",

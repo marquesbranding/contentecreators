@@ -19,16 +19,7 @@ import {
 import type { ProfileHeaderPreviewBadge } from "@/shared/components/profile-header-preview";
 import { accountTypeLabels } from "@/shared/domain/account-type-labels";
 import { BrowserQueryProvider } from "@/shared/query/browser-query-provider";
-
-function initialsFromName(name: string) {
-  return name
-    .trim()
-    .split(/\s+/u)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0]?.toUpperCase() ?? "")
-    .join("");
-}
+import { initialsFromName } from "@/shared/lib/names/display-name";
 
 function formatLocation(city: string, state: string) {
   return city && state ? `${city}, ${state.toUpperCase()}` : city;

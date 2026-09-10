@@ -8,6 +8,7 @@ import {
 describe("marketing registration intent", () => {
   it.each([
     ["INFLUENCER", "/sign-up?intent=influencer"],
+    ["UGC", "/sign-up?intent=ugc"],
     ["COMPANY", "/sign-up?intent=company"],
   ] as const)("preserves %s as untrusted Auth intent", (intent, expected) => {
     expect(buildRegistrationHref(intent)).toBe(expected);
@@ -15,6 +16,7 @@ describe("marketing registration intent", () => {
 
   it("accepts only public self-service intents", () => {
     expect(isMarketingRegistrationIntent("influencer")).toBe(true);
+    expect(isMarketingRegistrationIntent("ugc")).toBe(true);
     expect(isMarketingRegistrationIntent("company")).toBe(true);
     expect(isMarketingRegistrationIntent("admin")).toBe(false);
     expect(isMarketingRegistrationIntent(undefined)).toBe(false);

@@ -1,1 +1,1 @@
-export type MarketingRegistrationIntent = "INFLUENCER" | "COMPANY";
+export type MarketingRegistrationIntent = "INFLUENCER" | "UGC" | "COMPANY";

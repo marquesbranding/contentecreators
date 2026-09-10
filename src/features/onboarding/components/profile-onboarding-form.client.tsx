@@ -17,6 +17,7 @@ import {
   AlertTitle,
 } from "@/shared/components/ui/alert";
 import { RequiredFieldsNotice } from "@/shared/components/ui/field";
+import { initialsFromName } from "@/shared/lib/names/display-name";
 import { useActionSuccessToast } from "@/shared/hooks/use-action-success-toast";
 import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 import { useSubmitConfirmation } from "@/shared/hooks/use-submit-confirmation";
@@ -59,21 +60,6 @@ type ProfileOnboardingFormProps = {
   mediaActions: MediaUploadActions;
   role: "INFLUENCER" | "COMPANY";
 };
-
-function initialsFromName(name: string) {
-  const trimmed = name.trim();
-
-  if (!trimmed) {
-    return "";
-  }
-
-  return trimmed
-    .split(/\s+/u)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0]?.toUpperCase() ?? "")
-    .join("");
-}
 
 export function ProfileOnboardingForm(props: ProfileOnboardingFormProps) {
   return (

@@ -147,7 +147,7 @@ describe("combined registration form", () => {
     renderRegistration({
       action: vi.fn(),
       googleAction: vi.fn(),
-      initialRole: "INFLUENCER",
+      initialAccountType: "INFLUENCER",
       resendAction: vi.fn(),
     });
 
@@ -162,13 +162,40 @@ describe("combined registration form", () => {
     expect(screen.queryByText("ADMIN")).not.toBeInTheDocument();
   });
 
+  it("opens the UGC card pre-selected and carries role INFLUENCER with creatorType UGC", () => {
+    renderRegistration({
+      action: vi.fn(),
+      googleAction: vi.fn(),
+      initialAccountType: "UGC",
+      resendAction: vi.fn(),
+    });
+
+    expect(screen.getByRole("radio", { name: /sou ugc/iu })).toBeChecked();
+    /* Step 1 already answered the creator-type question, so the wizard must
+     * not ask it a second time. */
+    expect(
+      screen.queryByRole("radiogroup", { name: /tipo de creator/iu }),
+    ).not.toBeInTheDocument();
+
+    /* Serializing the form is what the submit would send, without paying for a
+     * full four-step walk — the sibling creator test already covers submission
+     * end to end, and `UGC` differs only in these two derived values. */
+    const form = screen
+      .getByRole("button", { name: "Avançar" })
+      .closest("form");
+    const formData = new FormData(form!);
+
+    expect(formData.get("role")).toBe("INFLUENCER");
+    expect(formData.get("creatorType")).toBe("UGC");
+  });
+
   it("changes the role-specific fields in the same registration form", async () => {
     const user = userEvent.setup();
 
     renderRegistration({
       action: vi.fn(),
       googleAction: vi.fn(),
-      initialRole: "INFLUENCER",
+      initialAccountType: "INFLUENCER",
       resendAction: vi.fn(),
     });
 
@@ -218,7 +245,7 @@ describe("combined registration form", () => {
     const { container } = renderRegistration({
       action: vi.fn(),
       googleAction: vi.fn(),
-      initialRole: "COMPANY",
+      initialAccountType: "COMPANY",
       resendAction: vi.fn(),
     });
     const googleForm = screen
@@ -247,7 +274,7 @@ describe("combined registration form", () => {
     renderRegistration({
       action,
       googleAction: vi.fn(),
-      initialRole: "INFLUENCER",
+      initialAccountType: "INFLUENCER",
       resendAction: vi.fn(),
     });
 
@@ -326,7 +353,7 @@ describe("combined registration form", () => {
     renderRegistration({
       action,
       googleAction: vi.fn(),
-      initialRole: "INFLUENCER",
+      initialAccountType: "INFLUENCER",
       resendAction: vi.fn(),
     });
 
@@ -374,7 +401,7 @@ describe("combined registration form", () => {
     renderRegistration({
       action,
       googleAction: vi.fn(),
-      initialRole: "COMPANY",
+      initialAccountType: "COMPANY",
       resendAction: vi.fn(),
     });
 
@@ -440,7 +467,7 @@ describe("combined registration form", () => {
     const { container } = renderRegistration({
       action: vi.fn(),
       googleAction: vi.fn(),
-      initialRole: "INFLUENCER",
+      initialAccountType: "INFLUENCER",
       resendAction: vi.fn(),
     });
 

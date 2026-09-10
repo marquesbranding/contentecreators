@@ -45,6 +45,7 @@ export const ptBR = {
       description:
         "Encontre influenciadores do seu nicho e região, com todas as informações em um só lugar. O creator perfeito para cada campanha, com a cara da sua marca!",
       creatorCta: "Sou Influenciador",
+      ugcCta: "Sou UGC",
       companyCta: "Sou Empresa",
       note: "Cadastro gratuito para o Beta",
       preview: {
@@ -151,7 +152,7 @@ export const ptBR = {
         {
           question: "O cadastro no Beta é gratuito?",
           answer:
-            "Sim. O cadastro para participar do Beta da Contente Creators é gratuito.",
+            "Sim. O cadastro para participar desta fase Beta, a fase inicial de lançamento da Contente Creators, é gratuito. Se no futuro algo mudar, você será notificado e precisará aceitar os novos termos e condições para continuar com a gente.",
         },
         {
           question: "Todo perfil entra automaticamente no catálogo?",
@@ -159,9 +160,19 @@ export const ptBR = {
             "Não. Cada cadastro passa por curadoria humana antes de ser liberado na área privada.",
         },
         {
+          question: "Preciso atualizar minhas informações e métricas?",
+          answer:
+            "Sim. No cadastro você informa seus dados pessoais ou empresariais e suas métricas (no caso de influenciadores e UGCs) e, periodicamente, pode atualizá-los manualmente no seu perfil, conforme eles mudem. Manter a sua conta atualizada é fundamental para encontrar o match perfeito.",
+        },
+        {
           question: "Como acontece o contato entre marcas e creators?",
           answer:
-            "Depois da aprovação, empresas acessam os canais liberados pelo creator, como WhatsApp, e-mail ou redes sociais.",
+            "As informações de perfil ficam visíveis para que as marcas consigam entrar em contato direto com o creator, e vice-versa. O creator também pode entrar em contato com a marca para se apresentar. Essa troca de mensagens acontece pelos canais disponibilizados por cada um, como WhatsApp, e-mail e redes sociais. Neste momento, somos uma plataforma que intermedia esse contato — não intermediamos contratações e contratos, nem somos comissionados ou responsáveis pela execução de eventuais trabalhos.",
+        },
+        {
+          question: "Fala que eu te escuto!",
+          answer:
+            "Precisa de um atendimento especial? Está com dúvidas ou tem uma sugestão? Mande um e-mail para contentecreators@marquesbranding.com.",
         },
       ],
     },
@@ -175,22 +186,35 @@ export const ptBR = {
       tagline: "Creators e marcas, no mesmo ritmo.",
       faq: "FAQ",
       privacy: "Política de Privacidade",
+      /* `platform` keys the official brand mark in `SocialPlatformIcon`; the
+         hrefs are the profile addresses with copy/paste tracking parameters
+         (`?si=`, `?igshid=`, `?_t=`) stripped so no session token ships in
+         the public HTML. */
       socialLinks: [
         {
           href: "https://www.instagram.com/contentecreators",
           label: "Instagram",
-        },
-        {
-          href: "https://www.facebook.com/contentecreators",
-          label: "Facebook",
+          platform: "INSTAGRAM",
         },
         {
           href: "https://www.tiktok.com/@contentecreators",
           label: "TikTok",
+          platform: "TIKTOK",
         },
         {
-          href: "https://www.linkedin.com/company/contente-creators",
-          label: "LinkedIn",
+          href: "https://www.threads.com/@contentecreators",
+          label: "Threads",
+          platform: "THREADS",
+        },
+        {
+          href: "https://youtube.com/@eusoucontente",
+          label: "YouTube",
+          platform: "YOUTUBE",
+        },
+        {
+          href: "https://x.com/eusoucontente",
+          label: "X",
+          platform: "X",
         },
       ],
       supportContact: "Contato de suporte e privacidade",

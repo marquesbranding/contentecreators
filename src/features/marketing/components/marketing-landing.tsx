@@ -1,23 +1,27 @@
 import {
-  ArrowUpRight,
-  ArrowRight,
   BadgeCheck,
   Building2,
   Check,
   CircleCheck,
+  GraduationCap,
   HelpCircle,
   Mail,
   MessageCircle,
-  Search,
+  Palette,
   SearchCheck,
   ShieldCheck,
   Sparkles,
+  TrendingUp,
   UserRoundSearch,
 } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { MarketingHeader } from "@/features/marketing/components/marketing-header";
+import {
+  PartnerInfoDialog,
+  type PartnerInfoFact,
+} from "@/features/marketing/components/partner-info-dialog";
 import { buildRegistrationHref } from "@/features/marketing/domain/registration-intent";
 import { AuroraText } from "@/registry/magicui/aurora-text";
 import {
@@ -25,21 +29,15 @@ import {
   ScrollVelocityRow,
 } from "@/registry/magicui/scroll-based-velocity";
 import { TextAnimate } from "@/registry/magicui/text-animate";
+import { BrandLogo } from "@/shared/components/brand-logo";
 import { SocialLinksNav } from "@/shared/components/social-links-nav";
 import { buttonVariants } from "@/shared/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/shared/components/ui/dialog";
 import { ptBR } from "@/shared/copy/pt-BR";
 import { cn } from "@/shared/lib/cn";
 
 const copy = ptBR.marketing;
 const influencerHref = buildRegistrationHref("INFLUENCER");
+const ugcHref = buildRegistrationHref("UGC");
 const companyHref = buildRegistrationHref("COMPANY");
 
 const journeyIcons = [
@@ -75,7 +73,28 @@ const vevoxFacts = [
     icon: MessageCircle,
     title: "Proximidade real",
   },
-] as const;
+] as const satisfies readonly PartnerInfoFact[];
+
+const marquesBrandingFacts = [
+  {
+    description:
+      "Branding, naming e identidade visual para marcas com posicionamento e personalidade próprios.",
+    icon: Palette,
+    title: "Branding e identidade",
+  },
+  {
+    description:
+      "Estratégia de conteúdo integrada a tráfego pago, orientada por propósito e resultado.",
+    icon: TrendingUp,
+    title: "Conteúdo e performance",
+  },
+  {
+    description:
+      "Branding Club, workshops e consultorias para desenvolver times e negócios.",
+    icon: GraduationCap,
+    title: "Formação e consultoria",
+  },
+] as const satisfies readonly PartnerInfoFact[];
 
 function HeroPreview() {
   return (
@@ -224,16 +243,29 @@ function AudienceSection() {
                 </li>
               ))}
             </ul>
-            <Link
-              className={cn(
-                buttonVariants({ size: "lg", variant: "secondary" }),
-                "bg-brand-night hover:bg-brand-night/90 mt-8 w-full rounded-full text-white sm:w-auto",
-              )}
-              href={influencerHref}
-            >
-              {copy.hero.creatorCta}
-              <ArrowRight aria-hidden="true" />
-            </Link>
+            {/* Influencer and UGC are peers, not a hierarchy: same registration,
+                the button only pre-selects the account-type card. `mt-auto`
+                keeps both cards' footers aligned once these wrap at `sm`. */}
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                className={cn(
+                  buttonVariants({ size: "lg", variant: "secondary" }),
+                  "bg-brand-night hover:bg-brand-night/90 w-full rounded-full text-white sm:w-auto",
+                )}
+                href={influencerHref}
+              >
+                {copy.hero.creatorCta}
+              </Link>
+              <Link
+                className={cn(
+                  buttonVariants({ size: "lg", variant: "secondary" }),
+                  "bg-brand-night hover:bg-brand-night/90 w-full rounded-full text-white sm:w-auto",
+                )}
+                href={ugcHref}
+              >
+                {copy.hero.ugcCta}
+              </Link>
+            </div>
           </article>
 
           <article
@@ -264,16 +296,17 @@ function AudienceSection() {
                 </li>
               ))}
             </ul>
-            <Link
-              className={cn(
-                buttonVariants({ size: "lg" }),
-                "bg-brand-night hover:bg-brand-night/90 mt-8 w-full rounded-full text-white sm:w-auto",
-              )}
-              href={companyHref}
-            >
-              {copy.hero.companyCta}
-              <ArrowRight aria-hidden="true" />
-            </Link>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                className={cn(
+                  buttonVariants({ size: "lg" }),
+                  "bg-brand-night hover:bg-brand-night/90 w-full rounded-full text-white sm:w-auto",
+                )}
+                href={companyHref}
+              >
+                {copy.hero.companyCta}
+              </Link>
+            </div>
           </article>
         </div>
       </div>
@@ -358,7 +391,10 @@ function FaqSection() {
     >
       <div className="mx-auto grid max-w-[90rem] gap-8 lg:grid-cols-[0.75fr_1.25fr] lg:gap-16">
         <div>
-          <p className="text-brand-blue text-sm font-extrabold tracking-[0.12em] uppercase">
+          {/* `text-brand-blue` (#036afc) only reaches 4.34:1 on this cream
+              background; #0059db is the darker brand blue the Steps eyebrow
+              already uses on the same surface. */}
+          <p className="text-sm font-extrabold tracking-[0.12em] text-[#0059db] uppercase">
             {copy.faq.eyebrow}
           </p>
           <h2
@@ -400,44 +436,7 @@ function FinalCallToAction() {
         className="marketing-cta-surface relative mx-auto max-w-[90rem] overflow-hidden rounded-[2rem] border border-white/15 px-6 py-12 text-white sm:px-10 sm:py-16 lg:px-16 lg:py-20"
         data-testid="marketing-final-cta"
       >
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute top-[21%] right-16 hidden aspect-[2857/1039] w-[19rem] max-w-[32vw] overflow-hidden opacity-20 lg:block xl:right-24 xl:w-[24rem]"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            alt=""
-            className="absolute h-auto max-w-none select-none"
-            decoding="async"
-            height={3334}
-            loading="lazy"
-            src="/brand/official/contente-creators-white.png"
-            style={{ left: "-7.42%", top: "-98.08%", width: "116.74%" }}
-            width={3334}
-          />
-        </span>
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute top-[34%] right-10 hidden aspect-[2857/1039] w-[23rem] max-w-[40vw] overflow-hidden opacity-95 lg:block xl:right-16 xl:w-[29rem]"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            alt=""
-            className="absolute h-auto max-w-none select-none"
-            decoding="async"
-            height={3334}
-            loading="lazy"
-            src="/brand/official/contente-creators-lime-blue.png"
-            style={{ left: "-9.8%", top: "-110.39%", width: "116.7%" }}
-            width={3334}
-          />
-        </span>
-        <Search
-          aria-hidden="true"
-          className="absolute -top-10 -right-8 size-48 rotate-12 text-white/10 sm:size-64"
-          strokeWidth={1.4}
-        />
-        <div className="relative max-w-4xl lg:max-w-[43rem]">
+        <div className="relative max-w-4xl">
           <p className="text-sm font-extrabold tracking-[0.12em] text-white uppercase">
             {copy.finalCta.eyebrow}
           </p>
@@ -447,7 +446,7 @@ function FinalCallToAction() {
           <p className="mt-5 max-w-2xl text-lg leading-8 text-white">
             {copy.finalCta.description}
           </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link
               className={cn(
                 buttonVariants({ size: "lg" }),
@@ -456,7 +455,15 @@ function FinalCallToAction() {
               href={influencerHref}
             >
               {copy.hero.creatorCta}
-              <ArrowRight aria-hidden="true" />
+            </Link>
+            <Link
+              className={cn(
+                buttonVariants({ size: "lg" }),
+                "bg-brand-pink text-brand-night hover:bg-brand-pink/90 w-full rounded-full sm:w-auto",
+              )}
+              href={ugcHref}
+            >
+              {copy.hero.ugcCta}
             </Link>
             <Link
               className={cn(
@@ -476,78 +483,38 @@ function FinalCallToAction() {
 
 function ByVevoxInfoDialog() {
   return (
-    <Dialog>
-      <DialogTrigger
-        render={
-          <button
-            aria-label="Abrir informações sobre a Vevox"
-            className="inline-flex min-h-8 items-center justify-center rounded-md px-2 py-1 transition-colors hover:bg-white/[0.06] focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
-            type="button"
-          />
-        }
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          alt=""
-          aria-hidden="true"
-          className="h-5 w-auto opacity-80 transition-opacity hover:opacity-100"
-          decoding="async"
-          height={24}
-          loading="lazy"
-          src="/logos/by-vevox-512.webp"
-          width={132}
-        />
-      </DialogTrigger>
+    <PartnerInfoDialog
+      ctaHref="https://vevox.com.br/"
+      ctaLabel="Conhecer a Vevox"
+      description="A Vevox cria produtos digitais com pesquisa constante, identidade consistente e foco em clareza. Interfaces simples, decisões controladas e proximidade real para evoluir com segurança."
+      facts={vevoxFacts}
+      footnote="Plataforma desenvolvida e sustentada pela Vevox."
+      logoHeight={24}
+      logoSrc="/logos/by-vevox-512.webp"
+      logoWidth={132}
+      title="Sobre a Vevox"
+      triggerLabel="Abrir informações sobre a Vevox"
+    />
+  );
+}
 
-      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto border-white/10 bg-[#111114] p-0 text-white sm:max-w-lg">
-        <DialogHeader className="gap-3 p-6 pr-12 pb-4">
-          <DialogTitle className="text-2xl font-semibold tracking-normal text-white">
-            Sobre a Vevox
-          </DialogTitle>
-          <DialogDescription className="text-sm leading-6 text-white/70">
-            A Vevox cria produtos digitais com pesquisa constante, identidade
-            consistente e foco em clareza. Interfaces simples, decisões
-            controladas e proximidade real para evoluir com segurança.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="grid gap-2 px-6 pb-5">
-          {vevoxFacts.map((fact) => (
-            <div
-              className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-3"
-              key={fact.title}
-            >
-              <div className="flex size-8 items-center justify-center rounded-md bg-white/[0.08] text-white/80">
-                <fact.icon aria-hidden="true" className="size-4" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-sm font-semibold text-white">
-                  {fact.title}
-                </h3>
-                <p className="mt-1 text-xs leading-5 text-white/[0.62]">
-                  {fact.description}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex flex-col gap-4 border-t border-white/10 bg-black/20 p-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
-          <p className="max-w-[15rem] text-xs leading-5 text-white/[0.55]">
-            Plataforma desenvolvida e sustentada pela Vevox.
-          </p>
-          <a
-            className="inline-flex min-h-10 min-w-[11rem] shrink-0 items-center justify-center gap-1.5 rounded-md border border-white/[0.12] bg-white/[0.06] px-4 py-2 text-sm font-semibold whitespace-nowrap text-white transition-colors hover:border-white/[0.35] hover:bg-white/10 focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
-            href="https://vevox.com.br/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Conhecer a Vevox
-            <ArrowUpRight aria-hidden="true" className="size-3.5" />
-          </a>
-        </div>
-      </DialogContent>
-    </Dialog>
+function MarquesBrandingInfoDialog() {
+  return (
+    <PartnerInfoDialog
+      ctaHref="https://www.marquesbranding.com"
+      ctaLabel="Conhecer a Marques Branding"
+      description="Agência de comunicação sediada em Joaçaba (SC) que atua como parceira estratégica de negócios. Constrói marcas fortes com estratégia, consistência e intenção clara — estética vem depois do posicionamento."
+      facts={marquesBrandingFacts}
+      footnote="Marca e comunicação da Contente Creators por Marques Branding."
+      /* The Marques mark is a four-line stacked wordmark, so the wide Vevox
+         lockup's `h-5` would leave each line about 5px tall. */
+      logoClassName="h-10 w-auto"
+      logoHeight={580}
+      logoSrc="/logos/marques-branding-branco-640.webp"
+      logoWidth={640}
+      title="Sobre a Marques Branding"
+      triggerLabel="Abrir informações sobre a Marques Branding"
+    />
   );
 }
 
@@ -567,9 +534,11 @@ function MarketingFooter({
       <div className="mx-auto w-full max-w-[90rem] px-5 py-12 sm:px-8 lg:px-12">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1.45fr)_minmax(12rem,0.55fr)_minmax(16rem,0.75fr)] lg:items-start">
           <div className="max-w-md">
-            <p className="text-2xl font-extrabold tracking-[-0.03em]">
-              {ptBR.brand.name}
-            </p>
+            <BrandLogo
+              background="transparent"
+              className="w-[11rem] sm:w-[12.5rem]"
+              variant="white"
+            />
             <p className="mt-3 max-w-sm text-sm leading-6 text-white/58">
               {copy.footer.tagline}
             </p>
@@ -623,9 +592,15 @@ function MarketingFooter({
           <p>
             © {new Date().getFullYear()} {copy.footer.copyright}
           </p>
-          <div className="inline-flex w-fit items-center gap-3">
-            <span>Desenvolvido por</span>
-            <ByVevoxInfoDialog />
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
+            <div className="inline-flex w-fit items-center gap-3">
+              <span>Powered by</span>
+              <MarquesBrandingInfoDialog />
+            </div>
+            <div className="inline-flex w-fit items-center gap-3">
+              <span>Desenvolvido por</span>
+              <ByVevoxInfoDialog />
+            </div>
           </div>
         </div>
       </div>
@@ -669,7 +644,9 @@ export function MarketingLanding({
               <p className="mt-7 max-w-[39rem] text-lg leading-8 text-white/70 sm:text-xl sm:leading-9">
                 {copy.hero.description}
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              {/* Three long labels at `size="lg"` do not fit one row below
+                  ~640px, so they stack on mobile and wrap from `sm` up. */}
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
                   className={cn(
                     buttonVariants({ size: "lg" }),
@@ -678,7 +655,15 @@ export function MarketingLanding({
                   href={influencerHref}
                 >
                   {copy.hero.creatorCta}
-                  <ArrowRight aria-hidden="true" />
+                </Link>
+                <Link
+                  className={cn(
+                    buttonVariants({ size: "lg" }),
+                    "bg-brand-pink text-brand-night hover:bg-brand-pink/90 w-full rounded-full sm:w-auto",
+                  )}
+                  href={ugcHref}
+                >
+                  {copy.hero.ugcCta}
                 </Link>
                 <Link
                   className={cn(

@@ -64,12 +64,16 @@ describe("MarketingLanding", () => {
     expect(screen.getByRole("contentinfo")).toBeInTheDocument();
   });
 
-  it("preserves separate influencer and company registration intents", () => {
+  it("preserves separate influencer, UGC and company registration intents", () => {
     render(<MarketingLanding />);
 
     expect(
       screen.getAllByRole("link", { name: "Sou Influenciador" })[0],
     ).toHaveAttribute("href", "/sign-up?intent=influencer");
+    expect(screen.getAllByRole("link", { name: "Sou UGC" })[0]).toHaveAttribute(
+      "href",
+      "/sign-up?intent=ugc",
+    );
     expect(
       screen.getAllByRole("link", { name: "Sou Empresa" })[0],
     ).toHaveAttribute("href", "/sign-up?intent=company");
@@ -77,6 +81,26 @@ describe("MarketingLanding", () => {
       "href",
       "/login",
     );
+  });
+
+  it("offers both creator paths in the hero, the audience card and the final CTA", () => {
+    render(<MarketingLanding />);
+
+    /* Influencer and UGC are the same registration; the button only decides
+       which account-type card opens pre-selected. */
+    expect(
+      screen.getAllByRole("link", { name: "Sou Influenciador" }),
+    ).toHaveLength(3);
+    expect(screen.getAllByRole("link", { name: "Sou UGC" })).toHaveLength(3);
+  });
+
+  it("leaves the final CTA free of decorative brand artwork", () => {
+    render(<MarketingLanding />);
+
+    const finalCta = screen.getByTestId("marketing-final-cta");
+
+    expect(finalCta.querySelectorAll("img")).toHaveLength(0);
+    expect(finalCta.querySelectorAll("svg")).toHaveLength(0);
   });
 
   it("links the configured support/privacy contact from the footer", () => {
@@ -128,9 +152,18 @@ describe("MarketingLanding", () => {
   it("uses the supplied brand asset without participant listings", () => {
     render(<MarketingLanding />);
 
-    expect(
-      screen.getByRole("img", { name: "Contente Creators" }),
-    ).toHaveAttribute("src", "/brand/official/contente-creators-blue.png");
+    const [header, footer] = screen.getAllByRole("img", {
+      name: "Contente Creators",
+    });
+
+    expect(header).toHaveAttribute(
+      "src",
+      "/brand/official/contente-creators-blue.png",
+    );
+    expect(footer).toHaveAttribute(
+      "src",
+      "/brand/official/contente-creators-white.png",
+    );
     expect(screen.queryByTestId("creator-listing")).not.toBeInTheDocument();
     expect(screen.queryByTestId("company-listing")).not.toBeInTheDocument();
   });
@@ -148,6 +181,50 @@ describe("MarketingLanding", () => {
     expect(
       container.querySelector('[data-testid="company-listing"]'),
     ).toBeNull();
+  });
+
+  it("credits Marques Branding beside the Vevox seal", async () => {
+    const user = userEvent.setup();
+    render(<MarketingLanding />);
+
+    expect(screen.getByText("Powered by")).toBeVisible();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Abrir informações sobre a Marques Branding",
+      }),
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Sobre a Marques Branding" }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "Conhecer a Marques Branding" }),
+    ).toHaveAttribute("href", "https://www.marquesbranding.com");
+  });
+
+  it("links the brand's own social accounts with their official marks", () => {
+    render(<MarketingLanding />);
+
+    const socialNav = screen.getByRole("navigation", { name: "Redes sociais" });
+
+    expect(screen.getByRole("link", { name: "Threads" })).toHaveAttribute(
+      "href",
+      "https://www.threads.com/@contentecreators",
+    );
+    expect(screen.getByRole("link", { name: "YouTube" })).toHaveAttribute(
+      "href",
+      "https://youtube.com/@eusoucontente",
+    );
+    expect(screen.getByRole("link", { name: "X" })).toHaveAttribute(
+      "href",
+      "https://x.com/eusoucontente",
+    );
+    /* Every href must be a bare profile address: copy/paste tracking
+       parameters carry the sharer's session token. */
+    for (const link of socialNav.querySelectorAll("a")) {
+      expect(link.getAttribute("href")).not.toContain("?");
+    }
   });
 
   it("uses the approved marketing color treatment without emoji symbols", () => {
