@@ -45,9 +45,12 @@ export function PublicCommunityProof({
         {proof.companies.length > 0 ? (
           <div className="mt-10 overflow-hidden border-y border-black/10 py-5">
             <ScrollVelocityContainer>
+              {/* black/40 renders as #999 on white — 2.84:1, under even the
+                  3:1 large-text floor. black/55 clears 4.5:1 at any size, so
+                  the strip stays muted without failing the a11y smoke. */}
               <ScrollVelocityRow
                 baseVelocity={2}
-                className="text-xl font-extrabold tracking-[0.02em] text-black/40 uppercase sm:text-2xl"
+                className="text-xl font-extrabold tracking-[0.02em] text-black/55 uppercase sm:text-2xl"
                 direction={-1}
               >
                 <ul aria-label="Marcas aprovadas" className="flex items-center">
