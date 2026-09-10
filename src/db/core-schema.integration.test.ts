@@ -35,6 +35,7 @@ const requiredEnums = [
   "placement_audience",
   "placement_type",
   "social_platform",
+  "whatsapp_contact_status",
 ] as const;
 
 const requiredTables = [
@@ -60,6 +61,7 @@ const requiredTables = [
   "rate_limit_buckets",
   "social_profiles",
   "sponsorship_placements",
+  "whatsapp_contact_confirmations",
 ] as const;
 
 describeLocalStack("core database schema", () => {

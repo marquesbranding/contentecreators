@@ -659,3 +659,29 @@ select
   coalesce(account.approved_at, account.suspended_at, account.banned_at, now())
 from public.accounts account
 where account.status in ('APPROVED', 'SUSPENDED', 'BANNED');
+
+-- Exercises the audit trigger on whatsapp_contact_confirmations, which is
+-- otherwise the only audited aggregate with no seeded row. The pair points at
+-- the SUSPENDED creator on purpose: a CONFIRMED row never raises the "did you
+-- actually reach out?" prompt the way a PENDING one would, and a suspended
+-- profile is absent from the catalog, so the contact badge stays invisible.
+insert into public.whatsapp_contact_confirmations (
+  company_account_id,
+  creator_profile_id,
+  status,
+  clicked_at,
+  confirmed_at
+)
+values (
+  'c0000000-0000-4000-8000-000000000004',
+  'd0000000-0000-4000-8000-000000000005',
+  'CONFIRMED',
+  now() - interval '9 days',
+  now() - interval '9 days'
+);
+
+-- app_confirm_whatsapp_contact() bumps this counter alongside the row, so the
+-- seed keeps the denormalized value consistent with the confirmation above.
+update public.creator_profiles
+set whatsapp_contact_count = 1
+where id = 'd0000000-0000-4000-8000-000000000005';

@@ -40,6 +40,7 @@ const auditedTables = [
   "niches",
   "social_profiles",
   "sponsorship_placements",
+  "whatsapp_contact_confirmations",
 ] as const;
 
 async function setAuditContext(
