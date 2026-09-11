@@ -38,8 +38,21 @@ async function selectOption(
   await user.click(await screen.findByRole("option", { name: option }));
 }
 
+/**
+ * Sets a free-text field with a single input event, like the company fields
+ * below. Masked, numeric and password fields keep character-by-character
+ * typing, where keystrokes are the behaviour under test; typing every long
+ * free-text value re-rendered this large form per character and pushed the
+ * wizard tests past their timeout on slower CI runners.
+ */
+function fillText(label: string, value: string, options?: { exact: boolean }) {
+  fireEvent.input(screen.getByLabelText(label, options), {
+    target: { value },
+  });
+}
+
 async function fillAccessFields(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByLabelText("E-mail"), "teste@exemplo.com");
+  fillText("E-mail", "teste@exemplo.com");
   await user.type(screen.getByLabelText("Senha"), "SenhaForte1");
   await user.type(screen.getByLabelText("Confirmar senha"), "SenhaForte1");
   await user.type(screen.getByLabelText("WhatsApp com DDD"), "11999999999");
@@ -61,16 +74,16 @@ async function acceptRequiredConsents(
 }
 
 async function fillCreatorFields(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByLabelText("Nome completo"), "Creator Exemplo");
-  await user.type(
-    screen.getByLabelText("Conte sobre seu conteúdo"),
+  fillText("Nome completo", "Creator Exemplo");
+  fillText(
+    "Conte sobre seu conteúdo",
     "Crio conteúdo sobre tecnologia, cultura e negócios locais.",
   );
   await goToNextStep(user);
   await user.click(screen.getByRole("checkbox", { name: "Instagram" }));
   await user.type(screen.getByLabelText("Seguidores no Instagram"), "15000");
-  await user.type(
-    screen.getByLabelText("Link do perfil no Instagram"),
+  fillText(
+    "Link do perfil no Instagram",
     "https://instagram.com/creator_teste",
   );
   await user.click(screen.getByRole("combobox", { name: "Principais nichos" }));
@@ -81,10 +94,7 @@ async function fillCreatorFields(user: ReturnType<typeof userEvent.setup>) {
    * the page inert until it is dismissed. */
   await user.keyboard("{Escape}");
   await goToNextStep(user);
-  await user.type(
-    screen.getByLabelText("Cidade", { exact: true }),
-    "São Paulo",
-  );
+  fillText("Cidade", "São Paulo", { exact: true });
   await selectOption(user, "UF", "SP");
   await acceptRequiredConsents(user);
 }
@@ -101,22 +111,29 @@ async function fillCompanyFields(user: ReturnType<typeof userEvent.setup>) {
   });
   await selectOption(user, "Segmento", "Tecnologia");
   await selectOption(user, "Tamanho da empresa", "11 a 50 pessoas");
-  await user.type(
-    screen.getByLabelText("Apresente a empresa"),
+  fillText(
+    "Apresente a empresa",
     "Empresa preparada para validar o fluxo completo de cadastro.",
   );
   await goToNextStep(user);
   await user.type(screen.getByLabelText("CEP"), "01001000");
-  await user.type(screen.getByLabelText("Logradouro"), "Praça da Sé");
+  fillText("Logradouro", "Praça da Sé");
   await user.type(screen.getByLabelText("Número"), "100");
-  await user.type(screen.getByLabelText("Bairro"), "Sé");
+  fillText("Bairro", "Sé");
   await goToNextStep(user);
-  await user.type(
-    screen.getByLabelText("Cidade", { exact: true }),
-    "São Paulo",
-  );
+  fillText("Cidade", "São Paulo", { exact: true });
   await selectOption(user, "UF", "SP");
   await acceptRequiredConsents(user);
+}
+
+/**
+ * The wizard tests type a whole registration character by character. Keeping
+ * every keystroke event but skipping the per-character macrotask wait
+ * (`delay: null`) keeps them realistic without taking several times longer on
+ * slower CI runners, where the default delay pushed one past its timeout.
+ */
+function setupUser() {
+  return userEvent.setup({ delay: null });
 }
 
 /**
@@ -143,7 +160,7 @@ function finalStepSubmit() {
 
 describe("combined registration form", () => {
   it("opens the influencer fields from a landing intent without a second role step", async () => {
-    const user = userEvent.setup();
+    const user = setupUser();
     renderRegistration({
       action: vi.fn(),
       googleAction: vi.fn(),
@@ -190,7 +207,7 @@ describe("combined registration form", () => {
   });
 
   it("changes the role-specific fields in the same registration form", async () => {
-    const user = userEvent.setup();
+    const user = setupUser();
 
     renderRegistration({
       action: vi.fn(),
@@ -209,7 +226,7 @@ describe("combined registration form", () => {
   });
 
   it("keeps Base UI fields controlled when registration starts without an intent", async () => {
-    const user = userEvent.setup();
+    const user = setupUser();
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const warningSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
@@ -268,7 +285,7 @@ describe("combined registration form", () => {
   });
 
   it("uses touch-friendly visibility controls and validates matching passwords before submission", async () => {
-    const user = userEvent.setup();
+    const user = setupUser();
     const action = vi.fn();
 
     renderRegistration({
@@ -307,7 +324,7 @@ describe("combined registration form", () => {
   });
 
   it("keeps the submit button enabled and blocks submission until the required role and fields are valid", async () => {
-    const user = userEvent.setup();
+    const user = setupUser();
     const action = vi.fn();
 
     renderRegistration({
@@ -343,93 +360,102 @@ describe("combined registration form", () => {
     ).toHaveFocus();
   });
 
-  it("shows minimum lengths and preserves creator values after a server error", async () => {
-    const user = userEvent.setup();
-    const action = vi.fn(async () => ({
-      fieldErrors: { socialUrl: ["Não foi possível validar este perfil."] },
-      message: "Revise o endereço informado.",
-      status: "error" as const,
-    }));
-    renderRegistration({
-      action,
-      googleAction: vi.fn(),
-      initialAccountType: "INFLUENCER",
-      resendAction: vi.fn(),
-    });
+  // Walks the whole four-step wizard and a server round-trip: allow slower CI runners.
+  it(
+    "shows minimum lengths and preserves creator values after a server error",
+    { timeout: 30_000 },
+    async () => {
+      const user = setupUser();
+      const action = vi.fn(async () => ({
+        fieldErrors: { socialUrl: ["Não foi possível validar este perfil."] },
+        message: "Revise o endereço informado.",
+        status: "error" as const,
+      }));
+      renderRegistration({
+        action,
+        googleAction: vi.fn(),
+        initialAccountType: "INFLUENCER",
+        resendAction: vi.fn(),
+      });
 
-    expect(screen.getByLabelText("Nome completo")).toHaveAttribute(
-      "minlength",
-      "3",
-    );
-    expect(screen.getByLabelText("Conte sobre seu conteúdo")).toHaveAttribute(
-      "minlength",
-      "30",
-    );
-    expect(screen.getByText(/Mínimo de 30 caracteres/iu)).toBeInTheDocument();
+      expect(screen.getByLabelText("Nome completo")).toHaveAttribute(
+        "minlength",
+        "3",
+      );
+      expect(screen.getByLabelText("Conte sobre seu conteúdo")).toHaveAttribute(
+        "minlength",
+        "30",
+      );
+      expect(screen.getByText(/Mínimo de 30 caracteres/iu)).toBeInTheDocument();
 
-    await fillAccessFields(user);
-    await fillCreatorFields(user);
+      await fillAccessFields(user);
+      await fillCreatorFields(user);
 
-    const submit = finalStepSubmit();
-    await waitFor(() => expect(submit).toBeEnabled());
-    fireEvent.click(submit);
-    fireEvent.click(screen.getByRole("button", { name: "Confirmar envio" }));
+      const submit = finalStepSubmit();
+      await waitFor(() => expect(submit).toBeEnabled());
+      fireEvent.click(submit);
+      fireEvent.click(screen.getByRole("button", { name: "Confirmar envio" }));
 
-    expect(
-      await screen.findByText("Revise o endereço informado."),
-    ).toBeVisible();
-    expect(action).toHaveBeenCalledTimes(1);
-    expect(screen.getByLabelText("E-mail")).toHaveValue("teste@exemplo.com");
-    expect(screen.getByLabelText("Nome completo")).toHaveValue(
-      "Creator Exemplo",
-    );
-    expect(screen.getByLabelText("Cidade", { exact: true })).toHaveValue(
-      "São Paulo",
-    );
-    expect(screen.getByLabelText("Conte sobre seu conteúdo")).toHaveValue(
-      "Crio conteúdo sobre tecnologia, cultura e negócios locais.",
-    );
-  });
+      expect(
+        await screen.findByText("Revise o endereço informado."),
+      ).toBeVisible();
+      expect(action).toHaveBeenCalledTimes(1);
+      expect(screen.getByLabelText("E-mail")).toHaveValue("teste@exemplo.com");
+      expect(screen.getByLabelText("Nome completo")).toHaveValue(
+        "Creator Exemplo",
+      );
+      expect(screen.getByLabelText("Cidade", { exact: true })).toHaveValue(
+        "São Paulo",
+      );
+      expect(screen.getByLabelText("Conte sobre seu conteúdo")).toHaveValue(
+        "Crio conteúdo sobre tecnologia, cultura e negócios locais.",
+      );
+    },
+  );
 
-  it("preserves company values after a server error", async () => {
-    const user = userEvent.setup();
-    const action = vi.fn(async () => ({
-      fieldErrors: { cnpj: ["Este CNPJ já está em análise."] },
-      message: "Não foi possível concluir o cadastro.",
-      status: "error" as const,
-    }));
-    renderRegistration({
-      action,
-      googleAction: vi.fn(),
-      initialAccountType: "COMPANY",
-      resendAction: vi.fn(),
-    });
+  it(
+    "preserves company values after a server error",
+    { timeout: 30_000 },
+    async () => {
+      const user = setupUser();
+      const action = vi.fn(async () => ({
+        fieldErrors: { cnpj: ["Este CNPJ já está em análise."] },
+        message: "Não foi possível concluir o cadastro.",
+        status: "error" as const,
+      }));
+      renderRegistration({
+        action,
+        googleAction: vi.fn(),
+        initialAccountType: "COMPANY",
+        resendAction: vi.fn(),
+      });
 
-    await fillAccessFields(user);
-    await fillCompanyFields(user);
+      await fillAccessFields(user);
+      await fillCompanyFields(user);
 
-    const submit = finalStepSubmit();
-    await waitFor(() => expect(submit).toBeEnabled());
-    fireEvent.click(submit);
-    fireEvent.click(screen.getByRole("button", { name: "Confirmar envio" }));
+      const submit = finalStepSubmit();
+      await waitFor(() => expect(submit).toBeEnabled());
+      fireEvent.click(submit);
+      fireEvent.click(screen.getByRole("button", { name: "Confirmar envio" }));
 
-    expect(
-      await screen.findByText("Não foi possível concluir o cadastro."),
-    ).toBeVisible();
-    expect(action).toHaveBeenCalledTimes(1);
-    expect(screen.getByLabelText("E-mail")).toHaveValue("teste@exemplo.com");
-    expect(screen.getByLabelText("Razão social")).toHaveValue(
-      "Empresa Exemplo Ltda.",
-    );
-    expect(screen.getByLabelText("Nome fantasia")).toHaveValue(
-      "Empresa Exemplo",
-    );
-    expect(screen.getByLabelText("CNPJ")).toHaveValue("11444777000161");
-    expect(screen.getByLabelText("Logradouro")).toHaveValue("Praça da Sé");
-  });
+      expect(
+        await screen.findByText("Não foi possível concluir o cadastro."),
+      ).toBeVisible();
+      expect(action).toHaveBeenCalledTimes(1);
+      expect(screen.getByLabelText("E-mail")).toHaveValue("teste@exemplo.com");
+      expect(screen.getByLabelText("Razão social")).toHaveValue(
+        "Empresa Exemplo Ltda.",
+      );
+      expect(screen.getByLabelText("Nome fantasia")).toHaveValue(
+        "Empresa Exemplo",
+      );
+      expect(screen.getByLabelText("CNPJ")).toHaveValue("11444777000161");
+      expect(screen.getByLabelText("Logradouro")).toHaveValue("Praça da Sé");
+    },
+  );
 
   it("permite digitar o nome antes de escolher o tipo de cadastro", async () => {
-    const user = userEvent.setup();
+    const user = setupUser();
 
     renderRegistration({
       action: vi.fn(),
@@ -446,7 +472,7 @@ describe("combined registration form", () => {
   });
 
   it("preserva o nome ao trocar creator → empresa", async () => {
-    const user = userEvent.setup();
+    const user = setupUser();
 
     renderRegistration({
       action: vi.fn(),
