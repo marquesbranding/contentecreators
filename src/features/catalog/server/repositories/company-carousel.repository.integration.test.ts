@@ -103,7 +103,7 @@ describeLocalStack("company carousel repository", () => {
     await client.client.end({ timeout: 2 });
   });
 
-  it("returns the minimal approved company presentation to an approved influencer", async () => {
+  it("returns the approved company presentation, with contact channels, to an approved influencer", async () => {
     const service = createCompanyCarouselService({
       repository: {
         listCompanySegmentFacets,
@@ -131,12 +131,21 @@ describeLocalStack("company carousel repository", () => {
       ],
       limit: 12,
     });
+    /* Contact channels belong to the private catalog contract: an approved
+       viewer is here to reach out. What must never leak is registry and
+       internal data — CNPJ, legal name, address, moderation or audit state,
+       raw storage coordinates. The public landing uses its own contact-free
+       DTO instead. */
+    expect(result.items[0]).toMatchObject({
+      email: "company-approved@contentecreators.test",
+      whatsappE164: "+5511888880004",
+    });
     expect(JSON.stringify(result)).not.toMatch(
-      /12345678000438|legalName|cnpj|address|email|whatsApp|contact|account|moderation|audit|objectPath|bucketName/i,
+      /12345678000438|legalName|cnpj|address|contact|account|moderation|audit|objectPath|bucketName/i,
     );
   });
 
-  it("omits the company immediately when account, profile, completion, or logo becomes ineligible", async () => {
+  it("omits the company when its account, profile or completion becomes ineligible, and only drops an archived logo", async () => {
     const service = createCompanyCarouselService({
       repository: {
         listCompanySegmentFacets,
@@ -180,7 +189,10 @@ describeLocalStack("company carousel repository", () => {
         .update(mediaAssets)
         .set({ status: "ARCHIVED" })
         .where(eq(mediaAssets.id, logoAssetId));
-      await expect(list()).resolves.toMatchObject({ items: [] });
+      // The logo is optional: an archived one removes the image, not the company.
+      await expect(list()).resolves.toMatchObject({
+        items: [{ companyId: approvedCompanyProfileId, logo: null }],
+      });
     } finally {
       await restoreEligibleFixture();
     }

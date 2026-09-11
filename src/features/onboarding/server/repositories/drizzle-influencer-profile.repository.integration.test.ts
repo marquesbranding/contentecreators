@@ -1,4 +1,4 @@
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { createDatabaseClient } from "@/db/client";
@@ -54,6 +54,7 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
             followerCount: number | null;
             platform: string;
           };
+          instagramArchived: boolean;
           nicheSlugs: string[];
           profile: {
             creatorType: string;
@@ -249,14 +250,26 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
           .innerJoin(niches, eq(niches.id, creatorNiches.nicheId))
           .where(eq(creatorNiches.creatorProfileId, creatorProfileId))
           .orderBy(asc(niches.slug));
+        /* The fixed-platform picker keeps one row per platform: dropping
+         * Instagram archives its row and YouTube gets a new one. */
         const [social] = await transaction
           .select({
             normalizedUrl: socialProfiles.normalizedUrl,
             platform: socialProfiles.platform,
           })
           .from(socialProfiles)
-          .where(eq(socialProfiles.ownerAccountId, creatorContext.accountId))
+          .where(
+            and(
+              eq(socialProfiles.ownerAccountId, creatorContext.accountId),
+              eq(socialProfiles.platform, "YOUTUBE"),
+              isNull(socialProfiles.archivedAt),
+            ),
+          )
           .limit(1);
+        const [retiredInstagram] = await transaction
+          .select({ archivedAt: socialProfiles.archivedAt })
+          .from(socialProfiles)
+          .where(eq(socialProfiles.id, socialProfileId));
         const [metric] = await transaction
           .select({
             engagementRate: creatorMetricSnapshots.engagementRate,
@@ -267,7 +280,6 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
           .where(
             and(
               eq(creatorMetricSnapshots.creatorProfileId, creatorProfileId),
-              eq(creatorMetricSnapshots.socialProfileId, socialProfileId),
               eq(creatorMetricSnapshots.platform, "YOUTUBE"),
             ),
           )
@@ -296,6 +308,7 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
           },
           accountStatus: account.status,
           auditRows,
+          instagramArchived: Boolean(retiredInstagram?.archivedAt),
           metric,
           nicheSlugs: nicheSlugs.map((niche) => niche.slug),
           profile,
@@ -317,6 +330,7 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
         version: 1,
       },
       accountStatus: "APPROVED",
+      instagramArchived: true,
       metric: {
         followerCount: 54_321,
         platform: "YOUTUBE",
@@ -343,6 +357,7 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
         { entityTable: "creator_niches", operation: "DELETE" },
         { entityTable: "creator_niches", operation: "INSERT" },
         { entityTable: "social_profiles", operation: "UPDATE" },
+        { entityTable: "social_profiles", operation: "INSERT" },
         { entityTable: "creator_metric_snapshots", operation: "INSERT" },
         { entityTable: "accounts", operation: "UPDATE" },
       ]),

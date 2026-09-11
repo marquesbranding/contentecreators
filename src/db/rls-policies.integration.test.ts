@@ -326,6 +326,66 @@ describeLocalStack("business table row-level security", () => {
     },
   );
 
+  it("lets an editable influencer add a custom niche but never reshape the niche catalog", async () => {
+    const rollback = new Error("rollback RLS niche mutations");
+    const suffix = crypto.randomUUID().slice(0, 8);
+    const customSlug = `personalizado-rls-${suffix}`;
+
+    try {
+      await database.begin(async (transaction) => {
+        await assumeAppContext(transaction, approvedCreatorContext);
+
+        const inserted = await transaction<{ slug: string }[]>`
+          insert into public.niches (slug, name, sort_order, is_active)
+          values (${customSlug}, 'Nicho RLS', 1000, true)
+          on conflict (slug) do nothing
+          returning slug
+        `;
+        // A second creator typing the same niche takes the conflict path.
+        const repeated = await transaction<{ slug: string }[]>`
+          insert into public.niches (slug, name, sort_order, is_active)
+          values (${customSlug}, 'Outro nome', 1000, true)
+          on conflict (slug) do nothing
+          returning slug
+        `;
+        const renamed = await transaction<{ slug: string }[]>`
+          update public.niches
+          set name = 'Renomeado por creator'
+          where slug = ${customSlug}
+          returning slug
+        `;
+
+        expect(inserted).toEqual([{ slug: customSlug }]);
+        expect(repeated).toEqual([]);
+        expect(renamed).toEqual([]);
+
+        throw rollback;
+      });
+    } catch (error) {
+      if (error !== rollback) {
+        throw error;
+      }
+    }
+
+    const deniedInserts = [
+      [approvedCreatorContext, `moda-rls-${suffix}`, 1000],
+      [approvedCreatorContext, `personalizado-ordem-${suffix}`, 0],
+      [approvedCompanyContext, `personalizado-empresa-${suffix}`, 1000],
+    ] as const;
+
+    for (const [context, slug, sortOrder] of deniedInserts) {
+      await expect(
+        database.begin(async (transaction) => {
+          await assumeAppContext(transaction, context);
+          await transaction`
+            insert into public.niches (slug, name, sort_order, is_active)
+            values (${slug}, 'Tentativa bloqueada', ${sortOrder}, true)
+          `;
+        }),
+      ).rejects.toMatchObject({ code: "42501" });
+    }
+  });
+
   it("rejects missing or forged verified context", async () => {
     await expect(
       database.begin(async (transaction) => {

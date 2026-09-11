@@ -223,6 +223,7 @@ describeLocalStack("Drizzle creator catalog repository", () => {
         bioExcerpt:
           "Perfil sintético de Júlia para busca e filtros do catálogo.",
         city: "São Paulo",
+        coverAssetId: null,
         creatorId: fixtureCreatorId,
         creatorType: "UGC",
         displayName: "Júlia Criadora",
@@ -230,14 +231,19 @@ describeLocalStack("Drizzle creator catalog repository", () => {
           {
             engagementRate: 4.25,
             followerCount: 25_000,
+            handle: null,
+            interactionCount: null,
+            isPrimary: false,
             observedOn: "2026-07-20",
             platform: "TIKTOK",
             source: "SELF_REPORTED",
+            viewCount: null,
           },
         ],
         niches: [{ name: "Beleza", slug: "beleza" }],
         socialPlatforms: ["TIKTOK"],
         state: "SP",
+        whatsappContactCount: 0,
       },
     ]);
     expect(proof?.firstPage.items).toHaveLength(1);

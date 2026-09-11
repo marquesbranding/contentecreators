@@ -66,7 +66,12 @@ export async function resolveCreatorNiches(
 
   const customName = otherNiche.trim();
   const slug = customNicheSlug(customName);
-  const [customNiche] = await transaction
+  /* DO NOTHING, not DO UPDATE: creators may only add a custom niche row
+   * (niches_creator_custom_insert_policy). Updating on conflict needs
+   * admin-only rights — so the second creator to type an existing niche
+   * would fail to save — and would let one creator rename or reactivate a
+   * niche another creator, or an admin, already shaped. */
+  const [insertedNiche] = await transaction
     .insert(niches)
     .values({
       isActive: true,
@@ -74,15 +79,16 @@ export async function resolveCreatorNiches(
       slug,
       sortOrder: 1_000,
     })
-    .onConflictDoUpdate({
-      set: {
-        isActive: true,
-        name: customName,
-        updatedAt: new Date(),
-      },
-      target: niches.slug,
-    })
+    .onConflictDoNothing({ target: niches.slug })
     .returning({ id: niches.id, name: niches.name, slug: niches.slug });
+  const [existingNiche] = insertedNiche
+    ? []
+    : await transaction
+        .select({ id: niches.id, name: niches.name, slug: niches.slug })
+        .from(niches)
+        .where(eq(niches.slug, slug))
+        .limit(1);
+  const customNiche = insertedNiche ?? existingNiche;
 
   if (!customNiche) {
     throw new Error("The custom creator niche could not be saved.");
