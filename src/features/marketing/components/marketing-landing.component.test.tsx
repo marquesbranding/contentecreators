@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -94,13 +94,49 @@ describe("MarketingLanding", () => {
     expect(screen.getAllByRole("link", { name: "Sou UGC" })).toHaveLength(3);
   });
 
-  it("leaves the final CTA free of decorative brand artwork", () => {
+  it("closes with a two-line title beside the plain lime brand mark", () => {
     render(<MarketingLanding />);
 
     const finalCta = screen.getByTestId("marketing-final-cta");
 
-    expect(finalCta.querySelectorAll("img")).toHaveLength(0);
+    expect(
+      within(finalCta).getByRole("heading", {
+        level: 2,
+        name: "Entre para a comunidade Contente Creators.",
+      }),
+    ).toBeInTheDocument();
+    /* Only the lime logo remains: no magnifier glyph, no white or lime-blue
+       watermark artwork layered behind the copy. */
+    expect(
+      [...finalCta.querySelectorAll("img")].map((image) =>
+        image.getAttribute("src"),
+      ),
+    ).toEqual(["/brand/official/contente-creators-lime.png"]);
     expect(finalCta.querySelectorAll("svg")).toHaveLength(0);
+  });
+
+  it("sends every landing logo back to the top of the page", () => {
+    const { container } = render(<MarketingLanding />);
+
+    const logoLinks = screen.getAllByRole("link", {
+      name: "Contente Creators — voltar ao início",
+    });
+
+    expect(logoLinks).toHaveLength(3);
+    for (const link of logoLinks) {
+      expect(link).toHaveAttribute("href", "#inicio");
+    }
+    expect(container.querySelector("#inicio")).toBeInTheDocument();
+  });
+
+  it("uses the new footer tagline", () => {
+    render(<MarketingLanding />);
+
+    expect(
+      within(screen.getByRole("contentinfo")).getByText(
+        "O match perfeito entre marcas e creators",
+      ),
+    ).toBeVisible();
   });
 
   it("links the configured support/privacy contact from the footer", () => {
@@ -152,18 +188,16 @@ describe("MarketingLanding", () => {
   it("uses the supplied brand asset without participant listings", () => {
     render(<MarketingLanding />);
 
-    const [header, footer] = screen.getAllByRole("img", {
-      name: "Contente Creators",
-    });
-
-    expect(header).toHaveAttribute(
-      "src",
+    /* Header, final CTA and footer — each a different official variant. */
+    expect(
+      screen
+        .getAllByRole("img", { name: "Contente Creators" })
+        .map((image) => image.getAttribute("src")),
+    ).toEqual([
       "/brand/official/contente-creators-blue.png",
-    );
-    expect(footer).toHaveAttribute(
-      "src",
+      "/brand/official/contente-creators-lime.png",
       "/brand/official/contente-creators-white.png",
-    );
+    ]);
     expect(screen.queryByTestId("creator-listing")).not.toBeInTheDocument();
     expect(screen.queryByTestId("company-listing")).not.toBeInTheDocument();
   });

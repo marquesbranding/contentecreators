@@ -11,13 +11,15 @@ export function MarketingHeader() {
   return (
     <header className="absolute top-0 right-0 left-0 z-50 text-white">
       <div className="mx-auto flex h-[4.5rem] w-full max-w-[90rem] items-center justify-between gap-4 px-5 sm:h-20 sm:px-8 lg:px-12">
-        <Link
-          aria-label="Contente Creators — início"
+        {/* The header only renders on the landing, so the logo scrolls back to
+            its top instead of re-navigating to the same route. */}
+        <a
+          aria-label={copy.backToTop}
           className="shrink-0 rounded-md focus-visible:ring-3 focus-visible:ring-white/80 focus-visible:outline-none"
-          href="/"
+          href="#inicio"
         >
           <BrandLogo background="transparent" variant="blue" />
-        </Link>
+        </a>
 
         <nav
           aria-label="Navegação principal"

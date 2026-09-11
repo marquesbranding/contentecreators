@@ -6,13 +6,6 @@ interface PublicCommunityProofRouteDependencies {
   load(): Promise<PublicCommunityProofDto | null>;
 }
 
-/**
- * The longest a CDN may keep serving one response: `s-maxage` plus the
- * stale-while-revalidate tail. Signed avatar URLs in the payload must outlive
- * this — see `publicCommunityAvatarLifetimeSeconds`.
- */
-export const publicCommunityProofCacheWindowSeconds = 60 + 300;
-
 const publicCacheHeaders = {
   "cache-control": "public, s-maxage=60, stale-while-revalidate=300",
 };

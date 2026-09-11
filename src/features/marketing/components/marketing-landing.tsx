@@ -436,45 +436,62 @@ function FinalCallToAction() {
         className="marketing-cta-surface relative mx-auto max-w-[90rem] overflow-hidden rounded-[2rem] border border-white/15 px-6 py-12 text-white sm:px-10 sm:py-16 lg:px-16 lg:py-20"
         data-testid="marketing-final-cta"
       >
-        <div className="relative max-w-4xl">
-          <p className="text-sm font-extrabold tracking-[0.12em] text-white uppercase">
-            {copy.finalCta.eyebrow}
-          </p>
-          <h2 className="mt-4 text-4xl leading-[1.02] font-extrabold tracking-[-0.045em] sm:text-5xl lg:text-6xl">
-            {copy.finalCta.title}
-          </h2>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-white">
-            {copy.finalCta.description}
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <Link
-              className={cn(
-                buttonVariants({ size: "lg" }),
-                "bg-brand-lime text-brand-night hover:bg-brand-lime/90 w-full rounded-full sm:w-auto",
-              )}
-              href={influencerHref}
-            >
-              {copy.hero.creatorCta}
-            </Link>
-            <Link
-              className={cn(
-                buttonVariants({ size: "lg" }),
-                "bg-brand-pink text-brand-night hover:bg-brand-pink/90 w-full rounded-full sm:w-auto",
-              )}
-              href={ugcHref}
-            >
-              {copy.hero.ugcCta}
-            </Link>
-            <Link
-              className={cn(
-                buttonVariants({ size: "lg", variant: "outline" }),
-                "border-brand-lime text-brand-lime hover:bg-brand-lime hover:text-brand-night w-full rounded-full bg-transparent sm:w-auto",
-              )}
-              href={companyHref}
-            >
-              {copy.hero.companyCta}
-            </Link>
+        <div className="relative flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-16">
+          <div className="max-w-4xl">
+            <p className="text-sm font-extrabold tracking-[0.12em] text-white uppercase">
+              {copy.finalCta.eyebrow}
+            </p>
+            <h2 className="mt-4 text-4xl leading-[1.02] font-extrabold tracking-[-0.045em] sm:text-5xl lg:text-6xl">
+              <span className="block">{copy.finalCta.titleLead}</span>{" "}
+              <span className="block">{copy.finalCta.titleBrand}</span>
+            </h2>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-white">
+              {copy.finalCta.description}
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Link
+                className={cn(
+                  buttonVariants({ size: "lg" }),
+                  "bg-brand-lime text-brand-night hover:bg-brand-lime/90 w-full rounded-full sm:w-auto",
+                )}
+                href={influencerHref}
+              >
+                {copy.hero.creatorCta}
+              </Link>
+              <Link
+                className={cn(
+                  buttonVariants({ size: "lg" }),
+                  "bg-brand-pink text-brand-night hover:bg-brand-pink/90 w-full rounded-full sm:w-auto",
+                )}
+                href={ugcHref}
+              >
+                {copy.hero.ugcCta}
+              </Link>
+              <Link
+                className={cn(
+                  buttonVariants({ size: "lg", variant: "outline" }),
+                  "border-brand-lime text-brand-lime hover:bg-brand-lime hover:text-brand-night w-full rounded-full bg-transparent sm:w-auto",
+                )}
+                href={companyHref}
+              >
+                {copy.hero.companyCta}
+              </Link>
+            </div>
           </div>
+          {/* The plain lime mark — no plate, no watermark treatment — sitting
+              centred against the copy. Below `lg` the stacked layout has no
+              right-hand column for it, so it only appears side by side. */}
+          <a
+            aria-label={copy.backToTop}
+            className="hidden shrink-0 rounded-md focus-visible:ring-3 focus-visible:ring-white/80 focus-visible:outline-none lg:block"
+            href="#inicio"
+          >
+            <BrandLogo
+              background="transparent"
+              className="w-[18rem] xl:w-[22rem]"
+              variant="lime"
+            />
+          </a>
         </div>
       </div>
     </section>
@@ -534,11 +551,17 @@ function MarketingFooter({
       <div className="mx-auto w-full max-w-[90rem] px-5 py-12 sm:px-8 lg:px-12">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1.45fr)_minmax(12rem,0.55fr)_minmax(16rem,0.75fr)] lg:items-start">
           <div className="max-w-md">
-            <BrandLogo
-              background="transparent"
-              className="w-[11rem] sm:w-[12.5rem]"
-              variant="white"
-            />
+            <a
+              aria-label={copy.backToTop}
+              className="inline-block rounded-md focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
+              href="#inicio"
+            >
+              <BrandLogo
+                background="transparent"
+                className="w-[11rem] sm:w-[12.5rem]"
+                variant="white"
+              />
+            </a>
             <p className="mt-3 max-w-sm text-sm leading-6 text-white/58">
               {copy.footer.tagline}
             </p>
@@ -618,7 +641,7 @@ export function MarketingLanding({
   supportContactEmail?: string | null;
 }) {
   return (
-    <div className="min-h-screen overflow-x-clip bg-[#f7f6f2]">
+    <div className="min-h-screen overflow-x-clip bg-[#f7f6f2]" id="inicio">
       <MarketingHeader />
       <main id="main-content" tabIndex={-1}>
         <section

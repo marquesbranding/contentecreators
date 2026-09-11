@@ -16,17 +16,15 @@ import { parseServerEnv } from "@/shared/lib/env/server-env-schema";
 
 /**
  * Local-only fixture for the public landing's "Creators e marcas em destaque"
- * section. The base seed approves a single company and no curated creator, so
- * the marquee repeats one name and every card falls back to initials — which
- * reads as hardcoded even though both lists are queried from approved
- * accounts. This adds enough approved rows to see the real behaviour:
+ * section, so both of its data sources have something to show:
  *
- * - one seeded creator promoted to `is_featured` with an active avatar, so the
- *   card renders a signed photo while uncurated creators keep their initials;
- * - several approved companies, so the marquee actually rotates names.
+ * - one seeded creator enabled in the landing carousel (`is_featured`, the flag
+ *   the backoffice "Gestão da landing" page toggles) with an active avatar, so
+ *   the carousel renders a signed photo;
+ * - several approved, complete companies, so the brand marquee rotates names.
  *
- * There is no backoffice control for `is_featured` yet, so that flag cannot be
- * reached through the product at all.
+ * Everything else on the carousel is meant to be managed through the
+ * backoffice; this only saves a few clicks after a local database reset.
  *
  * Usage:
  *   npm run local:showcase

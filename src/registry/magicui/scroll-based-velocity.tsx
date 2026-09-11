@@ -18,6 +18,8 @@ interface ScrollVelocityRowProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   baseVelocity?: number;
   direction?: 1 | -1;
+  /** Freezes the row in place — for hover, focus, or an explicit pause control. */
+  paused?: boolean;
   scrollReactivity?: boolean;
 }
 
@@ -80,6 +82,7 @@ function ScrollVelocityRowImpl({
   direction = 1,
   className,
   velocityFactor,
+  paused = false,
   scrollReactivity = true,
   ...props
 }: ScrollVelocityRowImplProps) {
@@ -95,6 +98,11 @@ function ScrollVelocityRowImpl({
   const isInViewRef = useRef(true);
   const isPageVisibleRef = useRef(true);
   const prefersReducedMotionRef = useRef(false);
+  const pausedRef = useRef(paused);
+
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -163,6 +171,7 @@ function ScrollVelocityRowImpl({
 
   useAnimationFrame((_, delta) => {
     if (
+      pausedRef.current ||
       !isInViewRef.current ||
       !isPageVisibleRef.current ||
       prefersReducedMotionRef.current

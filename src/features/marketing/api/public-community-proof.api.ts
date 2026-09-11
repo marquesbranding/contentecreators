@@ -1,15 +1,17 @@
 import type {
-  PublicCommunityAvatarDto,
   PublicCommunityCompanyDto,
-  PublicCommunityCreatorDto,
-  PublicCommunityCreatorMetricDto,
-  PublicCommunityCreatorType,
-  PublicCommunityNicheDto,
   PublicCommunityProofDto,
-  PublicCommunitySocialPlatform,
 } from "../types/public-community-proof.types";
+import {
+  hasOnlyKeys,
+  isRecord,
+  parseOptionalText,
+  parseText,
+} from "./public-payload";
 
-const allowedRootKeys = new Set(["companies", "creators"]);
+const MAX_COMPANIES = 10;
+
+const allowedRootKeys = new Set(["companies"]);
 const allowedCompanyKeys = new Set([
   "city",
   "companyId",
@@ -17,144 +19,6 @@ const allowedCompanyKeys = new Set([
   "state",
   "tradeName",
 ]);
-const allowedCreatorKeys = new Set([
-  "avatar",
-  "bioExcerpt",
-  "city",
-  "creatorId",
-  "creatorType",
-  "displayName",
-  "metric",
-  "niches",
-  "state",
-]);
-const allowedMetricKeys = new Set([
-  "engagementRate",
-  "followerCount",
-  "platform",
-]);
-const allowedNicheKeys = new Set(["name", "slug"]);
-const allowedAvatarKeys = new Set(["height", "url", "width"]);
-const allowedCreatorTypes = new Set<PublicCommunityCreatorType>([
-  "INFLUENCER",
-  "UGC",
-]);
-const allowedPlatforms = new Set<PublicCommunitySocialPlatform>([
-  "FACEBOOK",
-  "INSTAGRAM",
-  "LINKEDIN",
-  "OTHER",
-  "TIKTOK",
-  "X",
-  "YOUTUBE",
-]);
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function hasOnlyKeys(value: Record<string, unknown>, allowedKeys: Set<string>) {
-  return Object.keys(value).every((key) => allowedKeys.has(key));
-}
-
-function parseText(value: unknown, maxLength: number): string | null {
-  if (value === null) {
-    return null;
-  }
-
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  const trimmed = value.trim();
-
-  return trimmed && trimmed.length <= maxLength ? trimmed : null;
-}
-
-function parseOptionalText(value: unknown, maxLength: number): string | null {
-  return value === null ? null : parseText(value, maxLength);
-}
-
-function parseNumber(value: unknown): number | null {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0
-    ? value
-    : null;
-}
-
-function parseMetric(value: unknown): PublicCommunityCreatorMetricDto | null {
-  if (value === null) {
-    return null;
-  }
-
-  if (!isRecord(value) || !hasOnlyKeys(value, allowedMetricKeys)) {
-    return null;
-  }
-
-  if (
-    typeof value.platform !== "string" ||
-    !allowedPlatforms.has(value.platform as PublicCommunitySocialPlatform)
-  ) {
-    return null;
-  }
-
-  return {
-    engagementRate: parseNumber(value.engagementRate),
-    followerCount: parseNumber(value.followerCount),
-    platform: value.platform as PublicCommunitySocialPlatform,
-  };
-}
-
-/**
- * Signed avatar URLs must share the configured Supabase project's exact
- * origin. That pins scheme, host and port in one comparison — hosted
- * deployments configure an HTTPS Supabase URL (enforced in
- * `hosted-deployment-target.ts`), so requiring `https:` separately here would
- * only break local development, where Supabase serves plain HTTP. Anything
- * off-origin is a URL this client did not ask for, and the card falls back to
- * initials rather than loading it.
- */
-function parseAvatar(value: unknown): PublicCommunityAvatarDto | null {
-  if (!isRecord(value) || !hasOnlyKeys(value, allowedAvatarKeys)) {
-    return null;
-  }
-
-  if (typeof value.url !== "string") {
-    return null;
-  }
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-
-  if (!supabaseUrl) {
-    return null;
-  }
-
-  try {
-    const url = new URL(value.url);
-
-    if (url.origin !== new URL(supabaseUrl).origin) {
-      return null;
-    }
-
-    return {
-      height: parseNumber(value.height),
-      url: url.toString(),
-      width: parseNumber(value.width),
-    };
-  } catch {
-    return null;
-  }
-}
-
-function parseNiche(value: unknown): PublicCommunityNicheDto | null {
-  if (!isRecord(value) || !hasOnlyKeys(value, allowedNicheKeys)) {
-    return null;
-  }
-
-  const name = parseText(value.name, 120);
-  const slug = parseText(value.slug, 80);
-
-  return name && slug ? { name, slug } : null;
-}
 
 function parseCompany(value: unknown): PublicCommunityCompanyDto | null {
   if (!isRecord(value) || !hasOnlyKeys(value, allowedCompanyKeys)) {
@@ -177,74 +41,28 @@ function parseCompany(value: unknown): PublicCommunityCompanyDto | null {
   };
 }
 
-function parseCreator(value: unknown): PublicCommunityCreatorDto | null {
-  if (!isRecord(value) || !hasOnlyKeys(value, allowedCreatorKeys)) {
-    return null;
-  }
-
-  const creatorId = parseText(value.creatorId, 80);
-  const displayName = parseText(value.displayName, 120);
-
-  if (
-    !creatorId ||
-    !displayName ||
-    typeof value.creatorType !== "string" ||
-    !allowedCreatorTypes.has(value.creatorType as PublicCommunityCreatorType) ||
-    !Array.isArray(value.niches)
-  ) {
-    return null;
-  }
-
-  const niches = value.niches
-    .map((niche) => parseNiche(niche))
-    .filter((niche): niche is PublicCommunityNicheDto => niche !== null)
-    .slice(0, 4);
-
-  return {
-    avatar: value.avatar === undefined ? null : parseAvatar(value.avatar),
-    bioExcerpt: parseOptionalText(value.bioExcerpt, 130),
-    city: parseOptionalText(value.city, 120),
-    creatorId,
-    creatorType: value.creatorType as PublicCommunityCreatorType,
-    displayName,
-    metric: parseMetric(value.metric),
-    niches,
-    state: parseOptionalText(value.state, 2),
-  };
-}
-
 function parsePublicCommunityProof(
   value: unknown,
 ): PublicCommunityProofDto | null {
-  if (value === null) {
-    return null;
-  }
-
   if (
     !isRecord(value) ||
     !hasOnlyKeys(value, allowedRootKeys) ||
-    !Array.isArray(value.companies) ||
-    !Array.isArray(value.creators)
+    !Array.isArray(value.companies)
   ) {
     return null;
   }
 
-  const proof = {
-    companies: value.companies
-      .map((company) => parseCompany(company))
-      .filter(
-        (company): company is PublicCommunityCompanyDto => company !== null,
-      )
-      .slice(0, 10),
-    creators: value.creators
-      .map((creator) => parseCreator(creator))
-      .filter(
-        (creator): creator is PublicCommunityCreatorDto => creator !== null,
-      )
-      .slice(0, 3),
-  };
+  const companies = value.companies
+    .map((company) => parseCompany(company))
+    .filter((company): company is PublicCommunityCompanyDto => company !== null)
+    .slice(0, MAX_COMPANIES);
 
-  return proof.companies.length > 0 || proof.creators.length > 0 ? proof : null;
+  // Arrived with entries but lost every one to validation: malformed.
+  if (value.companies.length > 0 && companies.length === 0) {
+    return null;
+  }
+
+  return { companies };
 }
 
 type PublicRequest = (

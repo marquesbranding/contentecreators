@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   FileClock,
   LayoutDashboard,
+  LayoutTemplate,
   LogOut,
   Mail,
   Menu,
@@ -71,6 +72,11 @@ const primaryNavigation = [
     href: "/backoffice/sponsorships",
     icon: Megaphone,
     label: "Patrocínios",
+  },
+  {
+    href: "/backoffice/landing",
+    icon: LayoutTemplate,
+    label: "Gestão da landing",
   },
 ] as const;
 
@@ -183,6 +189,8 @@ function BackofficeBreadcrumb() {
     segments.push({ label: "E-mails" });
   } else if (pathname.startsWith("/backoffice/sponsorships")) {
     segments.push({ label: "Patrocínios" });
+  } else if (pathname.startsWith("/backoffice/landing")) {
+    segments.push({ label: "Gestão da landing" });
   } else {
     segments.push({ label: "Backoffice" });
   }

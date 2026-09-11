@@ -45,7 +45,8 @@ describe("Home", () => {
         name: "Creators e marcas conectados no mesmo ritmo.",
       }),
     ).toBeInTheDocument();
-    await waitFor(() => expect(request).toHaveBeenCalledTimes(2));
+    // Brand marquee, landing showcase and sponsorship promotion.
+    await waitFor(() => expect(request).toHaveBeenCalledTimes(3));
     expect(
       screen.getAllByRole("link", { name: "Sou Influenciador" })[0],
     ).toHaveAttribute("href", "/sign-up?intent=influencer");

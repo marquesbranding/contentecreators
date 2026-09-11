@@ -1,4 +1,4 @@
-import { MapPin, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 import { SignedImage } from "@/shared/components/signed-image";
 import { SocialPlatformIcon } from "@/shared/components/social-platform-icon";
@@ -11,7 +11,8 @@ import {
   nameSizeClass,
 } from "@/shared/lib/names/display-name";
 
-import type { PublicCommunityCreatorDto } from "../types/public-community-proof.types";
+import type { PublicShowcaseCreatorDto } from "../types/public-landing-showcase.types";
+import { ShowcaseLocation } from "./showcase-location";
 
 function formatCompactNumber(value: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -26,53 +27,6 @@ function formatEngagement(value: number) {
   }).format(value)}%`;
 }
 
-function CreatorAvatar({ creator }: { creator: PublicCommunityCreatorDto }) {
-  const initials = initialsFromName(creator.displayName);
-
-  return (
-    <div className="absolute -bottom-7 left-4 z-10 size-16 overflow-hidden rounded-2xl border-4 border-white bg-white shadow-md">
-      {creator.avatar ? (
-        // The signed URL is minted server-side with a short life and
-        // intentionally bypasses the Next image optimizer's host allowlist.
-        <SignedImage
-          alt={`Foto de perfil de ${creator.displayName}`}
-          className="size-full object-cover"
-          height={creator.avatar.height}
-          src={creator.avatar.url}
-          width={creator.avatar.width}
-        />
-      ) : (
-        // Approved creators without a photo — and any creator whose signature
-        // failed — land here rather than on a broken image.
-        <div
-          aria-hidden="true"
-          className="bg-brand-night flex size-full items-center justify-center text-lg font-extrabold text-white"
-        >
-          {initials}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function CreatorLocation({
-  city,
-  state,
-}: Pick<PublicCommunityCreatorDto, "city" | "state">) {
-  const location = [city, state].filter(Boolean).join(", ");
-
-  if (!location) {
-    return null;
-  }
-
-  return (
-    <p className="flex items-center gap-1.5 text-xs text-black/55">
-      <MapPin aria-hidden="true" className="size-3.5 shrink-0" />
-      {location}
-    </p>
-  );
-}
-
 /**
  * The public mirror of `CatalogCreatorCard`. It shares the primitives and the
  * geometry, but not the component: the public DTO has no handle, no WhatsApp
@@ -82,14 +36,14 @@ function CreatorLocation({
 export function PublicCommunityCreatorCard({
   creator,
 }: {
-  creator: PublicCommunityCreatorDto;
+  creator: PublicShowcaseCreatorDto;
 }) {
   const visibleNiches = creator.niches.slice(0, 2);
   const hiddenNicheCount = creator.niches.length - visibleNiches.length;
 
   return (
     <Card
-      className="ring-foreground/10 h-full gap-0 overflow-hidden rounded-2xl bg-[#f7f6f2] py-0 text-black shadow-sm"
+      className="ring-foreground/10 h-full gap-0 overflow-hidden rounded-2xl bg-[#f7f6f2] py-0 whitespace-normal text-black shadow-sm"
       role="article"
     >
       <div className="relative">
@@ -101,7 +55,26 @@ export function PublicCommunityCreatorCard({
           aria-label="Perfil aprovado"
           className="text-brand-blue absolute top-3 right-3 z-10 size-6"
         />
-        <CreatorAvatar creator={creator} />
+        <div className="absolute -bottom-7 left-4 z-10 size-16 overflow-hidden rounded-2xl border-4 border-white bg-white shadow-md">
+          {creator.avatar ? (
+            // The signed URL is minted server-side with a short life and
+            // intentionally bypasses the Next image optimizer's host allowlist.
+            <SignedImage
+              alt={`Foto de perfil de ${creator.displayName}`}
+              className="size-full object-cover"
+              height={creator.avatar.height}
+              src={creator.avatar.url}
+              width={creator.avatar.width}
+            />
+          ) : (
+            <div
+              aria-hidden="true"
+              className="bg-brand-night flex size-full items-center justify-center text-lg font-extrabold text-white"
+            >
+              {initialsFromName(creator.displayName)}
+            </div>
+          )}
+        </div>
       </div>
 
       <CardHeader className="flex-1 gap-2.5 px-4 pt-9 pb-4">
@@ -113,7 +86,7 @@ export function PublicCommunityCreatorCard({
         >
           {creator.displayName}
         </h3>
-        <CreatorLocation city={creator.city} state={creator.state} />
+        <ShowcaseLocation city={creator.city} state={creator.state} />
         {creator.metric ? (
           <p className="flex items-center gap-1.5 text-xs">
             <SocialPlatformIcon
@@ -128,7 +101,7 @@ export function PublicCommunityCreatorCard({
           </p>
         ) : null}
         {creator.metric?.engagementRate ? (
-          <p className="text-xs text-black/55">
+          <p className="text-xs text-black/60">
             <span className="font-semibold text-black">
               {formatEngagement(creator.metric.engagementRate)}
             </span>{" "}
@@ -136,7 +109,7 @@ export function PublicCommunityCreatorCard({
           </p>
         ) : null}
         {creator.bioExcerpt ? (
-          <p className="line-clamp-2 text-xs leading-5 [overflow-wrap:anywhere] text-black/55">
+          <p className="line-clamp-2 text-xs leading-5 [overflow-wrap:anywhere] text-black/60">
             {creator.bioExcerpt}
           </p>
         ) : null}

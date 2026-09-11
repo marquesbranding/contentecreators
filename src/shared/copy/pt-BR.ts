@@ -176,14 +176,16 @@ export const ptBR = {
         },
       ],
     },
+    backToTop: "Contente Creators — voltar ao início",
     finalCta: {
       eyebrow: "Seu próximo contato pode começar aqui",
-      title: "Entre para a comunidade Contente Creators.",
+      titleLead: "Entre para a comunidade",
+      titleBrand: "Contente Creators.",
       description:
         "Escolha seu caminho, monte seu perfil e crie boas conexões.",
     },
     footer: {
-      tagline: "Creators e marcas, no mesmo ritmo.",
+      tagline: "O match perfeito entre marcas e creators",
       faq: "FAQ",
       privacy: "Política de Privacidade",
       /* `platform` keys the official brand mark in `SocialPlatformIcon`; the
