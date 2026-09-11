@@ -173,6 +173,29 @@ reviewed plan.
 
 ## Immutable migration history
 
+### V1 baseline (2026-09-11)
+
+Before launch, with both hosted databases reset and holding no client data, the
+31 migrations applied between 2026-07-23 and 2026-09-11 were consolidated into
+`supabase/migrations/20260911130000_v1_init_database.sql`. The file was
+generated from a database built by those migrations alone and verified to
+reproduce it exactly: the public schema, policies in every schema, relation,
+function and column ACLs, default privileges, roles, extensions, Storage
+buckets and reference data. The original files remain in git history.
+
+This was a one-time exception, possible only because no hosted database held
+data:
+
+- every hosted project was reset from the V1 baseline (`supabase db reset
+--linked --no-seed`) before the application deploy, so its migration ledger
+  holds exactly the V1 entry the Vercel build expects;
+- the push that introduced the baseline deletes migration files, so its
+  `Database CI` migration-history check was expected to fail once and was
+  accepted rather than weakening the check.
+
+Never consolidate again once a hosted database holds data. From this baseline
+on, the rules below apply unchanged.
+
 After a migration is applied to either hosted project:
 
 - never edit, rename, reorder, delete, or replace its SQL file;
