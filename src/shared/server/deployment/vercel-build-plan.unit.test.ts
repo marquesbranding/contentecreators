@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { initialAdminBootstrapSchema } from "@/features/identity/schemas/admin-provisioning-schema";
+
 import {
   createVercelBuildPlan,
   PRODUCTION_INITIAL_ADMINS,
@@ -88,5 +90,19 @@ describe("Vercel build plan", () => {
         ...override,
       }),
     ).toThrow();
+  });
+});
+
+describe("production administrator list", () => {
+  it("contains only entries the production bootstrap will accept", () => {
+    /* The Vercel production build validates every entry with this schema just
+       before provisioning. An invalid email or approval reference would stop
+       the deploy at that step, so catch it here first. */
+    for (const admin of PRODUCTION_INITIAL_ADMINS) {
+      expect(initialAdminBootstrapSchema.safeParse(admin).success).toBe(true);
+    }
+    expect(
+      new Set(PRODUCTION_INITIAL_ADMINS.map((admin) => admin.email)).size,
+    ).toBe(PRODUCTION_INITIAL_ADMINS.length);
   });
 });

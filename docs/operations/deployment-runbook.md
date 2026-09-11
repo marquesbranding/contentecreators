@@ -49,7 +49,7 @@ The production Vercel build runs these steps in order:
    connection.
 7. Compare the complete ordered hosted migration ledger with the committed
    migration directory.
-8. Idempotently invite or promote `thomas@marquesbranding.com` as the first
+8. Idempotently invite or promote `contentecreators@marquesbranding.com` as the first
    approved production `ADMIN`, with a system audit revision.
 9. Return the completed Next.js artifact to Vercel for publication.
 

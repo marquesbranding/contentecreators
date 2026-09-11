@@ -47,11 +47,11 @@ channels.
 The production deployment workflow uses a separate, closed bootstrap after the
 committed migrations and before promotion. Only this approved set is accepted:
 
-| Email                        | Audit reference                    |
-| ---------------------------- | ---------------------------------- |
-| `thomas@marquesbranding.com` | `CLIENTE-ADMIN-THOMAS-2026-07-30`  |
-| `coronaigor@gmail.com`       | `CLIENTE-ADMIN-IGOR-2026-07-31`    |
-| `willian.willalex@gmail.com` | `CLIENTE-ADMIN-WILLIAN-2026-07-31` |
+| Email                                  | Audit reference                             |
+| -------------------------------------- | ------------------------------------------- |
+| `contentecreators@marquesbranding.com` | `CLIENTE-ADMIN-CONTENTECREATORS-2026-09-11` |
+| `coronaigor@gmail.com`                 | `CLIENTE-ADMIN-IGOR-2026-07-31`             |
+| `willian.willalex@gmail.com`           | `CLIENTE-ADMIN-WILLIAN-2026-07-31`          |
 
 Vercel must provide `PRODUCTION_ADMIN_INITIAL_PASSWORD` only in the
 **Production** scope. A missing Supabase Auth identity is created with its

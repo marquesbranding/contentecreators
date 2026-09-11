@@ -2,10 +2,16 @@ import { resolveServerEnvAliases } from "@/shared/lib/env/server-env-schema";
 
 import { assertDatabaseConnectionTargets } from "./hosted-deployment-target";
 
+/**
+ * Closed, source-controlled set of production administrators. The bootstrap
+ * promotes an existing active influencer or company account on any of these
+ * emails to ADMIN, so a person who should only use the product (e.g. a client
+ * signing up as a company) must never be listed here.
+ */
 export const PRODUCTION_INITIAL_ADMINS = [
   {
-    approvalReference: "CLIENTE-ADMIN-THOMAS-2026-07-30",
-    email: "thomas@marquesbranding.com",
+    approvalReference: "CLIENTE-ADMIN-CONTENTECREATORS-2026-09-11",
+    email: "contentecreators@marquesbranding.com",
   },
   {
     approvalReference: "CLIENTE-ADMIN-IGOR-2026-07-31",
