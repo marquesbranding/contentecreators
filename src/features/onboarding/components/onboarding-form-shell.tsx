@@ -1,5 +1,6 @@
 import { FilePenLine, LockKeyhole, ShieldCheck } from "lucide-react";
 
+import { BackofficeAccessLink } from "@/features/identity/client";
 import { BrandLogo } from "@/shared/components/brand-logo";
 import { Badge } from "@/shared/components/ui/badge";
 import {
@@ -61,13 +62,16 @@ export function OnboardingFormShell({
         {showBrandHeader ? (
           <header className="flex items-center justify-between gap-4">
             <BrandLogo preload />
-            <Badge
-              className="gap-1.5 rounded-full px-3 py-1.5"
-              variant="outline"
-            >
-              <LockKeyhole aria-hidden="true" />
-              Dados protegidos
-            </Badge>
+            <div className="flex items-center gap-2">
+              <BackofficeAccessLink />
+              <Badge
+                className="gap-1.5 rounded-full px-3 py-1.5"
+                variant="outline"
+              >
+                <LockKeyhole aria-hidden="true" />
+                Dados protegidos
+              </Badge>
+            </div>
           </header>
         ) : null}
 

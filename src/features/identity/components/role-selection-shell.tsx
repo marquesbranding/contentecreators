@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
+import { BackofficeAccessLink } from "./backoffice-access-link.client";
 import { SignOutButton } from "./sign-out-button.client";
 
 export function RoleSelectionShell({
@@ -58,9 +59,15 @@ export function RoleSelectionShell({
             showCloseButton={false}
           >
             <DialogHeader className="gap-3 border-b px-6 py-7 text-left sm:px-9">
-              <p className="text-brand-blue text-xs font-extrabold tracking-[0.12em] uppercase">
-                Primeiro acesso com Google
-              </p>
+              {/* Inside the dialog on purpose: the open modal makes the page
+                  header inert, so a link placed there would show but never be
+                  reachable. Renders only for administrators. */}
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-brand-blue text-xs font-extrabold tracking-[0.12em] uppercase">
+                  Primeiro acesso com Google
+                </p>
+                <BackofficeAccessLink />
+              </div>
               <DialogTitle className="text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
                 Como você vai usar a Contente Creators?
               </DialogTitle>
