@@ -48,7 +48,14 @@ export function DescriptiveRadioCardGroup<Value extends string>({
         aria-invalid={Boolean(errors?.length)}
         aria-labelledby={ariaLabelledBy}
         aria-required={required}
-        className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+        className={cn(
+          "grid gap-4",
+          // One column per option, never more: a 3-column track for two
+          // options squeezed each card into a sliver of its container.
+          options.length >= 3
+            ? "md:grid-cols-2 lg:grid-cols-3"
+            : "sm:grid-cols-2",
+        )}
         name={name}
         onValueChange={(nextValue) => {
           const match = options.find((option) => option.value === nextValue);

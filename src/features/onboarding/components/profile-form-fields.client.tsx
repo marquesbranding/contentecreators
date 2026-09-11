@@ -891,7 +891,10 @@ export function ProfileFormFields({
                 />
               </>
             ) : !showCreatorTypeField ? null : creatorType === undefined ? (
+              /* Spans the whole row: next to "Nome completo" the two cards got
+               * half a column each and their copy broke syllable by syllable. */
               <Field
+                className="col-span-full"
                 data-invalid={Boolean(
                   resolveFieldErrors("creatorType")?.length,
                 )}
