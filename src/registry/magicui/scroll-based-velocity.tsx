@@ -124,7 +124,9 @@ function ScrollVelocityRowImpl({
         const cw = container.offsetWidth || 0;
         const bw = block.scrollWidth || 0;
         unitWidth.set(bw);
-        const nextCopies = bw > 0 ? Math.max(3, Math.ceil(cw / bw) + 2) : 1;
+        // One copy past the container keeps the wrap seamless; more than that
+        // only puts the same content on screen twice over.
+        const nextCopies = bw > 0 ? Math.max(2, Math.ceil(cw / bw) + 1) : 1;
         setNumCopies((prev) => (prev === nextCopies ? prev : nextCopies));
       };
 

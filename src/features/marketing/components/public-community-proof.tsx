@@ -10,14 +10,25 @@ import { ptBR } from "@/shared/copy/pt-BR";
 import { cn } from "@/shared/lib/cn";
 
 import { buildRegistrationHref } from "../domain/registration-intent";
+import {
+  SHOWCASE_GRID_SLOTS,
+  shouldRotateShowcase,
+} from "../domain/showcase-rotation";
 import type { PublicCommunityProofDto } from "../types/public-community-proof.types";
-import type { PublicLandingShowcaseDto } from "../types/public-landing-showcase.types";
+import type {
+  PublicLandingShowcaseDto,
+  PublicShowcaseItemDto,
+} from "../types/public-landing-showcase.types";
 import { LandingShowcaseCarousel } from "./landing-showcase-carousel.client";
+import {
+  ShowcaseItemCard,
+  showcaseItemKey,
+  showcaseItemTestId,
+} from "./showcase-item-card";
 
 const influencerHref = buildRegistrationHref("INFLUENCER");
 const ugcHref = buildRegistrationHref("UGC");
 const companyHref = buildRegistrationHref("COMPANY");
-const PLACEHOLDER_SLOTS = 3;
 
 /**
  * Holds the carousel's shape before anyone is enabled in the backoffice. It
@@ -45,6 +56,70 @@ function ShowcasePlaceholderCard() {
         </p>
       </div>
     </div>
+  );
+}
+
+const brandStripClassName =
+  "text-xl font-extrabold tracking-[0.02em] text-black/55 uppercase sm:text-2xl";
+
+function BrandNameList({
+  companies,
+}: {
+  companies: PublicCommunityProofDto["companies"];
+}) {
+  return (
+    <ul
+      aria-label="Marcas aprovadas"
+      className="flex flex-wrap items-center gap-y-2"
+    >
+      {companies.map((company) => (
+        <li
+          className="flex shrink-0 items-center gap-8 pr-8"
+          key={company.companyId}
+        >
+          <span>{company.tradeName}</span>
+          <span
+            aria-hidden="true"
+            className="bg-brand-lime size-2 shrink-0 rounded-full"
+          />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * Still layout for a showcase too short to rotate: the enabled profiles once
+ * each, then invites for the remaining slots.
+ */
+function ShowcaseStillGrid({
+  items,
+}: {
+  items: readonly PublicShowcaseItemDto[];
+}) {
+  return (
+    <ul
+      aria-label="Creators e marcas em destaque"
+      className="mt-8 grid min-w-0 gap-5 sm:grid-cols-2 xl:grid-cols-4"
+    >
+      {Array.from({ length: SHOWCASE_GRID_SLOTS }, (_, slot) => {
+        const item = items[slot];
+
+        return item ? (
+          <li
+            className="min-w-0"
+            data-testid={showcaseItemTestId(item)}
+            key={showcaseItemKey(item)}
+          >
+            <ShowcaseItemCard item={item} />
+          </li>
+        ) : (
+          <li className="min-w-0" key={`invite-${slot}`}>
+            <ShowcasePlaceholderCard />
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -83,48 +158,33 @@ export function PublicCommunityProof({
 
         {companies.length > 0 ? (
           <div className="mt-10 overflow-hidden border-y border-black/10 py-5">
-            <ScrollVelocityContainer>
-              {/* black/40 renders as #999 on white — 2.84:1, under even the
-                  3:1 large-text floor. black/55 clears 4.5:1 at any size, so
-                  the strip stays muted without failing the a11y smoke. */}
-              <ScrollVelocityRow
-                baseVelocity={2}
-                className="text-xl font-extrabold tracking-[0.02em] text-black/55 uppercase sm:text-2xl"
-                direction={-1}
-              >
-                <ul aria-label="Marcas aprovadas" className="flex items-center">
-                  {companies.map((company) => (
-                    <li
-                      className="flex shrink-0 items-center gap-8 pr-8"
-                      key={company.companyId}
-                    >
-                      <span>{company.tradeName}</span>
-                      <span
-                        aria-hidden="true"
-                        className="bg-brand-lime size-2 shrink-0 rounded-full"
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </ScrollVelocityRow>
-            </ScrollVelocityContainer>
+            {/* black/40 renders as #999 on white — 2.84:1, under even the
+                3:1 large-text floor. black/55 clears 4.5:1 at any size, so
+                the strip stays muted without failing the a11y smoke. */}
+            {shouldRotateShowcase(companies.length) ? (
+              <ScrollVelocityContainer>
+                <ScrollVelocityRow
+                  baseVelocity={2}
+                  className={brandStripClassName}
+                  direction={-1}
+                >
+                  <BrandNameList companies={companies} />
+                </ScrollVelocityRow>
+              </ScrollVelocityContainer>
+            ) : (
+              // Too few names to loop without showing the same brand twice.
+              <div className={brandStripClassName}>
+                <BrandNameList companies={companies} />
+              </div>
+            )}
           </div>
         ) : null}
 
         {showcase ? (
-          showcase.items.length > 0 ? (
+          shouldRotateShowcase(showcase.items.length) ? (
             <LandingShowcaseCarousel items={showcase.items} />
           ) : (
-            <ul
-              aria-label="Espaço para creators e marcas em destaque"
-              className="mt-8 grid min-w-0 gap-5 md:grid-cols-2 xl:grid-cols-3"
-            >
-              {Array.from({ length: PLACEHOLDER_SLOTS }, (_, slot) => (
-                <li className="min-w-0" key={slot}>
-                  <ShowcasePlaceholderCard />
-                </li>
-              ))}
-            </ul>
+            <ShowcaseStillGrid items={showcase.items} />
           )
         ) : null}
 

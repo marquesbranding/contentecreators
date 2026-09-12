@@ -137,28 +137,39 @@ function CandidateRow({
             >
               <ArrowDown aria-hidden="true" />
             </Button>
-            <Button
-              aria-label={`Remover ${name} da landing`}
-              disabled={pending}
-              onClick={() => send("DISABLE")}
-              size="sm"
-              variant="outline"
-            >
-              <EyeOff aria-hidden="true" />
-              Remover
-            </Button>
           </>
-        ) : (
+        ) : null}
+        {/* Both choices stay on every row, so an admin never has to guess how
+            to take a profile off the landing. The current one reads as
+            selected and is inert; the other one is the action. */}
+        <div
+          aria-label={`Exibição de ${name} na landing`}
+          className="flex items-center gap-1 rounded-md border p-1"
+          role="group"
+        >
           <Button
             aria-label={`Exibir ${name} na landing`}
-            disabled={pending}
+            aria-pressed={candidate.enabled}
+            disabled={pending || candidate.enabled}
             onClick={() => send("ENABLE")}
             size="sm"
+            variant={candidate.enabled ? "default" : "ghost"}
           >
             <Eye aria-hidden="true" />
-            Exibir na landing
+            Exibir
           </Button>
-        )}
+          <Button
+            aria-label={`Não exibir ${name} na landing`}
+            aria-pressed={!candidate.enabled}
+            disabled={pending || !candidate.enabled}
+            onClick={() => send("DISABLE")}
+            size="sm"
+            variant={candidate.enabled ? "ghost" : "default"}
+          >
+            <EyeOff aria-hidden="true" />
+            Não exibir
+          </Button>
+        </div>
       </div>
     </li>
   );
@@ -285,8 +296,9 @@ export function LandingShowcaseManagementView({
         </h1>
         <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
           Escolha quais creators e empresas aprovados passam no carrossel
-          “Creators e marcas em destaque” da página inicial, e em que ordem. A
-          página pública pode levar alguns minutos para refletir as mudanças.
+          “Creators e marcas em destaque” da página inicial, e em que ordem.
+          Cada perfil tem as duas opções — exibir e não exibir. A página pública
+          pode levar alguns minutos para refletir as mudanças.
         </p>
       </header>
 

@@ -6,14 +6,21 @@ import { useState } from "react";
 import { ScrollVelocityRow } from "@/registry/magicui/scroll-based-velocity";
 
 import type { PublicShowcaseItemDto } from "../types/public-landing-showcase.types";
-import { PublicCommunityCompanyCard } from "./public-community-company-card";
-import { PublicCommunityCreatorCard } from "./public-community-creator-card";
+import {
+  ShowcaseItemCard,
+  showcaseItemKey,
+  showcaseItemTestId,
+} from "./showcase-item-card";
 
 /**
  * Auto-advancing strip of the creators and companies enabled in the
- * backoffice. Content that moves on its own for more than five seconds needs a
- * way to stop it (WCAG 2.2.2), so the row freezes while hovered or focused and
- * offers an explicit pause toggle. Reduced-motion users get a still row.
+ * backoffice. Only mounted once the list is long enough to fill the row
+ * (`MIN_SHOWCASE_CAROUSEL_ITEMS`); a shorter one would loop the same two or
+ * three cards past the visitor, which reads as duplicated content.
+ *
+ * Content that moves on its own for more than five seconds needs a way to stop
+ * it (WCAG 2.2.2), so the row freezes while hovered or focused and offers an
+ * explicit pause toggle. Reduced-motion users get a still row.
  */
 export function LandingShowcaseCarousel({
   items,
@@ -48,18 +55,10 @@ export function LandingShowcaseCarousel({
             {items.map((item) => (
               <li
                 className="h-[21rem] w-[17.5rem] shrink-0 pr-5 whitespace-normal sm:w-[19.5rem]"
-                data-testid={
-                  item.kind === "CREATOR"
-                    ? "creator-listing"
-                    : "company-listing"
-                }
-                key={`${item.kind}-${item.id}`}
+                data-testid={showcaseItemTestId(item)}
+                key={showcaseItemKey(item)}
               >
-                {item.kind === "CREATOR" ? (
-                  <PublicCommunityCreatorCard creator={item} />
-                ) : (
-                  <PublicCommunityCompanyCard company={item} />
-                )}
+                <ShowcaseItemCard item={item} />
               </li>
             ))}
           </ul>

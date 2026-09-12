@@ -121,7 +121,9 @@ describe("LandingShowcaseManagementView", () => {
       screen.getByRole("button", { name: "Exibir Empresa Quatro na landing" }),
     );
     await user.click(
-      screen.getByRole("button", { name: "Remover Gabi Conecta da landing" }),
+      screen.getByRole("button", {
+        name: "Não exibir Gabi Conecta na landing",
+      }),
     );
 
     expect(onCommand).toHaveBeenNthCalledWith(1, {
@@ -142,6 +144,33 @@ describe("LandingShowcaseManagementView", () => {
       kind: "CREATOR",
       profileId: "d0000000-0000-4000-8000-000000000007",
     });
+  });
+
+  it("offers both choices on every row and marks the current one", () => {
+    renderView();
+
+    const enabledShow = screen.getByRole("button", {
+      name: "Exibir Gabi Conecta na landing",
+    });
+    const enabledHide = screen.getByRole("button", {
+      name: "Não exibir Gabi Conecta na landing",
+    });
+
+    expect(enabledShow).toHaveAttribute("aria-pressed", "true");
+    expect(enabledShow).toBeDisabled();
+    expect(enabledHide).toHaveAttribute("aria-pressed", "false");
+    expect(enabledHide).toBeEnabled();
+
+    const availableShow = screen.getByRole("button", {
+      name: "Exibir Júlia Criadora na landing",
+    });
+    const availableHide = screen.getByRole("button", {
+      name: "Não exibir Júlia Criadora na landing",
+    });
+
+    expect(availableShow).toBeEnabled();
+    expect(availableHide).toHaveAttribute("aria-pressed", "true");
+    expect(availableHide).toBeDisabled();
   });
 
   it("filters the available creators by name", async () => {
@@ -170,7 +199,9 @@ describe("LandingShowcaseManagementView", () => {
       screen.getByRole("button", { name: "Exibir Empresa Quatro na landing" }),
     ).toBeDisabled();
     expect(
-      screen.getByRole("button", { name: "Remover Gabi Conecta da landing" }),
+      screen.getByRole("button", {
+        name: "Não exibir Gabi Conecta na landing",
+      }),
     ).toBeDisabled();
   });
 
