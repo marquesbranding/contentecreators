@@ -18,6 +18,7 @@ import {
 import type { OnboardingActionState } from "../../types/onboarding-action.types";
 import { createServerCorrectedProfileResubmissionService } from "../services/server-corrected-profile-resubmission.service";
 import { createServerOnboardingRegistrationService } from "../services/server-onboarding-registration.service";
+import { isUniqueViolation } from "../services/unique-violation";
 
 function formPayload(formData: FormData) {
   return {
@@ -59,25 +60,6 @@ function formPayload(formData: FormData) {
 }
 
 /** Walks postgres.js's `cause` chain looking for a specific unique violation. */
-function isUniqueViolation(error: unknown, constraintName: string): boolean {
-  if (!error || typeof error !== "object") {
-    return false;
-  }
-
-  if (
-    "code" in error &&
-    error.code === "23505" &&
-    "constraint_name" in error &&
-    error.constraint_name === constraintName
-  ) {
-    return true;
-  }
-
-  return "cause" in error
-    ? isUniqueViolation(error.cause, constraintName)
-    : false;
-}
-
 function readOptionalImageFile(formData: FormData, field: string) {
   const value = formData.get(field);
   return value instanceof File && value.size > 0 ? value : null;
@@ -125,6 +107,15 @@ export async function registerWithEmailAction(
 
   if (result.kind === "redirect") {
     redirect(result.destination);
+  }
+
+  if (result.kind === "duplicate_cnpj") {
+    return {
+      fieldErrors: { cnpj: [result.message] },
+      message: "Revise os campos destacados para continuar.",
+      status: "error",
+      values: { email: parsed.data.email, role: parsed.data.role },
+    };
   }
 
   return {

@@ -220,6 +220,43 @@ describe("onboarding registration service", () => {
     expect(identity.deleteIdentity).not.toHaveBeenCalled();
   });
 
+  it("reports a duplicate CNPJ and removes the partial Auth identity", async () => {
+    const identity = {
+      deleteIdentity: vi.fn().mockResolvedValue(undefined),
+      signUp: vi.fn().mockResolvedValue({
+        confirmationEmailSent: true,
+        confirmationRequired: true,
+        identityId: "identity-cnpj",
+        kind: "success",
+      }),
+    };
+    const repository = {
+      finalizePreparedRegistration: vi.fn(),
+      prepareEmailRegistration: vi.fn().mockRejectedValue(
+        Object.assign(new Error("Failed query"), {
+          cause: {
+            code: "23505",
+            constraint_name: "company_profiles_cnpj_uidx",
+          },
+        }),
+      ),
+      submitGoogleProfile: vi.fn(),
+    };
+    const service = createOnboardingRegistrationService(identity, repository, {
+      callbackUrls: {
+        COMPANY: "http://localhost:3000/auth/callback?next=/onboarding/company",
+        INFLUENCER:
+          "http://localhost:3000/auth/callback?next=/onboarding/influencer",
+      },
+    });
+
+    await expect(service.registerWithEmail(influencerInput)).resolves.toEqual({
+      kind: "duplicate_cnpj",
+      message: "Este CNPJ já está cadastrado.",
+    });
+    expect(identity.deleteIdentity).toHaveBeenCalledWith("identity-cnpj");
+  });
+
   it("removes a partial Auth identity when profile persistence fails", async () => {
     const identity = {
       deleteIdentity: vi.fn().mockResolvedValue(undefined),

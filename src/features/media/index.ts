@@ -4,6 +4,7 @@ export {
   CropDialog,
   ProfileHeaderMediaEditor,
 } from "./components/profile-header-media-editor.client";
+export { shrinkImageFile } from "./domain/shrink-image";
 export { useMediaUpload } from "./hooks/use-media-upload";
 export { useHeaderMediaSlot } from "./hooks/use-header-media-slot";
 export type { HeaderMediaSlotConfig } from "./hooks/use-header-media-slot";

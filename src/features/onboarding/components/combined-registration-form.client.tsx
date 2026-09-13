@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 
 import { GoogleAuthOption, PasswordField } from "@/features/identity/client";
+import { shrinkImageFile } from "@/features/media";
 import { ActionSubmitButton } from "@/shared/components/action-submit-button";
 import {
   ProfileHeaderPreview,
@@ -196,6 +197,28 @@ export function CombinedRegistrationForm({
     });
   }
 
+  async function replaceWithShrunkImage(
+    input: HTMLInputElement,
+    onFileChange: (file: File | null) => void,
+  ) {
+    const file = input.files?.[0] ?? null;
+
+    if (!file) {
+      onFileChange(null);
+      return;
+    }
+
+    const shrunk = await shrinkImageFile(file);
+
+    if (shrunk !== file && input.files?.[0] === file) {
+      const transfer = new DataTransfer();
+      transfer.items.add(shrunk);
+      input.files = transfer.files;
+    }
+
+    onFileChange(input.files?.[0] ?? shrunk);
+  }
+
   function handleAvatarFileChange(file: File | null) {
     setAvatarPreviewUrl((current) => {
       if (current) {
@@ -367,7 +390,10 @@ export function CombinedRegistrationForm({
           className="sr-only"
           name={role === "COMPANY" ? "logoFile" : "avatarFile"}
           onChange={(event) =>
-            handleAvatarFileChange(event.target.files?.[0] ?? null)
+            void replaceWithShrunkImage(
+              event.currentTarget,
+              handleAvatarFileChange,
+            )
           }
           ref={avatarInputRef}
           tabIndex={-1}
@@ -379,7 +405,10 @@ export function CombinedRegistrationForm({
           className="sr-only"
           name="coverFile"
           onChange={(event) =>
-            handleCoverFileChange(event.target.files?.[0] ?? null)
+            void replaceWithShrunkImage(
+              event.currentTarget,
+              handleCoverFileChange,
+            )
           }
           ref={coverInputRef}
           tabIndex={-1}

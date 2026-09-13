@@ -1,11 +1,13 @@
 import "server-only";
 
 import { runWithPostCommitEmailDelivery } from "@/features/communications/server";
+import { operationalLogger } from "@/shared/server/observability/operational-logger";
 
 import type {
   EmailRegistrationInput,
   GoogleProfileInput,
 } from "../../schemas/onboarding-form-schema";
+import { isUniqueViolation } from "./unique-violation";
 
 type OnboardingSubmissionResult =
   | { kind: "already_submitted" | "not_prepared" }
@@ -191,8 +193,27 @@ export function createOnboardingRegistrationService(
           media,
           requestId: crypto.randomUUID(),
         });
-      } catch {
+      } catch (error) {
         await identity.deleteIdentity(identityResult.identityId);
+
+        if (isUniqueViolation(error, "company_profiles_cnpj_uidx")) {
+          return {
+            kind: "duplicate_cnpj" as const,
+            message: "Este CNPJ já está cadastrado.",
+          };
+        }
+
+        operationalLogger.error({
+          details: {
+            errorMessage:
+              error instanceof Error ? error.message : String(error),
+            role: input.role,
+          },
+          event: "onboarding_submission_failure",
+          operation: "prepare_email_registration",
+          outcome: "error",
+          requestId: crypto.randomUUID(),
+        });
 
         return {
           kind: "failure" as const,
