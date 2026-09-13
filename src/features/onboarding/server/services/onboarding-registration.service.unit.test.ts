@@ -94,10 +94,62 @@ describe("onboarding registration service", () => {
     expect(identity.deleteIdentity).not.toHaveBeenCalled();
   });
 
+  it.each([
+    [
+      "weak_password",
+      "A senha não atende aos requisitos de segurança. Use uma senha mais forte, com letras maiúsculas, minúsculas, números e símbolos.",
+    ],
+    [
+      "rate_limited",
+      "Muitas tentativas foram realizadas. Aguarde alguns minutos antes de tentar novamente.",
+    ],
+    [
+      "invalid_email",
+      "Não foi possível usar este e-mail. Confira o endereço informado ou use outro e-mail.",
+    ],
+    [
+      "provider",
+      "Não foi possível criar a conta. Confira os dados ou tente novamente.",
+    ],
+  ] as const)(
+    "explains the %s Auth failure without persisting the profile",
+    async (reason, message) => {
+      const identity = {
+        deleteIdentity: vi.fn(),
+        signUp: vi
+          .fn()
+          .mockResolvedValue({ code: "auth_code", kind: "failure", reason }),
+      };
+      const repository = {
+        finalizePreparedRegistration: vi.fn(),
+        prepareEmailRegistration: vi.fn(),
+        submitGoogleProfile: vi.fn(),
+      };
+      const service = createOnboardingRegistrationService(
+        identity,
+        repository,
+        {
+          callbackUrls: {
+            COMPANY:
+              "http://localhost:3000/auth/callback?next=/onboarding/company",
+            INFLUENCER:
+              "http://localhost:3000/auth/callback?next=/onboarding/influencer",
+          },
+        },
+      );
+
+      await expect(service.registerWithEmail(influencerInput)).resolves.toEqual(
+        { kind: "failure", message },
+      );
+      expect(repository.prepareEmailRegistration).not.toHaveBeenCalled();
+    },
+  );
+
   it("prepares identity and profile in one application request", async () => {
     const identity = {
       deleteIdentity: vi.fn(),
       signUp: vi.fn().mockResolvedValue({
+        confirmationEmailSent: true,
         confirmationRequired: true,
         identityId: "identity-1",
         kind: "success",
@@ -134,10 +186,45 @@ describe("onboarding registration service", () => {
     expect(result.kind).toBe("confirmation_required");
   });
 
+  it("saves the profile and points to resend when the confirmation email could not be sent", async () => {
+    const identity = {
+      deleteIdentity: vi.fn(),
+      signUp: vi.fn().mockResolvedValue({
+        confirmationEmailSent: false,
+        confirmationRequired: true,
+        identityId: "identity-smtp",
+        kind: "success",
+      }),
+    };
+    const repository = {
+      finalizePreparedRegistration: vi.fn(),
+      prepareEmailRegistration: vi.fn().mockResolvedValue({
+        accountId: "account-smtp",
+      }),
+      submitGoogleProfile: vi.fn(),
+    };
+    const service = createOnboardingRegistrationService(identity, repository, {
+      callbackUrls: {
+        COMPANY: "http://localhost:3000/auth/callback?next=/onboarding/company",
+        INFLUENCER:
+          "http://localhost:3000/auth/callback?next=/onboarding/influencer",
+      },
+    });
+
+    await expect(service.registerWithEmail(influencerInput)).resolves.toEqual({
+      kind: "confirmation_required",
+      message:
+        "Seu perfil foi salvo, mas não conseguimos enviar o e-mail de confirmação agora. Use “Reenviar confirmação” em alguns minutos.",
+    });
+    expect(repository.prepareEmailRegistration).toHaveBeenCalled();
+    expect(identity.deleteIdentity).not.toHaveBeenCalled();
+  });
+
   it("removes a partial Auth identity when profile persistence fails", async () => {
     const identity = {
       deleteIdentity: vi.fn().mockResolvedValue(undefined),
       signUp: vi.fn().mockResolvedValue({
+        confirmationEmailSent: true,
         confirmationRequired: true,
         identityId: "identity-2",
         kind: "success",
@@ -172,6 +259,7 @@ describe("onboarding registration service", () => {
     const identity = {
       deleteIdentity: vi.fn(),
       signUp: vi.fn().mockResolvedValue({
+        confirmationEmailSent: true,
         confirmationRequired: false,
         identityId: "identity-3",
         kind: "success",

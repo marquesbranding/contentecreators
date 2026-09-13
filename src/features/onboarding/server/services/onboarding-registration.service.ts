@@ -17,6 +17,23 @@ export interface RegistrationMediaFiles {
   logoFile?: File | null;
 }
 
+type RegistrationIdentityFailureReason =
+  "invalid_email" | "provider" | "rate_limited" | "weak_password";
+
+const IDENTITY_FAILURE_MESSAGES: Record<
+  RegistrationIdentityFailureReason,
+  string
+> = {
+  invalid_email:
+    "Não foi possível usar este e-mail. Confira o endereço informado ou use outro e-mail.",
+  provider:
+    "Não foi possível criar a conta. Confira os dados ou tente novamente.",
+  rate_limited:
+    "Muitas tentativas foram realizadas. Aguarde alguns minutos antes de tentar novamente.",
+  weak_password:
+    "A senha não atende aos requisitos de segurança. Use uma senha mais forte, com letras maiúsculas, minúsculas, números e símbolos.",
+};
+
 interface RegistrationIdentityGateway {
   deleteIdentity(identityId: string): Promise<void>;
   signUp(input: {
@@ -25,12 +42,17 @@ interface RegistrationIdentityGateway {
     password: string;
   }): Promise<
     | {
+        confirmationEmailSent: boolean;
         confirmationRequired: boolean;
         identityId: string;
         kind: "success";
       }
     | { kind: "account_exists" }
-    | { kind: "failure" }
+    | {
+        code: string;
+        kind: "failure";
+        reason: RegistrationIdentityFailureReason;
+      }
   >;
 }
 
@@ -158,8 +180,7 @@ export function createOnboardingRegistrationService(
       if (identityResult.kind === "failure") {
         return {
           kind: "failure" as const,
-          message:
-            "Não foi possível criar a conta. Confira os dados ou tente novamente.",
+          message: IDENTITY_FAILURE_MESSAGES[identityResult.reason],
         };
       }
 
@@ -182,8 +203,9 @@ export function createOnboardingRegistrationService(
       if (identityResult.confirmationRequired) {
         return {
           kind: "confirmation_required" as const,
-          message:
-            "Seu perfil foi salvo. Confirme seu e-mail para enviar o cadastro para análise.",
+          message: identityResult.confirmationEmailSent
+            ? "Seu perfil foi salvo. Confirme seu e-mail para enviar o cadastro para análise."
+            : "Seu perfil foi salvo, mas não conseguimos enviar o e-mail de confirmação agora. Use “Reenviar confirmação” em alguns minutos.",
         };
       }
 
@@ -229,4 +251,8 @@ export function createOnboardingRegistrationService(
   };
 }
 
-export type { OnboardingRegistrationRepository, RegistrationIdentityGateway };
+export type {
+  OnboardingRegistrationRepository,
+  RegistrationIdentityFailureReason,
+  RegistrationIdentityGateway,
+};
