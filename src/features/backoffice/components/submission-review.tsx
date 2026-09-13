@@ -45,6 +45,7 @@ import type {
   BackofficeReviewMediaDto,
   BackofficeSubmissionReviewDto,
 } from "../types/submission-review.types";
+import { formatEmployeeRange } from "./employee-range-labels";
 
 const mediaLabels: Record<BackofficeReviewMediaDto["kind"], string> = {
   AVATAR: "Foto de perfil",
@@ -195,7 +196,7 @@ function ProfileCard({ review }: { review: BackofficeSubmissionReviewDto }) {
           <ReviewField label="Segmento" value={review.profile.segment} />
           <ReviewField
             label="Faixa de colaboradores"
-            value={review.profile.employeeRange}
+            value={formatEmployeeRange(review.profile.employeeRange)}
           />
           <ReviewField
             label="WhatsApp"

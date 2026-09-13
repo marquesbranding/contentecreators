@@ -90,7 +90,7 @@ export function createCompanyDetailService({
             status: viewer.status,
           };
 
-          requireRole(account, ["INFLUENCER"]);
+          requireRole(account, ["COMPANY", "INFLUENCER"]);
           requireApproved(account);
 
           const record = await findEligibleCompany(

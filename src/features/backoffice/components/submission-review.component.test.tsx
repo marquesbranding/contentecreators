@@ -107,7 +107,7 @@ const companyReview: BackofficeSubmissionReviewDto = {
   profile: {
     cnpj: "11222333000181",
     description: "Marca nacional de vestuário.",
-    employeeRange: "11-50",
+    employeeRange: "11_TO_50",
     legalName: "Empresa Teste Ltda.",
     locations: [
       {
@@ -165,6 +165,8 @@ describe("SubmissionReview", () => {
       screen.getByRole("heading", { name: "Empresa Teste" }),
     ).toBeVisible();
     expect(screen.getByText("11.222.333/0001-81")).toBeVisible();
+    expect(screen.getByText("11 a 50 colaboradores")).toBeVisible();
+    expect(screen.queryByText("11_TO_50")).not.toBeInTheDocument();
     expect(screen.getByText("Praça da Sé, 100")).toBeVisible();
     expect(
       screen.getByText(/não verificam a legitimidade da empresa/iu),
