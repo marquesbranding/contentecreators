@@ -85,6 +85,51 @@ describe("renderTransactionalEmail", () => {
     },
   );
 
+  it.each([
+    ["INFLUENCER", "/onboarding/influencer?corrections=requested"],
+    ["COMPANY", "/onboarding/company?corrections=requested"],
+  ] as const)(
+    "sends a %s owner straight into the corrections flow for their role",
+    async (role, expectedPath) => {
+      const result = await renderTransactionalEmail({
+        appUrl,
+        payload: { reason: "Revise os dados indicados.", role },
+        template: "CHANGES_REQUESTED",
+      });
+
+      expect(result.actionUrl).toBe(`${appUrl}${expectedPath}`);
+    },
+  );
+
+  it("falls back to the generic profile page when the role is unknown (older events)", async () => {
+    const result = await renderTransactionalEmail({
+      appUrl,
+      payload: { reason: "Revise os dados indicados." },
+      template: "CHANGES_REQUESTED",
+    });
+
+    expect(result.actionUrl).toBe(`${appUrl}/app/profile`);
+  });
+
+  it("lists the requested fields with their labels and notes", async () => {
+    const result = await renderTransactionalEmail({
+      appUrl,
+      payload: {
+        reason: "Revise os dados indicados.",
+        requestedFields: [
+          { field: "cnpj", note: "Confira o número informado." },
+          { field: "websiteUrl" },
+        ],
+        role: "COMPANY",
+      },
+      template: "CHANGES_REQUESTED",
+    });
+
+    expect(result.html).toContain("CNPJ: Confira o número informado.");
+    expect(result.html).toContain("Site");
+    expect(result.text).toContain("CNPJ: Confira o número informado.");
+  });
+
   it("escapes the moderation reason in HTML while retaining readable plain text", async () => {
     const reason = 'Atualize o campo <script>alert("não")</script>.';
 

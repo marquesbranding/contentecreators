@@ -58,7 +58,7 @@ describe("rendered SMTP outbox delivery", () => {
     });
   });
 
-  it("keeps only the required correction reason", async () => {
+  it("keeps only the correction reason, requested fields and role", async () => {
     const renderEmail = vi.fn(async () => ({
       ...rendered,
       template: "CHANGES_REQUESTED" as const,
@@ -75,6 +75,8 @@ describe("rendered SMTP outbox delivery", () => {
       payload: {
         privateName: "must-not-reach-renderer",
         reason: "Atualize a imagem de perfil.",
+        requestedFields: [{ field: "avatar" }],
+        role: "INFLUENCER",
       },
       template: "CHANGES_REQUESTED",
     });
@@ -83,6 +85,37 @@ describe("rendered SMTP outbox delivery", () => {
       appUrl: "http://localhost:3000",
       payload: {
         reason: "Atualize a imagem de perfil.",
+        requestedFields: [{ field: "avatar" }],
+        role: "INFLUENCER",
+      },
+      template: "CHANGES_REQUESTED",
+    });
+  });
+
+  it("drops requested fields and role when they're absent from the outbox payload", async () => {
+    const renderEmail = vi.fn(async () => ({
+      ...rendered,
+      template: "CHANGES_REQUESTED" as const,
+    }));
+    const delivery = createRenderedSmtpOutboxDelivery({
+      appUrl: "http://localhost:3000",
+      environment: "local",
+      renderEmail,
+      sendSmtp: vi.fn(async () => ({ kind: "sent" as const })),
+    });
+
+    await delivery.deliver({
+      ...baseMessage,
+      payload: { reason: "Atualize a imagem de perfil." },
+      template: "CHANGES_REQUESTED",
+    });
+
+    expect(renderEmail).toHaveBeenCalledWith({
+      appUrl: "http://localhost:3000",
+      payload: {
+        reason: "Atualize a imagem de perfil.",
+        requestedFields: [],
+        role: undefined,
       },
       template: "CHANGES_REQUESTED",
     });

@@ -1,5 +1,7 @@
 import { render } from "react-email";
 
+import { getCorrectableFieldLabel } from "@/features/moderation/domain/correctable-fields";
+
 import {
   parseTransactionalEmailInput,
   type ParsedTransactionalEmailInput,
@@ -108,7 +110,10 @@ export async function renderTransactionalEmail(
 ): Promise<RenderedTransactionalEmail> {
   const parsed = parseTransactionalEmailInput(input);
   const copy = templateCopy[parsed.template];
-  const actionUrl = new URL(copy.path, `${parsed.appUrl}/`).toString();
+  const actionUrl = new URL(
+    correctionActionPath(parsed) ?? copy.path,
+    `${parsed.appUrl}/`,
+  ).toString();
   const logoUrl = new URL(
     "/brand/official/contente-creators-blue.png",
     `${parsed.appUrl}/`,
@@ -123,6 +128,7 @@ export async function renderTransactionalEmail(
       logoUrl={logoUrl}
       preview={copy.preview}
       reason={reason}
+      requestedFields={getRequestedFieldLabels(parsed)}
     />
   );
 
@@ -150,4 +156,33 @@ function getReason(input: ParsedTransactionalEmailInput): string | undefined {
   }
 
   return undefined;
+}
+
+/** Sends the owner straight back into the corrections flow when we know
+ * their role; older events (or a missing role) fall back to the generic
+ * profile page rather than guessing. */
+function correctionActionPath(
+  input: ParsedTransactionalEmailInput,
+): string | undefined {
+  if (input.template !== "CHANGES_REQUESTED" || !input.payload.role) {
+    return undefined;
+  }
+
+  const rolePath =
+    input.payload.role === "INFLUENCER" ? "influencer" : "company";
+  return `/onboarding/${rolePath}?corrections=requested`;
+}
+
+function getRequestedFieldLabels(
+  input: ParsedTransactionalEmailInput,
+): string[] | undefined {
+  if (input.template !== "CHANGES_REQUESTED") {
+    return undefined;
+  }
+
+  return input.payload.requestedFields.map((item) =>
+    item.note
+      ? `${getCorrectableFieldLabel(item.field)}: ${item.note}`
+      : getCorrectableFieldLabel(item.field),
+  );
 }

@@ -38,9 +38,23 @@ function minimumTemplatePayload(message: OutboxDeliveryMessage) {
     return {};
   }
 
+  const reason =
+    typeof message.payload.reason === "string" ? message.payload.reason : "";
+
+  if (message.template !== "CHANGES_REQUESTED") {
+    return { reason };
+  }
+
   return {
-    reason:
-      typeof message.payload.reason === "string" ? message.payload.reason : "",
+    reason,
+    requestedFields: Array.isArray(message.payload.requestedFields)
+      ? message.payload.requestedFields
+      : [],
+    role:
+      message.payload.role === "INFLUENCER" ||
+      message.payload.role === "COMPANY"
+        ? message.payload.role
+        : undefined,
   };
 }
 

@@ -42,6 +42,21 @@ const reasonSchema = z
   })
   .strict();
 
+const requestedFieldSchema = z
+  .object({
+    field: z.string().trim().min(1).max(80),
+    note: z.string().trim().max(500).optional(),
+  })
+  .strict();
+
+const changesRequestedPayloadSchema = z
+  .object({
+    reason: z.string().trim().min(3).max(1_000),
+    requestedFields: z.array(requestedFieldSchema).max(50).default([]),
+    role: z.enum(["INFLUENCER", "COMPANY"]).optional(),
+  })
+  .strict();
+
 const emptyPayloadSchema = z.object({}).strict();
 
 const transactionalEmailInputSchema = z.discriminatedUnion("template", [
@@ -52,7 +67,7 @@ const transactionalEmailInputSchema = z.discriminatedUnion("template", [
   }),
   z.object({
     appUrl: appUrlSchema,
-    payload: reasonSchema,
+    payload: changesRequestedPayloadSchema,
     template: z.literal("CHANGES_REQUESTED"),
   }),
   z.object({

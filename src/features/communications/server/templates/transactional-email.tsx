@@ -21,6 +21,7 @@ interface TransactionalEmailProps {
   logoUrl: string;
   preview: string;
   reason?: string;
+  requestedFields?: readonly string[];
 }
 
 const colors = {
@@ -41,6 +42,7 @@ export function TransactionalEmail({
   logoUrl,
   preview,
   reason,
+  requestedFields,
 }: TransactionalEmailProps) {
   return (
     <Html lang="pt-BR">
@@ -73,6 +75,15 @@ export function TransactionalEmail({
               <Section style={reasonStyle}>
                 <Text style={reasonLabelStyle}>Orientação da análise</Text>
                 <Text style={reasonTextStyle}>{reason}</Text>
+                {requestedFields && requestedFields.length > 0 ? (
+                  <ul style={requestedFieldsListStyle}>
+                    {requestedFields.map((field) => (
+                      <li key={field} style={requestedFieldsItemStyle}>
+                        {field}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
               </Section>
             ) : null}
 
@@ -171,6 +182,18 @@ const reasonTextStyle: CSSProperties = {
   lineHeight: "1.55",
   margin: 0,
   whiteSpace: "pre-wrap",
+};
+
+const requestedFieldsListStyle: CSSProperties = {
+  margin: "10px 0 0",
+  paddingLeft: "20px",
+};
+
+const requestedFieldsItemStyle: CSSProperties = {
+  color: colors.text,
+  fontSize: "15px",
+  lineHeight: "1.6",
+  margin: "0 0 4px",
 };
 
 const actionStyle: CSSProperties = {

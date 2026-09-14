@@ -1,7 +1,12 @@
-export type OutboxEmailPayload = Record<
-  string,
-  string | number | boolean | null
->;
+type OutboxEmailPayloadValue =
+  | boolean
+  | null
+  | number
+  | string
+  | OutboxEmailPayloadValue[]
+  | { [key: string]: OutboxEmailPayloadValue };
+
+export type OutboxEmailPayload = Record<string, OutboxEmailPayloadValue>;
 
 export type OutboxEmailTemplate =
   | "ONBOARDING_RECEIVED"
