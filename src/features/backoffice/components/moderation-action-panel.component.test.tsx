@@ -89,7 +89,7 @@ describe("ModerationActionPanel", () => {
     ).toBeGreaterThanOrEqual(2);
   });
 
-  it("explains the consequence of restoring a suspended account", async () => {
+  it("offers APPROVE (not RESTORE) to reinstate a suspended account, requiring a reason", async () => {
     const user = userEvent.setup();
     renderPanel(
       <ModerationActionPanel
@@ -103,16 +103,41 @@ describe("ModerationActionPanel", () => {
     );
 
     expect(
-      screen.getByRole("button", { name: "Restaurar acesso" }),
+      screen.getByRole("button", { name: "Aprovar cadastro" }),
     ).toBeVisible();
     expect(
-      screen.queryByRole("button", { name: "Aprovar cadastro" }),
+      screen.queryByRole("button", { name: "Restaurar acesso" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Remover banimento" }),
     ).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Restaurar acesso" }));
+    await user.click(screen.getByRole("button", { name: "Aprovar cadastro" }));
     expect(
-      screen.getByText(/voltará ao catálogo e recuperará o acesso/iu),
+      screen.getByText(/ficará elegível ao catálogo/iu),
     ).toBeVisible();
+    expect(
+      screen.getByLabelText(/motivo para reverter a decisão anterior/iu),
+    ).toBeRequired();
+  });
+
+  it("does not require a reason to approve directly from a pending review", async () => {
+    const user = userEvent.setup();
+    renderPanel(
+      <ModerationActionPanel
+        accountId="10000000-0000-4000-8000-000000000001"
+        accountVersion={3}
+        actions={actions}
+        displayName="Criadora Teste"
+        profileVersion={2}
+        status="PENDING_REVIEW"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Aprovar cadastro" }));
+    expect(
+      screen.queryByLabelText(/motivo/iu),
+    ).not.toBeInTheDocument();
   });
 
   it("has no blocking accessibility violations", async () => {

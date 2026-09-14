@@ -39,6 +39,7 @@ import { useActionSuccessToast } from "@/shared/hooks/use-action-success-toast";
 import { moderationQueueKeys } from "../api/moderation-queue.api";
 import {
   getAvailableModerationActions,
+  moderationApproveRequiresReason,
   type BackofficeAccountStatus,
   type BackofficeModerationAction,
 } from "../domain/moderation-presentation";
@@ -179,6 +180,7 @@ function ActionDialog({
   displayName,
   profileVersion,
   serverAction,
+  status,
 }: {
   accountId: string;
   accountVersion: number;
@@ -186,9 +188,14 @@ function ActionDialog({
   displayName: string;
   profileVersion: number;
   serverAction: ModerationServerAction;
+  status: BackofficeAccountStatus;
 }) {
   const config = actionConfig[action];
   const Icon = config.icon;
+  const reasonLabel =
+    action === "APPROVE" && moderationApproveRequiresReason(status)
+      ? "Motivo para reverter a decisão anterior"
+      : config.reasonLabel;
   const router = useRouter();
   const queryClient = useQueryClient();
   const [idempotencyKey] = useState(
@@ -248,10 +255,10 @@ function ActionDialog({
           />
           <input name="idempotencyKey" type="hidden" value={idempotencyKey} />
 
-          {config.reasonLabel ? (
+          {reasonLabel ? (
             <Field data-invalid={Boolean(reasonErrors?.length)}>
               <FieldLabel htmlFor={`${action}-reason`} required>
-                {config.reasonLabel}
+                {reasonLabel}
               </FieldLabel>
               <Textarea
                 aria-describedby={`${action}-reason-error`}
@@ -363,6 +370,7 @@ export function ModerationActionPanel({
             key={action}
             profileVersion={profileVersion}
             serverAction={actions[action]}
+            status={status}
           />
         ))}
       </div>

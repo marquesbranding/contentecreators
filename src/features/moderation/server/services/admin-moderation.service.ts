@@ -5,12 +5,17 @@ import {
   adminModerationCommandSchema,
   type AdminModerationAction,
   type AdminModerationCommand,
+  type AdminModerationCommandInput,
 } from "../../schemas/admin-moderation-command-schema";
 
 export interface AdminModerationTransition {
   accountId: string;
   accountVersion: number;
   action: AdminModerationAction;
+  /** The BAN/UNBAN Supabase Auth side effect this transition actually
+   * triggered — distinct from `action`, since e.g. an APPROVE that reverses
+   * a ban still needs to run the UNBAN auth sync. */
+  authEffectAction: "BAN" | "UNBAN" | null;
   authEffectId: string | null;
   authUserId: string;
   eventId: string;
@@ -27,7 +32,7 @@ export interface AdminModerationDependencies {
   attemptEmailDelivery?(input: {
     outboxId: string;
     workerId: string;
-  }): Promise<unknown>;
+  }): Promise<{ kind: string }>;
   invalidateEligibility(accountId: string): Promise<void> | void;
   markAuthEffectFailed(input: {
     effectId: string;
@@ -46,6 +51,10 @@ export interface AdminModerationDependencies {
     authUserId: string;
     effectId: string;
   } | null>;
+  /** Best-effort second delivery attempt for an outbox row that didn't send
+   * on the first try — otherwise the only remaining retry is the once-daily
+   * cron sweep. Optional so tests that don't care about email can omit it. */
+  scheduleEmailRetry?(input: { outboxId: string }): void;
   syncAuthIdentity(input: {
     action: "BAN" | "UNBAN";
     authUserId: string;
@@ -90,7 +99,7 @@ export function createAdminModerationService(
   dependencies: AdminModerationDependencies,
 ) {
   return {
-    async apply(input: AdminModerationCommand) {
+    async apply(input: AdminModerationCommandInput) {
       const command = adminModerationCommandSchema.parse(input);
       const transition = await dependencies.applyTransition(command);
 
@@ -101,18 +110,20 @@ export function createAdminModerationService(
         transition.outboxId &&
         dependencies.attemptEmailDelivery
       ) {
-        await dependencies
+        const outboxId = transition.outboxId;
+        const delivery = await dependencies
           .attemptEmailDelivery({
-            outboxId: transition.outboxId,
+            outboxId,
             workerId: `moderation:${crypto.randomUUID()}`,
           })
           .catch(() => undefined);
+
+        if (delivery && delivery.kind !== "sent") {
+          dependencies.scheduleEmailRetry?.({ outboxId });
+        }
       }
 
-      if (
-        !transition.authEffectId ||
-        (transition.action !== "BAN" && transition.action !== "UNBAN")
-      ) {
+      if (!transition.authEffectId || !transition.authEffectAction) {
         return {
           ...transition,
           authEffectStatus: "not_required" as const,
@@ -120,7 +131,7 @@ export function createAdminModerationService(
       }
 
       const authEffect = await synchronizeAuthEffect(dependencies, {
-        action: transition.action,
+        action: transition.authEffectAction,
         authUserId: transition.authUserId,
         effectId: transition.authEffectId,
         requestId: command.requestId,

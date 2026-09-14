@@ -41,16 +41,23 @@ const mediaStatusLabels: Record<BackofficeMediaStatus, string> = {
   REJECTED: "Rejeitada",
 };
 
+/**
+ * Every action is available from any status other than its own destination —
+ * a moderator can change their mind at any point — except ONBOARDING, which
+ * only accepts BAN/ARCHIVE. RESTORE/UNBAN are no longer offered: APPROVE
+ * from SUSPENDED/BANNED covers "restore", and leaving BANNED through any
+ * action covers "unban".
+ */
 const availableActions: Record<
   BackofficeAccountStatus,
   readonly BackofficeModerationAction[]
 > = {
-  APPROVED: ["SUSPEND", "BAN", "ARCHIVE"],
-  BANNED: ["UNBAN", "ARCHIVE"],
-  CHANGES_REQUESTED: ["BAN", "ARCHIVE"],
-  ONBOARDING: ["ARCHIVE"],
-  PENDING_REVIEW: ["APPROVE", "REQUEST_CHANGES", "BAN", "ARCHIVE"],
-  SUSPENDED: ["RESTORE", "BAN", "ARCHIVE"],
+  APPROVED: ["REQUEST_CHANGES", "SUSPEND", "BAN", "ARCHIVE"],
+  BANNED: ["APPROVE", "REQUEST_CHANGES", "SUSPEND", "ARCHIVE"],
+  CHANGES_REQUESTED: ["APPROVE", "SUSPEND", "BAN", "ARCHIVE"],
+  ONBOARDING: ["BAN", "ARCHIVE"],
+  PENDING_REVIEW: ["APPROVE", "REQUEST_CHANGES", "SUSPEND", "BAN", "ARCHIVE"],
+  SUSPENDED: ["APPROVE", "REQUEST_CHANGES", "BAN", "ARCHIVE"],
 };
 
 export function getModerationRoleLabel(role: BackofficeAccountRole) {
@@ -67,4 +74,17 @@ export function getMediaStatusLabel(status: BackofficeMediaStatus) {
 
 export function getAvailableModerationActions(status: BackofficeAccountStatus) {
   return availableActions[status];
+}
+
+/** APPROVE reverses a prior negative decision when coming from these
+ * statuses, so it needs a reason too — mirrors `moderation-policy.ts`. */
+const approveReasonRequiredFrom = new Set<BackofficeAccountStatus>([
+  "SUSPENDED",
+  "BANNED",
+]);
+
+export function moderationApproveRequiresReason(
+  status: BackofficeAccountStatus,
+) {
+  return approveReasonRequiredFrom.has(status);
 }

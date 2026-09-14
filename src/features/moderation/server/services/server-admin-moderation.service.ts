@@ -1,6 +1,7 @@
 import "server-only";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 
 import { createServerEmailDeliveryProcessor } from "@/features/communications/server";
 import { createSupabaseAdminClient } from "@/shared/server/supabase/admin-client";
@@ -29,6 +30,19 @@ export async function createServerAdminModerationService() {
     markAuthEffectSynced: (input) => repository.markAuthEffectSynced(input),
     resolveRetryableAuthEffect: (input) =>
       repository.resolveRetryableAuthEffect(input),
+    /* One immediate extra attempt after the response is sent — the daily
+     * cron is otherwise the only retry, so a transient SMTP blip can leave a
+     * moderation email stuck for up to a day. */
+    scheduleEmailRetry: ({ outboxId }) => {
+      after(() =>
+        emailDelivery
+          .processOne({
+            outboxId,
+            workerId: `moderation-retry:${crypto.randomUUID()}`,
+          })
+          .catch(() => undefined),
+      );
+    },
     syncAuthIdentity: (input) => identityGateway.syncAuthIdentity(input),
   });
 }

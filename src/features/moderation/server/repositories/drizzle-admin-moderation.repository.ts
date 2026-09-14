@@ -17,6 +17,7 @@ interface AdminModerationFunctionRow extends Record<string, unknown> {
   account_id: string;
   account_version: number;
   action: AdminModerationTransition["action"];
+  auth_effect_action: "BAN" | "UNBAN" | null;
   auth_effect_id: string | null;
   auth_user_id: string;
   event_id: string;
@@ -114,6 +115,7 @@ export function createDrizzleAdminModerationRepository({
                 account_version,
                 profile_version,
                 auth_effect_id,
+                auth_effect_action,
                 ${command.action}::public.moderation_action as action
               from public.app_apply_admin_moderation(
                 ${command.accountId}::uuid,
@@ -121,7 +123,8 @@ export function createDrizzleAdminModerationRepository({
                 ${command.reason}::text,
                 ${command.expectedAccountVersion},
                 ${command.expectedProfileVersion},
-                ${command.idempotencyKey}
+                ${command.idempotencyKey},
+                ${command.requestedFields}::jsonb
               )
             `);
 
@@ -144,6 +147,7 @@ export function createDrizzleAdminModerationRepository({
             accountId: transition.account_id,
             accountVersion: transition.account_version,
             action: transition.action,
+            authEffectAction: transition.auth_effect_action,
             authEffectId: transition.auth_effect_id,
             authUserId: transition.auth_user_id,
             eventId: transition.event_id,

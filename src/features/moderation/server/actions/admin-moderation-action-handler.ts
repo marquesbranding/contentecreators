@@ -149,7 +149,8 @@ function mapModerationError(error: unknown): AdminModerationActionState {
     message.includes("moderation_archive_status_mismatch") ||
     message.includes("moderation_reason_required") ||
     message.includes("moderated_account_archived") ||
-    message.includes("admin_moderation_input_invalid")
+    message.includes("admin_moderation_input_invalid") ||
+    message.includes("moderation_requested_fields_not_allowed")
   ) {
     return {
       code: "INVALID_TRANSITION",
@@ -222,6 +223,21 @@ export function createAdminModerationActionHandler(
       };
     }
 
+    const rawRequestedFields = formData.get("requestedFields");
+    let requestedFields: unknown = [];
+
+    if (typeof rawRequestedFields === "string" && rawRequestedFields.trim()) {
+      try {
+        requestedFields = JSON.parse(rawRequestedFields);
+      } catch {
+        return {
+          code: "VALIDATION_ERROR",
+          message: "A lista de campos solicitados é inválida.",
+          status: "error",
+        };
+      }
+    }
+
     const commandResult = adminModerationCommandSchema.safeParse({
       accountId: parsed.data.accountId,
       action,
@@ -229,6 +245,7 @@ export function createAdminModerationActionHandler(
       expectedProfileVersion: parsed.data.expectedProfileVersion,
       idempotencyKey: parsed.data.idempotencyKey,
       reason: parsed.data.reason || null,
+      requestedFields,
       requestId: dependencies.createRequestId(),
     });
 

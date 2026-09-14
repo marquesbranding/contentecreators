@@ -314,6 +314,235 @@ describeLocalStack("admin moderation transactions", () => {
     },
   );
 
+  it("lets APPROVE reverse a ban — unblocking the identity and recording an UNBAN auth effect", async () => {
+    const rollback = new Error("rollback approve-reverses-ban");
+    let proof:
+      | {
+          authEffectAction: string | null;
+          blockedIdentityCount: number;
+          eventAction: string;
+          outboxTemplate: string | null;
+          status: string;
+          unblockedIdentityCount: number;
+        }
+      | undefined;
+
+    try {
+      await database.begin(async (transaction) => {
+        const accountId = "b0000000-0000-4000-8000-000000000006";
+        const requestId = "admin-moderation-approve-reverses-ban";
+        const idempotencyKey = `${requestId}:${accountId}`;
+        const reason = "Banimento aplicado à conta incorreta.";
+        const [before] = await transaction<
+          { account_version: number; profile_version: number }[]
+        >`
+          select
+            account.version as account_version,
+            profile.version as profile_version
+          from public.accounts account
+          join public.creator_profiles profile on profile.account_id = account.id
+          where account.id = ${accountId}
+        `;
+
+        if (!before) {
+          throw new Error("Banned creator fixture was not found.");
+        }
+
+        await setAdminContext(transaction, requestId, reason);
+        await transaction`set local role contente_app_user`;
+        const [applied] = await transaction<
+          { auth_effect_action: string | null; status: string }[]
+        >`
+          select status::text, auth_effect_action
+          from public.app_apply_admin_moderation(
+            ${accountId}::uuid,
+            'APPROVE'::public.moderation_action,
+            ${reason},
+            ${before.account_version},
+            ${before.profile_version},
+            ${idempotencyKey}
+          )
+        `;
+        await transaction`reset role`;
+
+        const [state] = await transaction<
+          {
+            action: string;
+            blocked_identity_count: number;
+            outbox_template: string | null;
+            unblocked_identity_count: number;
+          }[]
+        >`
+          select
+            (
+              select event.action::text
+              from public.moderation_events event
+              where event.idempotency_key = ${idempotencyKey}
+            ) as action,
+            (
+              select outbox.template::text
+              from public.email_outbox outbox
+              where outbox.idempotency_key = ${`moderation-email:${idempotencyKey}`}
+            ) as outbox_template,
+            (
+              select count(*)::integer
+              from public.blocked_identities blocked
+              where blocked.originating_account_id = ${accountId}
+                and blocked.unblocked_at is null
+                and blocked.archived_at is null
+            ) as blocked_identity_count,
+            (
+              select count(*)::integer
+              from public.blocked_identities blocked
+              where blocked.originating_account_id = ${accountId}
+                and blocked.unblocked_at is not null
+            ) as unblocked_identity_count
+        `;
+
+        if (!applied || !state) {
+          throw new Error("Approve-reverses-ban proof was not produced.");
+        }
+
+        proof = {
+          authEffectAction: applied.auth_effect_action,
+          blockedIdentityCount: state.blocked_identity_count,
+          eventAction: state.action,
+          outboxTemplate: state.outbox_template,
+          status: applied.status,
+          unblockedIdentityCount: state.unblocked_identity_count,
+        };
+        throw rollback;
+      });
+    } catch (error) {
+      if (error !== rollback) {
+        throw error;
+      }
+    }
+
+    expect(proof).toEqual({
+      authEffectAction: "UNBAN",
+      blockedIdentityCount: 0,
+      eventAction: "APPROVE",
+      outboxTemplate: "RESTORED",
+      status: "APPROVED",
+      unblockedIdentityCount: 1,
+    });
+  });
+
+  it("persists requested_fields on a REQUEST_CHANGES event", async () => {
+    const rollback = new Error("rollback requested-fields");
+    let storedFields: unknown;
+
+    try {
+      await database.begin(async (transaction) => {
+        const accountId = "c0000000-0000-4000-8000-000000000002";
+        const requestId = "admin-moderation-requested-fields";
+        const idempotencyKey = `${requestId}:${accountId}`;
+        const requestedFields = [
+          { field: "cnpj", note: "Confira o número informado." },
+        ];
+        const [before] = await transaction<
+          { account_version: number; profile_version: number }[]
+        >`
+          select
+            account.version as account_version,
+            profile.version as profile_version
+          from public.accounts account
+          join public.company_profiles profile on profile.account_id = account.id
+          where account.id = ${accountId}
+        `;
+
+        if (!before) {
+          throw new Error("Pending company fixture was not found.");
+        }
+
+        await setAdminContext(
+          transaction,
+          requestId,
+          "Corrija os dados destacados antes de reenviar.",
+        );
+        await transaction`set local role contente_app_user`;
+        await transaction`
+          select *
+          from public.app_apply_admin_moderation(
+            ${accountId}::uuid,
+            'REQUEST_CHANGES'::public.moderation_action,
+            'Corrija os dados destacados antes de reenviar.',
+            ${before.account_version},
+            ${before.profile_version},
+            ${idempotencyKey},
+            ${database.json(requestedFields)}
+          )
+        `;
+        await transaction`reset role`;
+
+        const [event] = await transaction<{ requested_fields: unknown }[]>`
+          select requested_fields
+          from public.moderation_events
+          where idempotency_key = ${idempotencyKey}
+        `;
+
+        if (!event) {
+          throw new Error("Requested-fields event was not produced.");
+        }
+
+        storedFields = event.requested_fields;
+        throw rollback;
+      });
+    } catch (error) {
+      if (error !== rollback) {
+        throw error;
+      }
+    }
+
+    expect(storedFields).toEqual([
+      { field: "cnpj", note: "Confira o número informado." },
+    ]);
+  });
+
+  it("rejects requested_fields on any action other than REQUEST_CHANGES", async () => {
+    const accountId = "c0000000-0000-4000-8000-000000000002";
+    const requestedFields = [{ field: "cnpj", note: "Confira o número." }];
+
+    await expect(
+      database.begin(async (transaction) => {
+        const [before] = await transaction<
+          { account_version: number; profile_version: number }[]
+        >`
+          select
+            account.version as account_version,
+            profile.version as profile_version
+          from public.accounts account
+          join public.company_profiles profile on profile.account_id = account.id
+          where account.id = ${accountId}
+        `;
+
+        if (!before) {
+          throw new Error("Pending company fixture was not found.");
+        }
+
+        await setAdminContext(
+          transaction,
+          "admin-moderation-requested-fields-rejected",
+          "Motivo qualquer.",
+        );
+        await transaction`set local role contente_app_user`;
+        await transaction`
+          select *
+          from public.app_apply_admin_moderation(
+            ${accountId}::uuid,
+            'ARCHIVE'::public.moderation_action,
+            'Motivo qualquer.',
+            ${before.account_version},
+            ${before.profile_version},
+            'admin-moderation:requested-fields:rejected',
+            ${database.json(requestedFields)}
+          )
+        `;
+      }),
+    ).rejects.toMatchObject({ code: "22023" });
+  });
+
   it("rejects stale account and profile versions before changing business state", async () => {
     await expect(
       database.begin(async (transaction) => {

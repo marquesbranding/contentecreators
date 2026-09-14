@@ -3,6 +3,7 @@ import {
   check,
   index,
   integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
@@ -71,6 +72,7 @@ export const moderationEvents = pgTable(
     toStatus: accountStatusEnum("to_status").notNull(),
     action: moderationActionEnum("action").notNull(),
     reason: text("reason"),
+    requestedFields: jsonb("requested_fields").notNull().default([]),
     actorAccountId: uuid("actor_account_id")
       .notNull()
       .references(() => accounts.id, {
@@ -105,8 +107,16 @@ export const moderationEvents = pgTable(
     ),
     check(
       "moderation_events_reason_check",
-      sql`${table.action} not in ('REQUEST_CHANGES', 'SUSPEND', 'RESTORE', 'BAN', 'UNBAN', 'ARCHIVE')
-          or length(trim(${table.reason})) >= 3`,
+      sql`(
+        ${table.action} not in ('REQUEST_CHANGES', 'SUSPEND', 'RESTORE', 'BAN', 'UNBAN', 'ARCHIVE')
+        and not (${table.action} = 'APPROVE' and ${table.fromStatus} in ('SUSPENDED', 'BANNED'))
+      )
+      or length(trim(${table.reason})) >= 3`,
+    ),
+    check(
+      "moderation_events_requested_fields_check",
+      sql`jsonb_typeof(${table.requestedFields}) = 'array'
+          and octet_length(${table.requestedFields}::text) <= 20000`,
     ),
   ],
 );

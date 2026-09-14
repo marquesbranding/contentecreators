@@ -10,6 +10,7 @@ const transition: AdminModerationTransition & {
   accountId,
   accountVersion: 5,
   action: "APPROVE",
+  authEffectAction: null,
   authEffectId: null,
   authEffectStatus: "not_required",
   authUserId: "20000000-0000-4000-8000-000000000004",
@@ -70,8 +71,41 @@ describe("admin moderation action handler", () => {
       expectedProfileVersion: 2,
       idempotencyKey: "moderation:approve:review-4",
       reason: null,
+      requestedFields: [],
       requestId: "request-admin-action",
     });
+  });
+
+  it("passes a REQUEST_CHANGES checklist through as requestedFields", async () => {
+    const { apply, handler } = createSubject();
+    const requestedFields = [{ field: "cnpj", note: "Confira o número." }];
+
+    await handler(
+      "REQUEST_CHANGES",
+      validFormData({
+        reason: "Revise os dados indicados.",
+        requestedFields: JSON.stringify(requestedFields),
+      }),
+    );
+
+    expect(apply).toHaveBeenCalledWith(
+      expect.objectContaining({ requestedFields }),
+    );
+  });
+
+  it("rejects a malformed requestedFields payload without touching the service", async () => {
+    const { apply, handler } = createSubject();
+
+    const result = await handler(
+      "REQUEST_CHANGES",
+      validFormData({
+        reason: "Revise os dados indicados.",
+        requestedFields: "{not json",
+      }),
+    );
+
+    expect(result).toMatchObject({ code: "VALIDATION_ERROR", status: "error" });
+    expect(apply).not.toHaveBeenCalled();
   });
 
   it("requires explicit confirmation even for a direct action request", async () => {

@@ -9,6 +9,7 @@ const transition: AdminModerationTransition = {
   accountId: "b0000000-0000-4000-8000-000000000004",
   accountVersion: 4,
   action: "BAN",
+  authEffectAction: "BAN",
   authEffectId: "ef000000-0000-4000-8000-000000000001",
   authUserId: "20000000-0000-4000-8000-000000000004",
   eventId: "f4000000-0000-4000-8000-000000000004",
@@ -20,13 +21,16 @@ const transition: AdminModerationTransition = {
 
 function createDependencies(
   options: {
+    emailDeliveryKind?: string;
     syncResult?: boolean;
     transition?: AdminModerationTransition;
   } = {},
 ) {
   return {
     applyTransition: vi.fn(async () => options.transition ?? transition),
-    attemptEmailDelivery: vi.fn(async () => ({ kind: "sent" as const })),
+    attemptEmailDelivery: vi.fn(async () => ({
+      kind: options.emailDeliveryKind ?? "sent",
+    })),
     invalidateEligibility: vi.fn(async () => undefined),
     markAuthEffectFailed: vi.fn(async () => undefined),
     markAuthEffectSynced: vi.fn(async () => undefined),
@@ -35,6 +39,7 @@ function createDependencies(
       authUserId: transition.authUserId,
       effectId: transition.authEffectId!,
     })),
+    scheduleEmailRetry: vi.fn(),
     syncAuthIdentity: vi.fn(async () => options.syncResult ?? true),
   };
 }
@@ -80,6 +85,26 @@ describe("admin moderation service", () => {
     ).toBeLessThan(
       dependencies.invalidateEligibility.mock.invocationCallOrder[0] ?? 0,
     );
+    expect(dependencies.scheduleEmailRetry).not.toHaveBeenCalled();
+  });
+
+  it("schedules one extra delivery attempt when the immediate send didn't succeed", async () => {
+    const dependencies = createDependencies({ emailDeliveryKind: "failed" });
+    const service = createAdminModerationService(dependencies);
+
+    await service.apply({
+      accountId: transition.accountId,
+      action: "BAN",
+      expectedAccountVersion: 3,
+      expectedProfileVersion: 2,
+      idempotencyKey: "moderation:ban:email-retry",
+      reason: "Violação confirmada dos termos da plataforma.",
+      requestId: "request-ban-email-retry",
+    });
+
+    expect(dependencies.scheduleEmailRetry).toHaveBeenCalledWith({
+      outboxId: transition.outboxId,
+    });
   });
 
   it("keeps the business transition committed and records a retryable Auth failure", async () => {
@@ -183,6 +208,39 @@ describe("admin moderation service", () => {
       );
     },
   );
+
+  it("syncs the UNBAN auth effect even when the moderation action itself was APPROVE", async () => {
+    const approveReversingBan: AdminModerationTransition = {
+      ...transition,
+      action: "APPROVE",
+      authEffectAction: "UNBAN",
+      status: "APPROVED",
+    };
+    const dependencies = createDependencies({
+      transition: approveReversingBan,
+    });
+    const service = createAdminModerationService(dependencies);
+
+    await expect(
+      service.apply({
+        accountId: approveReversingBan.accountId,
+        action: "APPROVE",
+        expectedAccountVersion: 3,
+        expectedProfileVersion: 2,
+        idempotencyKey: "moderation:approve:reverses-ban",
+        reason: "Banimento aplicado à conta incorreta.",
+        requestId: "request-approve-reverses-ban",
+      }),
+    ).resolves.toEqual({
+      ...approveReversingBan,
+      authEffectStatus: "synced",
+    });
+
+    expect(dependencies.syncAuthIdentity).toHaveBeenCalledWith({
+      action: "UNBAN",
+      authUserId: approveReversingBan.authUserId,
+    });
+  });
 
   it("retries a persisted failed Auth effect without replaying the moderation transition", async () => {
     const dependencies = createDependencies();

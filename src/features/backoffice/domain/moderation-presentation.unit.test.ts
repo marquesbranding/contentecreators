@@ -5,6 +5,7 @@ import {
   getMediaStatusLabel,
   getModerationRoleLabel,
   getModerationStatusLabel,
+  moderationApproveRequiresReason,
 } from "./moderation-presentation";
 
 describe("backoffice moderation presentation", () => {
@@ -35,22 +36,38 @@ describe("backoffice moderation presentation", () => {
     expect(getMediaStatusLabel(status)).toBe(expected);
   });
 
-  it("offers only individual decisions allowed for a pending submission", () => {
+  it("offers every real decision from a pending submission", () => {
     expect(getAvailableModerationActions("PENDING_REVIEW")).toEqual([
       "APPROVE",
       "REQUEST_CHANGES",
+      "SUSPEND",
       "BAN",
       "ARCHIVE",
     ]);
   });
 
   it.each([
-    ["APPROVED", ["SUSPEND", "BAN", "ARCHIVE"]],
-    ["SUSPENDED", ["RESTORE", "BAN", "ARCHIVE"]],
-    ["BANNED", ["UNBAN", "ARCHIVE"]],
-    ["CHANGES_REQUESTED", ["BAN", "ARCHIVE"]],
-    ["ONBOARDING", ["ARCHIVE"]],
-  ] as const)("limits actions for %s", (status, expected) => {
-    expect(getAvailableModerationActions(status)).toEqual(expected);
-  });
+    ["APPROVED", ["REQUEST_CHANGES", "SUSPEND", "BAN", "ARCHIVE"]],
+    ["SUSPENDED", ["APPROVE", "REQUEST_CHANGES", "BAN", "ARCHIVE"]],
+    ["BANNED", ["APPROVE", "REQUEST_CHANGES", "SUSPEND", "ARCHIVE"]],
+    ["CHANGES_REQUESTED", ["APPROVE", "SUSPEND", "BAN", "ARCHIVE"]],
+    ["ONBOARDING", ["BAN", "ARCHIVE"]],
+  ] as const)(
+    "excludes only the action that leads back to the current status for %s",
+    (status, expected) => {
+      expect(getAvailableModerationActions(status)).toEqual(expected);
+    },
+  );
+
+  it.each([
+    ["PENDING_REVIEW", false],
+    ["CHANGES_REQUESTED", false],
+    ["SUSPENDED", true],
+    ["BANNED", true],
+  ] as const)(
+    "requires a reason to approve from %s only when it reverses a ban or suspension",
+    (status, expected) => {
+      expect(moderationApproveRequiresReason(status)).toBe(expected);
+    },
+  );
 });

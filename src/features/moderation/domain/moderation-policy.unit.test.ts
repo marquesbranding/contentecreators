@@ -23,6 +23,9 @@ const allowedTransitions = new Map<
   { action: ModerationAction; actor: "ADMIN" | "OWNER"; reason?: string }
 >([
   ["ONBOARDING>PENDING_REVIEW", { action: "SUBMIT", actor: "OWNER" }],
+  ["ONBOARDING>BANNED", { action: "BAN", actor: "ADMIN", reason: "Identidade suspeita detectada ainda no cadastro." }],
+  ["CHANGES_REQUESTED>PENDING_REVIEW", { action: "RESUBMIT", actor: "OWNER" }],
+  ["PENDING_REVIEW>APPROVED", { action: "APPROVE", actor: "ADMIN" }],
   [
     "PENDING_REVIEW>CHANGES_REQUESTED",
     {
@@ -31,7 +34,14 @@ const allowedTransitions = new Map<
       reason: "Atualize os dados indicados.",
     },
   ],
-  ["PENDING_REVIEW>APPROVED", { action: "APPROVE", actor: "ADMIN" }],
+  [
+    "PENDING_REVIEW>SUSPENDED",
+    {
+      action: "SUSPEND",
+      actor: "ADMIN",
+      reason: "Análise operacional necessária.",
+    },
+  ],
   [
     "PENDING_REVIEW>BANNED",
     {
@@ -40,13 +50,32 @@ const allowedTransitions = new Map<
       reason: "Identidade incompatível com a plataforma.",
     },
   ],
-  ["CHANGES_REQUESTED>PENDING_REVIEW", { action: "RESUBMIT", actor: "OWNER" }],
+  [
+    "CHANGES_REQUESTED>APPROVED",
+    { action: "APPROVE", actor: "ADMIN", reason: "Correções revisadas e aceitas." },
+  ],
+  [
+    "CHANGES_REQUESTED>SUSPENDED",
+    {
+      action: "SUSPEND",
+      actor: "ADMIN",
+      reason: "Análise operacional necessária.",
+    },
+  ],
   [
     "CHANGES_REQUESTED>BANNED",
     {
       action: "BAN",
       actor: "ADMIN",
       reason: "Tentativa de contornar a análise.",
+    },
+  ],
+  [
+    "APPROVED>CHANGES_REQUESTED",
+    {
+      action: "REQUEST_CHANGES",
+      actor: "ADMIN",
+      reason: "Dados desatualizados identificados após aprovação.",
     },
   ],
   [
@@ -68,9 +97,17 @@ const allowedTransitions = new Map<
   [
     "SUSPENDED>APPROVED",
     {
-      action: "RESTORE",
+      action: "APPROVE",
       actor: "ADMIN",
       reason: "Revisão concluída e acesso restabelecido.",
+    },
+  ],
+  [
+    "SUSPENDED>CHANGES_REQUESTED",
+    {
+      action: "REQUEST_CHANGES",
+      actor: "ADMIN",
+      reason: "Correções necessárias antes de restabelecer o acesso.",
     },
   ],
   [
@@ -81,7 +118,39 @@ const allowedTransitions = new Map<
       reason: "Violação confirmada durante a revisão.",
     },
   ],
+  [
+    "BANNED>APPROVED",
+    {
+      action: "APPROVE",
+      actor: "ADMIN",
+      reason: "Banimento aplicado à conta incorreta.",
+    },
+  ],
+  [
+    "BANNED>CHANGES_REQUESTED",
+    {
+      action: "REQUEST_CHANGES",
+      actor: "ADMIN",
+      reason: "Banimento revertido, correções ainda pendentes.",
+    },
+  ],
+  [
+    "BANNED>SUSPENDED",
+    {
+      action: "SUSPEND",
+      actor: "ADMIN",
+      reason: "Banimento revertido, mas suspenso por outro motivo.",
+    },
+  ],
 ]);
+
+/** Kept for compatibility with old events — see the UNBAN-specific test below. */
+const legacyRestoreTransition = {
+  action: "RESTORE" as const,
+  currentStatus: "SUSPENDED" as const,
+  reason: "Revisão concluída e acesso restabelecido.",
+  targetStatus: "APPROVED" as const,
+};
 
 function command(
   overrides: Partial<ModerationCommand> = {},
@@ -161,6 +230,8 @@ describe("evaluateModerationCommand", () => {
     ["BAN", "APPROVED", "BANNED"],
     ["UNBAN", "BANNED", "APPROVED"],
     ["ARCHIVE", "APPROVED", "APPROVED"],
+    ["APPROVE", "SUSPENDED", "APPROVED"],
+    ["APPROVE", "BANNED", "APPROVED"],
   ] as const)(
     "requires a meaningful reason for %s",
     (action, currentStatus, targetStatus) => {
@@ -180,6 +251,28 @@ describe("evaluateModerationCommand", () => {
       });
     },
   );
+
+  it("does not require a reason to approve straight out of review, unlike an approval that reverses a ban or suspension", () => {
+    expect(
+      evaluateModerationCommand(
+        command({
+          action: "APPROVE",
+          currentStatus: "PENDING_REVIEW",
+          reason: undefined,
+          targetStatus: "APPROVED",
+        }),
+      ),
+    ).toMatchObject({ kind: "allowed" });
+  });
+
+  it("keeps RESTORE valid only for compatibility with old events", () => {
+    expect(
+      evaluateModerationCommand(command(legacyRestoreTransition)),
+    ).toEqual({
+      kind: "allowed",
+      normalizedReason: legacyRestoreTransition.reason,
+    });
+  });
 
   it("authorizes owner submissions and denies cross-account or admin substitution", () => {
     const submission = command({

@@ -65,10 +65,24 @@ interface TransitionDefinition {
   to: AccountStatus;
 }
 
+/**
+ * Every admin action (APPROVE/REQUEST_CHANGES/SUSPEND/BAN) is allowed from
+ * any status but its own destination — a moderator can change their mind at
+ * any point, not just walk one fixed path. ONBOARDING is the one exception:
+ * an account still mid-signup can only be BANNED or ARCHIVEd, never
+ * approved/changed/suspended directly. RESTORE and UNBAN are kept only so
+ * old events still validate; the admin UI no longer offers them; leaving
+ * BANNED through any other action performs the same unban side effects.
+ */
 const STANDARD_TRANSITIONS: readonly TransitionDefinition[] = [
   {
     action: "SUBMIT",
     from: "ONBOARDING",
+    to: "PENDING_REVIEW",
+  },
+  {
+    action: "RESUBMIT",
+    from: "CHANGES_REQUESTED",
     to: "PENDING_REVIEW",
   },
   {
@@ -77,24 +91,49 @@ const STANDARD_TRANSITIONS: readonly TransitionDefinition[] = [
     to: "APPROVED",
   },
   {
+    action: "APPROVE",
+    from: "CHANGES_REQUESTED",
+    to: "APPROVED",
+  },
+  {
+    action: "APPROVE",
+    from: "SUSPENDED",
+    to: "APPROVED",
+  },
+  {
+    action: "APPROVE",
+    from: "BANNED",
+    to: "APPROVED",
+  },
+  {
     action: "REQUEST_CHANGES",
     from: "PENDING_REVIEW",
     to: "CHANGES_REQUESTED",
   },
   {
-    action: "BAN",
+    action: "REQUEST_CHANGES",
+    from: "APPROVED",
+    to: "CHANGES_REQUESTED",
+  },
+  {
+    action: "REQUEST_CHANGES",
+    from: "SUSPENDED",
+    to: "CHANGES_REQUESTED",
+  },
+  {
+    action: "REQUEST_CHANGES",
+    from: "BANNED",
+    to: "CHANGES_REQUESTED",
+  },
+  {
+    action: "SUSPEND",
     from: "PENDING_REVIEW",
-    to: "BANNED",
+    to: "SUSPENDED",
   },
   {
-    action: "RESUBMIT",
+    action: "SUSPEND",
     from: "CHANGES_REQUESTED",
-    to: "PENDING_REVIEW",
-  },
-  {
-    action: "BAN",
-    from: "CHANGES_REQUESTED",
-    to: "BANNED",
+    to: "SUSPENDED",
   },
   {
     action: "SUSPEND",
@@ -102,19 +141,41 @@ const STANDARD_TRANSITIONS: readonly TransitionDefinition[] = [
     to: "SUSPENDED",
   },
   {
+    action: "SUSPEND",
+    from: "BANNED",
+    to: "SUSPENDED",
+  },
+  {
+    action: "BAN",
+    from: "ONBOARDING",
+    to: "BANNED",
+  },
+  {
+    action: "BAN",
+    from: "PENDING_REVIEW",
+    to: "BANNED",
+  },
+  {
+    action: "BAN",
+    from: "CHANGES_REQUESTED",
+    to: "BANNED",
+  },
+  {
     action: "BAN",
     from: "APPROVED",
     to: "BANNED",
   },
   {
-    action: "RESTORE",
-    from: "SUSPENDED",
-    to: "APPROVED",
-  },
-  {
     action: "BAN",
     from: "SUSPENDED",
     to: "BANNED",
+  },
+  {
+    /** Compatibility only — no longer reachable from the admin UI, which
+     * offers APPROVE from SUSPENDED instead. */
+    action: "RESTORE",
+    from: "SUSPENDED",
+    to: "APPROVED",
   },
 ] as const;
 
@@ -127,6 +188,24 @@ const REASON_REQUIRED_ACTIONS = new Set<ModerationAction>([
   "UNBAN",
   "ARCHIVE",
 ]);
+/** APPROVE reverses a previous negative decision when it comes from one of
+ * these statuses, so — unlike an APPROVE straight out of PENDING_REVIEW —
+ * it needs a reason too. */
+const APPROVE_REASON_REQUIRED_FROM = new Set<AccountStatus>([
+  "SUSPENDED",
+  "BANNED",
+]);
+
+function isReasonRequired(command: ModerationCommand) {
+  if (REASON_REQUIRED_ACTIONS.has(command.action)) {
+    return true;
+  }
+
+  return (
+    command.action === "APPROVE" &&
+    APPROVE_REASON_REQUIRED_FROM.has(command.currentStatus)
+  );
+}
 
 function isPositiveVersion(value: number) {
   return Number.isSafeInteger(value) && value > 0;
@@ -263,7 +342,7 @@ export function evaluateModerationCommand(
 
   const normalizedReason = command.reason?.trim() || null;
   if (
-    REASON_REQUIRED_ACTIONS.has(command.action) &&
+    isReasonRequired(command) &&
     (!normalizedReason || normalizedReason.length < 3)
   ) {
     return {

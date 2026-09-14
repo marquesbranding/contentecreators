@@ -17,9 +17,28 @@ const validCommand = {
 
 describe("admin moderation command schema", () => {
   it("keeps beta moderation commands scoped to one account", () => {
-    expect(adminModerationCommandSchema.parse(validCommand)).toEqual(
-      validCommand,
-    );
+    expect(adminModerationCommandSchema.parse(validCommand)).toEqual({
+      ...validCommand,
+      requestedFields: [],
+    });
+  });
+
+  it("accepts requestedFields only alongside REQUEST_CHANGES", () => {
+    expect(
+      adminModerationCommandSchema.parse({
+        ...validCommand,
+        action: "REQUEST_CHANGES",
+        reason: "Corrija os dados indicados.",
+        requestedFields: [{ field: "cnpj", note: "Confira o número." }],
+      }).requestedFields,
+    ).toEqual([{ field: "cnpj", note: "Confira o número." }]);
+
+    expect(() =>
+      adminModerationCommandSchema.parse({
+        ...validCommand,
+        requestedFields: [{ field: "cnpj" }],
+      }),
+    ).toThrow();
   });
 
   it.each(["BULK_APPROVE", "BULK_BAN"])(
