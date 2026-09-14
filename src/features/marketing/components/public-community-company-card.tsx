@@ -1,5 +1,6 @@
 import { Building2, ShieldCheck } from "lucide-react";
 
+import { ProfileAvatarFrame } from "@/shared/components/profile-avatar-frame";
 import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
 import { Card, CardHeader } from "@/shared/components/ui/card";
@@ -51,24 +52,19 @@ export function PublicCommunityCompanyCard({
           aria-label="Empresa aprovada"
           className="text-brand-blue absolute top-3 right-3 z-10 size-6"
         />
-        <div className="absolute -bottom-7 left-4 z-10 size-16 overflow-hidden rounded-2xl border-4 border-white bg-white shadow-md">
-          {company.logo ? (
-            <SignedImage
-              alt={`Logo de ${company.tradeName}`}
-              className="size-full object-contain p-1"
-              height={company.logo.height}
-              src={company.logo.url}
-              width={company.logo.width}
-            />
-          ) : (
+        <ProfileAvatarFrame
+          alt={`Logo de ${company.tradeName}`}
+          className="absolute -bottom-7 left-4 z-10"
+          fallback={
             <div
               aria-hidden="true"
               className="bg-brand-night flex size-full items-center justify-center text-white"
             >
               <Building2 className="size-7" />
             </div>
-          )}
-        </div>
+          }
+          src={company.logo?.url ?? null}
+        />
       </div>
 
       <CardHeader className="flex-1 gap-2.5 px-4 pt-9 pb-4">

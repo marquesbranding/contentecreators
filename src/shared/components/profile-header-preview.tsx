@@ -1,5 +1,6 @@
 import { Camera, MapPin, UsersRound } from "lucide-react";
 
+import { ProfileAvatarFrame } from "@/shared/components/profile-avatar-frame";
 import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
 import {
@@ -72,6 +73,12 @@ export function ProfileHeaderPreview({
           <SignedImage
             alt=""
             className="object-cover"
+            fallback={
+              <div
+                aria-hidden="true"
+                className="from-brand-blue/30 via-brand-pink/15 to-brand-lime/25 size-full bg-gradient-to-br"
+              />
+            }
             loading="eager"
             src={coverUrl}
             wrapperClassName="h-36 w-full sm:h-44"
@@ -121,32 +128,32 @@ export function ProfileHeaderPreview({
           role={onAvatarClick ? "button" : undefined}
           tabIndex={onAvatarClick ? 0 : undefined}
         >
-          <div className="relative size-full overflow-hidden rounded-3xl border-4 border-white bg-white shadow-lg">
-            {avatarUrl ? (
-              <SignedImage
-                alt=""
-                className="size-full object-cover"
-                loading="eager"
-                src={avatarUrl}
-              />
-            ) : initials ? (
-              <div className="from-brand-blue to-brand-royal flex size-full items-center justify-center bg-gradient-to-br text-lg font-extrabold tracking-wide text-white">
-                {initials}
-              </div>
-            ) : (
-              <div className="bg-muted flex size-full items-center justify-center">
-                <UsersRound
-                  aria-hidden="true"
-                  className="text-muted-foreground size-8"
-                />
-              </div>
-            )}
+          <ProfileAvatarFrame
+            alt=""
+            className="size-full sm:size-full"
+            fallback={
+              initials ? (
+                <div className="from-brand-blue to-brand-royal flex size-full items-center justify-center bg-gradient-to-br text-lg font-extrabold tracking-wide text-white">
+                  {initials}
+                </div>
+              ) : (
+                <div className="bg-muted flex size-full items-center justify-center">
+                  <UsersRound
+                    aria-hidden="true"
+                    className="text-muted-foreground size-8"
+                  />
+                </div>
+              )
+            }
+            size="header"
+            src={avatarUrl}
+          >
             {onAvatarClick ? (
               <div className="absolute inset-0 hidden items-center justify-center bg-black/40 opacity-0 transition group-hover/avatar:opacity-100 sm:flex">
                 <Camera aria-hidden="true" className="size-5 text-white" />
               </div>
             ) : null}
-          </div>
+          </ProfileAvatarFrame>
           {onAvatarClick ? (
             <span className="bg-brand-blue absolute -right-1 -bottom-1 flex size-7 items-center justify-center rounded-full border-2 border-white text-white shadow-sm">
               <Camera aria-hidden="true" className="size-3.5" />

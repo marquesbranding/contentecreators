@@ -1,7 +1,7 @@
 import { Building2, MapPin, SquareArrowOutUpRight } from "lucide-react";
 import Link from "next/link";
 
-import { SignedImage } from "@/shared/components/signed-image";
+import { ProfileAvatarFrame } from "@/shared/components/profile-avatar-frame";
 import { Badge } from "@/shared/components/ui/badge";
 import { buttonVariants } from "@/shared/components/ui/button";
 import {
@@ -31,14 +31,10 @@ export function CatalogCompanyCard({
           aria-hidden="true"
           className="from-brand-blue/30 via-brand-pink/15 to-brand-lime/25 relative z-0 h-20 bg-gradient-to-br sm:h-24"
         />
-        <div className="absolute -bottom-7 left-4 z-10 size-16 overflow-hidden rounded-2xl border-4 border-white bg-white shadow-md">
-          {company.logo ? (
-            <SignedImage
-              alt={`Logo da ${company.displayName}`}
-              className="size-full object-contain p-1.5"
-              src={company.logo.url}
-            />
-          ) : (
+        <ProfileAvatarFrame
+          alt={`Logo da ${company.displayName}`}
+          className="absolute -bottom-7 left-4 z-10"
+          fallback={
             <div
               aria-label={`${company.displayName} está sem logo`}
               className="bg-muted text-muted-foreground flex size-full items-center justify-center"
@@ -46,8 +42,9 @@ export function CatalogCompanyCard({
             >
               <Building2 aria-hidden="true" className="size-6" />
             </div>
-          )}
-        </div>
+          }
+          src={company.logo?.url ?? null}
+        />
       </div>
 
       <CardHeader className="flex-1 gap-2.5 px-4 pt-9 pb-3">

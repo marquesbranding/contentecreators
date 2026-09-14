@@ -21,6 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import { ProfileAvatarFrame } from "@/shared/components/profile-avatar-frame";
 import { SignedImage } from "@/shared/components/signed-image";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { SocialPlatformIcon } from "@/shared/components/social-platform-icon";
@@ -258,6 +259,12 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
               <SignedImage
                 alt={detail.media.cover.alt}
                 className="object-cover"
+                fallback={
+                  <div
+                    aria-hidden="true"
+                    className="from-brand-blue/30 via-brand-pink/15 to-brand-lime/25 size-full bg-gradient-to-br"
+                  />
+                }
                 fetchPriority="high"
                 height={detail.media.cover.height}
                 loading="eager"
@@ -272,24 +279,20 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
               />
             )}
             <CardHeader className="relative gap-4 px-5 pt-14 pb-6 sm:px-8 sm:pt-16">
-              <div className="absolute -top-10 left-5 size-20 overflow-hidden rounded-3xl border-4 border-white bg-white shadow-lg sm:-top-12 sm:left-8 sm:size-24">
-                {detail.media.avatar ? (
-                  <SignedImage
-                    alt={detail.media.avatar.alt}
-                    className="size-full object-cover"
-                    height={detail.media.avatar.height}
-                    src={detail.media.avatar.url}
-                    width={detail.media.avatar.width}
-                  />
-                ) : (
+              <ProfileAvatarFrame
+                alt={detail.media.avatar?.alt ?? ""}
+                className="absolute -top-10 left-5 size-20 sm:-top-12 sm:left-8 sm:size-24"
+                fallback={
                   <div className="bg-muted flex size-full items-center justify-center">
                     <UsersRound
                       aria-hidden="true"
                       className="text-muted-foreground size-10"
                     />
                   </div>
-                )}
-              </div>
+                }
+                size="header"
+                src={detail.media.avatar?.url ?? null}
+              />
               <CardTitle className="text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
                 <h1>{detail.displayName}</h1>
               </CardTitle>

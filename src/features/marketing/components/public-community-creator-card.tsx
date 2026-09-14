@@ -1,5 +1,6 @@
 import { ShieldCheck } from "lucide-react";
 
+import { ProfileAvatarFrame } from "@/shared/components/profile-avatar-frame";
 import { SignedImage } from "@/shared/components/signed-image";
 import { SocialPlatformIcon } from "@/shared/components/social-platform-icon";
 import { Badge } from "@/shared/components/ui/badge";
@@ -72,26 +73,19 @@ export function PublicCommunityCreatorCard({
           aria-label="Perfil aprovado"
           className="text-brand-blue absolute top-3 right-3 z-10 size-6"
         />
-        <div className="absolute -bottom-7 left-4 z-10 size-16 overflow-hidden rounded-2xl border-4 border-white bg-white shadow-md">
-          {creator.avatar ? (
-            // The signed URL is minted server-side with a short life and
-            // intentionally bypasses the Next image optimizer's host allowlist.
-            <SignedImage
-              alt={`Foto de perfil de ${creator.displayName}`}
-              className="size-full object-cover"
-              height={creator.avatar.height}
-              src={creator.avatar.url}
-              width={creator.avatar.width}
-            />
-          ) : (
+        <ProfileAvatarFrame
+          alt={`Foto de perfil de ${creator.displayName}`}
+          className="absolute -bottom-7 left-4 z-10"
+          fallback={
             <div
               aria-hidden="true"
               className="bg-brand-night flex size-full items-center justify-center text-lg font-extrabold text-white"
             >
               {initialsFromName(creator.displayName)}
             </div>
-          )}
-        </div>
+          }
+          src={creator.avatar?.url ?? null}
+        />
       </div>
 
       <CardHeader className="flex-1 gap-2.5 px-4 pt-9 pb-4">

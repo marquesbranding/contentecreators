@@ -1,6 +1,7 @@
 import { ImageOff, MapPin, SquareArrowOutUpRight } from "lucide-react";
 import Link from "next/link";
 
+import { ProfileAvatarFrame } from "@/shared/components/profile-avatar-frame";
 import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
 import { buttonVariants } from "@/shared/components/ui/button";
@@ -77,6 +78,12 @@ function CreatorCover({ creator }: { creator: CatalogCreatorCardViewModel }) {
     <SignedImage
       alt=""
       className="object-cover"
+      fallback={
+        <div
+          aria-hidden="true"
+          className="from-brand-blue/30 via-brand-pink/15 to-brand-lime/25 size-full bg-gradient-to-br"
+        />
+      }
       src={creator.cover.src}
       wrapperClassName="z-0 h-20 w-full sm:h-24"
     />
@@ -85,14 +92,10 @@ function CreatorCover({ creator }: { creator: CatalogCreatorCardViewModel }) {
 
 function CreatorAvatar({ creator }: { creator: CatalogCreatorCardViewModel }) {
   return (
-    <div className="absolute -bottom-7 left-4 z-10 size-16 overflow-hidden rounded-2xl border-4 border-white bg-white shadow-md">
-      {creator.media ? (
-        <SignedImage
-          alt={creator.media.alt}
-          className="size-full object-cover"
-          src={creator.media.src}
-        />
-      ) : (
+    <ProfileAvatarFrame
+      alt={creator.media?.alt ?? ""}
+      className="absolute -bottom-7 left-4 z-10"
+      fallback={
         <div
           aria-label={`${creator.displayName} está sem foto de perfil`}
           className="bg-muted text-muted-foreground flex size-full items-center justify-center"
@@ -100,8 +103,9 @@ function CreatorAvatar({ creator }: { creator: CatalogCreatorCardViewModel }) {
         >
           <ImageOff aria-hidden="true" className="size-6" />
         </div>
-      )}
-    </div>
+      }
+      src={creator.media?.src ?? null}
+    />
   );
 }
 

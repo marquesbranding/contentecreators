@@ -6,6 +6,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/shared/components/ui/alert";
+import { ProfileAvatarFrame } from "@/shared/components/profile-avatar-frame";
 import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
 import { buttonVariants } from "@/shared/components/ui/button";
@@ -109,6 +110,12 @@ export function CompanyDetailView({
               <SignedImage
                 alt={detail.media.cover.alt}
                 className="object-cover"
+                fallback={
+                  <div
+                    aria-hidden="true"
+                    className="from-brand-blue/30 via-brand-pink/15 to-brand-lime/25 size-full bg-gradient-to-br"
+                  />
+                }
                 fetchPriority="high"
                 height={detail.media.cover.height}
                 loading="eager"
@@ -123,22 +130,20 @@ export function CompanyDetailView({
               />
             )}
             <CardHeader className="relative gap-4 px-5 pt-14 pb-6 sm:px-8 sm:pt-16">
-              <div className="absolute -top-10 left-5 flex size-20 items-center justify-center overflow-hidden rounded-3xl border-4 border-white bg-white shadow-lg sm:-top-12 sm:left-8 sm:size-24">
-                {detail.media.logo ? (
-                  <SignedImage
-                    alt={detail.media.logo.alt}
-                    className="max-h-[70%] max-w-[78%] object-contain"
-                    height={detail.media.logo.height}
-                    src={detail.media.logo.url}
-                    width={detail.media.logo.width}
-                  />
-                ) : (
-                  <Building2
-                    aria-hidden="true"
-                    className="text-muted-foreground size-10"
-                  />
-                )}
-              </div>
+              <ProfileAvatarFrame
+                alt={detail.media.logo?.alt ?? ""}
+                className="absolute -top-10 left-5 size-20 sm:-top-12 sm:left-8 sm:size-24"
+                fallback={
+                  <div className="flex size-full items-center justify-center">
+                    <Building2
+                      aria-hidden="true"
+                      className="text-muted-foreground size-10"
+                    />
+                  </div>
+                }
+                size="header"
+                src={detail.media.logo?.url ?? null}
+              />
               <div className="flex flex-wrap gap-2">
                 <Badge>Empresa</Badge>
                 {detail.segment ? (
