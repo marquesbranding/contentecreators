@@ -17,6 +17,7 @@ const record: CompanyDetailRecord = {
   description: "Empresa sintética aprovada para o catálogo.",
   displayName: "Empresa Aprovada",
   email: "empresa@example.com",
+  isCdlMember: false,
   logoAssetId: null,
   media: [],
   segment: "Tecnologia",

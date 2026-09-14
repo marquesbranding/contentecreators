@@ -32,6 +32,7 @@ const profile = {
   description:
     "Empresa de tecnologia que busca creators para campanhas institucionais.",
   employeeRange: "11_TO_50",
+  isCdlMember: false,
   legalName: "Empresa Exemplo Ltda.",
   logoAssetId: null,
   neighborhood: "Centro",

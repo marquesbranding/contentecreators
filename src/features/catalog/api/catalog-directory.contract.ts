@@ -32,6 +32,7 @@ export const directoryCompanyBrowserEntrySchema = z
     createdAt: z.iso.datetime({ offset: true }),
     description: z.string().trim().max(220).nullable(),
     displayName: z.string().trim().min(1).max(160),
+    isCdlMember: z.boolean(),
     isOwnProfile: z.boolean(),
     kind: z.literal("COMPANY"),
     logo: catalogSignedImageSchema.nullable(),
@@ -55,6 +56,7 @@ export const directoryCreatorBrowserEntrySchema = z
     creatorId: z.uuid(),
     creatorType: catalogCreatorTypeSchema,
     displayName: z.string().trim().min(2).max(120),
+    isCdlMember: z.boolean(),
     isOwnProfile: z.boolean(),
     kind: z.literal("CREATOR"),
     metrics: z

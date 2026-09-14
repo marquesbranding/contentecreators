@@ -12,6 +12,7 @@ function companyEntry(index: number): DirectoryCompanyBrowserEntryDto {
     createdAt: "2026-01-01T00:00:00.000Z",
     description: null,
     displayName: `Empresa ${index}`,
+    isCdlMember: false,
     isOwnProfile: false,
     kind: "COMPANY",
     logo: null,

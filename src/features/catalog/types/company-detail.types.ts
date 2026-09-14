@@ -14,6 +14,7 @@ export interface CompanyDetailDto {
   };
   description: string | null;
   displayName: string;
+  isCdlMember: boolean;
   location: {
     city: string;
     state: string;

@@ -211,6 +211,7 @@ export const findEligibleCatalogCreator: FindEligibleCatalogCreator = async (
       creatorId: creatorProfiles.id,
       creatorType: creatorProfiles.creatorType,
       displayName: creatorProfiles.displayName,
+      isCdlMember: creatorProfiles.isCdlMember,
       state: creatorProfiles.state,
       whatsappContactCount: creatorProfiles.whatsappContactCount,
     })

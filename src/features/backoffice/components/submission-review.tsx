@@ -139,6 +139,10 @@ function ProfileCard({ review }: { review: BackofficeSubmissionReviewDto }) {
                 .map((niche) => niche.name)
                 .join(", ")}
             />
+            <ReviewField
+              label="Associado da CDL"
+              value={review.profile.isCdlMember ? "Sim" : "Não"}
+            />
           </dl>
           <dl>
             <ReviewField label="Biografia" value={review.profile.bio} />
@@ -194,6 +198,10 @@ function ProfileCard({ review }: { review: BackofficeSubmissionReviewDto }) {
           <ReviewField label="Nome fantasia" value={review.profile.tradeName} />
           <ReviewField label="CNPJ" value={formatCnpj(review.profile.cnpj)} />
           <ReviewField label="Segmento" value={review.profile.segment} />
+          <ReviewField
+            label="Associado da CDL"
+            value={review.profile.isCdlMember ? "Sim" : "Não"}
+          />
           <ReviewField
             label="Faixa de colaboradores"
             value={formatEmployeeRange(review.profile.employeeRange)}

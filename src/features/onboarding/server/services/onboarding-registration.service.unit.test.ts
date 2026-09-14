@@ -10,6 +10,7 @@ const influencerInput = {
   creatorType: "INFLUENCER",
   displayName: "Joana Cria",
   email: "joana@example.com",
+  isCdlMember: false,
   legalName: "Joana da Silva",
   nicheSlugs: ["tecnologia-games-e-inovacao"],
   password: "StrongPass1",

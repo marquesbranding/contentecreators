@@ -92,6 +92,12 @@ const isPrimaryFlag = z.preprocess(
   (value) => value === "on" || value === true,
   z.boolean(),
 );
+const checkboxBoolean = z
+  .preprocess(
+    (value) => value === "on" || value === true || value === "true",
+    z.boolean(),
+  )
+  .default(false);
 const socialChannelPlatform = z.enum(SOCIAL_CHANNEL_PLATFORMS);
 const socialChannelEntry = z.object({
   followerCount: z.coerce
@@ -227,6 +233,7 @@ export const influencerProfileFieldsSchema = z
         .max(120)
         .optional(),
     ),
+    isCdlMember: checkboxBoolean,
     legalName,
     nicheSlugs: z
       .array(z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u))
@@ -283,6 +290,7 @@ export const companyProfileFieldsSchema = z.object({
     ["UP_TO_10", "11_TO_50", "51_TO_200", "201_TO_500", "MORE_THAN_500"],
     { error: "Escolha o tamanho da empresa." },
   ),
+  isCdlMember: checkboxBoolean,
   legalName,
   logoAssetId: z.uuid("O logo enviado não é válido.").optional(),
   neighborhood: z

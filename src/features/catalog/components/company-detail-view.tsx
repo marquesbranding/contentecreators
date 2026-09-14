@@ -6,6 +6,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/shared/components/ui/alert";
+import { CdlMemberBadge } from "@/shared/components/cdl-member-badge";
 import { ProfileAvatarFrame } from "@/shared/components/profile-avatar-frame";
 import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
@@ -152,8 +153,9 @@ export function CompanyDetailView({
                   </Badge>
                 ) : null}
               </div>
-              <CardTitle className="text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
+              <CardTitle className="flex flex-wrap items-center gap-2 text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
                 <h1>{detail.displayName}</h1>
+                {detail.isCdlMember ? <CdlMemberBadge size="md" /> : null}
               </CardTitle>
               <ContactIconRow
                 channels={companyContactChannels(

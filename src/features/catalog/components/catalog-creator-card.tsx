@@ -1,6 +1,7 @@
 import { ImageOff, MapPin, SquareArrowOutUpRight } from "lucide-react";
 import Link from "next/link";
 
+import { CdlMemberBadge } from "@/shared/components/cdl-member-badge";
 import { ProfileAvatarFrame } from "@/shared/components/profile-avatar-frame";
 import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
@@ -51,6 +52,7 @@ export interface CatalogCreatorCardViewModel extends Omit<
   cover?: CatalogCreatorMediaViewModel | null;
   creatorType: CatalogCreatorType;
   detailHref: string;
+  isCdlMember?: boolean;
   isOwnProfile?: boolean;
   media?: CatalogCreatorMediaViewModel | null;
   metrics?: CatalogSelfReportedMetricViewModel[];
@@ -222,6 +224,7 @@ export function CatalogCreatorCard({
           </p>
         ) : null}
         <div className="flex flex-wrap items-center gap-1.5">
+          {creator.isCdlMember ? <CdlMemberBadge /> : null}
           <Badge className="bg-brand-night border-transparent text-[11px] text-white">
             {creatorTypeLabel(creator.creatorType)}
           </Badge>

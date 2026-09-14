@@ -18,6 +18,7 @@ const detail = {
   creatorId: "10000000-0000-4000-8000-000000000001",
   creatorType: "INFLUENCER",
   displayName: "Creator",
+  isCdlMember: false,
   location: { city: "Recife", state: "PE" },
   media: { avatar: signedMedia, cover: null },
   metrics: [],

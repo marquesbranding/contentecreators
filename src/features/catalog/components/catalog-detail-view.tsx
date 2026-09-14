@@ -12,6 +12,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/shared/components/ui/alert";
+import { CdlMemberBadge } from "@/shared/components/cdl-member-badge";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button, buttonVariants } from "@/shared/components/ui/button";
 import {
@@ -293,8 +294,9 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
                 size="header"
                 src={detail.media.avatar?.url ?? null}
               />
-              <CardTitle className="text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
+              <CardTitle className="flex flex-wrap items-center gap-2 text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
                 <h1>{detail.displayName}</h1>
+                {detail.isCdlMember ? <CdlMemberBadge size="md" /> : null}
               </CardTitle>
               <div className="flex flex-wrap gap-2">
                 <Badge className="bg-brand-night border-transparent text-white">

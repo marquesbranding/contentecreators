@@ -60,6 +60,7 @@ export interface CatalogCreatorDetailDto {
   creatorId: string;
   creatorType: CatalogCreatorType;
   displayName: string;
+  isCdlMember: boolean;
   location: CatalogCreatorLocationDto;
   media: {
     avatar: CatalogMediaReferenceDto | null;

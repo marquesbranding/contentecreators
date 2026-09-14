@@ -142,6 +142,7 @@ export function ProfileHeaderMediaEditor({
   displayName,
   helperText,
   initials,
+  isCdlMember,
   location,
   onProfileVersionChange,
 }: {
@@ -156,6 +157,7 @@ export function ProfileHeaderMediaEditor({
   displayName: string;
   helperText?: string;
   initials: string;
+  isCdlMember?: boolean;
   location: string;
   onProfileVersionChange?: (version: number) => void;
 }) {
@@ -185,6 +187,7 @@ export function ProfileHeaderMediaEditor({
         coverUrl={coverState.displayedUrl}
         displayName={displayName}
         initials={initials}
+        isCdlMember={isCdlMember}
         location={location}
         onAvatarClick={avatarState.openPicker}
         onCoverClick={coverState.openPicker}

@@ -26,6 +26,7 @@ export interface CatalogCreatorDetailRecord {
   creatorId: string;
   creatorType: CatalogCreatorType;
   displayName: string;
+  isCdlMember: boolean;
   media: {
     id: string;
     kind: "AVATAR" | "COVER";

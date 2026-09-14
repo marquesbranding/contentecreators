@@ -16,6 +16,7 @@ const detail: CompanyDetailViewDto = {
   },
   description: "Marca aberta a parcerias com creators locais.",
   displayName: "Marca Segura",
+  isCdlMember: false,
   location: { city: "Joaçaba", state: "SC" },
   media: {
     cover: null,
@@ -58,6 +59,22 @@ describe("CompanyDetailView", () => {
     expect(
       await getBlockingComponentAccessibilityViolations(container),
     ).toEqual([]);
+  });
+
+  it("shows the CDL badge next to the name only when declared", () => {
+    const { rerender } = render(
+      <CompanyDetailView detail={detail} />,
+    );
+
+    expect(
+      screen.queryByTitle("Associado da CDL (Câmara de Dirigentes Lojistas)"),
+    ).not.toBeInTheDocument();
+
+    rerender(<CompanyDetailView detail={{ ...detail, isCdlMember: true }} />);
+
+    expect(
+      screen.getByTitle("Associado da CDL (Câmara de Dirigentes Lojistas)"),
+    ).toBeVisible();
   });
 
   it("shows a safe unavailable state", () => {

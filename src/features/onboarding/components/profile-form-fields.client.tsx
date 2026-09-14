@@ -461,6 +461,12 @@ export function ProfileFormFields({
         ? creatorInitialValues.creatorType
         : null,
     );
+  const [isCdlMember, setIsCdlMember] = useState(
+    () =>
+      creatorInitialValues?.isCdlMember ??
+      companyInitialValues?.isCdlMember ??
+      false,
+  );
   const [companyFields, setCompanyFields] = useState(() => ({
     city: companyInitialValues?.city ?? "",
     cnpj: companyInitialValues?.cnpj ?? "",
@@ -1252,6 +1258,36 @@ export function ProfileFormFields({
               }
               id={`${role.toLowerCase()}-description-error`}
             />
+          </Field>
+
+          <Field>
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4">
+              <Checkbox
+                checked={isCdlMember}
+                data-field-kind="checkbox"
+                data-field-name="isCdlMember"
+                onCheckedChange={(checked) => {
+                  setIsCdlMember(Boolean(checked));
+                  onFieldChange?.("isCdlMember");
+                }}
+              />
+              <input
+                name="isCdlMember"
+                type="hidden"
+                value={isCdlMember ? "on" : ""}
+              />
+              <span className="flex items-center gap-1.5 text-sm leading-6">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  alt=""
+                  className="h-4 w-auto shrink-0"
+                  height={57}
+                  src="/brand/partners/cdl-emblem.png"
+                  width={78}
+                />
+                É associado da CDL? (Câmara de Dirigentes Lojistas)
+              </span>
+            </label>
           </Field>
         </FieldSet>
       </div>

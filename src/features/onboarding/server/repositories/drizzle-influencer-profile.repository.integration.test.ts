@@ -59,6 +59,7 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
           profile: {
             creatorType: string;
             displayName: string;
+            isCdlMember: boolean;
             version: number;
           };
           social: { normalizedUrl: string; platform: string };
@@ -195,6 +196,7 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
           creatorType: "UGC",
           displayName: "Diego em Movimento",
           expectedVersion: initial.version,
+          isCdlMember: true,
           legalName: "Diego Exemplo",
           nicheSlugs: ["viagens-e-turismo", "outros"],
           otherNiche: "Artesanato sustentável",
@@ -240,6 +242,7 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
           .select({
             creatorType: creatorProfiles.creatorType,
             displayName: creatorProfiles.displayName,
+            isCdlMember: creatorProfiles.isCdlMember,
             version: creatorProfiles.version,
           })
           .from(creatorProfiles)
@@ -339,6 +342,7 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
       profile: {
         creatorType: "UGC",
         displayName: "Diego em Movimento",
+        isCdlMember: true,
       },
       social: {
         normalizedUrl: "https://youtube.com/@diego-em-movimento",

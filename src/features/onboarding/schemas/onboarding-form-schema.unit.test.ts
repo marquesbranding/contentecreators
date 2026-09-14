@@ -334,4 +334,49 @@ describe("onboarding form contracts", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("defaults isCdlMember to false when the checkbox is absent and true when checked", () => {
+    const withoutCheckbox = influencerProfileFieldsSchema.safeParse({
+      bio: "Crio conteúdo sobre projetos autorais e economia criativa.",
+      city: "São Paulo",
+      creatorType: "INFLUENCER",
+      displayName: "Joana Cria",
+      legalName: "Joana da Silva",
+      nicheSlugs: ["tecnologia-games-e-inovacao"],
+      socialChannels: [
+        {
+          followerCount: "12500",
+          isPrimary: true,
+          platform: "INSTAGRAM",
+          url: "https://instagram.com/joanacria",
+        },
+      ],
+      state: "SP",
+      whatsapp: "(11) 99999-9999",
+    });
+    const withCheckbox = influencerProfileFieldsSchema.safeParse({
+      bio: "Crio conteúdo sobre projetos autorais e economia criativa.",
+      city: "São Paulo",
+      creatorType: "INFLUENCER",
+      displayName: "Joana Cria",
+      isCdlMember: "on",
+      legalName: "Joana da Silva",
+      nicheSlugs: ["tecnologia-games-e-inovacao"],
+      socialChannels: [
+        {
+          followerCount: "12500",
+          isPrimary: true,
+          platform: "INSTAGRAM",
+          url: "https://instagram.com/joanacria",
+        },
+      ],
+      state: "SP",
+      whatsapp: "(11) 99999-9999",
+    });
+
+    expect(withoutCheckbox.success).toBe(true);
+    expect(withoutCheckbox.data?.isCdlMember).toBe(false);
+    expect(withCheckbox.success).toBe(true);
+    expect(withCheckbox.data?.isCdlMember).toBe(true);
+  });
 });

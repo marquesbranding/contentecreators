@@ -33,6 +33,7 @@ export const findEligibleCompanyDetail: FindEligibleCompanyDetail = async (
       coverAssetId: companyProfiles.coverAssetId,
       description: companyProfiles.description,
       email: accounts.operationalEmail,
+      isCdlMember: companyProfiles.isCdlMember,
       logoAssetId: companyProfiles.logoAssetId,
       segment: companyProfiles.segment,
       state: sql<string | null>`
@@ -98,6 +99,7 @@ export const findEligibleCompanyDetail: FindEligibleCompanyDetail = async (
     description: company.description,
     displayName: company.tradeName,
     email: company.email,
+    isCdlMember: company.isCdlMember,
     logoAssetId: company.logoAssetId,
     media: media.map(({ id, kind }) => ({
       id,

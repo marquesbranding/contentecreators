@@ -288,6 +288,7 @@ function buildCreatorBranch(filters: DirectoryQuery, viewer: CatalogViewer) {
       ${creatorProfiles.avatarAssetId} as "primaryAssetId",
       ${creatorProfiles.coverAssetId} as "coverAssetId",
       ${creatorProfiles.accountId} = ${viewer.accountId} as "isOwnProfile",
+      ${creatorProfiles.isCdlMember} as "isCdlMember",
       ${creatorProfiles.creatorType}::text as "creatorType",
       null::varchar(120) as segment,
       null::text as "websiteUrl",
@@ -382,6 +383,7 @@ function buildCompanyBranch(filters: DirectoryQuery, viewer: CatalogViewer) {
       ${companyProfiles.logoAssetId} as "primaryAssetId",
       ${companyProfiles.coverAssetId} as "coverAssetId",
       ${companyProfiles.accountId} = ${viewer.accountId} as "isOwnProfile",
+      ${companyProfiles.isCdlMember} as "isCdlMember",
       null::text as "creatorType",
       ${companyProfiles.segment} as segment,
       ${companyProfiles.websiteUrl} as "websiteUrl",
@@ -403,6 +405,7 @@ interface DirectoryRow {
   description: string | null;
   displayName: string;
   id: string;
+  isCdlMember: boolean;
   isOwnProfile: boolean;
   kind: "COMPANY" | "CREATOR";
   metrics: CatalogCardMetricDto[];
@@ -430,6 +433,7 @@ function toDirectoryEntry(row: DirectoryRow): DirectoryEntryDto {
       createdAt,
       description: row.description,
       displayName: row.displayName,
+      isCdlMember: row.isCdlMember,
       isOwnProfile: row.isOwnProfile,
       kind: "COMPANY",
       logoAssetId: row.primaryAssetId,
@@ -448,6 +452,7 @@ function toDirectoryEntry(row: DirectoryRow): DirectoryEntryDto {
     creatorId: row.id,
     creatorType: row.creatorType ?? "INFLUENCER",
     displayName: row.displayName,
+    isCdlMember: row.isCdlMember,
     isOwnProfile: row.isOwnProfile,
     kind: "CREATOR",
     metrics: row.metrics,

@@ -23,6 +23,7 @@ const detail: CatalogCreatorDetailViewDto = {
   creatorId: "10000000-0000-4000-8000-000000000001",
   creatorType: "INFLUENCER",
   displayName: "Creator Exemplo",
+  isCdlMember: false,
   location: { city: "São Paulo", state: "SP" },
   media: {
     avatar: {
@@ -143,6 +144,27 @@ describe("CatalogDetailView", () => {
     expect(
       screen.queryByRole("link", { name: /e-mail|whatsapp/iu }),
     ).toBeNull();
+  });
+
+  it("shows the CDL badge next to the name only when declared", () => {
+    const { rerender } = render(
+      <CatalogDetailView detail={detail} status="success" />,
+    );
+
+    expect(
+      screen.queryByTitle("Associado da CDL (Câmara de Dirigentes Lojistas)"),
+    ).not.toBeInTheDocument();
+
+    rerender(
+      <CatalogDetailView
+        detail={{ ...detail, isCdlMember: true }}
+        status="success"
+      />,
+    );
+
+    expect(
+      screen.getByTitle("Associado da CDL (Câmara de Dirigentes Lojistas)"),
+    ).toBeVisible();
   });
 
   it("replaces stale details with a safe unavailable state", () => {

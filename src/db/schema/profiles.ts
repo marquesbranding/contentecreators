@@ -49,6 +49,7 @@ export const creatorProfiles = pgTable(
     }),
     isFeatured: boolean("is_featured").notNull().default(false),
     featureOrder: integer("feature_order"),
+    isCdlMember: boolean("is_cdl_member").notNull().default(false),
     whatsappContactCount: integer("whatsapp_contact_count")
       .notNull()
       .default(0),
@@ -172,6 +173,7 @@ export const companyProfiles = pgTable(
     }),
     isFeatured: boolean("is_featured").notNull().default(false),
     featureOrder: integer("feature_order"),
+    isCdlMember: boolean("is_cdl_member").notNull().default(false),
     searchDocument: text("search_document").generatedAlwaysAs(
       sql`public.normalize_search_text(
         coalesce("trade_name", '') || ' ' ||

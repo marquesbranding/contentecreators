@@ -22,6 +22,7 @@ const baseRecord: CatalogCreatorDetailRecord = {
   creatorId,
   creatorType: "INFLUENCER",
   displayName: "Creator Sintética",
+  isCdlMember: false,
   media: [
     {
       id: "30000000-0000-4000-8000-000000000003",
@@ -91,6 +92,7 @@ describe("catalog detail mapper", () => {
       creatorId,
       creatorType: "INFLUENCER",
       displayName: "Creator Sintética",
+      isCdlMember: false,
       location: { city: "São Paulo", state: "SP" },
       media: {
         avatar: {

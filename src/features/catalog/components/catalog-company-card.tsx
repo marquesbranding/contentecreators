@@ -1,6 +1,7 @@
 import { Building2, MapPin, SquareArrowOutUpRight } from "lucide-react";
 import Link from "next/link";
 
+import { CdlMemberBadge } from "@/shared/components/cdl-member-badge";
 import { ProfileAvatarFrame } from "@/shared/components/profile-avatar-frame";
 import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
@@ -88,6 +89,7 @@ export function CatalogCompanyCard({
           </p>
         ) : null}
         <div className="flex flex-wrap items-center gap-1.5">
+          {company.isCdlMember ? <CdlMemberBadge /> : null}
           <Badge className="bg-brand-night border-transparent text-[11px] text-white">
             {accountTypeLabels.COMPANY}
           </Badge>

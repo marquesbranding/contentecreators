@@ -25,6 +25,7 @@ const profile = {
   coverAssetId: null,
   creatorType: "INFLUENCER",
   displayName: "Joana Cria",
+  isCdlMember: false,
   legalName: "Joana da Silva",
   nicheSlugs: ["tecnologia-games-e-inovacao"],
   socialChannels: [

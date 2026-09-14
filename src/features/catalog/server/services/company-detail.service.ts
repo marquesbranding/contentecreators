@@ -41,6 +41,7 @@ function mapCompanyDetail(record: CompanyDetailRecord): CompanyDetailDto {
     },
     description: record.description,
     displayName: record.displayName,
+    isCdlMember: record.isCdlMember,
     location:
       record.city && record.state
         ? {

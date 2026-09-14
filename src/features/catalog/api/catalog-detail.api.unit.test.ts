@@ -12,6 +12,7 @@ const response = {
   creatorId,
   creatorType: "INFLUENCER",
   displayName: "Creator",
+  isCdlMember: false,
   location: { city: "Recife", state: "PE" },
   media: { avatar: null, cover: null },
   metrics: [],

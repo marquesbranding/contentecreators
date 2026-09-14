@@ -48,6 +48,7 @@ const detail: BackofficeAccountDetailDto = {
       coverAssetId: null,
       description: "Empresa sintética aguardando análise.",
       employeeRange: "11_TO_50",
+      isCdlMember: false,
       legalName: "Empresa Dois Exemplo Ltda",
       logoAssetId: null,
       neighborhood: "Centro",
@@ -76,6 +77,13 @@ describe("AccountDetail", () => {
     expect(screen.getByText("Consentimentos")).toBeVisible();
     expect(screen.getByText("Histórico de moderação")).toBeVisible();
     expect(screen.getByText("Metadados operacionais")).toBeVisible();
+  });
+
+  it("shows the CDL self-declaration for the moderator", () => {
+    render(<AccountDetail detail={detail} />);
+
+    expect(screen.getByText("Associado da CDL")).toBeVisible();
+    expect(screen.getByText("Não")).toBeVisible();
   });
 
   it("does not render private infrastructure metadata", () => {

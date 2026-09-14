@@ -16,6 +16,7 @@ function profileFormPayload(formData: FormData) {
     creatorType: formData.get("creatorType"),
     displayName: formData.get("displayName"),
     expectedVersion: formData.get("expectedVersion"),
+    isCdlMember: formData.get("isCdlMember"),
     legalName: formData.get("legalName"),
     nicheSlugs: formData.getAll("nicheSlugs"),
     otherNiche: formData.get("otherNiche"),

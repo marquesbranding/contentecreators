@@ -106,6 +106,7 @@ export interface BackofficeInfluencerSubmissionReviewDto extends BackofficeSubmi
     city: string | null;
     creatorType: CreatorType;
     displayName: string;
+    isCdlMember: boolean;
     legalName: string;
     niches: Array<{ name: string; slug: string }>;
     selfReportedMetrics: Array<{
@@ -130,6 +131,7 @@ export interface BackofficeCompanySubmissionReviewDto extends BackofficeSubmissi
     cnpj: string;
     description: string | null;
     employeeRange: string | null;
+    isCdlMember: boolean;
     legalName: string;
     locations: Array<{
       city: string;

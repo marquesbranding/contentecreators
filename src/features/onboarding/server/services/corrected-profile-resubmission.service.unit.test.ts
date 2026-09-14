@@ -27,6 +27,7 @@ const profile: GoogleProfileInput = {
   coverAssetId: undefined,
   creatorType: "INFLUENCER",
   displayName: "Carla em Cena",
+  isCdlMember: false,
   legalName: "Carla Exemplo",
   nicheSlugs: ["tecnologia-games-e-inovacao"],
   privacyAccepted: true,

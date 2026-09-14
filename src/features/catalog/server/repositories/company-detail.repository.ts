@@ -9,6 +9,7 @@ export interface CompanyDetailRecord {
   description: string | null;
   displayName: string;
   email: string;
+  isCdlMember: boolean;
   logoAssetId: string | null;
   media: {
     id: string;

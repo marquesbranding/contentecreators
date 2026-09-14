@@ -73,6 +73,7 @@ export const catalogCreatorDetailViewSchema = z
     creatorId: z.uuid(),
     creatorType: catalogCreatorTypeSchema,
     displayName: z.string().trim().min(1).max(160),
+    isCdlMember: z.boolean(),
     location: z
       .object({
         city: z.string().trim().min(1).max(120),

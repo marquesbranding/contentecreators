@@ -28,6 +28,7 @@ const review = {
     city: "São Paulo",
     creatorType: "INFLUENCER",
     displayName: "Creator Teste",
+    isCdlMember: false,
     legalName: "Creator Teste",
     niches: [],
     selfReportedMetrics: [],

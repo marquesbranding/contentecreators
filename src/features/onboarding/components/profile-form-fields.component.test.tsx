@@ -501,4 +501,39 @@ describe("ProfileFormFields company CNPJ experience", () => {
       ),
     ).toBeVisible();
   });
+
+  it("starts the CDL checkbox unchecked and toggles the hidden submit value", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<ProfileFormFields role="INFLUENCER" />);
+
+    const checkbox = screen.getByRole("checkbox", {
+      name: "É associado da CDL? (Câmara de Dirigentes Lojistas)",
+    });
+    const hiddenInput = container.querySelector(
+      'input[type="hidden"][name="isCdlMember"]',
+    );
+
+    expect(checkbox).not.toBeChecked();
+    expect(hiddenInput).toHaveValue("");
+
+    await user.click(checkbox);
+
+    expect(checkbox).toBeChecked();
+    expect(hiddenInput).toHaveValue("on");
+  });
+
+  it("restores a checked CDL membership for a company from initial values", () => {
+    render(
+      <ProfileFormFields
+        initialValues={{ isCdlMember: true }}
+        role="COMPANY"
+      />,
+    );
+
+    expect(
+      screen.getByRole("checkbox", {
+        name: "É associado da CDL? (Câmara de Dirigentes Lojistas)",
+      }),
+    ).toBeChecked();
+  });
 });

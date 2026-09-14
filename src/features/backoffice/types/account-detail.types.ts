@@ -56,6 +56,7 @@ export interface BackofficeInfluencerEditableProfileDto {
   displayName: string;
   engagementRate: number;
   followers: number;
+  isCdlMember: boolean;
   legalName: string;
   nicheSlugs: string[];
   socialPlatform: SocialPlatform;
@@ -82,6 +83,7 @@ export interface BackofficeCompanyEditableProfileDto {
   coverAssetId: string | null;
   description: string;
   employeeRange: EmployeeRange;
+  isCdlMember: boolean;
   legalName: string;
   logoAssetId: string | null;
   neighborhood: string;

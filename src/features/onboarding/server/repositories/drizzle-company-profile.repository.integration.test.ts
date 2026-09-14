@@ -48,7 +48,7 @@ describeLocalStack("Drizzle approved company profile repository", () => {
           auditRows: { entityTable: string; operation: string }[];
           locationCount: number;
           primaryCount: number;
-          profile: { tradeName: string; version: number };
+          profile: { isCdlMember: boolean; tradeName: string; version: number };
           social: { normalizedUrl: string; platform: string };
           staleResult: { currentVersion: number; kind: "conflict" };
         }
@@ -100,6 +100,7 @@ describeLocalStack("Drizzle approved company profile repository", () => {
             "Empresa atualizada que conecta marcas a creators em todo o Brasil.",
           employeeRange: "51_TO_200",
           expectedVersion: initial.version,
+          isCdlMember: true,
           legalName: "Empresa Quatro Exemplo Ltda.",
           neighborhood: "Centro",
           number: "400",
@@ -147,6 +148,7 @@ describeLocalStack("Drizzle approved company profile repository", () => {
           .where(eq(accounts.id, companyContext.accountId));
         const [profile] = await transaction
           .select({
+            isCdlMember: companyProfiles.isCdlMember,
             tradeName: companyProfiles.tradeName,
             version: companyProfiles.version,
           })
@@ -209,7 +211,7 @@ describeLocalStack("Drizzle approved company profile repository", () => {
       accountStatus: "APPROVED",
       locationCount: 2,
       primaryCount: 1,
-      profile: { tradeName: "Empresa Quatro Atualizada" },
+      profile: { isCdlMember: true, tradeName: "Empresa Quatro Atualizada" },
       social: {
         normalizedUrl: "https://linkedin.com/company/empresa-quatro",
         platform: "LINKEDIN",

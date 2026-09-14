@@ -20,6 +20,7 @@ const updateInput = {
   creatorType: "UGC",
   displayName: "Joana Atualizada",
   expectedVersion: 3,
+  isCdlMember: false,
   legalName: "Joana da Silva",
   nicheSlugs: ["tecnologia-games-e-inovacao"],
   socialChannels: [

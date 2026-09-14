@@ -56,6 +56,7 @@ export interface DirectoryCompanyEntryDto {
   createdAt: string;
   description: string | null;
   displayName: string;
+  isCdlMember: boolean;
   /** True when this row is the viewer's own profile — never their account ID. */
   isOwnProfile: boolean;
   kind: "COMPANY";
@@ -74,6 +75,7 @@ export interface DirectoryCreatorEntryDto {
   creatorId: string;
   creatorType: CatalogCreatorType;
   displayName: string;
+  isCdlMember: boolean;
   /** True when this row is the viewer's own profile — never their account ID. */
   isOwnProfile: boolean;
   kind: "CREATOR";

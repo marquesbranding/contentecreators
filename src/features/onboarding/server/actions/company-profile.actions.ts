@@ -19,6 +19,7 @@ function companyProfileFormPayload(formData: FormData) {
     description: formData.get("description"),
     employeeRange: formData.get("employeeRange"),
     expectedVersion: formData.get("expectedVersion"),
+    isCdlMember: formData.get("isCdlMember"),
     legalName: formData.get("legalName"),
     neighborhood: formData.get("neighborhood"),
     number: formData.get("number"),

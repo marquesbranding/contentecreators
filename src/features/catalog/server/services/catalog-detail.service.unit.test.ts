@@ -19,6 +19,7 @@ const record: CatalogCreatorDetailRecord = {
   creatorId,
   creatorType: "UGC",
   displayName: "Creator UGC",
+  isCdlMember: false,
   media: [],
   metrics: [],
   niches: [],

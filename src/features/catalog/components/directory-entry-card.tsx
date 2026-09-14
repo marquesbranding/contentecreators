@@ -59,6 +59,7 @@ function toCreatorCardViewModel(
     creatorType: creator.creatorType,
     detailHref: `/app/creators/${creator.creatorId}`,
     displayName: creator.displayName,
+    isCdlMember: creator.isCdlMember,
     isOwnProfile: creator.isOwnProfile,
     media: creator.avatar
       ? {

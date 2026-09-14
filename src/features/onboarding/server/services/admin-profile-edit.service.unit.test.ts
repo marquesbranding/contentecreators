@@ -23,6 +23,7 @@ const influencerInput = {
   creatorType: "INFLUENCER",
   displayName: "Creator Exemplo",
   expectedVersion: 3,
+  isCdlMember: false,
   legalName: "Creator Exemplo da Silva",
   nicheSlugs: ["tecnologia-games-e-inovacao"],
   socialChannels: [
@@ -46,6 +47,7 @@ const companyInput = {
     "Empresa de tecnologia que trabalha com creators em todo o Brasil.",
   employeeRange: "51_TO_200",
   expectedVersion: 4,
+  isCdlMember: false,
   legalName: "Empresa Exemplo Ltda.",
   neighborhood: "Centro",
   number: "100",

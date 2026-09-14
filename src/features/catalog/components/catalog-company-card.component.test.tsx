@@ -17,6 +17,7 @@ const company: DirectoryCompanyBrowserEntryDto = {
   createdAt: "2026-08-01T12:00:00.000Z",
   description: "Marca de moda sustentável que conecta creators e lojas.",
   displayName: "Marca Exemplo",
+  isCdlMember: false,
   isOwnProfile: false,
   kind: "COMPANY",
   logo: {
@@ -58,6 +59,20 @@ describe("CatalogCompanyCard", () => {
     expect(
       screen.getByRole("link", { name: "Ver meu perfil" }),
     ).toHaveAttribute("href", "/app/profile");
+  });
+
+  it("shows the CDL badge only when the company declared membership", () => {
+    const { rerender } = render(<CatalogCompanyCard company={company} />);
+
+    expect(
+      screen.queryByTitle("Associado da CDL (Câmara de Dirigentes Lojistas)"),
+    ).not.toBeInTheDocument();
+
+    rerender(<CatalogCompanyCard company={{ ...company, isCdlMember: true }} />);
+
+    expect(
+      screen.getByTitle("Associado da CDL (Câmara de Dirigentes Lojistas)"),
+    ).toBeVisible();
   });
 
   it("uses a safe fallback for a company without logo or cover", () => {

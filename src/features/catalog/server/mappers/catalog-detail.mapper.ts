@@ -169,6 +169,7 @@ export function mapCatalogCreatorDetail(
     creatorId: record.creatorId,
     creatorType: record.creatorType,
     displayName: record.displayName,
+    isCdlMember: record.isCdlMember,
     location: {
       city: record.city,
       state: record.state,

@@ -183,6 +183,10 @@ function ProfileCard({
               }
             />
             <Field label="Nichos" value={profile.nicheSlugs.join(", ")} />
+            <Field
+              label="Associado da CDL"
+              value={profile.isCdlMember ? "Sim" : "Não"}
+            />
             <Field label="Rede principal" value={profile.socialPlatform} />
             <Field
               label="Seguidores autodeclarados"
@@ -272,6 +276,10 @@ function ProfileCard({
           <Field label="Nome fantasia" value={profile.tradeName} />
           <Field label="CNPJ" value={formatCnpj(profile.cnpj)} />
           <Field label="Segmento" value={profile.segment} />
+          <Field
+            label="Associado da CDL"
+            value={profile.isCdlMember ? "Sim" : "Não"}
+          />
           <Field
             label="Faixa de colaboradores"
             value={employeeRangeLabels[profile.employeeRange]}

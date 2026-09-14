@@ -84,6 +84,9 @@ function collectCreatorPayload(formData: FormData) {
   if (formData.has("displayName")) {
     payload.displayName = readText(formData, "displayName");
   }
+  if (formData.has("isCdlMember")) {
+    payload.isCdlMember = formData.get("isCdlMember") === "on";
+  }
   if (formData.has("legalName")) {
     payload.legalName = readText(formData, "legalName");
   }
@@ -135,6 +138,9 @@ function collectCompanyPayload(formData: FormData) {
   if (employeeRanges.has(employeeRange)) {
     payload.employeeRange =
       employeeRange as CompanyOnboardingDraftPayload["employeeRange"];
+  }
+  if (formData.has("isCdlMember")) {
+    payload.isCdlMember = formData.get("isCdlMember") === "on";
   }
   if (formData.has("legalName")) {
     payload.legalName = readText(formData, "legalName");
