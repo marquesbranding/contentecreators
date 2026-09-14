@@ -35,7 +35,6 @@ export interface CompanyCarouselRepository {
 const eligibleCompanyPredicates = [
   eq(accounts.role, "COMPANY"),
   eq(accounts.status, "APPROVED"),
-  eq(accounts.completionPercentage, 100),
   isNull(accounts.archivedAt),
   isNull(companyProfiles.archivedAt),
   sql`length(trim(${companyProfiles.tradeName})) > 0`,

@@ -145,7 +145,7 @@ describeLocalStack("company carousel repository", () => {
     );
   });
 
-  it("omits the company when its account, profile or completion becomes ineligible, and only drops an archived logo", async () => {
+  it("omits the company when its account or profile becomes ineligible, keeps an approved incomplete one, and only drops an archived logo", async () => {
     const service = createCompanyCarouselService({
       repository: {
         listCompanySegmentFacets,
@@ -180,9 +180,12 @@ describeLocalStack("company carousel repository", () => {
       await restoreEligibleFixture();
       await client.database
         .update(accounts)
-        .set({ completionPercentage: 99 })
+        .set({ completionPercentage: 95 })
         .where(eq(accounts.id, approvedCompanyAccountId));
-      await expect(list()).resolves.toMatchObject({ items: [] });
+      // Approval is the bar; blank optional fields do not hide the company.
+      await expect(list()).resolves.toMatchObject({
+        items: [{ companyId: approvedCompanyProfileId }],
+      });
 
       await restoreEligibleFixture();
       await client.database

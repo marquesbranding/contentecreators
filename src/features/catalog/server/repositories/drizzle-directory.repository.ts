@@ -305,7 +305,6 @@ function buildCompanyBranch(filters: DirectoryQuery, viewer: CatalogViewer) {
   const predicates: SQL[] = [
     sql`${accounts.role} = 'COMPANY'`,
     sql`${accounts.status} = 'APPROVED'`,
-    sql`${accounts.completionPercentage} = 100`,
     sql`${accounts.archivedAt} is null`,
     sql`${companyProfiles.archivedAt} is null`,
     sql`${companyProfiles.accountId} <> ${viewer.accountId}`,

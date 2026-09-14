@@ -45,8 +45,8 @@ type CommandHandler = (command: LandingShowcaseCommand) => Promise<unknown>;
 
 const kindCopy = {
   COMPANY: {
-    description: "Empresas aprovadas com cadastro completo.",
-    empty: "Nenhuma empresa aprovada com cadastro completo ainda.",
+    description: "Empresas aprovadas.",
+    empty: "Nenhuma empresa aprovada ainda.",
     icon: Building2,
     noneEnabled: "Nenhuma empresa na landing ainda.",
     searchLabel: "Buscar empresa disponível",

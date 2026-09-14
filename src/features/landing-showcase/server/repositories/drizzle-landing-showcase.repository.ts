@@ -49,16 +49,14 @@ function profileTable(kind: LandingShowcaseKind) {
 }
 
 /**
- * Same bar the catalog applies: approved, not archived, and — for companies —
- * a complete profile. A profile that stops meeting it can no longer be managed
+ * Same bar the catalog applies: approved and not archived. A profile that stops meeting it can no longer be managed
  * here and drops out of the public carousel on its own.
  */
 function accountEligibility(kind: LandingShowcaseKind) {
   return kind === "COMPANY"
     ? sql`account.role = 'COMPANY'
         and account.status = 'APPROVED'
-        and account.archived_at is null
-        and account.completion_percentage = 100`
+        and account.archived_at is null`
     : sql`account.role = 'INFLUENCER'
         and account.status = 'APPROVED'
         and account.archived_at is null`;
@@ -132,7 +130,6 @@ async function listCompanies(
       and(
         eq(accounts.role, "COMPANY"),
         eq(accounts.status, "APPROVED"),
-        eq(accounts.completionPercentage, 100),
         isNull(accounts.archivedAt),
         isNull(companyProfiles.archivedAt),
       ),
