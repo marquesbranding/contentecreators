@@ -50,10 +50,10 @@ import type {
 } from "../types/media-upload.types";
 
 const descriptionByPurpose: Readonly<Record<MediaPurpose, string>> = {
-  AVATAR: "Quadrada, JPEG/PNG/WebP, até 5 MB.",
-  COVER: "Horizontal, JPEG/PNG/WebP, até 8 MB.",
-  LOGO: "Quadrada, JPEG/PNG/WebP, até 5 MB.",
-  SPONSORSHIP_CREATIVE: "Horizontal, JPEG/PNG/WebP, até 8 MB.",
+  AVATAR: "Quadrada, JPEG/PNG/WebP, até 15 MB.",
+  COVER: "Horizontal, JPEG/PNG/WebP, até 15 MB.",
+  LOGO: "Quadrada, JPEG/PNG/WebP, até 15 MB.",
+  SPONSORSHIP_CREATIVE: "Horizontal, JPEG/PNG/WebP, até 15 MB.",
 };
 
 const previewAspectByPurpose: Readonly<Record<MediaPurpose, string>> = {

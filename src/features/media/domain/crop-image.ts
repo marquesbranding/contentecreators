@@ -97,11 +97,21 @@ export async function cropImageFile(
       canvas.height,
     );
 
-    const blob = await canvasToBlob(canvas, file.type);
+    // WebP keeps transparency and stays far below the upload limit even for
+    // 4K phone photos; browsers without a WebP encoder keep the source type.
+    const webp = await canvasToBlob(canvas, "image/webp").catch(() => null);
+    const blob =
+      webp?.type === "image/webp"
+        ? webp
+        : await canvasToBlob(canvas, file.type);
+    const fileName =
+      blob.type === "image/webp"
+        ? `${file.name.replace(/\.[^.]+$/u, "") || "imagem"}.webp`
+        : file.name;
 
-    return new File([blob], file.name, {
+    return new File([blob], fileName, {
       lastModified: Date.now(),
-      type: file.type,
+      type: blob.type || file.type,
     });
   } finally {
     image.close();

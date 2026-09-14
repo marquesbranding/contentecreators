@@ -5,6 +5,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getBrowserSupabaseClient } from "@/shared/lib/supabase/browser-client";
 import { validateImageUpload } from "@/shared/lib/media/image-validation";
 
+import {
+  SELECTABLE_IMAGE_MAX_BYTES,
+  SELECTABLE_IMAGE_TOO_LARGE_MESSAGE,
+} from "../domain/shrink-image";
+
 import { cropImageFile, type ImageCropSettings } from "../domain/crop-image";
 import type {
   MediaPurpose,
@@ -113,6 +118,12 @@ export function useMediaUpload({
   }, []);
 
   const selectFile = useCallback((selectedFile: File | null) => {
+    if (selectedFile && selectedFile.size > SELECTABLE_IMAGE_MAX_BYTES) {
+      setError(SELECTABLE_IMAGE_TOO_LARGE_MESSAGE);
+      setPhase("error");
+      return;
+    }
+
     if (previewUrlRef.current) {
       URL.revokeObjectURL(previewUrlRef.current);
     }

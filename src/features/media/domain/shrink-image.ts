@@ -3,6 +3,11 @@
 // Server Actions receive the whole registration form in one request, so images
 // picked straight from a phone camera must be shrunk before they are sent.
 export const SHRINK_IMAGE_TARGET_BYTES = 900 * 1024;
+// Largest original a person may pick (a 4K/48 MP phone photo); it is always
+// reduced in the browser before reaching the server.
+export const SELECTABLE_IMAGE_MAX_BYTES = 15 * 1024 * 1024;
+export const SELECTABLE_IMAGE_TOO_LARGE_MESSAGE =
+  "A imagem deve ter até 15 MB. Escolha outra foto.";
 
 const MAX_DIMENSION = 1600;
 const OUTPUT_QUALITY = 0.85;

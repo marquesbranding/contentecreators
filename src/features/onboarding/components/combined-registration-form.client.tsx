@@ -1,11 +1,16 @@
 "use client";
 
-import { Building2, CircleAlert } from "lucide-react";
+import { Building2, CircleAlert, Info } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { useActionState, useEffect, useRef, useState } from "react";
 
 import { GoogleAuthOption, PasswordField } from "@/features/identity/client";
-import { shrinkImageFile } from "@/features/media";
+import {
+  SELECTABLE_IMAGE_MAX_BYTES,
+  SELECTABLE_IMAGE_TOO_LARGE_MESSAGE,
+  shrinkImageFile,
+} from "@/features/media";
 import { ActionSubmitButton } from "@/shared/components/action-submit-button";
 import {
   ProfileHeaderPreview,
@@ -60,6 +65,8 @@ const accountTypeOptions = [
 type AccountType = (typeof accountTypeOptions)[number]["value"];
 
 const TOTAL_STEPS = 4;
+// Logo and cover travel together in the 4 MB Server Action request.
+const REGISTRATION_IMAGE_MAX_BYTES = 1.8 * 1024 * 1024;
 
 export function CombinedRegistrationForm({
   action,
@@ -208,7 +215,23 @@ export function CombinedRegistrationForm({
       return;
     }
 
+    if (file.size > SELECTABLE_IMAGE_MAX_BYTES) {
+      input.value = "";
+      onFileChange(null);
+      toast.error(SELECTABLE_IMAGE_TOO_LARGE_MESSAGE);
+      return;
+    }
+
     const shrunk = await shrinkImageFile(file);
+
+    if (shrunk.size > REGISTRATION_IMAGE_MAX_BYTES) {
+      input.value = "";
+      onFileChange(null);
+      toast.error(
+        "Não foi possível preparar esta imagem. Escolha uma foto JPEG, PNG ou WebP.",
+      );
+      return;
+    }
 
     if (shrunk !== file && input.files?.[0] === file) {
       const transfer = new DataTransfer();
@@ -314,30 +337,36 @@ export function CombinedRegistrationForm({
 
   return (
     <div className="space-y-8">
-      {state.message ? (
-        <Alert aria-live="polite" variant="destructive">
-          <CircleAlert aria-hidden="true" />
-          <AlertTitle>
-            {accountAlreadyExists
-              ? "Conta já cadastrada"
-              : "Revise seu cadastro"}
-          </AlertTitle>
+      {state.message && accountAlreadyExists ? (
+        <Alert
+          aria-live="polite"
+          className="border-brand-blue/30 bg-brand-blue/5 text-foreground"
+        >
+          <Info aria-hidden="true" className="text-brand-blue" />
+          <AlertTitle>Sua conta já está cadastrada</AlertTitle>
           <AlertDescription>
             <span className="block">{state.message}</span>
-            {accountAlreadyExists ? (
-              <span className="mt-4 flex flex-wrap gap-2">
-                <Link className={buttonVariants({ size: "sm" })} href="/login">
-                  Entrar
-                </Link>
-                <Link
-                  className={buttonVariants({ size: "sm", variant: "outline" })}
-                  href="/forgot-password"
-                >
-                  Recuperar senha
-                </Link>
-              </span>
-            ) : null}
+            <span className="mt-4 flex flex-wrap gap-2">
+              <Link
+                className={buttonVariants({ size: "sm" })}
+                href="/login?next=%2Fapp%2Fstatus%2Fanalysis"
+              >
+                Acessar meu cadastro
+              </Link>
+              <Link
+                className={buttonVariants({ size: "sm", variant: "outline" })}
+                href="/forgot-password"
+              >
+                Recuperar senha
+              </Link>
+            </span>
           </AlertDescription>
+        </Alert>
+      ) : state.message ? (
+        <Alert aria-live="polite" variant="destructive">
+          <CircleAlert aria-hidden="true" />
+          <AlertTitle>Revise seu cadastro</AlertTitle>
+          <AlertDescription>{state.message}</AlertDescription>
         </Alert>
       ) : null}
 

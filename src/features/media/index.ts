@@ -4,7 +4,11 @@ export {
   CropDialog,
   ProfileHeaderMediaEditor,
 } from "./components/profile-header-media-editor.client";
-export { shrinkImageFile } from "./domain/shrink-image";
+export {
+  SELECTABLE_IMAGE_MAX_BYTES,
+  SELECTABLE_IMAGE_TOO_LARGE_MESSAGE,
+  shrinkImageFile,
+} from "./domain/shrink-image";
 export { useMediaUpload } from "./hooks/use-media-upload";
 export { useHeaderMediaSlot } from "./hooks/use-header-media-slot";
 export type { HeaderMediaSlotConfig } from "./hooks/use-header-media-slot";
