@@ -11,6 +11,16 @@ const OFFSET_CLASS = {
   xl: "xl:mt-16",
 } as const;
 
+/**
+ * A staggered column's margin-top pushes its card below the grid's own
+ * bottom edge (margin isn't part of the grid's own height), so the last row
+ * can spill onto whatever sits right after the `<ul>`. Padding the
+ * container by the same offset used at each breakpoint reserves that space
+ * instead, keeping the sibling below clear. Kept in sync with
+ * `OFFSET_CLASS` by construction — update both together.
+ */
+export const STAGGER_CONTAINER_PADDING = "sm:pb-8 lg:pb-8 xl:pb-16";
+
 const SM_COLUMN_OFFSETS = ["sm:mt-0", OFFSET_CLASS.sm] as const;
 const LG_COLUMN_OFFSETS = ["lg:mt-0", OFFSET_CLASS.lg, "lg:mt-0"] as const;
 const XL_COLUMN_OFFSETS = [

@@ -94,7 +94,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             viewerRole={account.role}
           >
             <CatalogSponsorshipSlots slots={sponsorshipSlots}>
-              <div className="mb-8 space-y-8">
+              <div className="mb-8 space-y-12">
                 <HydratedDirectory
                   midlistSlots={buildCatalogMidlistSlots(sponsorshipSlots)}
                   state={dehydrate(queryClient)}

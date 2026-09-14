@@ -52,9 +52,12 @@ export interface DirectoryQuery extends Omit<DirectoryFilters, "cursor"> {
 export interface DirectoryCompanyEntryDto {
   city: string | null;
   companyId: string;
+  coverAssetId?: string | null;
   createdAt: string;
   description: string | null;
   displayName: string;
+  /** True when this row is the viewer's own profile — never their account ID. */
+  isOwnProfile: boolean;
   kind: "COMPANY";
   logoAssetId?: string | null;
   segment: string | null;
@@ -71,6 +74,8 @@ export interface DirectoryCreatorEntryDto {
   creatorId: string;
   creatorType: CatalogCreatorType;
   displayName: string;
+  /** True when this row is the viewer's own profile — never their account ID. */
+  isOwnProfile: boolean;
   kind: "CREATOR";
   metrics: CatalogCardMetricDto[];
   niches: CatalogNicheDto[];

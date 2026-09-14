@@ -2,6 +2,7 @@ import { Building2, MapPin, SquareArrowOutUpRight } from "lucide-react";
 import Link from "next/link";
 
 import { ProfileAvatarFrame } from "@/shared/components/profile-avatar-frame";
+import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
 import { buttonVariants } from "@/shared/components/ui/button";
 import {
@@ -27,10 +28,27 @@ export function CatalogCompanyCard({
       role="article"
     >
       <div className="relative">
-        <div
-          aria-hidden="true"
-          className="from-brand-blue/30 via-brand-pink/15 to-brand-lime/25 relative z-0 h-20 bg-gradient-to-br sm:h-24"
-        />
+        {company.cover ? (
+          <SignedImage
+            alt=""
+            className="object-cover"
+            fallback={
+              <div
+                aria-hidden="true"
+                className="from-brand-blue/30 via-brand-pink/15 to-brand-lime/25 size-full bg-gradient-to-br"
+              />
+            }
+            height={company.cover.height}
+            src={company.cover.url}
+            width={company.cover.width}
+            wrapperClassName="z-0 h-20 w-full sm:h-24"
+          />
+        ) : (
+          <div
+            aria-hidden="true"
+            className="from-brand-blue/30 via-brand-pink/15 to-brand-lime/25 relative z-0 h-20 bg-gradient-to-br sm:h-24"
+          />
+        )}
         <ProfileAvatarFrame
           alt={`Logo da ${company.displayName}`}
           className="absolute -bottom-7 left-4 z-10"
@@ -73,6 +91,11 @@ export function CatalogCompanyCard({
           <Badge className="bg-brand-night border-transparent text-[11px] text-white">
             {accountTypeLabels.COMPANY}
           </Badge>
+          {company.isOwnProfile ? (
+            <Badge className="text-[11px]" variant="outline">
+              Você
+            </Badge>
+          ) : null}
           {company.segment ? (
             <Badge className="text-[11px]" variant="secondary">
               {company.segment}
@@ -83,7 +106,11 @@ export function CatalogCompanyCard({
 
       <CardFooter className="bg-card border-t-0 px-4 pt-0 pb-4">
         <Link
-          aria-label={`Ver perfil de ${company.displayName}`}
+          aria-label={
+            company.isOwnProfile
+              ? "Ver meu perfil"
+              : `Ver perfil de ${company.displayName}`
+          }
           className={cn(
             buttonVariants({
               className:
@@ -91,9 +118,13 @@ export function CatalogCompanyCard({
               size: "sm",
             }),
           )}
-          href={`/app/companies/${company.companyId}`}
+          href={
+            company.isOwnProfile
+              ? "/app/profile"
+              : `/app/companies/${company.companyId}`
+          }
         >
-          Ver perfil da marca
+          {company.isOwnProfile ? "Ver meu perfil" : "Ver perfil da marca"}
           <SquareArrowOutUpRight aria-hidden="true" className="size-3.5" />
         </Link>
       </CardFooter>

@@ -22,7 +22,7 @@ import { cn } from "@/shared/lib/cn";
 import type { DirectoryBrowserEntryDto } from "../api/catalog-directory.contract";
 import { CatalogEmptyState } from "./catalog-empty-state";
 import { DirectoryEntryCard } from "./directory-entry-card";
-import { staggerItemClassName } from "../lib/stagger";
+import { STAGGER_CONTAINER_PADDING, staggerItemClassName } from "../lib/stagger";
 
 export type DirectoryResultsStatus = "error" | "loading" | "success";
 
@@ -174,7 +174,10 @@ export function DirectoryResults({
                 ? "Lista do catálogo"
                 : "Lista do catálogo, continuação"
             }
-            className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            className={cn(
+              "grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+              STAGGER_CONTAINER_PADDING,
+            )}
           >
             {chunkOfItems.map((entry, index) => (
               <li

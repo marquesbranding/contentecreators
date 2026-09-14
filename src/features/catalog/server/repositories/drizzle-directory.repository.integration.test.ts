@@ -66,7 +66,7 @@ function createRunner(
 }
 
 describeLocalStack("Drizzle catalog directory repository", () => {
-  it("mixes creators and companies, filters by type, self-excludes and paginates by cursor", async () => {
+  it("mixes creators and companies, filters by type, marks the viewer's own profile and paginates by cursor", async () => {
     let proof:
       | {
           companyOnly: Awaited<
@@ -81,10 +81,10 @@ describeLocalStack("Drizzle catalog directory repository", () => {
           mixed: Awaited<
             ReturnType<ReturnType<typeof createCatalogDirectoryService>["list"]>
           >;
-          secondPage: Awaited<
+          ownProfileListed: Awaited<
             ReturnType<ReturnType<typeof createCatalogDirectoryService>["list"]>
           >;
-          selfExcluded: Awaited<
+          secondPage: Awaited<
             ReturnType<ReturnType<typeof createCatalogDirectoryService>["list"]>
           >;
         }
@@ -201,7 +201,7 @@ describeLocalStack("Drizzle catalog directory repository", () => {
             approvedCompany,
           ),
         });
-        const selfExcluded = await companyViewerService.list(
+        const ownProfileListed = await companyViewerService.list(
           { search: "Empresa Quatro" },
           `directory-self-${crypto.randomUUID()}`,
         );
@@ -211,8 +211,8 @@ describeLocalStack("Drizzle catalog directory repository", () => {
           creatorOnly,
           firstPage,
           mixed,
+          ownProfileListed,
           secondPage,
-          selfExcluded,
         };
         throw rollback;
       });
@@ -235,7 +235,13 @@ describeLocalStack("Drizzle catalog directory repository", () => {
     expect(proof?.firstPage.items).toHaveLength(1);
     expect(proof?.secondPage.items).toHaveLength(1);
     expect(proof?.secondPage.items[0]).not.toEqual(proof?.firstPage.items[0]);
-    expect(proof?.selfExcluded.items).toEqual([]);
+    expect(proof?.ownProfileListed.items).toEqual([
+      expect.objectContaining({
+        displayName: "Empresa Quatro",
+        isOwnProfile: true,
+        kind: "COMPANY",
+      }),
+    ]);
     expect(proof?.mixed.facets.niches).toEqual(
       expect.arrayContaining([{ name: "Beleza", slug: "beleza" }]),
     );

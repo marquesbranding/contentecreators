@@ -59,6 +59,7 @@ function toCreatorCardViewModel(
     creatorType: creator.creatorType,
     detailHref: `/app/creators/${creator.creatorId}`,
     displayName: creator.displayName,
+    isOwnProfile: creator.isOwnProfile,
     media: creator.avatar
       ? {
           alt: `Foto de perfil de ${creator.displayName}`,

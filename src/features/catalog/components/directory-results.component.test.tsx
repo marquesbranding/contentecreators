@@ -8,9 +8,11 @@ function companyEntry(index: number): DirectoryCompanyBrowserEntryDto {
   return {
     city: "São Paulo",
     companyId: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`,
+    cover: null,
     createdAt: "2026-01-01T00:00:00.000Z",
     description: null,
     displayName: `Empresa ${index}`,
+    isOwnProfile: false,
     kind: "COMPANY",
     logo: null,
     segment: null,
@@ -27,6 +29,18 @@ describe("DirectoryResults", () => {
 
     expect(screen.getAllByRole("article")).toHaveLength(5);
     expect(screen.getAllByRole("list")).toHaveLength(1);
+  });
+
+  it("reserves bottom padding matching the stagger offset so the last row never overlaps a sibling", () => {
+    const items = Array.from({ length: 5 }, (_, index) => companyEntry(index));
+
+    render(<DirectoryResults items={items} status="success" />);
+
+    expect(screen.getByRole("list")).toHaveClass(
+      "sm:pb-8",
+      "lg:pb-8",
+      "xl:pb-16",
+    );
   });
 
   it("repeats the midlist block every N items and cycles through the available slots", () => {

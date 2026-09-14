@@ -31,10 +31,13 @@ export async function toDirectoryBrowserPage(
   const items = await Promise.all(
     page.items.map(async (entry): Promise<DirectoryBrowserEntryDto> => {
       if (entry.kind === "COMPANY") {
-        const { logoAssetId, ...company } = entry;
-        const logo = await resolveCatalogImage(logoAssetId, resolveImage);
+        const { coverAssetId, logoAssetId, ...company } = entry;
+        const [logo, cover] = await Promise.all([
+          resolveCatalogImage(logoAssetId, resolveImage),
+          resolveCatalogImage(coverAssetId, resolveImage),
+        ]);
 
-        return { ...company, logo };
+        return { ...company, cover, logo };
       }
 
       const { avatarAssetId, coverAssetId, ...creator } = entry;

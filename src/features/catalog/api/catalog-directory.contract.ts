@@ -28,9 +28,11 @@ export const directoryCompanyBrowserEntrySchema = z
   .object({
     city: z.string().trim().max(120).nullable(),
     companyId: z.uuid(),
+    cover: catalogSignedImageSchema.nullable(),
     createdAt: z.iso.datetime({ offset: true }),
     description: z.string().trim().max(220).nullable(),
     displayName: z.string().trim().min(1).max(160),
+    isOwnProfile: z.boolean(),
     kind: z.literal("COMPANY"),
     logo: catalogSignedImageSchema.nullable(),
     segment: z.string().trim().max(120).nullable(),
@@ -53,6 +55,7 @@ export const directoryCreatorBrowserEntrySchema = z
     creatorId: z.uuid(),
     creatorType: catalogCreatorTypeSchema,
     displayName: z.string().trim().min(2).max(120),
+    isOwnProfile: z.boolean(),
     kind: z.literal("CREATOR"),
     metrics: z
       .array(
@@ -120,8 +123,9 @@ export const directoryBrowserPageSchema = z
 
 export interface DirectoryCompanyBrowserEntryDto extends Omit<
   DirectoryCompanyEntryDto,
-  "logoAssetId"
+  "coverAssetId" | "logoAssetId"
 > {
+  cover: CatalogSignedImageDto | null;
   logo: CatalogSignedImageDto | null;
 }
 

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import {
   CompanyDetailView,
   companyDetailQuerySchema,
 } from "@/features/catalog";
+import { isOwnCompanyProfile } from "@/features/catalog/server";
 import { AuthenticatedProductShell } from "@/features/identity";
 import { signOutAction } from "@/features/identity/server";
 import { AccountStatusBoundary } from "@/features/moderation/server";
@@ -24,6 +26,13 @@ export default async function CompanyDetailPage({
   return (
     <AccountStatusBoundary
       renderApproved={async (account) => {
+        if (
+          account.role === "COMPANY" &&
+          (await isOwnCompanyProfile(companyId))
+        ) {
+          redirect("/app/profile");
+        }
+
         const viewerRole =
           account.role === "COMPANY" || account.role === "INFLUENCER"
             ? account.role

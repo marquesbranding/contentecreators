@@ -208,7 +208,6 @@ function buildCreatorBranch(filters: DirectoryQuery, viewer: CatalogViewer) {
     sql`${accounts.status} = 'APPROVED'`,
     sql`${accounts.archivedAt} is null`,
     sql`${creatorProfiles.archivedAt} is null`,
-    sql`${creatorProfiles.accountId} <> ${viewer.accountId}`,
   ];
 
   const typeFilter = creatorTypeFilter(filters);
@@ -288,6 +287,7 @@ function buildCreatorBranch(filters: DirectoryQuery, viewer: CatalogViewer) {
       end as description,
       ${creatorProfiles.avatarAssetId} as "primaryAssetId",
       ${creatorProfiles.coverAssetId} as "coverAssetId",
+      ${creatorProfiles.accountId} = ${viewer.accountId} as "isOwnProfile",
       ${creatorProfiles.creatorType}::text as "creatorType",
       null::varchar(120) as segment,
       null::text as "websiteUrl",
@@ -307,7 +307,6 @@ function buildCompanyBranch(filters: DirectoryQuery, viewer: CatalogViewer) {
     sql`${accounts.status} = 'APPROVED'`,
     sql`${accounts.archivedAt} is null`,
     sql`${companyProfiles.archivedAt} is null`,
-    sql`${companyProfiles.accountId} <> ${viewer.accountId}`,
     sql`length(trim(${companyProfiles.tradeName})) > 0`,
   ];
 
@@ -382,6 +381,7 @@ function buildCompanyBranch(filters: DirectoryQuery, viewer: CatalogViewer) {
       end as description,
       ${companyProfiles.logoAssetId} as "primaryAssetId",
       ${companyProfiles.coverAssetId} as "coverAssetId",
+      ${companyProfiles.accountId} = ${viewer.accountId} as "isOwnProfile",
       null::text as "creatorType",
       ${companyProfiles.segment} as segment,
       ${companyProfiles.websiteUrl} as "websiteUrl",
@@ -403,6 +403,7 @@ interface DirectoryRow {
   description: string | null;
   displayName: string;
   id: string;
+  isOwnProfile: boolean;
   kind: "COMPANY" | "CREATOR";
   metrics: CatalogCardMetricDto[];
   niches: CatalogNicheDto[];
@@ -425,9 +426,11 @@ function toDirectoryEntry(row: DirectoryRow): DirectoryEntryDto {
     return {
       city: row.city,
       companyId: row.id,
+      coverAssetId: row.coverAssetId,
       createdAt,
       description: row.description,
       displayName: row.displayName,
+      isOwnProfile: row.isOwnProfile,
       kind: "COMPANY",
       logoAssetId: row.primaryAssetId,
       segment: row.segment,
@@ -445,6 +448,7 @@ function toDirectoryEntry(row: DirectoryRow): DirectoryEntryDto {
     creatorId: row.id,
     creatorType: row.creatorType ?? "INFLUENCER",
     displayName: row.displayName,
+    isOwnProfile: row.isOwnProfile,
     kind: "CREATOR",
     metrics: row.metrics,
     niches: row.niches,

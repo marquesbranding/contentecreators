@@ -1,5 +1,9 @@
 import "server-only";
 
+export {
+  isOwnCompanyProfile,
+  isOwnCreatorProfile,
+} from "./server/queries/catalog-profile-ownership.queries";
 export { catalogNoStoreHeaders } from "./server/policies/catalog-freshness.policy";
 export { authorizeCatalogViewer } from "./server/policies/catalog-access.policy";
 export {

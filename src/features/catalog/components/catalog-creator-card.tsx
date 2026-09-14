@@ -51,6 +51,7 @@ export interface CatalogCreatorCardViewModel extends Omit<
   cover?: CatalogCreatorMediaViewModel | null;
   creatorType: CatalogCreatorType;
   detailHref: string;
+  isOwnProfile?: boolean;
   media?: CatalogCreatorMediaViewModel | null;
   metrics?: CatalogSelfReportedMetricViewModel[];
   niches: CatalogNicheDto[];
@@ -224,6 +225,11 @@ export function CatalogCreatorCard({
           <Badge className="bg-brand-night border-transparent text-[11px] text-white">
             {creatorTypeLabel(creator.creatorType)}
           </Badge>
+          {creator.isOwnProfile ? (
+            <Badge className="text-[11px]" variant="outline">
+              Você
+            </Badge>
+          ) : null}
           {visibleNiches.map((niche) => (
             <Badge className="text-[11px]" key={niche.slug} variant="secondary">
               {niche.name}
@@ -234,7 +240,7 @@ export function CatalogCreatorCard({
               +{hiddenNicheCount}
             </Badge>
           ) : null}
-          {creator.whatsappContactCount > 0 ? (
+          {!creator.isOwnProfile && creator.whatsappContactCount > 0 ? (
             <Badge className="gap-1 border-transparent bg-[#25D366] text-[11px] text-white">
               {creator.whatsappContactCount} chamaram no WhatsApp
             </Badge>
@@ -244,7 +250,11 @@ export function CatalogCreatorCard({
 
       <CardFooter className="bg-card border-t-0 px-4 pt-0 pb-4">
         <Link
-          aria-label={`Ver perfil de ${creator.displayName}`}
+          aria-label={
+            creator.isOwnProfile
+              ? "Ver meu perfil"
+              : `Ver perfil de ${creator.displayName}`
+          }
           className={cn(
             buttonVariants({
               className:
@@ -252,9 +262,9 @@ export function CatalogCreatorCard({
               size: "sm",
             }),
           )}
-          href={creator.detailHref}
+          href={creator.isOwnProfile ? "/app/profile" : creator.detailHref}
         >
-          Conhecer creator
+          {creator.isOwnProfile ? "Ver meu perfil" : "Conhecer creator"}
           <SquareArrowOutUpRight aria-hidden="true" className="size-3.5" />
         </Link>
       </CardFooter>

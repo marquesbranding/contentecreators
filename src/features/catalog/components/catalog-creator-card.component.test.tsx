@@ -93,6 +93,18 @@ describe("CatalogCreatorCard", () => {
     expect(container.querySelector("img")).not.toBeInTheDocument();
   });
 
+  it("marks the viewer's own profile and links straight to Meu perfil", () => {
+    render(<CatalogCreatorCard creator={{ ...creator, isOwnProfile: true }} />);
+
+    expect(screen.getByText("Você")).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "Ver meu perfil" }),
+    ).toHaveAttribute("href", "/app/profile");
+    expect(
+      screen.queryByText(/chamaram no WhatsApp/),
+    ).not.toBeInTheDocument();
+  });
+
   it("shrinks a long display name instead of overflowing the card", () => {
     render(
       <CatalogCreatorCard

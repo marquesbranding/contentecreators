@@ -219,6 +219,70 @@ describeLocalStack("business table row-level security", () => {
     });
   });
 
+  it("shows both COMPANY and INFLUENCER viewers a third party company's logo and cover, never its pending media", async () => {
+    const rollback = new Error("rollback company media visibility fixture");
+    const otherCompanyAccountId = "c0000000-0000-4000-8000-000000000005";
+    const logoAssetId = "95000000-0000-4000-8000-000000000001";
+    const coverAssetId = "95000000-0000-4000-8000-000000000002";
+    const pendingAssetId = "95000000-0000-4000-8000-000000000003";
+
+    try {
+      await database.begin(async (transaction) => {
+        await transaction`
+          update public.accounts
+          set status = 'APPROVED'
+          where id = ${otherCompanyAccountId}
+        `;
+        await transaction`
+          insert into public.media_assets (
+            id, owner_account_id, bucket_name, object_path, kind, mime_type, size_bytes, status
+          )
+          values
+            (
+              ${logoAssetId}, ${otherCompanyAccountId}, 'profile-media',
+              ${`${otherCompanyAccountId}/logo/${logoAssetId}.png`}, 'LOGO', 'image/png', 1024, 'ACTIVE'
+            ),
+            (
+              ${coverAssetId}, ${otherCompanyAccountId}, 'profile-media',
+              ${`${otherCompanyAccountId}/cover/${coverAssetId}.png`}, 'COVER', 'image/png', 1024, 'ACTIVE'
+            ),
+            (
+              ${pendingAssetId}, ${otherCompanyAccountId}, 'profile-media',
+              ${`${otherCompanyAccountId}/cover/${pendingAssetId}.png`}, 'COVER', 'image/png', 1024, 'PENDING'
+            )
+        `;
+
+        await assumeAppContext(transaction, approvedCompanyContext);
+        const asCompany = await transaction<{ id: string; kind: string }[]>`
+          select id, kind
+          from public.media_assets
+          where owner_account_id = ${otherCompanyAccountId}
+          order by kind
+        `;
+
+        await assumeAppContext(transaction, approvedCreatorContext);
+        const asInfluencer = await transaction<{ id: string; kind: string }[]>`
+          select id, kind
+          from public.media_assets
+          where owner_account_id = ${otherCompanyAccountId}
+          order by kind
+        `;
+
+        expect(asCompany).toEqual([
+          { id: coverAssetId, kind: "COVER" },
+          { id: logoAssetId, kind: "LOGO" },
+        ]);
+        expect(asInfluencer).toEqual(asCompany);
+
+        throw rollback;
+      });
+    } catch (error) {
+      if (error !== rollback) {
+        throw error;
+      }
+    }
+  });
+
   it("makes creator contact consent visible only to an approved company", async () => {
     await database.begin(async (transaction) => {
       await assumeAppContext(transaction, approvedCompanyContext);

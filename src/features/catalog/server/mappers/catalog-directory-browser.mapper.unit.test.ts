@@ -14,9 +14,11 @@ const page: DirectoryPageDto = {
     {
       city: "São Paulo",
       companyId: "30000000-0000-4000-8000-000000000001",
+      coverAssetId: "30000000-0000-4000-8000-000000000005",
       createdAt: "2026-08-01T12:00:00.000Z",
       description: "Marca de moda sustentável.",
       displayName: "Marca Exemplo",
+      isOwnProfile: false,
       kind: "COMPANY",
       logoAssetId: "30000000-0000-4000-8000-000000000002",
       segment: "Moda",
@@ -32,6 +34,7 @@ const page: DirectoryPageDto = {
       creatorId: "30000000-0000-4000-8000-000000000004",
       creatorType: "INFLUENCER",
       displayName: "Ana Creator",
+      isOwnProfile: false,
       kind: "CREATOR",
       metrics: [],
       niches: [{ name: "Moda", slug: "moda" }],
@@ -60,7 +63,11 @@ describe("catalog directory browser mapper", () => {
     expect(resolveImage).toHaveBeenCalledWith(
       "30000000-0000-4000-8000-000000000003",
     );
+    expect(resolveImage).toHaveBeenCalledWith(
+      "30000000-0000-4000-8000-000000000005",
+    );
     expect(result.items[0]).toMatchObject({
+      cover: { height: 640, width: 640 },
       kind: "COMPANY",
       logo: { height: 640, width: 640 },
     });
@@ -78,7 +85,7 @@ describe("catalog directory browser mapper", () => {
       vi.fn().mockRejectedValue(new Error("storage unavailable")),
     );
 
-    expect(result.items[0]).toMatchObject({ logo: null });
+    expect(result.items[0]).toMatchObject({ cover: null, logo: null });
     expect(result.items[1]).toMatchObject({ avatar: null, cover: null });
     expect(result.items).toHaveLength(2);
   });
