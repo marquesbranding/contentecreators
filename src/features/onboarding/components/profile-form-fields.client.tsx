@@ -1142,7 +1142,15 @@ export function ProfileFormFields({
                   placeholder="Selecione uma faixa"
                 />
               </>
-            ) : !showCreatorTypeField ? null : creatorType === undefined ? (
+            ) : !showCreatorTypeField ? (
+              /* Hidden from the post-login edit form on purpose (creators
+               * don't switch INFLUENCER/UGC after onboarding), but still
+               * submitted — otherwise the server's required-field check on
+               * this same schema always rejects the save. */
+              creatorType === undefined ? null : (
+                <input name="creatorType" type="hidden" value={creatorType} />
+              )
+            ) : creatorType === undefined ? (
               /* Spans the whole row: next to "Nome completo" the two cards got
                * half a column each and their copy broke syllable by syllable. */
               <Field

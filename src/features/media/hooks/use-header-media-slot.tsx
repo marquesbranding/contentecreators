@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { useMediaUpload } from "./use-media-upload";
 import type {
@@ -40,7 +41,10 @@ export function useHeaderMediaSlot({
     actions,
     activateOnUpload,
     currentAssetId: assetId,
-    onComplete: setAssetId,
+    onComplete: (nextAssetId) => {
+      setAssetId(nextAssetId);
+      toast.success(`${slot.label} atualizada.`);
+    },
     onProfileVersionChange,
     onRemove: () => setAssetId(null),
     purpose: slot.purpose,

@@ -2,7 +2,7 @@
 
 import { CheckCircle2, CircleAlert, Save } from "lucide-react";
 import Link from "next/link";
-import { useActionState, useCallback, useState } from "react";
+import { useActionState, useCallback, useRef, useState } from "react";
 
 import { ActionSubmitButton } from "@/shared/components/action-submit-button";
 import {
@@ -19,7 +19,10 @@ import {
   RequiredFieldsNotice,
 } from "@/shared/components/ui/field";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { useActionSuccessToast } from "@/shared/hooks/use-action-success-toast";
+import {
+  emitActionFeedback,
+  useActionFeedback,
+} from "@/shared/hooks/use-action-feedback";
 import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
 import { useUnsavedChangesGuard } from "@/shared/hooks/use-unsaved-changes-guard";
 
@@ -59,6 +62,7 @@ export function CompanyProfileEditForm({
   submitLabel?: string;
 }) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
   const actionWithClientSync = useCallback<CompanyProfileAction>(
     async (previousState, formData) => {
       const nextState = await action(previousState, formData);
@@ -67,6 +71,10 @@ export function CompanyProfileEditForm({
         setHasUnsavedChanges(false);
         onProfileVersionChange?.(nextState.profileVersion);
       }
+
+      /* Triggered here too (not just from the effect below): `revalidatePath`
+       * can remount this tree before the effect ever runs. */
+      emitActionFeedback(nextState, { title: "Alterações publicadas" });
 
       return nextState;
     },
@@ -81,7 +89,8 @@ export function CompanyProfileEditForm({
     formValidation.clientFieldErrors,
     state.fieldErrors,
   );
-  useActionSuccessToast(state, {
+  const { errorAlertRef } = useActionFeedback(state, {
+    onRetry: () => formRef.current?.requestSubmit(),
     title: "Alterações publicadas",
   });
   useUnsavedChangesGuard(hasUnsavedChanges && !pending);
@@ -98,11 +107,14 @@ export function CompanyProfileEditForm({
         formValidation.formValidationProps.onInput(event);
       }}
       onSubmit={formValidation.formValidationProps.onSubmit}
+      ref={formRef}
     >
       <input name="expectedVersion" type="hidden" value={expectedVersion} />
       {state.message ? (
         <Alert
           aria-live="polite"
+          ref={errorAlertRef}
+          tabIndex={-1}
           variant={state.status === "error" ? "destructive" : "default"}
         >
           {state.status === "success" ? (
@@ -113,7 +125,7 @@ export function CompanyProfileEditForm({
           <AlertTitle>
             {state.status === "success"
               ? "Alterações publicadas"
-              : "Não foi possível salvar"}
+              : (state.title ?? "Não foi possível salvar")}
           </AlertTitle>
           <AlertDescription>{state.message}</AlertDescription>
         </Alert>
