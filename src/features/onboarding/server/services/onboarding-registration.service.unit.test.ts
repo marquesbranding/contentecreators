@@ -88,7 +88,7 @@ describe("onboarding registration service", () => {
     await expect(service.registerWithEmail(influencerInput)).resolves.toEqual({
       kind: "account_exists",
       message:
-        "Este e-mail já possui cadastro. Entre com sua senha ou recupere o acesso para continuar.",
+        "Você já tem uma conta com este e-mail. Clique em “Acessar meu cadastro” para entrar e acompanhar a validação do seu perfil.",
     });
     expect(repository.prepareEmailRegistration).not.toHaveBeenCalled();
     expect(identity.deleteIdentity).not.toHaveBeenCalled();

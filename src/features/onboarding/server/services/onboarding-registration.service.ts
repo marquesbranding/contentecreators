@@ -100,7 +100,7 @@ interface RegistrationAbuseProtection {
 const REGISTRATION_FAILURE_MESSAGE =
   "Não foi possível concluir o cadastro agora. Nenhum cadastro parcial foi mantido.";
 const ACCOUNT_EXISTS_MESSAGE =
-  "Este e-mail já possui cadastro. Entre com sua senha ou recupere o acesso para continuar.";
+  "Você já tem uma conta com este e-mail. Clique em “Acessar meu cadastro” para entrar e acompanhar a validação do seu perfil.";
 
 export function createOnboardingRegistrationService(
   identity: RegistrationIdentityGateway,
