@@ -7,6 +7,9 @@ import { cn } from "@/shared/lib/cn";
 
 const copy = ptBR.marketing;
 
+const navLinkClassName =
+  "text-base font-semibold text-white/75 transition-colors hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none";
+
 export function MarketingHeader() {
   return (
     <header className="absolute top-0 right-0 left-0 z-50 text-white">
@@ -23,30 +26,18 @@ export function MarketingHeader() {
 
         <nav
           aria-label="Navegação principal"
-          className="hidden items-center gap-7 lg:flex"
+          className="hidden items-center gap-8 lg:flex"
         >
-          <a
-            className="text-sm font-semibold text-white/75 transition-colors hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
-            href="#para-creators"
-          >
+          <a className={navLinkClassName} href="#para-creators">
             {copy.navigation.forCreators}
           </a>
-          <a
-            className="text-sm font-semibold text-white/75 transition-colors hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
-            href="#para-empresas"
-          >
+          <a className={navLinkClassName} href="#para-empresas">
             {copy.navigation.forCompanies}
           </a>
-          <a
-            className="text-sm font-semibold text-white/75 transition-colors hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
-            href="#como-funciona"
-          >
+          <a className={navLinkClassName} href="#como-funciona">
             {copy.navigation.howItWorks}
           </a>
-          <a
-            className="text-sm font-semibold text-white/75 transition-colors hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
-            href="#faq"
-          >
+          <a className={navLinkClassName} href="#faq">
             {copy.navigation.faq}
           </a>
         </nav>

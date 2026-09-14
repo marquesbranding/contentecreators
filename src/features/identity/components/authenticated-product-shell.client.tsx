@@ -28,8 +28,9 @@ import { useBackofficeAccess } from "./backoffice-access-context.client";
 
 /**
  * Creators browse companies and vice versa, so the catalog nav entry's
- * label/active-match must follow which detail route the viewer's role
- * actually lands on ("/app/creators/*" vs "/app/companies/*").
+ * active-match must follow which detail route the viewer's role actually
+ * lands on ("/app/creators/*" vs "/app/companies/*"); the label itself stays
+ * "Encontrar creators" for every role.
  */
 function getNavigationItems(viewerRole?: "COMPANY" | "INFLUENCER") {
   const browsesCompanies = viewerRole === "INFLUENCER";
@@ -43,7 +44,7 @@ function getNavigationItems(viewerRole?: "COMPANY" | "INFLUENCER") {
         pathname.startsWith(
           browsesCompanies ? "/app/companies/" : "/app/creators/",
         ),
-      label: browsesCompanies ? "Encontrar empresas" : "Encontrar creators",
+      label: "Encontrar creators",
     },
     {
       href: "/app/profile",

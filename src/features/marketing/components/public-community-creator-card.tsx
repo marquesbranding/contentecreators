@@ -51,6 +51,12 @@ export function PublicCommunityCreatorCard({
           <SignedImage
             alt=""
             className="object-cover"
+            fallback={
+              <div
+                aria-hidden="true"
+                className="from-brand-blue/30 via-brand-pink/15 to-brand-lime/25 size-full bg-gradient-to-br"
+              />
+            }
             height={creator.cover.height}
             src={creator.cover.url}
             width={creator.cover.width}

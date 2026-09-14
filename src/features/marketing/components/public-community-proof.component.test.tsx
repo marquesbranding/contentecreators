@@ -33,6 +33,7 @@ const creator: PublicShowcaseCreatorDto = {
 
 const company: PublicShowcaseCompanyDto = {
   city: "São Paulo",
+  cover: null,
   id: "company-1",
   kind: "COMPANY",
   logo: { height: 256, url: signedUrl, width: 256 },

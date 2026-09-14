@@ -52,6 +52,7 @@ export async function loadPublicLandingShowcaseSource(
               and ${mediaAssets.kind} = 'AVATAR'
               and ${mediaAssets.status} = 'ACTIVE'
               and ${mediaAssets.archivedAt} is null
+              and ${mediaAssets.replacedByAssetId} is null
           )
         `,
         bioExcerpt: sql<string | null>`
@@ -75,6 +76,7 @@ export async function loadPublicLandingShowcaseSource(
               and ${mediaAssets.kind} = 'COVER'
               and ${mediaAssets.status} = 'ACTIVE'
               and ${mediaAssets.archivedAt} is null
+              and ${mediaAssets.replacedByAssetId} is null
           )
         `,
         creatorType: creatorProfiles.creatorType,
@@ -152,6 +154,23 @@ export async function loadPublicLandingShowcaseSource(
               and ${companyLocations.archivedAt} is null
             order by ${companyLocations.isPrimary} desc, ${companyLocations.id}
             limit 1
+          )
+        `,
+        coverSource: sql<PublicShowcaseImageSource | null>`
+          (
+            select jsonb_build_object(
+              'bucketName', ${mediaAssets.bucketName},
+              'height', ${mediaAssets.height},
+              'objectPath', ${mediaAssets.objectPath},
+              'width', ${mediaAssets.width}
+            )
+            from ${mediaAssets}
+            where ${mediaAssets.id} = ${companyProfiles.coverAssetId}
+              and ${mediaAssets.ownerAccountId} = ${companyProfiles.accountId}
+              and ${mediaAssets.kind} = 'COVER'
+              and ${mediaAssets.status} = 'ACTIVE'
+              and ${mediaAssets.archivedAt} is null
+              and ${mediaAssets.replacedByAssetId} is null
           )
         `,
         id: companyProfiles.id,

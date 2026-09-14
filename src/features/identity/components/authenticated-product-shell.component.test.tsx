@@ -88,7 +88,7 @@ describe("AuthenticatedProductShell", () => {
     ).toEqual([]);
   });
 
-  it("labels catalog discovery for companies when the viewer is an influencer", () => {
+  it("keeps the catalog discovery label fixed when the viewer is an influencer", () => {
     const { container } = renderShell(
       "/app/companies/company-id",
       "INFLUENCER",
@@ -100,11 +100,11 @@ describe("AuthenticatedProductShell", () => {
 
     expect(
       within(navigation).getByRole("link", {
-        name: "Encontrar empresas",
+        name: "Encontrar creators",
         current: "page",
       }),
     ).toHaveAttribute("href", "/app/catalog");
-    expect(container.innerHTML).not.toMatch(/encontrar creators/iu);
+    expect(container.innerHTML).not.toMatch(/encontrar empresas/iu);
   });
 
   it("marks the profile destination active", () => {

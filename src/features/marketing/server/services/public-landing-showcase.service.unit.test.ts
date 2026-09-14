@@ -36,6 +36,7 @@ function creatorSource(id: string): PublicShowcaseCreatorSource {
 function companySource(id: string): PublicShowcaseCompanySource {
   return {
     city: null,
+    coverSource: { ...imageSource, objectPath: "owner/company-cover.webp" },
     id,
     logoSource: { ...imageSource, objectPath: "owner/logo.png" },
     segment: null,
@@ -63,6 +64,7 @@ function creatorDto(id: string): PublicShowcaseCreatorDto {
 function companyDto(id: string): PublicShowcaseCompanyDto {
   return {
     city: null,
+    cover: null,
     id,
     kind: "COMPANY",
     logo: null,
@@ -109,6 +111,9 @@ describe("public landing showcase service", () => {
         kind: "CREATOR",
       }),
       expect.objectContaining({
+        cover: expect.objectContaining({
+          url: "https://project.supabase.co/sign/owner/company-cover.webp",
+        }),
         kind: "COMPANY",
         logo: expect.objectContaining({
           url: "https://project.supabase.co/sign/owner/logo.png",

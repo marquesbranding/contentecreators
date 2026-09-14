@@ -37,6 +37,7 @@ const allowedCreatorKeys = new Set([
 ]);
 const allowedCompanyKeys = new Set([
   "city",
+  "cover",
   "id",
   "kind",
   "logo",
@@ -150,6 +151,7 @@ function parseCompany(
 
   return {
     city: parseOptionalText(value.city, 120),
+    cover: parseImageField(value.cover),
     id,
     kind: "COMPANY",
     logo: parseImageField(value.logo),

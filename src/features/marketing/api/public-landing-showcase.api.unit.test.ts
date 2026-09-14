@@ -21,6 +21,7 @@ const creator = {
 
 const company = {
   city: "São Paulo",
+  cover: { height: 900, url: signedUrl, width: 1600 },
   id: "company-1",
   kind: "COMPANY",
   logo: { height: 256, url: signedUrl, width: 256 },

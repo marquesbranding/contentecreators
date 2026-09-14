@@ -83,9 +83,10 @@ export function createPublicLandingShowcaseService({
           ),
           Promise.all(
             source.companies.map(
-              async ({ logoSource, ...company }) =>
+              async ({ coverSource, logoSource, ...company }) =>
                 ({
                   ...company,
+                  cover: await sign(coverSource),
                   kind: "COMPANY",
                   logo: await sign(logoSource),
                 }) satisfies PublicShowcaseCompanyDto,

@@ -32,6 +32,7 @@ export interface PublicShowcaseCreatorDto {
 
 export interface PublicShowcaseCompanyDto {
   city: string | null;
+  cover: PublicShowcaseImageDto | null;
   id: string;
   kind: "COMPANY";
   logo: PublicShowcaseImageDto | null;
@@ -66,8 +67,9 @@ export interface PublicShowcaseCreatorSource extends Omit<
 
 export interface PublicShowcaseCompanySource extends Omit<
   PublicShowcaseCompanyDto,
-  "kind" | "logo"
+  "cover" | "kind" | "logo"
 > {
+  coverSource: PublicShowcaseImageSource | null;
   logoSource: PublicShowcaseImageSource | null;
 }
 

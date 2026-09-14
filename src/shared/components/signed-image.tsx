@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2Icon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
 import { cn } from "@/shared/lib/cn";
 
@@ -16,6 +16,12 @@ interface SignedImageProps {
   /** Classes for the <img> itself (object-fit, sizing when no wrapperClassName is given). */
   className: string;
   fetchPriority?: "auto" | "high" | "low";
+  /**
+   * Rendered in place of the image once it errors out or times out. Without
+   * it, an errored image just leaves its area blank (opacity 0) — pass the
+   * same gradient/initials shown when there is no image at all.
+   */
+  fallback?: ReactNode;
   height?: number | null;
   loading?: "eager" | "lazy";
   /** A short-lived bearer URL; intentionally bypasses the shared image optimizer. */
@@ -57,6 +63,7 @@ function LoadingSpinnerOverlay() {
 export function SignedImage({
   alt,
   className,
+  fallback,
   fetchPriority = "auto",
   height,
   loading = "lazy",
@@ -69,6 +76,8 @@ export function SignedImage({
     "loading",
   );
   const [trackedSrc, setTrackedSrc] = useState(src);
+  const [isVisible, setIsVisible] = useState(loading === "eager");
+  const rootRef = useRef<HTMLDivElement | HTMLImageElement | null>(null);
 
   if (src !== trackedSrc) {
     setTrackedSrc(src);
@@ -76,6 +85,37 @@ export function SignedImage({
   }
 
   useEffect(() => {
+    if (loading === "eager" || isVisible) {
+      return;
+    }
+
+    const node = rootRef.current;
+
+    if (!node || typeof IntersectionObserver === "undefined") {
+      setIsVisible(true);
+      return;
+    }
+
+    /* `loading="lazy"` defers the browser's own fetch until the element nears
+     * the viewport; without this, the 8s timeout below could elapse before
+     * that fetch even starts (e.g. duplicated carousel copies sitting far
+     * offscreen), marking a perfectly fine image as errored. */
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        setIsVisible(true);
+      }
+    });
+
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [isVisible, loading]);
+
+  useEffect(() => {
+    if (!isVisible) {
+      return;
+    }
+
     /* Some failed loads (e.g. blocked cross-origin responses) never fire
      * onError, which would otherwise spin the placeholder forever. */
     const timeoutId = window.setTimeout(() => {
@@ -83,13 +123,18 @@ export function SignedImage({
     }, 8_000);
 
     return () => window.clearTimeout(timeoutId);
-  }, [src]);
+  }, [src, isVisible]);
 
   /* An image already decoded before hydration (server-rendered markup, or a
    * warm cache) fires no load event, which would strand it at opacity 0.
    * A callback ref runs as soon as the node attaches, so we can read the
-   * browser's own completion flags instead of waiting for the event. */
+   * browser's own completion flags instead of waiting for the event. Also
+   * doubles as the IntersectionObserver target when there is no wrapper. */
   function adoptAlreadyLoadedImage(node: HTMLImageElement | null) {
+    if (!wrapperClassName) {
+      rootRef.current = node;
+    }
+
     if (node?.complete && node.naturalWidth > 0) {
       setStatus("loaded");
     }
@@ -133,18 +178,32 @@ export function SignedImage({
       img
     );
 
+  const fallbackOverlay =
+    status === "error" && fallback ? (
+      <span aria-hidden="true" className="absolute inset-0">
+        {fallback}
+      </span>
+    ) : null;
+
   if (!wrapperClassName) {
     return (
       <>
         {status === "loading" ? <LoadingSpinnerOverlay /> : null}
+        {fallbackOverlay}
         {picture}
       </>
     );
   }
 
   return (
-    <div className={cn("bg-muted relative overflow-hidden", wrapperClassName)}>
+    <div
+      className={cn("bg-muted relative overflow-hidden", wrapperClassName)}
+      ref={(node) => {
+        rootRef.current = node;
+      }}
+    >
       {status === "loading" ? <LoadingSpinnerOverlay /> : null}
+      {fallbackOverlay}
       {picture}
     </div>
   );

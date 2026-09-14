@@ -26,10 +26,27 @@ export function PublicCommunityCompanyCard({
       role="article"
     >
       <div className="relative">
-        <div
-          aria-hidden="true"
-          className="from-brand-sky/35 via-brand-lime/15 to-brand-blue/25 relative z-0 h-20 bg-gradient-to-br sm:h-24"
-        />
+        {company.cover ? (
+          <SignedImage
+            alt=""
+            className="object-cover"
+            fallback={
+              <div
+                aria-hidden="true"
+                className="from-brand-sky/35 via-brand-lime/15 to-brand-blue/25 size-full bg-gradient-to-br"
+              />
+            }
+            height={company.cover.height}
+            src={company.cover.url}
+            width={company.cover.width}
+            wrapperClassName="z-0 h-20 w-full sm:h-24"
+          />
+        ) : (
+          <div
+            aria-hidden="true"
+            className="from-brand-sky/35 via-brand-lime/15 to-brand-blue/25 relative z-0 h-20 bg-gradient-to-br sm:h-24"
+          />
+        )}
         <ShieldCheck
           aria-label="Empresa aprovada"
           className="text-brand-blue absolute top-3 right-3 z-10 size-6"
