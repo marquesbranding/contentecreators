@@ -2,6 +2,7 @@
 
 import "server-only";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { getPublicEnv } from "@/shared/lib/env/public-env";
@@ -17,7 +18,10 @@ import {
 } from "../../schemas/onboarding-form-schema";
 import type { OnboardingActionState } from "../../types/onboarding-action.types";
 import { createServerCorrectedProfileResubmissionService } from "../services/server-corrected-profile-resubmission.service";
-import { createServerOnboardingRegistrationService } from "../services/server-onboarding-registration.service";
+import {
+  createServerOnboardingRegistrationService,
+  createServerRegistrationEmailAvailabilityService,
+} from "../services/server-onboarding-registration.service";
 import { isUniqueViolation } from "../services/unique-violation";
 
 function formPayload(formData: FormData) {
@@ -86,6 +90,32 @@ function validationFailure(
         rawRole === "COMPANY" || rawRole === "INFLUENCER" ? rawRole : undefined,
     },
   };
+}
+
+/**
+ * Lets the sign-up form warn, as soon as the e-mail field is left, that the
+ * e-mail already belongs to a company or creator account. Failures answer
+ * "not registered": the sign-up itself still rejects a duplicate.
+ */
+export async function checkRegistrationEmailAction(
+  email: string,
+): Promise<{ registered: boolean }> {
+  try {
+    const requestHeaders = await headers();
+    const networkIdentity =
+      requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      requestHeaders.get("x-real-ip")?.trim() ||
+      "local";
+    const result =
+      await createServerRegistrationEmailAvailabilityService().check({
+        email: typeof email === "string" ? email : "",
+        networkIdentity,
+      });
+
+    return { registered: result.status === "registered" };
+  } catch {
+    return { registered: false };
+  }
 }
 
 export async function registerWithEmailAction(

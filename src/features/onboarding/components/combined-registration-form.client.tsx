@@ -47,6 +47,7 @@ import type { OnboardingAction } from "../types/onboarding-action.types";
 import { initialOnboardingActionState } from "../types/onboarding-action.types";
 import { DescriptiveRadioCardGroup } from "./descriptive-radio-card-group.client";
 import { FormErrorSummary, mergeFieldErrors } from "./form-error-summary";
+import { RegisteredEmailDialog } from "./registered-email-dialog";
 import { OnboardingSubmitConfirmation } from "./onboarding-submit-confirmation";
 import { ProfileFormFields } from "./profile-form-fields.client";
 import { RegistrationStepper } from "./registration-stepper.client";
@@ -70,11 +71,14 @@ const REGISTRATION_IMAGE_MAX_BYTES = 1.8 * 1024 * 1024;
 
 export function CombinedRegistrationForm({
   action,
+  checkEmailAction,
   googleAction,
   initialAccountType,
   resendAction,
 }: {
   action: OnboardingAction;
+  /** Warns as soon as the e-mail field is left that the e-mail already has an account. */
+  checkEmailAction?: (email: string) => Promise<{ registered: boolean }>;
   googleAction: (formData: FormData) => Promise<void>;
   /** Seeds the step-1 card from the landing's `?intent=`; the visitor can still change it. */
   initialAccountType?: AccountType;
@@ -96,6 +100,9 @@ export function CombinedRegistrationForm({
   const [nameValue, setNameValue] = useState("");
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+  const lastCheckedEmailRef = useRef<string | null>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -202,6 +209,38 @@ export function CombinedRegistrationForm({
       nicheLabels,
       segment: String(data.get("segment") ?? "").trim(),
     });
+  }
+
+  async function checkEmailOnBlur(value: string) {
+    const email = value.trim().toLowerCase();
+
+    if (
+      !checkEmailAction ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(email) ||
+      email === lastCheckedEmailRef.current
+    ) {
+      return;
+    }
+
+    lastCheckedEmailRef.current = email;
+    const result = await checkEmailAction(email).catch(() => null);
+
+    if (
+      result?.registered &&
+      emailInputRef.current?.value.trim().toLowerCase() === email
+    ) {
+      setRegisteredEmail(email);
+    }
+  }
+
+  function useAnotherEmail() {
+    setRegisteredEmail(null);
+    lastCheckedEmailRef.current = null;
+
+    if (emailInputRef.current) {
+      emailInputRef.current.value = "";
+      emailInputRef.current.focus();
+    }
   }
 
   async function replaceWithShrunkImage(
@@ -506,7 +545,11 @@ export function CombinedRegistrationForm({
               inputMode="email"
               maxLength={320}
               name="email"
+              onBlur={(event) =>
+                void checkEmailOnBlur(event.currentTarget.value)
+              }
               placeholder="voce@exemplo.com"
+              ref={emailInputRef}
               required
               type="email"
             />
@@ -687,6 +730,16 @@ export function CombinedRegistrationForm({
         onConfirm={submitConfirmation.confirmSubmission}
         onOpenChange={submitConfirmation.setOpen}
         open={submitConfirmation.open}
+      />
+      <RegisteredEmailDialog
+        email={registeredEmail ?? ""}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRegisteredEmail(null);
+          }
+        }}
+        onUseAnotherEmail={useAnotherEmail}
+        open={registeredEmail !== null}
       />
 
       <GoogleAuthOption action={googleAction} />

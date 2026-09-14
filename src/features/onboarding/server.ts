@@ -28,6 +28,7 @@ export type {
   AdminProfileTargetRepository,
 } from "./server/services/admin-profile-edit.service";
 export {
+  checkRegistrationEmailAction,
   registerWithEmailAction,
   resendPreparedRegistrationConfirmationAction,
   submitGoogleProfileAction,

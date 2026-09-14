@@ -8,7 +8,9 @@ import { createServerSupabaseClient } from "@/shared/server/supabase/server-clie
 import { createRateLimitKey } from "@/shared/server/security/rate-limit";
 
 import { createDrizzleOnboardingRegistrationRepository } from "../repositories/drizzle-onboarding-registration.repository";
+import { createRegisteredProfileEmailLookup } from "../repositories/drizzle-registration-email.repository";
 import { createOnboardingRegistrationService } from "./onboarding-registration.service";
+import { createRegistrationEmailAvailabilityService } from "./registration-email-availability.service";
 import { createSupabaseRegistrationIdentityGateway } from "./supabase-registration-identity.gateway";
 
 export async function createServerOnboardingRegistrationService() {
@@ -41,4 +43,17 @@ export async function createServerOnboardingRegistrationService() {
         }),
     },
   );
+}
+
+export function createServerRegistrationEmailAvailabilityService() {
+  const rateLimits = createServerRateLimitService();
+
+  return createRegistrationEmailAvailabilityService({
+    consume: (networkIdentity) =>
+      rateLimits.consume({
+        key: createRateLimitKey([`network:${networkIdentity}`]),
+        policy: "registrationEmailCheck",
+      }),
+    hasRegisteredProfile: createRegisteredProfileEmailLookup(),
+  });
 }

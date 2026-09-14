@@ -18,6 +18,11 @@ export const RATE_LIMIT_POLICIES = {
     scope: "contact_reveal",
     windowSeconds: 5 * 60,
   },
+  registrationEmailCheck: {
+    limit: 20,
+    scope: "registration_email_check",
+    windowSeconds: 10 * 60,
+  },
   passwordRecovery: {
     limit: 5,
     scope: "password_recovery",

@@ -159,6 +159,46 @@ function finalStepSubmit() {
 }
 
 describe("combined registration form", () => {
+  it("sends an already registered e-mail to the login as soon as the field is left", async () => {
+    const user = setupUser();
+    const checkEmailAction = vi
+      .fn()
+      .mockImplementation(async (email: string) => ({
+        registered: email === "vevox@example.com",
+      }));
+
+    renderRegistration({
+      action: vi.fn(),
+      checkEmailAction,
+      googleAction: vi.fn(),
+      initialAccountType: "COMPANY",
+      resendAction: vi.fn(),
+    });
+
+    await user.type(screen.getByLabelText("E-mail"), "nova@example.com");
+    await user.tab();
+    expect(checkEmailAction).toHaveBeenCalledWith("nova@example.com");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    await user.clear(screen.getByLabelText("E-mail"));
+    await user.type(screen.getByLabelText("E-mail"), "Vevox@Example.com");
+    await user.tab();
+
+    const dialog = await screen.findByRole("dialog", {
+      name: "Você já tem cadastro",
+    });
+    expect(dialog).toHaveTextContent("vevox@example.com");
+    expect(
+      screen.getByRole("link", { name: "Ir para o login" }),
+    ).toHaveAttribute("href", "/login");
+
+    await user.click(screen.getByRole("button", { name: "Usar outro e-mail" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    expect(screen.getByLabelText("E-mail")).toHaveValue("");
+  });
+
   it("opens the influencer fields from a landing intent without a second role step", async () => {
     const user = setupUser();
     renderRegistration({

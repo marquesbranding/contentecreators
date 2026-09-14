@@ -7,6 +7,7 @@ import {
   OnboardingFormShell,
 } from "@/features/onboarding";
 import {
+  checkRegistrationEmailAction,
   registerWithEmailAction,
   resendPreparedRegistrationConfirmationAction,
 } from "@/features/onboarding/server";
@@ -59,6 +60,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
     >
       <CombinedRegistrationForm
         action={registerWithEmailAction}
+        checkEmailAction={checkRegistrationEmailAction}
         googleAction={startGoogleSignInAction}
         initialAccountType={intent}
         resendAction={resendPreparedRegistrationConfirmationAction}
