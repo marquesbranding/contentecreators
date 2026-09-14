@@ -841,7 +841,9 @@ export async function fillCompanyProfileForm(
     .fill(input.tradeName ?? "Empresa Jornada");
   await page.getByLabel("CNPJ").fill(input.cnpj);
   await page.getByLabel("Segmento").click();
-  await page.getByRole("option", { name: "Tecnologia", exact: true }).click();
+  await page
+    .getByRole("option", { name: "Tecnologia, games e inovação", exact: true })
+    .click();
   await page.getByLabel("Tamanho da empresa").click();
   await page
     .getByRole("option", { name: "11 a 50 pessoas", exact: true })

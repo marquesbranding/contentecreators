@@ -109,7 +109,7 @@ async function fillCompanyFields(user: ReturnType<typeof userEvent.setup>) {
   fireEvent.input(screen.getByLabelText("CNPJ"), {
     target: { value: "11444777000161" },
   });
-  await selectOption(user, "Segmento", "Tecnologia");
+  await selectOption(user, "Segmento", "Tecnologia, games e inovação");
   await selectOption(user, "Tamanho da empresa", "11 a 50 pessoas");
   fillText(
     "Apresente a empresa",

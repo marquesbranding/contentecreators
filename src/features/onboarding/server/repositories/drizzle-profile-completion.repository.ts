@@ -244,7 +244,6 @@ async function loadCompanyCompletionInput(
   const primaryLocation = locations.find((location) => location.isPrimary);
 
   return {
-    additionalLocations: locations.filter((location) => !location.isPrimary),
     cnpj: profile.cnpj,
     cover: mediaInput(media, profile.coverAssetId),
     description: profile.description,

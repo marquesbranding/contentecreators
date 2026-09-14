@@ -63,17 +63,6 @@ const creatorInput = {
   whatsapp: "+5511999999999",
 } satisfies CreatorProfileCompletionInput;
 const companyInput = {
-  additionalLocations: [
-    {
-      city: "Curitiba",
-      isPrimary: false,
-      neighborhood: "Centro",
-      number: "120",
-      postalCode: "80010000",
-      state: "PR",
-      street: "Rua das Flores",
-    },
-  ],
   cnpj: "11222333000181",
   cover: activeCover,
   description:
@@ -201,7 +190,6 @@ describe("calculateProfileCompletion", () => {
       "primaryLocation",
       "website",
       "socialProfile",
-      "additionalLocation",
       "logo",
       "cover",
     ]);
@@ -210,18 +198,16 @@ describe("calculateProfileCompletion", () => {
   it("calculates company locations, social profile and optional media independently", () => {
     const requiredOnly = calculateProfileCompletion({
       ...companyInput,
-      additionalLocations: [],
       cover: undefined,
       logo: undefined,
       socialProfiles: [],
       websiteUrl: undefined,
     });
 
-    expect(requiredOnly.percentage).toBe(61);
+    expect(requiredOnly.percentage).toBe(66);
     expect(requiredOnly.missingFields).toEqual([
       "website",
       "socialProfile",
-      "additionalLocation",
       "logo",
       "cover",
     ]);
@@ -231,13 +217,6 @@ describe("calculateProfileCompletion", () => {
   it("rejects incomplete locations, unsafe URLs and invalidated company media", () => {
     const result = calculateProfileCompletion({
       ...companyInput,
-      additionalLocations: [
-        {
-          ...primaryLocation,
-          city: "",
-          isPrimary: false,
-        },
-      ],
       cover: {
         ...activeCover,
         kind: "AVATAR",
@@ -264,11 +243,10 @@ describe("calculateProfileCompletion", () => {
       "primaryLocation",
       "website",
       "socialProfile",
-      "additionalLocation",
       "logo",
       "cover",
     ]);
-    expect(result.percentage).toBe(51);
+    expect(result.percentage).toBe(53);
   });
 
   it("uses one immutable calculator version for creator, UGC and company results", () => {

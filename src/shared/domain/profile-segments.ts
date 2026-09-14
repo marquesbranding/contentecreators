@@ -44,16 +44,15 @@ export const creatorNicheOptions = [
   [OTHER_NICHE_SLUG, "Envie sua sugestão"],
 ] as const;
 
+/**
+ * The company's `segment` column stores free text (a single value), so the
+ * creator niche label doubles as the stored value here — there is no slug
+ * column to keep in sync the way creator niches do.
+ */
 export const companySegmentOptions = [
-  ["Alimentação", "Alimentação"],
-  ["Beleza e cosméticos", "Beleza e cosméticos"],
-  ["Educação", "Educação"],
-  ["Entretenimento", "Entretenimento"],
-  ["Esportes e fitness", "Esportes e fitness"],
-  ["Moda", "Moda"],
-  ["Saúde e bem-estar", "Saúde e bem-estar"],
-  ["Tecnologia", "Tecnologia"],
-  ["Varejo", "Varejo"],
+  ...creatorNicheOptions
+    .filter(([slug]) => slug !== OTHER_NICHE_SLUG)
+    .map(([, label]) => [label, label] as const),
   ["OTHER", "Outros"],
 ] as const;
 

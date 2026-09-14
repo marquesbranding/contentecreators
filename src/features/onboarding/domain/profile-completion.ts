@@ -1,6 +1,6 @@
 import { isValidCnpj } from "./cnpj";
 
-export const PROFILE_COMPLETION_VERSION = 1 as const;
+export const PROFILE_COMPLETION_VERSION = 2 as const;
 export type ProfileCompletionRole = "INFLUENCER" | "COMPANY";
 
 const supportedSocialPlatforms = new Set([
@@ -46,7 +46,6 @@ export type CompanyProfileCompletionField =
   | "primaryLocation"
   | "website"
   | "socialProfile"
-  | "additionalLocation"
   | "logo"
   | "cover";
 
@@ -102,7 +101,6 @@ export interface CreatorProfileCompletionInput {
 }
 
 export interface CompanyProfileCompletionInput {
-  additionalLocations?: ProfileCompletionLocationInput[];
   cnpj?: string | null;
   cover?: ProfileCompletionMediaInput;
   description?: string | null;
@@ -161,11 +159,10 @@ export const COMPANY_COMPLETION_WEIGHTS = {
   employeeRange: 6,
   segment: 6,
   whatsapp: 6,
-  description: 8,
-  primaryLocation: 10,
+  description: 10,
+  primaryLocation: 13,
   website: 7,
   socialProfile: 7,
-  additionalLocation: 5,
   logo: 10,
   cover: 10,
 } as const satisfies Record<CompanyProfileCompletionField, number>;
@@ -422,17 +419,6 @@ function calculateCompanyCompletion(
       field: "socialProfile",
       isComplete: () => hasSocialProfile(input.socialProfiles),
       weight: COMPANY_COMPLETION_WEIGHTS.socialProfile,
-    },
-    {
-      field: "additionalLocation",
-      isComplete: () =>
-        Boolean(
-          input.additionalLocations?.some(
-            (location) =>
-              location.isPrimary === false && isCompleteLocation(location),
-          ),
-        ),
-      weight: COMPANY_COMPLETION_WEIGHTS.additionalLocation,
     },
     {
       field: "logo",

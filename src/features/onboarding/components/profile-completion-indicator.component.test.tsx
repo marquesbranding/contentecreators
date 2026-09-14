@@ -14,7 +14,7 @@ describe("ProfileCompletionIndicator", () => {
           missingFields: ["avatar", "cover"],
           percentage: 69,
           totalWeight: 100,
-          version: 1,
+          version: 2,
         }}
         role="INFLUENCER"
       />,
@@ -43,7 +43,7 @@ describe("ProfileCompletionIndicator", () => {
           missingFields: ["logo", "cover", "socialProfile"],
           percentage: 80,
           totalWeight: 100,
-          version: 1,
+          version: 2,
         }}
         role="COMPANY"
       />,
@@ -66,7 +66,7 @@ describe("ProfileCompletionIndicator", () => {
           missingFields: [],
           percentage: 100,
           totalWeight: 100,
-          version: 1,
+          version: 2,
         }}
         role="INFLUENCER"
       />,

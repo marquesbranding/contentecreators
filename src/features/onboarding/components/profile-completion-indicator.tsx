@@ -37,7 +37,6 @@ const creatorLabels: Partial<Record<ProfileCompletionField, string>> = {
 
 const companyLabels: Partial<Record<ProfileCompletionField, string>> = {
   ...sharedLabels,
-  additionalLocation: "Adicionar outra localidade",
   cnpj: "Completar um CNPJ válido",
   description: "Completar a apresentação da empresa",
   employeeRange: "Informar o tamanho da empresa",

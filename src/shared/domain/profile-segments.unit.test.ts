@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  companySegmentOptions,
+  creatorNicheOptions,
   customNicheSlug,
   isCustomNicheSlug,
   isPredefinedCompanySegment,
+  OTHER_NICHE_SLUG,
 } from "./profile-segments";
 
 describe("profile segments", () => {
@@ -15,7 +18,21 @@ describe("profile segments", () => {
   });
 
   it("distinguishes predefined company segments from custom values", () => {
-    expect(isPredefinedCompanySegment("Tecnologia")).toBe(true);
+    expect(isPredefinedCompanySegment("Tecnologia, games e inovação")).toBe(
+      true,
+    );
     expect(isPredefinedCompanySegment("Economia criativa")).toBe(false);
+  });
+
+  it("mirrors the creator niche labels as company segments, plus Outros", () => {
+    const creatorLabels = creatorNicheOptions
+      .filter(([slug]) => slug !== OTHER_NICHE_SLUG)
+      .map(([, label]) => label);
+
+    expect(companySegmentOptions.map(([value]) => value)).toEqual([
+      ...creatorLabels,
+      "OTHER",
+    ]);
+    expect(companySegmentOptions.at(-1)).toEqual(["OTHER", "Outros"]);
   });
 });
