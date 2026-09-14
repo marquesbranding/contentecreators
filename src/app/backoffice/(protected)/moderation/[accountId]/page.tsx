@@ -69,6 +69,7 @@ export default async function BackofficeSubmissionReviewPage({
           actions={moderationActions}
           displayName={displayName}
           profileVersion={review.profile.version}
+          role={review.role}
           status={review.account.status}
         />
       </div>

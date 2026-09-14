@@ -46,6 +46,7 @@ describe("ModerationActionPanel", () => {
         actions={actions}
         displayName="Criadora Teste"
         profileVersion={2}
+        role="INFLUENCER"
         status="PENDING_REVIEW"
       />,
     );
@@ -89,6 +90,42 @@ describe("ModerationActionPanel", () => {
     ).toBeGreaterThanOrEqual(2);
   });
 
+  it("builds requestedFields from the checked correction checklist items", async () => {
+    const user = userEvent.setup();
+    renderPanel(
+      <ModerationActionPanel
+        accountId="10000000-0000-4000-8000-000000000001"
+        accountVersion={3}
+        actions={actions}
+        displayName="Empresa Teste"
+        profileVersion={2}
+        role="COMPANY"
+        status="PENDING_REVIEW"
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Solicitar correções" }),
+    );
+
+    const cnpjCheckbox = screen.getByRole("checkbox", { name: "CNPJ" });
+    await user.click(cnpjCheckbox);
+    await user.type(
+      screen.getByPlaceholderText("Observação para este campo (opcional)."),
+      "Confira o número informado.",
+    );
+
+    const hiddenInput = document.querySelector(
+      'input[name="requestedFields"]',
+    ) as HTMLInputElement;
+    expect(JSON.parse(hiddenInput.value)).toEqual([
+      { field: "cnpj", note: "Confira o número informado." },
+    ]);
+
+    await user.click(cnpjCheckbox);
+    expect(JSON.parse(hiddenInput.value)).toEqual([]);
+  });
+
   it("offers APPROVE (not RESTORE) to reinstate a suspended account, requiring a reason", async () => {
     const user = userEvent.setup();
     renderPanel(
@@ -98,6 +135,7 @@ describe("ModerationActionPanel", () => {
         actions={actions}
         displayName="Empresa Teste"
         profileVersion={3}
+        role="COMPANY"
         status="SUSPENDED"
       />,
     );
@@ -130,6 +168,7 @@ describe("ModerationActionPanel", () => {
         actions={actions}
         displayName="Criadora Teste"
         profileVersion={2}
+        role="INFLUENCER"
         status="PENDING_REVIEW"
       />,
     );
@@ -148,6 +187,7 @@ describe("ModerationActionPanel", () => {
         actions={actions}
         displayName="Criadora Teste"
         profileVersion={2}
+        role="INFLUENCER"
         status="PENDING_REVIEW"
       />,
     );

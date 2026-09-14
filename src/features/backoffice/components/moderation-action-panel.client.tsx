@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import {
   Archive,
@@ -15,6 +15,12 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import {
+  CORRECTABLE_FIELDS_BY_ROLE,
+  CORRECTABLE_FIELD_SECTION_LABELS,
+  groupCorrectableFieldsBySection,
+  type RequestedField,
+} from "@/features/moderation/domain/correctable-fields";
 import { ActionSubmitButton } from "@/shared/components/action-submit-button";
 import { Button } from "@/shared/components/ui/button";
 import { Checkbox } from "@/shared/components/ui/checkbox";
@@ -40,6 +46,7 @@ import { moderationQueueKeys } from "../api/moderation-queue.api";
 import {
   getAvailableModerationActions,
   moderationApproveRequiresReason,
+  type BackofficeAccountRole,
   type BackofficeAccountStatus,
   type BackofficeModerationAction,
 } from "../domain/moderation-presentation";
@@ -173,12 +180,92 @@ function SubmitButton({ label }: { label: string }) {
   );
 }
 
+/** Checklist grouped by section for REQUEST_CHANGES — lets the admin flag
+ * exactly which fields need fixing (with an optional per-field note),
+ * emitted as a hidden JSON input the server parses into `requestedFields`. */
+function RequestedFieldsChecklist({
+  action,
+  role,
+}: {
+  action: string;
+  role: BackofficeAccountRole;
+}) {
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [notes, setNotes] = useState<Record<string, string>>({});
+  const grouped = useMemo(() => groupCorrectableFieldsBySection(role), [role]);
+  const requestedFields = useMemo<RequestedField[]>(
+    () =>
+      CORRECTABLE_FIELDS_BY_ROLE[role]
+        .filter((field) => checked[field.key])
+        .map((field) => ({
+          field: field.key,
+          note: notes[field.key]?.trim() || undefined,
+        })),
+    [checked, notes, role],
+  );
+
+  return (
+    <Field>
+      <FieldLabel>O que precisa ser corrigido?</FieldLabel>
+      <div className="space-y-4 rounded-xl border p-4">
+        {[...grouped.entries()].map(([section, fields]) => (
+          <div key={section}>
+            <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+              {CORRECTABLE_FIELD_SECTION_LABELS[section]}
+            </p>
+            <div className="mt-2 space-y-3">
+              {fields.map((field) => (
+                <div key={field.key}>
+                  <Field orientation="horizontal">
+                    <Checkbox
+                      checked={checked[field.key] ?? false}
+                      id={`${action}-field-${field.key}`}
+                      onCheckedChange={(value) =>
+                        setChecked((previous) => ({
+                          ...previous,
+                          [field.key]: Boolean(value),
+                        }))
+                      }
+                    />
+                    <FieldLabel htmlFor={`${action}-field-${field.key}`}>
+                      {field.label}
+                    </FieldLabel>
+                  </Field>
+                  {checked[field.key] ? (
+                    <Textarea
+                      className="mt-2 min-h-16"
+                      onChange={(event) =>
+                        setNotes((previous) => ({
+                          ...previous,
+                          [field.key]: event.target.value,
+                        }))
+                      }
+                      placeholder="Observação para este campo (opcional)."
+                      value={notes[field.key] ?? ""}
+                    />
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <input
+        name="requestedFields"
+        type="hidden"
+        value={JSON.stringify(requestedFields)}
+      />
+    </Field>
+  );
+}
+
 function ActionDialog({
   accountId,
   accountVersion,
   action,
   displayName,
   profileVersion,
+  role,
   serverAction,
   status,
 }: {
@@ -187,6 +274,7 @@ function ActionDialog({
   action: BackofficeModerationAction;
   displayName: string;
   profileVersion: number;
+  role: BackofficeAccountRole;
   serverAction: ModerationServerAction;
   status: BackofficeAccountStatus;
 }) {
@@ -276,6 +364,10 @@ function ActionDialog({
             </Field>
           ) : null}
 
+          {action === "REQUEST_CHANGES" ? (
+            <RequestedFieldsChecklist action={action} role={role} />
+          ) : null}
+
           <Field
             data-invalid={Boolean(confirmationErrors?.length)}
             orientation="horizontal"
@@ -335,6 +427,7 @@ export function ModerationActionPanel({
   actions,
   displayName,
   profileVersion,
+  role,
   status,
 }: {
   accountId: string;
@@ -342,6 +435,7 @@ export function ModerationActionPanel({
   actions: ModerationServerActions;
   displayName: string;
   profileVersion: number;
+  role: BackofficeAccountRole;
   status: BackofficeAccountStatus;
 }) {
   const availableActions = getAvailableModerationActions(status);
@@ -369,6 +463,7 @@ export function ModerationActionPanel({
             displayName={displayName}
             key={action}
             profileVersion={profileVersion}
+            role={role}
             serverAction={actions[action]}
             status={status}
           />

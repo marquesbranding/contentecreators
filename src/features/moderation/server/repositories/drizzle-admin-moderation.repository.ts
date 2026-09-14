@@ -31,6 +31,23 @@ interface AuthEffectFunctionRow extends Record<string, unknown> {
   effect_status: "FAILED" | "SYNCED";
 }
 
+/**
+ * `postgres.js`/Drizzle's parameter-type inference for a jsonb-cast bind
+ * parameter is unreliable through `runVerifiedTransaction`'s pooled
+ * connection (`prepare: false`) — passing the array as a normal `${...}`
+ * parameter sometimes lands the driver on its text serializer instead of
+ * its jsonb one, and it then throws trying to treat the array as a string.
+ * Embedding a properly-escaped JSON string literal sidesteps the driver's
+ * parameter-type guessing entirely: `'<escaped json>'::jsonb` is plain,
+ * deterministic SQL. Safe because the only untrusted content inside is a
+ * plain string, and JSON.stringify already escapes quotes/backslashes —
+ * doubling any literal `'` is the standard SQL string-literal escape.
+ */
+function jsonbLiteral(value: unknown) {
+  const json = JSON.stringify(value).replaceAll("'", "''");
+  return sql.raw(`'${json}'`);
+}
+
 async function applyAuditContext(
   transaction: ApplicationTransaction,
   input: {
@@ -124,7 +141,7 @@ export function createDrizzleAdminModerationRepository({
                 ${command.expectedAccountVersion},
                 ${command.expectedProfileVersion},
                 ${command.idempotencyKey},
-                ${command.requestedFields}::jsonb
+                ${jsonbLiteral(command.requestedFields)}::jsonb
               )
             `);
 
