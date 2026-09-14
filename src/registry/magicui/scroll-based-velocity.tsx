@@ -1,7 +1,15 @@
 "use client";
 
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useContext,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import {
+  animate,
   motion,
   useAnimationFrame,
   useMotionValue,
@@ -18,9 +26,21 @@ interface ScrollVelocityRowProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   baseVelocity?: number;
   direction?: 1 | -1;
+  /**
+   * Called (throttled to ~100ms) with the raw scroll offset and the width of
+   * one content copy, whenever either changes — lets a caller derive which
+   * item is currently centered (e.g. to highlight a matching dot).
+   */
+  onOffsetChange?(offsetPx: number, unitWidthPx: number): void;
   /** Freezes the row in place — for hover, focus, or an explicit pause control. */
   paused?: boolean;
   scrollReactivity?: boolean;
+}
+
+/** Imperative handle for driving the row's position from outside (e.g. dots). */
+export interface ScrollVelocityRowHandle {
+  /** Animates the row to an absolute offset, wrapping wire the same way autoplay does. */
+  scrollToOffset(offsetPx: number): void;
 }
 
 export const wrap = (min: number, max: number, v: number) => {
@@ -62,30 +82,44 @@ export function ScrollVelocityContainer({
   );
 }
 
-export function ScrollVelocityRow(props: ScrollVelocityRowProps) {
+export const ScrollVelocityRow = forwardRef<
+  ScrollVelocityRowHandle,
+  ScrollVelocityRowProps
+>(function ScrollVelocityRow(props, ref) {
   const sharedVelocityFactor = useContext(ScrollVelocityContext);
   if (sharedVelocityFactor) {
     return (
-      <ScrollVelocityRowImpl {...props} velocityFactor={sharedVelocityFactor} />
+      <ScrollVelocityRowImpl
+        {...props}
+        ref={ref}
+        velocityFactor={sharedVelocityFactor}
+      />
     );
   }
-  return <ScrollVelocityRowLocal {...props} />;
-}
+  return <ScrollVelocityRowLocal {...props} ref={ref} />;
+});
 
 interface ScrollVelocityRowImplProps extends ScrollVelocityRowProps {
   velocityFactor: MotionValue<number>;
 }
 
-function ScrollVelocityRowImpl({
-  children,
-  baseVelocity = 5,
-  direction = 1,
-  className,
-  velocityFactor,
-  paused = false,
-  scrollReactivity = true,
-  ...props
-}: ScrollVelocityRowImplProps) {
+const ScrollVelocityRowImpl = forwardRef<
+  ScrollVelocityRowHandle,
+  ScrollVelocityRowImplProps
+>(function ScrollVelocityRowImpl(
+  {
+    children,
+    baseVelocity = 5,
+    direction = 1,
+    className,
+    onOffsetChange,
+    velocityFactor,
+    paused = false,
+    scrollReactivity = true,
+    ...props
+  },
+  ref,
+) {
   const containerRef = useRef<HTMLDivElement>(null);
   const blockRef = useRef<HTMLDivElement>(null);
   const [numCopies, setNumCopies] = useState(1);
@@ -99,10 +133,35 @@ function ScrollVelocityRowImpl({
   const isPageVisibleRef = useRef(true);
   const prefersReducedMotionRef = useRef(false);
   const pausedRef = useRef(paused);
+  const isAnimatingToTargetRef = useRef(false);
+  const onOffsetChangeRef = useRef(onOffsetChange);
+  const lastReportedAtRef = useRef(0);
 
   useEffect(() => {
     pausedRef.current = paused;
   }, [paused]);
+
+  useEffect(() => {
+    onOffsetChangeRef.current = onOffsetChange;
+  }, [onOffsetChange]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      scrollToOffset(offsetPx) {
+        isAnimatingToTargetRef.current = true;
+        animate(baseX, offsetPx, {
+          damping: 32,
+          onComplete: () => {
+            isAnimatingToTargetRef.current = false;
+          },
+          stiffness: 260,
+          type: "spring",
+        });
+      },
+    }),
+    [baseX],
+  );
 
   useEffect(() => {
     const container = containerRef.current;
@@ -172,8 +231,17 @@ function ScrollVelocityRowImpl({
   });
 
   useAnimationFrame((_, delta) => {
+    if (onOffsetChangeRef.current) {
+      const now = performance.now();
+      if (now - lastReportedAtRef.current >= 100) {
+        lastReportedAtRef.current = now;
+        onOffsetChangeRef.current(baseX.get(), unitWidth.get() || 0);
+      }
+    }
+
     if (
       pausedRef.current ||
+      isAnimatingToTargetRef.current ||
       !isInViewRef.current ||
       !isPageVisibleRef.current ||
       prefersReducedMotionRef.current
@@ -221,9 +289,12 @@ function ScrollVelocityRowImpl({
       </motion.div>
     </div>
   );
-}
+});
 
-function ScrollVelocityRowLocal(props: ScrollVelocityRowProps) {
+const ScrollVelocityRowLocal = forwardRef<
+  ScrollVelocityRowHandle,
+  ScrollVelocityRowProps
+>(function ScrollVelocityRowLocal(props, ref) {
   const { scrollY } = useScroll();
   const localVelocity = useVelocity(scrollY);
   const localSmoothVelocity = useSpring(localVelocity, {
@@ -236,6 +307,10 @@ function ScrollVelocityRowLocal(props: ScrollVelocityRowProps) {
     return sign * magnitude;
   });
   return (
-    <ScrollVelocityRowImpl {...props} velocityFactor={localVelocityFactor} />
+    <ScrollVelocityRowImpl
+      {...props}
+      ref={ref}
+      velocityFactor={localVelocityFactor}
+    />
   );
-}
+});

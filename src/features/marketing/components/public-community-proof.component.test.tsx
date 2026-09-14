@@ -139,17 +139,26 @@ describe("PublicCommunityProof", () => {
     );
   });
 
-  it("lets visitors stop the moving carousel", async () => {
+  it("lets visitors jump to any item with the carousel dots", async () => {
     const user = userEvent.setup();
     render(
       <PublicCommunityProof proof={null} showcase={{ items: rotatingItems }} />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Pausar carrossel" }));
+    const dots = screen.getByRole("tablist", { name: "Escolher destaque" });
 
+    expect(within(dots).getAllByRole("tab")).toHaveLength(
+      rotatingItems.length,
+    );
     expect(
-      screen.getByRole("button", { name: "Retomar carrossel" }),
-    ).toBeVisible();
+      within(dots).getByRole("tab", { name: `Ir para 1 de ${rotatingItems.length}` }),
+    ).toHaveAttribute("aria-selected", "true");
+
+    await user.click(
+      within(dots).getByRole("tab", {
+        name: `Ir para 2 de ${rotatingItems.length}`,
+      }),
+    );
   });
 
   it("holds the space with placeholders until someone is enabled", () => {
