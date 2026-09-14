@@ -20,6 +20,7 @@ export interface PublicShowcaseCreatorDto {
   avatar: PublicShowcaseImageDto | null;
   bioExcerpt: string | null;
   city: string | null;
+  cover: PublicShowcaseImageDto | null;
   creatorType: PublicCommunityCreatorType;
   displayName: string;
   id: string;
@@ -57,9 +58,10 @@ export interface PublicShowcaseImageSource {
 
 export interface PublicShowcaseCreatorSource extends Omit<
   PublicShowcaseCreatorDto,
-  "avatar" | "kind"
+  "avatar" | "cover" | "kind"
 > {
   avatarSource: PublicShowcaseImageSource | null;
+  coverSource: PublicShowcaseImageSource | null;
 }
 
 export interface PublicShowcaseCompanySource extends Omit<

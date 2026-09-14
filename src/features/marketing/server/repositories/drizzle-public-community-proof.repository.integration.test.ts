@@ -75,7 +75,8 @@ describeIntegration("public community proof repository", () => {
 
       expect(Object.keys(proof)).toEqual(["companies"]);
       expect(tradeNames).toContain(`Completa ${suffix}`);
-      expect(tradeNames).not.toContain(`Incompleta ${suffix}`);
+      // Approval is the bar; optional fields left blank do not hide a brand.
+      expect(tradeNames).toContain(`Incompleta ${suffix}`);
     } finally {
       await database.database.execute(sql`
         delete from public.company_profiles where trade_name like ${`%${suffix}`}

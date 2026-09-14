@@ -10,11 +10,14 @@ import { PublicCommunityProof } from "./public-community-proof";
 
 const signedUrl =
   "https://project.supabase.co/storage/v1/object/sign/a.webp?token=x";
+const coverUrl =
+  "https://project.supabase.co/storage/v1/object/sign/cover.webp?token=y";
 
 const creator: PublicShowcaseCreatorDto = {
   avatar: null,
   bioExcerpt: "Conteudo de beleza e lifestyle para marcas locais.",
   city: "Joacaba",
+  cover: { height: 900, url: coverUrl, width: 1600 },
   creatorType: "UGC",
   displayName: "Fernanda Souza",
   id: "creator-1",
@@ -100,6 +103,11 @@ describe("PublicCommunityProof", () => {
       "Fernanda Souza",
     );
     expect(screen.getByText("FS")).toBeVisible();
+    expect(
+      screen
+        .getAllByTestId("creator-listing")[0]
+        ?.querySelector(`img[src="${coverUrl}"]`),
+    ).not.toBeNull();
     expect(screen.getAllByText("1,6 mi seguidores")[0]).toBeVisible();
     expect(screen.getAllByTestId("company-listing")[0]).toHaveTextContent(
       "Padoca do Vale",

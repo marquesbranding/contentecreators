@@ -72,10 +72,11 @@ export function createPublicLandingShowcaseService({
         const [creators, companies] = await Promise.all([
           Promise.all(
             source.creators.map(
-              async ({ avatarSource, ...creator }) =>
+              async ({ avatarSource, coverSource, ...creator }) =>
                 ({
                   ...creator,
                   avatar: await sign(avatarSource),
+                  cover: await sign(coverSource),
                   kind: "CREATOR",
                 }) satisfies PublicShowcaseCreatorDto,
             ),

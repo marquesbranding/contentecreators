@@ -45,10 +45,8 @@ export async function loadPublicCommunityProof(
       and(
         eq(accounts.role, "COMPANY"),
         eq(accounts.status, "APPROVED"),
-        // Same bar as the catalog directory and carousel: an approved but
-        // incomplete company is hidden inside the product, so it must not
-        // be promoted on the public page either.
-        eq(accounts.completionPercentage, 100),
+        // Same bar as the catalog directory and carousel: admin approval.
+        // Optional fields (site, social link) never hide an approved company.
         isNull(accounts.archivedAt),
         isNull(companyProfiles.archivedAt),
       ),

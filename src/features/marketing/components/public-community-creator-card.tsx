@@ -47,10 +47,21 @@ export function PublicCommunityCreatorCard({
       role="article"
     >
       <div className="relative">
-        <div
-          aria-hidden="true"
-          className="from-brand-blue/30 via-brand-pink/15 to-brand-lime/25 relative z-0 h-20 bg-gradient-to-br sm:h-24"
-        />
+        {creator.cover ? (
+          <SignedImage
+            alt=""
+            className="object-cover"
+            height={creator.cover.height}
+            src={creator.cover.url}
+            width={creator.cover.width}
+            wrapperClassName="z-0 h-20 w-full sm:h-24"
+          />
+        ) : (
+          <div
+            aria-hidden="true"
+            className="from-brand-blue/30 via-brand-pink/15 to-brand-lime/25 relative z-0 h-20 bg-gradient-to-br sm:h-24"
+          />
+        )}
         <ShieldCheck
           aria-label="Perfil aprovado"
           className="text-brand-blue absolute top-3 right-3 z-10 size-6"

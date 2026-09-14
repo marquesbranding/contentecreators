@@ -9,6 +9,7 @@ const creator = {
   avatar: { height: 512, url: signedUrl, width: 512 },
   bioExcerpt: "Conteúdo de viagem.",
   city: "Joaçaba",
+  cover: { height: 900, url: signedUrl, width: 1600 },
   creatorType: "UGC",
   displayName: "Gabi Conecta",
   id: "creator-1",

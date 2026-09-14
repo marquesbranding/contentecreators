@@ -187,7 +187,8 @@ describeIntegration("public landing showcase repository", () => {
       );
 
       /* Order comes from the backoffice (`feature_order`), not approval date;
-       * pending and not-enabled creators and incomplete companies stay out. */
+       * pending and not-enabled creators stay out, while an approved company
+       * with optional fields left blank is still shown. */
       expect(creators.map((creator) => creator.displayName)).toEqual([
         `Segunda ${suffix}`,
         `Primeira ${suffix}`,
@@ -201,6 +202,7 @@ describeIntegration("public landing showcase repository", () => {
       expect(creators[1]?.avatarSource ?? null).toBeNull();
       expect(companies.map((entry) => entry.tradeName)).toEqual([
         `Vitrine ${suffix}`,
+        `Incompleta ${suffix}`,
       ]);
       expect(companies[0]?.logoSource).toMatchObject({
         objectPath: `${company!.id}/logo-${suffix}.webp`,

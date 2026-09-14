@@ -23,6 +23,7 @@ function creatorSource(id: string): PublicShowcaseCreatorSource {
     avatarSource: imageSource,
     bioExcerpt: null,
     city: null,
+    coverSource: { ...imageSource, objectPath: "owner/cover.webp" },
     creatorType: "INFLUENCER",
     displayName: `Creator ${id}`,
     id,
@@ -48,6 +49,7 @@ function creatorDto(id: string): PublicShowcaseCreatorDto {
     avatar: null,
     bioExcerpt: null,
     city: null,
+    cover: null,
     creatorType: "INFLUENCER",
     displayName: `Creator ${id}`,
     id,
@@ -101,6 +103,9 @@ describe("public landing showcase service", () => {
         avatar: expect.objectContaining({
           url: "https://project.supabase.co/sign/owner/avatar.webp",
         }),
+        cover: expect.objectContaining({
+          url: "https://project.supabase.co/sign/owner/cover.webp",
+        }),
         kind: "CREATOR",
       }),
       expect.objectContaining({
@@ -129,7 +134,7 @@ describe("public landing showcase service", () => {
     const showcase = await service.load();
 
     expect(showcase?.items).toHaveLength(1);
-    expect(showcase?.items[0]).toMatchObject({ avatar: null });
+    expect(showcase?.items[0]).toMatchObject({ avatar: null, cover: null });
   });
 
   it("answers with an empty list when nobody is enabled yet", async () => {

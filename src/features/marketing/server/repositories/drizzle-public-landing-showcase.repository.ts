@@ -61,6 +61,22 @@ export async function loadPublicLandingShowcaseSource(
           end
         `,
         city: creatorProfiles.city,
+        coverSource: sql<PublicShowcaseImageSource | null>`
+          (
+            select jsonb_build_object(
+              'bucketName', ${mediaAssets.bucketName},
+              'height', ${mediaAssets.height},
+              'objectPath', ${mediaAssets.objectPath},
+              'width', ${mediaAssets.width}
+            )
+            from ${mediaAssets}
+            where ${mediaAssets.id} = ${creatorProfiles.coverAssetId}
+              and ${mediaAssets.ownerAccountId} = ${creatorProfiles.accountId}
+              and ${mediaAssets.kind} = 'COVER'
+              and ${mediaAssets.status} = 'ACTIVE'
+              and ${mediaAssets.archivedAt} is null
+          )
+        `,
         creatorType: creatorProfiles.creatorType,
         displayName: creatorProfiles.displayName,
         id: creatorProfiles.id,
@@ -176,7 +192,6 @@ export async function loadPublicLandingShowcaseSource(
           companyProfiles.isFeatured,
           eq(accounts.role, "COMPANY"),
           eq(accounts.status, "APPROVED"),
-          eq(accounts.completionPercentage, 100),
           isNull(accounts.archivedAt),
           isNull(companyProfiles.archivedAt),
         ),
