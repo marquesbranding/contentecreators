@@ -65,7 +65,6 @@ describe("supabase registration identity gateway", () => {
 
   it.each([
     [{ code: "weak_password", status: 422 }, "weak_password"],
-    [{ code: "over_email_send_rate_limit", status: 429 }, "rate_limited"],
     [{ code: "over_request_rate_limit", status: 429 }, "rate_limited"],
     [{ code: "email_address_invalid", status: 400 }, "invalid_email"],
     [{ code: "unexpected_failure", status: 400 }, "provider"],
@@ -138,6 +137,34 @@ describe("supabase registration identity gateway", () => {
       code: "unexpected_failure",
       kind: "failure",
       reason: "provider",
+    });
+  });
+
+  it("keeps the registration going when Auth refuses to send more e-mails", async () => {
+    const gateway = createGateway(
+      {
+        data: { session: null, user: null },
+        error: {
+          code: "over_email_send_rate_limit",
+          message: "email rate limit exceeded",
+          name: "AuthApiError",
+          status: 429,
+        },
+      },
+      { data: { user: { id: "identity-rate" } }, error: null },
+    );
+
+    await expect(
+      gateway.signUp({
+        callbackUrl: "https://app.example/auth/callback",
+        email: "joana@example.com",
+        password: "StrongPass1",
+      }),
+    ).resolves.toEqual({
+      confirmationEmailSent: false,
+      confirmationRequired: true,
+      identityId: "identity-rate",
+      kind: "success",
     });
   });
 });

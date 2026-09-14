@@ -13,7 +13,6 @@ const failureReasonsByCode: Record<string, RegistrationIdentityFailureReason> =
   {
     email_address_invalid: "invalid_email",
     email_address_not_authorized: "invalid_email",
-    over_email_send_rate_limit: "rate_limited",
     over_request_rate_limit: "rate_limited",
     weak_password: "weak_password",
   };
@@ -33,13 +32,17 @@ function isAccountAlreadyRegisteredError(error: {
 
 // Supabase Auth answers 5xx when it cannot send the confirmation email (for
 // example, an SMTP outage) and supabase-js surfaces it without an error code.
+// It answers `over_email_send_rate_limit` when its hourly e-mail quota is used
+// up; the identity can still be created, only the e-mail has to wait.
 function isConfirmationEmailDeliveryError(error: {
+  code?: string;
   message?: string;
   status?: number;
 }): boolean {
   const message = error.message?.toLowerCase() ?? "";
 
   return (
+    error.code === "over_email_send_rate_limit" ||
     (error.status !== undefined && error.status >= 500) ||
     message.includes("error sending") ||
     message.includes("smtp")
