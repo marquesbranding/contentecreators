@@ -20,10 +20,14 @@ export type CompanyProfileUpdateResult =
     };
 
 export interface CompanyProfileActionState {
+  errorCode?: string;
   fieldErrors?: Record<string, string[]>;
   message?: string;
   profileVersion?: number;
+  requestId?: string;
+  retryable?: boolean;
   status: "idle" | "error" | "success";
+  title?: string;
 }
 
 export type CompanyProfileAction = (

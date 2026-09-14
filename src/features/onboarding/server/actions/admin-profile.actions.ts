@@ -5,6 +5,9 @@ import "server-only";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { toUserFacingError } from "@/shared/lib/errors/user-facing-error";
+import { logUserFacingError } from "@/shared/server/errors/log-user-facing-error";
+
 import { readAdditionalCompanyLocations } from "../../domain/company-location-form-data";
 import { readSocialChannels } from "../../domain/social-channels-form-data";
 import { companyProfileEditSchema } from "../../schemas/company-profile-edit-schema";
@@ -119,13 +122,15 @@ export async function updateInfluencerProfileAsAdminAction(
     };
   }
 
+  const requestId = crypto.randomUUID();
+
   try {
     const service = await createServerAdminProfileEditService();
     const result = await service.updateInfluencerProfile({
       accountId: command.data.accountId,
       input: profile.data,
       reason: command.data.reason,
-      requestId: crypto.randomUUID(),
+      requestId,
     });
 
     if (result.kind === "conflict") {
@@ -143,10 +148,23 @@ export async function updateInfluencerProfileAsAdminAction(
       profileVersion: result.profile.version,
       status: "success",
     };
-  } catch {
+  } catch (error) {
+    const context = {
+      operation: "save_profile" as const,
+      requestId,
+      role: "ADMIN" as const,
+    };
+    const mapped = toUserFacingError(error, context);
+    logUserFacingError(error, mapped, context);
+
     return {
-      message: "Não foi possível atualizar este perfil. Tente novamente.",
+      errorCode: mapped.code,
+      fieldErrors: mapped.fieldErrors,
+      message: mapped.message,
+      requestId,
+      retryable: mapped.retryable,
       status: "error",
+      title: mapped.title,
     };
   }
 }
@@ -174,13 +192,15 @@ export async function updateCompanyProfileAsAdminAction(
     };
   }
 
+  const requestId = crypto.randomUUID();
+
   try {
     const service = await createServerAdminProfileEditService();
     const result = await service.updateCompanyProfile({
       accountId: command.data.accountId,
       input: profile.data,
       reason: command.data.reason,
-      requestId: crypto.randomUUID(),
+      requestId,
     });
 
     if (result.kind === "conflict") {
@@ -198,10 +218,23 @@ export async function updateCompanyProfileAsAdminAction(
       profileVersion: result.profile.version,
       status: "success",
     };
-  } catch {
+  } catch (error) {
+    const context = {
+      operation: "save_profile" as const,
+      requestId,
+      role: "ADMIN" as const,
+    };
+    const mapped = toUserFacingError(error, context);
+    logUserFacingError(error, mapped, context);
+
     return {
-      message: "Não foi possível atualizar este perfil. Tente novamente.",
+      errorCode: mapped.code,
+      fieldErrors: mapped.fieldErrors,
+      message: mapped.message,
+      requestId,
+      retryable: mapped.retryable,
       status: "error",
+      title: mapped.title,
     };
   }
 }

@@ -1,5 +1,7 @@
 "use server";
 
+import { operationalLogger } from "@/shared/server/observability/operational-logger";
+
 import { onboardingDraftSaveSchema } from "../../schemas/onboarding-draft-schema";
 import type { OnboardingDraftActionResult } from "../../types/onboarding-draft.types";
 import { OnboardingDraftError } from "../services/onboarding-draft.service";
@@ -17,11 +19,13 @@ export async function saveOnboardingDraftAction(
     };
   }
 
+  const requestId = crypto.randomUUID();
+
   try {
     const service = await createServerOnboardingDraftService();
     const result = await service.saveOwnerDraft({
       ...parsed.data,
-      requestId: crypto.randomUUID(),
+      requestId,
     });
 
     if (result.kind === "conflict") {
@@ -43,6 +47,16 @@ export async function saveOnboardingDraftAction(
           "Este rascunho não pode ser alterado no estado atual do cadastro.",
       };
     }
+
+    operationalLogger.error({
+      details: {
+        errorMessage: error instanceof Error ? error.message : String(error),
+      },
+      event: "user_facing_error",
+      operation: "save_onboarding_draft",
+      outcome: "error",
+      requestId,
+    });
 
     return {
       kind: "unavailable" as const,

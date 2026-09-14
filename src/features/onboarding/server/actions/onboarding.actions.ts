@@ -6,6 +6,8 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { getPublicEnv } from "@/shared/lib/env/public-env";
+import { toUserFacingError } from "@/shared/lib/errors/user-facing-error";
+import { logUserFacingError } from "@/shared/server/errors/log-user-facing-error";
 import { operationalLogger } from "@/shared/server/observability/operational-logger";
 import { createServerSupabaseClient } from "@/shared/server/supabase/server-client";
 
@@ -195,13 +197,15 @@ export async function submitGoogleProfileAction(
       };
     }
 
+    const resubmissionRequestId = crypto.randomUUID();
+
     try {
       const correctionService =
         await createServerCorrectedProfileResubmissionService();
       const correctionResult = await correctionService.resubmit({
         command: command.data,
         profile: parsed.data,
-        requestId: crypto.randomUUID(),
+        requestId: resubmissionRequestId,
       });
 
       if (correctionResult.kind === "conflict") {
@@ -212,11 +216,23 @@ export async function submitGoogleProfileAction(
           values: { role: parsed.data.role },
         };
       }
-    } catch {
+    } catch (error) {
+      const context = {
+        operation: "save_profile" as const,
+        requestId: resubmissionRequestId,
+        role: parsed.data.role,
+      };
+      const mapped = toUserFacingError(error, context);
+      logUserFacingError(error, mapped, context);
+
       return {
-        message:
-          "Não foi possível reenviar as correções. Revise os dados ou tente novamente.",
+        errorCode: mapped.code,
+        fieldErrors: mapped.fieldErrors,
+        message: mapped.message,
+        requestId: resubmissionRequestId,
+        retryable: mapped.retryable,
         status: "error",
+        title: mapped.title,
         values: { role: parsed.data.role },
       };
     }
@@ -225,6 +241,7 @@ export async function submitGoogleProfileAction(
   }
 
   const service = await createServerOnboardingRegistrationService();
+  const requestId = crypto.randomUUID();
   let result: Awaited<ReturnType<typeof service.submitGoogleProfile>>;
 
   try {
@@ -251,13 +268,24 @@ export async function submitGoogleProfileAction(
       event: "onboarding_submission_failure",
       operation: "submit_google_profile",
       outcome: "error",
-      requestId: crypto.randomUUID(),
+      requestId,
     });
 
+    const context = {
+      operation: "sign_up" as const,
+      requestId,
+      role: parsed.data.role,
+    };
+    const mapped = toUserFacingError(error, context);
+
     return {
-      message:
-        "Não foi possível enviar o perfil para análise. Tente novamente.",
+      errorCode: mapped.code,
+      fieldErrors: mapped.fieldErrors,
+      message: mapped.message,
+      requestId,
+      retryable: mapped.retryable,
       status: "error",
+      title: mapped.title,
       values: { role: parsed.data.role },
     };
   }

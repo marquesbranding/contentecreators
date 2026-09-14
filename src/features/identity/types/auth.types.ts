@@ -12,7 +12,11 @@ export type AuthFieldName = "email" | "password" | "passwordConfirmation";
 export interface AuthActionState {
   status: "idle" | "error" | "success" | "confirmation_required";
   message?: string;
+  errorCode?: string;
   fieldErrors?: Partial<Record<AuthFieldName, string[]>>;
+  requestId?: string;
+  retryable?: boolean;
+  title?: string;
   values?: {
     email?: string;
   };

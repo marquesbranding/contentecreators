@@ -4,6 +4,8 @@ import "server-only";
 
 import { revalidatePath } from "next/cache";
 
+import { operationalLogger } from "@/shared/server/observability/operational-logger";
+
 import {
   activateProfileMediaSchema,
   finalizeMediaUploadSchema,
@@ -19,6 +21,22 @@ import type {
 import { createServerProfileMediaReplacementService } from "../services/server-profile-media-replacement.service";
 import { createServerMediaUploadService } from "../services/server-media-upload.service";
 
+function logStorageFailure(
+  operation: string,
+  requestId: string,
+  error: unknown,
+) {
+  operationalLogger.error({
+    details: {
+      errorMessage: error instanceof Error ? error.message : String(error),
+    },
+    event: "user_facing_error",
+    operation,
+    outcome: "error",
+    requestId,
+  });
+}
+
 export async function activateProfileMediaAction(
   input: unknown,
 ): Promise<ActivateProfileMediaResult> {
@@ -31,11 +49,13 @@ export async function activateProfileMediaAction(
     };
   }
 
+  const requestId = crypto.randomUUID();
+
   try {
     const service = await createServerProfileMediaReplacementService();
     const result = await service.activateProfileMedia({
       ...parsed.data,
-      requestId: crypto.randomUUID(),
+      requestId,
     });
 
     if (result.kind === "activated") {
@@ -43,7 +63,9 @@ export async function activateProfileMediaAction(
     }
 
     return result;
-  } catch {
+  } catch (error) {
+    logStorageFailure("activate_profile_media", requestId, error);
+
     return {
       code: "STORAGE_UNAVAILABLE",
       kind: "error",
@@ -63,11 +85,13 @@ export async function removeProfileMediaAction(
     };
   }
 
+  const requestId = crypto.randomUUID();
+
   try {
     const service = await createServerProfileMediaReplacementService();
     const result = await service.removeProfileMedia({
       ...parsed.data,
-      requestId: crypto.randomUUID(),
+      requestId,
     });
 
     if (result.kind === "removed") {
@@ -75,7 +99,9 @@ export async function removeProfileMediaAction(
     }
 
     return result;
-  } catch {
+  } catch (error) {
+    logStorageFailure("remove_profile_media", requestId, error);
+
     return {
       code: "STORAGE_UNAVAILABLE",
       kind: "error",
@@ -95,14 +121,18 @@ export async function prepareMediaUploadAction(
     };
   }
 
+  const requestId = crypto.randomUUID();
+
   try {
     const service = await createServerMediaUploadService();
 
-    return service.prepareUpload({
+    return await service.prepareUpload({
       ...parsed.data,
-      requestId: crypto.randomUUID(),
+      requestId,
     });
-  } catch {
+  } catch (error) {
+    logStorageFailure("prepare_media_upload", requestId, error);
+
     return {
       code: "STORAGE_UNAVAILABLE",
       kind: "error",
@@ -122,14 +152,18 @@ export async function finalizeMediaUploadAction(
     };
   }
 
+  const requestId = crypto.randomUUID();
+
   try {
     const service = await createServerMediaUploadService();
 
-    return service.finalizeUpload({
+    return await service.finalizeUpload({
       ...parsed.data,
-      requestId: crypto.randomUUID(),
+      requestId,
     });
-  } catch {
+  } catch (error) {
+    logStorageFailure("finalize_media_upload", requestId, error);
+
     return {
       code: "STORAGE_UNAVAILABLE",
       kind: "error",

@@ -156,8 +156,15 @@ describe("admin profile edit actions", () => {
     );
 
     expect(result).toEqual({
-      message: "Não foi possível atualizar este perfil. Tente novamente.",
+      errorCode: "unknown",
+      fieldErrors: undefined,
+      message: expect.stringContaining(
+        "Algo deu errado ao tentar salvar seu perfil",
+      ),
+      requestId: expect.any(String),
+      retryable: true,
       status: "error",
+      title: "Não foi possível salvar seu perfil",
     });
     expect(JSON.stringify(result)).not.toContain("secret");
   });

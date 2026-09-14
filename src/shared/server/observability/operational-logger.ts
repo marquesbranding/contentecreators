@@ -45,7 +45,8 @@ export type OperationalEventName =
   | "health_check"
   | "migration_result"
   | "moderation_transition"
-  | "onboarding_submission_failure";
+  | "onboarding_submission_failure"
+  | "user_facing_error";
 
 export interface OperationalLogInput {
   accountStatus?: string;

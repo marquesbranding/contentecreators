@@ -233,9 +233,15 @@ describe("onboarding actions", () => {
     );
 
     expect(result).toEqual({
-      message:
-        "Não foi possível enviar o perfil para análise. Tente novamente.",
+      errorCode: "unknown",
+      fieldErrors: undefined,
+      message: expect.stringContaining(
+        "Algo deu errado ao tentar enviar o cadastro",
+      ),
+      requestId: expect.any(String),
+      retryable: true,
       status: "error",
+      title: "Não foi possível criar sua conta",
       values: { role: "COMPANY" },
     });
   });

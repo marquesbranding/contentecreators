@@ -4,6 +4,9 @@ import "server-only";
 
 import { revalidatePath } from "next/cache";
 
+import { toUserFacingError } from "@/shared/lib/errors/user-facing-error";
+import { logUserFacingError } from "@/shared/server/errors/log-user-facing-error";
+
 import { readAdditionalCompanyLocations } from "../../domain/company-location-form-data";
 import { readSocialChannels } from "../../domain/social-channels-form-data";
 import { companyProfileEditSchema } from "../../schemas/company-profile-edit-schema";
@@ -56,11 +59,13 @@ export async function updateCompanyProfileAction(
     };
   }
 
+  const requestId = crypto.randomUUID();
+
   try {
     const service = await createServerCompanyProfileService();
     const result = await service.updateOwnerProfile({
       input: parsed.data,
-      requestId: crypto.randomUUID(),
+      requestId,
     });
 
     if (result.kind === "conflict") {
@@ -78,10 +83,23 @@ export async function updateCompanyProfileAction(
       profileVersion: result.profile.version,
       status: "success",
     };
-  } catch {
+  } catch (error) {
+    const context = {
+      operation: "save_profile" as const,
+      requestId,
+      role: "COMPANY" as const,
+    };
+    const mapped = toUserFacingError(error, context);
+    logUserFacingError(error, mapped, context);
+
     return {
-      message: "Não foi possível atualizar sua empresa. Tente novamente.",
+      errorCode: mapped.code,
+      fieldErrors: mapped.fieldErrors,
+      message: mapped.message,
+      requestId,
+      retryable: mapped.retryable,
       status: "error",
+      title: mapped.title,
     };
   }
 }
