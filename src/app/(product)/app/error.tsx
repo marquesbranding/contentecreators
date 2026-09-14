@@ -2,7 +2,7 @@
 
 import { ResultScreen } from "@/shared/components/result-screen";
 
-export default function OnboardingError({
+export default function AppSectionError({
   unstable_retry,
 }: {
   error: Error & { digest?: string };
@@ -10,9 +10,10 @@ export default function OnboardingError({
 }) {
   return (
     <ResultScreen
-      description="Não conseguimos recuperar seu rascunho agora. Nenhum dado foi apagado — seus dados continuam protegidos."
+      description="Não foi possível carregar esta página agora. Tente novamente."
       primaryAction={{ label: "Tentar novamente", onClick: unstable_retry }}
-      title="Não foi possível abrir seu cadastro"
+      secondaryAction={{ href: "/app/catalog", label: "Ir para o catálogo" }}
+      title="Algo deu errado"
       tone="error"
     />
   );
