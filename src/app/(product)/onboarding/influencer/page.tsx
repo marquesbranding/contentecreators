@@ -68,6 +68,7 @@ export default async function InfluencerOnboardingPage() {
       description="Complete seu perfil de creator. Ao enviar, o cadastro ficará aguardando a revisão da nossa equipe."
       correctionReason={correctionContext?.reason}
       correctionRequested={correctionRequested}
+      correctionRequestedFields={correctionContext?.requestedFields}
       progressLabel="Dados do perfil"
       title="Conte sobre o seu trabalho"
       totalSteps={2}

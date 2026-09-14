@@ -14,6 +14,7 @@ export interface CorrectedProfileResubmissionContext {
   command: CorrectedProfileResubmissionCommand;
   initialValues: OnboardingDraftPayload;
   reason: string;
+  requestedFields: { field: string; note?: string }[];
 }
 
 export async function loadCurrentCorrectionContext(): Promise<CorrectedProfileResubmissionContext | null> {
@@ -43,7 +44,10 @@ export async function loadCurrentCorrectionContext(): Promise<CorrectedProfileRe
       }
 
       const [correction] = await transaction
-        .select({ reason: moderationEvents.reason })
+        .select({
+          reason: moderationEvents.reason,
+          requestedFields: moderationEvents.requestedFields,
+        })
         .from(moderationEvents)
         .innerJoin(
           moderationCases,
@@ -85,6 +89,7 @@ export async function loadCurrentCorrectionContext(): Promise<CorrectedProfileRe
           },
           initialValues,
           reason: correction.reason,
+          requestedFields: correction.requestedFields,
         };
       }
 
@@ -109,6 +114,7 @@ export async function loadCurrentCorrectionContext(): Promise<CorrectedProfileRe
         },
         initialValues,
         reason: correction.reason,
+        requestedFields: correction.requestedFields,
       };
     },
   );

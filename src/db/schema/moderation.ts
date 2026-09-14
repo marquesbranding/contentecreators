@@ -72,7 +72,10 @@ export const moderationEvents = pgTable(
     toStatus: accountStatusEnum("to_status").notNull(),
     action: moderationActionEnum("action").notNull(),
     reason: text("reason"),
-    requestedFields: jsonb("requested_fields").notNull().default([]),
+    requestedFields: jsonb("requested_fields")
+      .notNull()
+      .default([])
+      .$type<{ field: string; note?: string }[]>(),
     actorAccountId: uuid("actor_account_id")
       .notNull()
       .references(() => accounts.id, {

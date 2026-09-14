@@ -64,8 +64,8 @@ function fieldLabel(fieldName: string) {
   return fieldLabels[fieldName] ?? "Campo";
 }
 
-function focusField(form: HTMLFormElement | null, fieldName: string) {
-  const field = form?.querySelector<HTMLElement>(
+export function focusField(root: ParentNode | null, fieldName: string) {
+  const field = root?.querySelector<HTMLElement>(
     `[name="${CSS.escape(fieldName)}"], [data-field-name="${CSS.escape(fieldName)}"]`,
   );
 

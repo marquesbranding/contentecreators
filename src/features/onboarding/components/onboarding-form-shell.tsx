@@ -17,10 +17,16 @@ import {
 } from "@/shared/components/ui/card";
 import { Progress, ProgressLabel } from "@/shared/components/ui/progress";
 
+import {
+  CorrectionRequestedFieldsList,
+  type CorrectionRequestedFieldItem,
+} from "./correction-requested-fields-list.client";
+
 export function OnboardingFormShell({
   children,
   correctionReason,
   correctionRequested = false,
+  correctionRequestedFields = [],
   currentStep = 1,
   description,
   eyebrow = "Cadastro para análise",
@@ -33,6 +39,7 @@ export function OnboardingFormShell({
   children: React.ReactNode;
   correctionReason?: string | null;
   correctionRequested?: boolean;
+  correctionRequestedFields?: CorrectionRequestedFieldItem[];
   currentStep?: number;
   description: React.ReactNode;
   eyebrow?: string;
@@ -112,6 +119,9 @@ export function OnboardingFormShell({
                 <AlertDescription>
                   {correctionReason ??
                     "Revise os dados indicados pela equipe e envie o cadastro novamente para análise."}
+                  <CorrectionRequestedFieldsList
+                    fields={correctionRequestedFields}
+                  />
                 </AlertDescription>
               </Alert>
             ) : null}

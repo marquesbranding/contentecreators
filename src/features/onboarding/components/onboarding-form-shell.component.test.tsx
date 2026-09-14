@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import { OnboardingFormShell } from "./onboarding-form-shell";
@@ -42,6 +43,35 @@ describe("onboarding form shell", () => {
         "Informe um endereço comercial completo e revise o nome fantasia.",
       ),
     ).toBeInTheDocument();
+  });
+
+  it("lists the specific fields the moderator flagged, focusing them on click", async () => {
+    const user = userEvent.setup();
+    render(
+      <OnboardingFormShell
+        correctionReason="Revise os dados indicados."
+        correctionRequested
+        correctionRequestedFields={[
+          { field: "cnpj", note: "Confira o número informado." },
+          { field: "websiteUrl" },
+        ]}
+        description="Dados necessários para análise."
+        title="Revise seu cadastro"
+      >
+        <form aria-label="Formulário de teste">
+          <input name="cnpj" />
+          <input name="websiteUrl" />
+        </form>
+      </OnboardingFormShell>,
+    );
+
+    expect(
+      screen.getByText(/CNPJ: Confira o número informado\./iu),
+    ).toBeVisible();
+    const websiteButton = screen.getByRole("button", { name: "Site" });
+    await user.click(websiteButton);
+
+    expect(document.querySelector('input[name="websiteUrl"]')).toHaveFocus();
   });
 
   it("can defer the brand header to an authenticated product shell", () => {
