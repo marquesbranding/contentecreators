@@ -24,6 +24,7 @@ import {
   useActionFeedback,
 } from "@/shared/hooks/use-action-feedback";
 import { useRequiredFieldValidation } from "@/shared/hooks/use-required-field-validation";
+import { useSavedAtIndicator } from "@/shared/hooks/use-saved-at-indicator";
 import { useUnsavedChangesGuard } from "@/shared/hooks/use-unsaved-changes-guard";
 import { cn } from "@/shared/lib/cn";
 
@@ -64,6 +65,7 @@ export function InfluencerProfileEditForm({
 }) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const { markSaved, savedAtLabel } = useSavedAtIndicator();
   const actionWithClientSync = useCallback<InfluencerProfileAction>(
     async (previousState, formData) => {
       const nextState = await action(previousState, formData);
@@ -71,6 +73,7 @@ export function InfluencerProfileEditForm({
       if (nextState.status === "success" && nextState.profileVersion) {
         setHasUnsavedChanges(false);
         onProfileVersionChange?.(nextState.profileVersion);
+        markSaved();
       }
 
       /* Triggered here too (not just from the effect below): `revalidatePath`
@@ -79,7 +82,7 @@ export function InfluencerProfileEditForm({
 
       return nextState;
     },
-    [action, onProfileVersionChange],
+    [action, markSaved, onProfileVersionChange],
   );
   const [state, formAction, pending] = useActionState(
     actionWithClientSync,
@@ -181,6 +184,15 @@ export function InfluencerProfileEditForm({
       ) : null}
       {mediaFields}
 
+      {savedAtLabel ? (
+        <p
+          aria-live="polite"
+          className="text-right text-sm font-medium text-[#138a5b]"
+        >
+          <CheckCircle2 aria-hidden="true" className="mr-1 inline size-4" />
+          {savedAtLabel}
+        </p>
+      ) : null}
       <div className="grid gap-3 sm:grid-cols-2">
         <Link
           className={cn(buttonVariants({ size: "lg", variant: "outline" }))}
