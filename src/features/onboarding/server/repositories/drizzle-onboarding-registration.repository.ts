@@ -392,12 +392,15 @@ async function insertRoleProfile(
       })),
     ]);
 
-    if (input.socialPlatform && input.socialUrl) {
-      await transaction.insert(socialProfiles).values({
-        normalizedUrl: input.socialUrl,
-        ownerAccountId: accountId,
-        platform: input.socialPlatform,
-      });
+    if (input.socialChannels.length > 0) {
+      await transaction.insert(socialProfiles).values(
+        input.socialChannels.map((channel) => ({
+          isPrimary: channel.isPrimary,
+          normalizedUrl: channel.url,
+          ownerAccountId: accountId,
+          platform: channel.platform,
+        })),
+      );
     }
 
     return;

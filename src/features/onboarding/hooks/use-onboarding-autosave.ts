@@ -25,18 +25,6 @@ const employeeRanges = new Set([
   "201_TO_500",
   "MORE_THAN_500",
 ]);
-const socialPlatforms = new Set([
-  "INSTAGRAM",
-  "TIKTOK",
-  "YOUTUBE",
-  "FACEBOOK",
-  "X",
-  "LINKEDIN",
-  "THREADS",
-  "TELEGRAM",
-  "OTHER",
-]);
-
 function readText(formData: FormData, name: string) {
   const value = formData.get(name);
   return typeof value === "string" ? value : "";
@@ -124,8 +112,11 @@ function collectCreatorPayload(formData: FormData) {
 function collectCompanyPayload(formData: FormData) {
   const payload: CompanyOnboardingDraftPayload = {};
   const employeeRange = readText(formData, "employeeRange");
-  const socialPlatform = readText(formData, "socialPlatform");
+  const socialChannels = readSocialChannels(formData);
 
+  if (socialChannels.length > 0) {
+    payload.socialChannels = toDraftSocialChannels(socialChannels);
+  }
   if (formData.has("additionalLocationsPresent")) {
     payload.additionalLocations = readAdditionalCompanyLocations(formData);
   }
@@ -159,16 +150,6 @@ function collectCompanyPayload(formData: FormData) {
   }
   if (formData.has("segment")) {
     payload.segment = readText(formData, "segment");
-  }
-  if (socialPlatforms.has(socialPlatform)) {
-    payload.socialPlatform =
-      socialPlatform as CompanyOnboardingDraftPayload["socialPlatform"];
-  }
-  if (formData.has("socialUrl")) {
-    const socialUrl = readSafeUrl(formData, "socialUrl");
-    if (socialUrl !== undefined) {
-      payload.socialUrl = socialUrl;
-    }
   }
   if (formData.has("state")) {
     payload.state = readText(formData, "state");

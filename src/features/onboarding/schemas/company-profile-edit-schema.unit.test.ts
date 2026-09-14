@@ -27,8 +27,14 @@ const completeEdit = {
   number: "100",
   postalCode: "01001-000",
   segment: "Tecnologia",
-  socialPlatform: "LINKEDIN",
-  socialUrl: "HTTPS://LinkedIn.COM:443/company/empresa-exemplo/#sobre",
+  socialChannels: [
+    {
+      followerCount: "0",
+      isPrimary: true,
+      platform: "LINKEDIN",
+      url: "HTTPS://LinkedIn.COM:443/company/empresa-exemplo/#sobre",
+    },
+  ],
   state: "sp",
   street: "Praça da Sé",
   tradeName: "Empresa Exemplo",
@@ -50,19 +56,25 @@ describe("company profile edit schema", () => {
         ],
         cnpj: "11222333000181",
         expectedVersion: 3,
-        socialUrl: "https://linkedin.com/company/empresa-exemplo",
+        socialChannels: [
+          {
+            followerCount: 0,
+            isPrimary: true,
+            platform: "LINKEDIN",
+            url: "https://linkedin.com/company/empresa-exemplo",
+          },
+        ],
         state: "SP",
       },
       success: true,
     });
   });
 
-  it("rejects invalid CNPJ, incomplete social pair and stale-shaped version", () => {
+  it("rejects invalid CNPJ and a non-positive version", () => {
     const result = companyProfileEditSchema.safeParse({
       ...completeEdit,
       cnpj: "00.000.000/0000-00",
       expectedVersion: "0",
-      socialPlatform: undefined,
     });
 
     expect(result.success).toBe(false);

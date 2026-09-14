@@ -195,7 +195,7 @@ describeLocalStack("Drizzle profile media replacement repository", () => {
     expect(result).toEqual({
       accountCompletion: {
         percentage: 85,
-        version: 1,
+        version: 2,
       },
       auditRows: [
         {

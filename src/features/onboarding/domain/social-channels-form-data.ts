@@ -1,5 +1,6 @@
 export const SOCIAL_CHANNEL_PLATFORMS = [
   "INSTAGRAM",
+  "TIKTOK",
   "FACEBOOK",
   "YOUTUBE",
   "X",

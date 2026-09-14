@@ -13,18 +13,7 @@ const draftState = z
   .max(2)
   .transform((value) => value.toUpperCase());
 const draftWhatsapp = z.string().trim().max(20);
-const socialPlatform = z.enum([
-  "INSTAGRAM",
-  "TIKTOK",
-  "YOUTUBE",
-  "FACEBOOK",
-  "X",
-  "LINKEDIN",
-  "THREADS",
-  "TELEGRAM",
-  "OTHER",
-]);
-const creatorSocialChannelPlatform = z.enum(SOCIAL_CHANNEL_PLATFORMS);
+const socialChannelPlatform = z.enum(SOCIAL_CHANNEL_PLATFORMS);
 const draftNonNegativeInt = z
   .number()
   .int()
@@ -36,7 +25,7 @@ const socialChannelDraftSchema = z
     interactions: draftNonNegativeInt,
     isPrimary: z.boolean(),
     newFollowers: draftNonNegativeInt,
-    platform: creatorSocialChannelPlatform,
+    platform: socialChannelPlatform,
     sharedContent: draftText(200),
     url: draftUrl,
     views: draftNonNegativeInt,
@@ -106,8 +95,7 @@ export const companyOnboardingDraftPayloadSchema = z
       .transform((value) => value.replace(/\D/gu, ""))
       .pipe(z.string().max(8)),
     segment: draftText(120),
-    socialPlatform,
-    socialUrl: draftUrl,
+    socialChannels: z.array(socialChannelDraftSchema).max(8),
     state: draftState,
     street: draftText(180),
     tradeName: draftText(160),

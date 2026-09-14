@@ -327,7 +327,7 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
     expect(proof).toMatchObject({
       accountCompletion: {
         percentage: 69,
-        version: 1,
+        version: 2,
       },
       accountStatus: "APPROVED",
       instagramArchived: true,

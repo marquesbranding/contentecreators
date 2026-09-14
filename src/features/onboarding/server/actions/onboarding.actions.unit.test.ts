@@ -81,8 +81,10 @@ function completeCompanyRegistration() {
     privacyAccepted: "on",
     role: "COMPANY",
     segment: "Tecnologia",
-    socialPlatform: "LINKEDIN",
-    socialUrl: "HTTPS://LinkedIn.COM:443/company/empresa-exemplo/#sobre",
+    "socialChannels.LINKEDIN.selected": "on",
+    "socialChannels.LINKEDIN.url":
+      "HTTPS://LinkedIn.COM:443/company/empresa-exemplo/#sobre",
+    "socialChannels.LINKEDIN.primary": "on",
     state: "SP",
     street: "Praça da Sé",
     termsAccepted: "on",
@@ -321,8 +323,13 @@ describe("onboarding actions", () => {
             label: "Filial Sul",
           }),
         ],
-        socialPlatform: "LINKEDIN",
-        socialUrl: "https://linkedin.com/company/empresa-exemplo",
+        socialChannels: [
+          expect.objectContaining({
+            isPrimary: true,
+            platform: "LINKEDIN",
+            url: "https://linkedin.com/company/empresa-exemplo",
+          }),
+        ],
       }),
       /* Media files travel as a second argument since signup started
        * accepting a logo and a cover. */

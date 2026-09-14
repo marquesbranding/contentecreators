@@ -132,8 +132,14 @@ describe("onboarding form contracts", () => {
       postalCode: "01001-000",
       role: "COMPANY",
       segment: "Tecnologia",
-      socialPlatform: "LINKEDIN",
-      socialUrl: " HTTPS://LinkedIn.COM:443/company/empresa-exemplo/#sobre ",
+      socialChannels: [
+        {
+          followerCount: "0",
+          isPrimary: true,
+          platform: "LINKEDIN",
+          url: " HTTPS://LinkedIn.COM:443/company/empresa-exemplo/#sobre ",
+        },
+      ],
       street: "Praça da Sé",
       tradeName: "Empresa Exemplo",
       websiteUrl: "https://example.com",
@@ -143,9 +149,12 @@ describe("onboarding form contracts", () => {
     if (result.success && result.data.role === "COMPANY") {
       expect(result.data.cnpj).toBe("11222333000181");
       expect(result.data.role).toBe("COMPANY");
-      expect(result.data.socialUrl).toBe(
-        "https://linkedin.com/company/empresa-exemplo",
-      );
+      expect(result.data.socialChannels).toEqual([
+        expect.objectContaining({
+          platform: "LINKEDIN",
+          url: "https://linkedin.com/company/empresa-exemplo",
+        }),
+      ]);
       expect(result.data.additionalLocations).toEqual([
         expect.objectContaining({
           city: "Curitiba",
@@ -214,38 +223,42 @@ describe("onboarding form contracts", () => {
     }
   });
 
-  it.each([
-    { socialPlatform: "LINKEDIN", socialUrl: undefined },
-    {
-      socialPlatform: undefined,
-      socialUrl: "https://linkedin.com/company/empresa-exemplo",
-    },
-  ])(
-    "requires company social platform and URL to be supplied together %#",
-    (social) => {
-      const result = emailRegistrationSchema.safeParse({
-        ...commonProfile,
-        cnpj: "11.222.333/0001-81",
-        description:
-          "Empresa de tecnologia que busca creators para campanhas institucionais.",
-        email: "empresa@example.com",
-        employeeRange: "11_TO_50",
-        neighborhood: "Centro",
-        number: "100",
-        password: "StrongPass1",
-        passwordConfirmation: "StrongPass1",
-        postalCode: "01001-000",
-        role: "COMPANY",
-        segment: "Tecnologia",
-        street: "Praça da Sé",
-        tradeName: "Empresa Exemplo",
-        websiteUrl: "https://example.com",
-        ...social,
-      });
+  it("requires exactly one primary channel when a company selects more than one network", () => {
+    const result = emailRegistrationSchema.safeParse({
+      ...commonProfile,
+      cnpj: "11.222.333/0001-81",
+      description:
+        "Empresa de tecnologia que busca creators para campanhas institucionais.",
+      email: "empresa@example.com",
+      employeeRange: "11_TO_50",
+      neighborhood: "Centro",
+      number: "100",
+      password: "StrongPass1",
+      passwordConfirmation: "StrongPass1",
+      postalCode: "01001-000",
+      role: "COMPANY",
+      segment: "Tecnologia",
+      socialChannels: [
+        {
+          followerCount: "0",
+          isPrimary: true,
+          platform: "INSTAGRAM",
+          url: "https://instagram.com/empresa-exemplo",
+        },
+        {
+          followerCount: "0",
+          isPrimary: true,
+          platform: "LINKEDIN",
+          url: "https://linkedin.com/company/empresa-exemplo",
+        },
+      ],
+      street: "Praça da Sé",
+      tradeName: "Empresa Exemplo",
+      websiteUrl: "https://example.com",
+    });
 
-      expect(result.success).toBe(false);
-    },
-  );
+    expect(result.success).toBe(false);
+  });
 
   it("rejects mismatched passwords, public admin, and invalid consent", () => {
     const result = emailRegistrationSchema.safeParse({

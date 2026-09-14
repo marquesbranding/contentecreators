@@ -38,8 +38,14 @@ const profile = {
   number: "100",
   postalCode: "01001000",
   segment: "Tecnologia",
-  socialPlatform: "LINKEDIN",
-  socialUrl: "https://linkedin.com/company/empresa-exemplo",
+  socialChannels: [
+    {
+      followerCount: 0,
+      isPrimary: true,
+      platform: "LINKEDIN",
+      url: "https://linkedin.com/company/empresa-exemplo",
+    },
+  ],
   state: "SP",
   street: "Praça da Sé",
   tradeName: "Empresa Exemplo",

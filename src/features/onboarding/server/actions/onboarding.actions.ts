@@ -52,8 +52,6 @@ function formPayload(formData: FormData) {
     role: formData.get("role"),
     segment: formData.get("segment"),
     socialChannels: readSocialChannels(formData),
-    socialPlatform: formData.get("socialPlatform"),
-    socialUrl: formData.get("socialUrl"),
     state: formData.get("state"),
     street: formData.get("street"),
     termsAccepted: formData.get("termsAccepted"),

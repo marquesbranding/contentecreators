@@ -1,11 +1,12 @@
 import "server-only";
 
-import { and, asc, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull } from "drizzle-orm";
 
 import type { ApplicationTransaction } from "@/db/client";
 import { companyLocations, companyProfiles, socialProfiles } from "@/db/schema";
 import { applyVerifiedAuditContext } from "@/features/audit/server";
 
+import { SOCIAL_CHANNEL_PLATFORMS } from "../../domain/social-channels-form-data";
 import type { CompanyProfileEditInput } from "../../schemas/company-profile-edit-schema";
 import type { CompanyProfileDto } from "../../types/company-profile.types";
 import type { CompanyProfileRepository } from "../services/company-profile.service";
@@ -14,6 +15,22 @@ import { persistCurrentAccountProfileCompletion } from "./drizzle-profile-comple
 function normalizeWhatsapp(value: string) {
   const digits = value.replace(/\D/gu, "");
   return digits.startsWith("55") ? `+${digits}` : `+55${digits}`;
+}
+
+/**
+ * Channels declared before the fixed-platform picker (e.g. a custom "Outra"
+ * network) aren't representable in the current form and are intentionally
+ * left out of the edit view — `updateCompanySocial` never archives them, so
+ * they stay exactly as stored and keep appearing in the catalog.
+ */
+function isManageableSocialChannel<T extends { platform: string }>(
+  socialProfile: T,
+): socialProfile is T & {
+  platform: (typeof SOCIAL_CHANNEL_PLATFORMS)[number];
+} {
+  return (SOCIAL_CHANNEL_PLATFORMS as readonly string[]).includes(
+    socialProfile.platform,
+  );
 }
 
 async function loadProfile(
@@ -46,7 +63,7 @@ async function loadProfile(
     )
     .orderBy(desc(companyLocations.isPrimary), asc(companyLocations.id));
   const primaryLocation = locations.find((location) => location.isPrimary);
-  const [socialProfile] = await transaction
+  const ownedSocialProfiles = await transaction
     .select()
     .from(socialProfiles)
     .where(
@@ -55,8 +72,7 @@ async function loadProfile(
         isNull(socialProfiles.archivedAt),
       ),
     )
-    .orderBy(socialProfiles.sortOrder, socialProfiles.id)
-    .limit(1);
+    .orderBy(socialProfiles.sortOrder, socialProfiles.id);
 
   if (!primaryLocation) {
     return null;
@@ -87,8 +103,14 @@ async function loadProfile(
     number: primaryLocation.number,
     postalCode: primaryLocation.postalCode ?? "",
     segment: profile.segment ?? "",
-    socialPlatform: socialProfile?.platform,
-    socialUrl: socialProfile?.normalizedUrl,
+    socialChannels: ownedSocialProfiles
+      .filter(isManageableSocialChannel)
+      .map((socialProfile) => ({
+        followerCount: 0,
+        isPrimary: socialProfile.isPrimary,
+        platform: socialProfile.platform,
+        url: socialProfile.normalizedUrl,
+      })),
     state: primaryLocation.state,
     street: primaryLocation.street,
     tradeName: profile.tradeName,
@@ -139,7 +161,7 @@ async function updateCompanySocial(
   accountId: string,
   input: CompanyProfileEditInput,
 ) {
-  const [currentSocial] = await transaction
+  const currentSocialProfiles = await transaction
     .select()
     .from(socialProfiles)
     .where(
@@ -149,35 +171,77 @@ async function updateCompanySocial(
       ),
     )
     .orderBy(socialProfiles.sortOrder, socialProfiles.id)
-    .limit(1)
     .for("update");
+  const manageableCurrentSocialProfiles = currentSocialProfiles.filter(
+    isManageableSocialChannel,
+  );
+  const currentByPlatform = new Map(
+    manageableCurrentSocialProfiles.map((socialProfile) => [
+      socialProfile.platform,
+      socialProfile,
+    ]),
+  );
+  const requestedPlatforms = new Set(
+    input.socialChannels.map((channel) => channel.platform),
+  );
 
-  if (!input.socialPlatform || !input.socialUrl) {
-    if (currentSocial) {
-      await transaction
-        .update(socialProfiles)
-        .set({ archivedAt: new Date() })
-        .where(eq(socialProfiles.id, currentSocial.id));
-    }
-    return;
-  }
+  /*
+   * Only reconcile channels on the fixed picker (`SOCIAL_CHANNEL_PLATFORMS`).
+   * A channel on a platform the picker doesn't offer isn't representable in
+   * `input.socialChannels` at all, so it must never be archived just because
+   * it's absent from the request.
+   */
+  const removedIds = manageableCurrentSocialProfiles
+    .filter((socialProfile) => !requestedPlatforms.has(socialProfile.platform))
+    .map((socialProfile) => socialProfile.id);
 
-  if (currentSocial) {
+  if (removedIds.length > 0) {
     await transaction
       .update(socialProfiles)
-      .set({
-        normalizedUrl: input.socialUrl,
-        platform: input.socialPlatform,
-      })
-      .where(eq(socialProfiles.id, currentSocial.id));
-    return;
+      .set({ archivedAt: new Date() })
+      .where(inArray(socialProfiles.id, removedIds));
   }
 
-  await transaction.insert(socialProfiles).values({
-    normalizedUrl: input.socialUrl,
-    ownerAccountId: accountId,
-    platform: input.socialPlatform,
-  });
+  /*
+   * Clear every current primary flag on manageable channels before assigning
+   * the requested one so the partial unique index (at most one primary per
+   * account) never sees two `true` rows at the same time between statements.
+   */
+  if (manageableCurrentSocialProfiles.length > 0) {
+    await transaction
+      .update(socialProfiles)
+      .set({ isPrimary: false })
+      .where(
+        inArray(
+          socialProfiles.id,
+          manageableCurrentSocialProfiles.map(
+            (socialProfile) => socialProfile.id,
+          ),
+        ),
+      );
+  }
+
+  for (const channel of input.socialChannels) {
+    const existing = currentByPlatform.get(channel.platform);
+
+    if (existing) {
+      await transaction
+        .update(socialProfiles)
+        .set({
+          isPrimary: channel.isPrimary,
+          normalizedUrl: channel.url,
+        })
+        .where(eq(socialProfiles.id, existing.id));
+      continue;
+    }
+
+    await transaction.insert(socialProfiles).values({
+      isPrimary: channel.isPrimary,
+      normalizedUrl: channel.url,
+      ownerAccountId: accountId,
+      platform: channel.platform,
+    });
+  }
 }
 
 export function createDrizzleCompanyProfileRepository(): CompanyProfileRepository {

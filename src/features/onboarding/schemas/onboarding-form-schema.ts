@@ -88,27 +88,11 @@ const optionalUrl = z
     z.union([z.literal(""), url]),
   )
   .transform((value) => value || undefined);
-const socialPlatform = z.enum([
-  "INSTAGRAM",
-  "TIKTOK",
-  "YOUTUBE",
-  "FACEBOOK",
-  "X",
-  "LINKEDIN",
-  "THREADS",
-  "TELEGRAM",
-  "OTHER",
-]);
-const optionalSocialPlatform = z.preprocess(
-  (value) =>
-    value === "" || value === null || value === undefined ? undefined : value,
-  socialPlatform.optional(),
-);
 const isPrimaryFlag = z.preprocess(
   (value) => value === "on" || value === true,
   z.boolean(),
 );
-const creatorSocialChannelPlatform = z.enum(SOCIAL_CHANNEL_PLATFORMS);
+const socialChannelPlatform = z.enum(SOCIAL_CHANNEL_PLATFORMS);
 const socialChannelEntry = z.object({
   followerCount: z.coerce
     .number("Informe uma quantidade válida.")
@@ -118,7 +102,7 @@ const socialChannelEntry = z.object({
   interactions: optionalNonNegativeInt,
   isPrimary: isPrimaryFlag,
   newFollowers: optionalNonNegativeInt,
-  platform: creatorSocialChannelPlatform,
+  platform: socialChannelPlatform,
   sharedContent: z.preprocess(
     (value) => (value === null || value === "" ? undefined : value),
     z
@@ -313,8 +297,7 @@ export const companyProfileFieldsSchema = z.object({
     .transform((value) => value.replace(/\D/gu, ""))
     .pipe(z.string().length(8, "Informe um CEP válido.")),
   segment: z.string().trim().min(2, "Use pelo menos 2 caracteres.").max(120),
-  socialPlatform: optionalSocialPlatform,
-  socialUrl: optionalUrl.optional(),
+  socialChannels: z.array(socialChannelEntry).default([]),
   state: brazilianState,
   street: z.string().trim().min(3, "Use pelo menos 3 caracteres.").max(180),
   tradeName: z.string().trim().min(2, "Use pelo menos 2 caracteres.").max(160),
@@ -361,38 +344,8 @@ const companyEmailRegistrationSchema = z
   })
   .superRefine(validateMatchingPasswords);
 
-function validateCompanySocialPair(
-  value: {
-    role: "COMPANY" | "INFLUENCER";
-    socialPlatform?: string;
-    socialUrl?: string;
-  },
-  context: z.RefinementCtx,
-) {
-  if (value.role !== "COMPANY") {
-    return;
-  }
-
-  if (value.socialPlatform && !value.socialUrl) {
-    context.addIssue({
-      code: "custom",
-      message: "Informe o link da rede social selecionada.",
-      path: ["socialUrl"],
-    });
-  }
-
-  if (!value.socialPlatform && value.socialUrl) {
-    context.addIssue({
-      code: "custom",
-      message: "Selecione a rede social deste link.",
-      path: ["socialPlatform"],
-    });
-  }
-}
-
 export const emailRegistrationSchema = z
   .union([creatorEmailRegistrationSchema, companyEmailRegistrationSchema])
-  .superRefine(validateCompanySocialPair)
   .superRefine(validateSocialChannels);
 
 export const googleProfileSchema = z
@@ -406,7 +359,6 @@ export const googleProfileSchema = z
       role: z.literal("COMPANY"),
     }),
   ])
-  .superRefine(validateCompanySocialPair)
   .superRefine(validateOtherNiche)
   .superRefine(validateSocialChannels);
 

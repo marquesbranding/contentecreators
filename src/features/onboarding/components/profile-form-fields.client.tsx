@@ -102,8 +102,15 @@ const socialChannelPlatformLabels: Record<
   LINKEDIN: "LinkedIn",
   TELEGRAM: "Telegram",
   THREADS: "Threads",
+  TIKTOK: "TikTok",
   X: "X",
   YOUTUBE: "YouTube",
+};
+
+const socialChannelUrlPlaceholders: Partial<
+  Record<(typeof SOCIAL_CHANNEL_PLATFORMS)[number], string>
+> = {
+  TIKTOK: "https://www.tiktok.com/@seuperfil",
 };
 
 interface AdditionalLocationEditorValue {
@@ -476,12 +483,6 @@ export function ProfileFormFields({
 
     return isPredefinedCompanySegment(segment) ? segment : "OTHER";
   });
-  const [companySocialPlatform, setCompanySocialPlatform] = useState(
-    companyInitialValues?.socialPlatform ?? "",
-  );
-  const [companySocialUrl, setCompanySocialUrl] = useState(
-    companyInitialValues?.socialUrl ?? "",
-  );
   interface ChannelState {
     checked: boolean;
     followers: string;
@@ -496,10 +497,10 @@ export function ProfileFormFields({
     Record<(typeof SOCIAL_CHANNEL_PLATFORMS)[number], ChannelState>
   >(() => {
     const initialChannels = new Map(
-      (creatorInitialValues?.socialChannels ?? []).map((channel) => [
-        channel.platform,
-        channel,
-      ]),
+      (creatorInitialValues?.socialChannels ??
+        companyInitialValues?.socialChannels ??
+        []
+      ).map((channel) => [channel.platform, channel]),
     );
 
     return Object.fromEntries(
@@ -716,6 +717,251 @@ export function ProfileFormFields({
     );
     onFieldChange?.("additionalLocations");
   }
+
+  const showChannelMetrics = role === "INFLUENCER";
+  const channelsGridClass = showChannelMetrics
+    ? "grid-cols-[minmax(9rem,1fr)_6rem_minmax(0,2fr)_5rem]"
+    : "grid-cols-[minmax(9rem,1fr)_minmax(0,2fr)_5rem]";
+  const socialChannelsField = (
+    <Field
+      data-invalid={Boolean(resolveFieldErrors("socialChannels")?.length)}
+    >
+      <FieldLabel id="creator-social-channels-label" required={showChannelMetrics}>
+        Redes sociais
+      </FieldLabel>
+      <div
+        aria-describedby="creator-social-channels-error"
+        aria-labelledby="creator-social-channels-label"
+        className="data-[invalid=true]:ring-destructive/20 mx-auto w-full max-w-2xl data-[invalid=true]:rounded-xl data-[invalid=true]:ring-3"
+        data-field-kind="checkbox-group"
+        data-field-name="socialChannels"
+        data-invalid={Boolean(resolveFieldErrors("socialChannels")?.length)}
+        data-required-field={showChannelMetrics ? "true" : "false"}
+        data-required-message="Selecione pelo menos uma rede social e informe o link."
+        role="group"
+      >
+        <div className="space-y-1">
+          <div
+            className={`text-muted-foreground hidden gap-3 px-1 text-xs font-semibold tracking-wide uppercase sm:grid ${channelsGridClass}`}
+          >
+            <span className="text-left">Rede social</span>
+            {showChannelMetrics ? (
+              <span className="text-center">Seguidores</span>
+            ) : null}
+            <span className="text-left">Link do perfil</span>
+            <span className="flex items-center justify-end gap-1 text-right normal-case">
+              Principal
+              <InfoTooltip
+                label="O que é a rede principal"
+                text="Escolha sua principal rede social, essa informação ganhará destaque no seu perfil"
+              />
+            </span>
+          </div>
+
+          {SOCIAL_CHANNEL_PLATFORMS.map((platform) => {
+            const entry = channelState[platform];
+            const followersInputId = `creator-channel-${platform.toLowerCase()}-followers`;
+            const urlInputId = `creator-channel-${platform.toLowerCase()}-url`;
+            const platformLabel = socialChannelPlatformLabels[platform];
+
+            return (
+              <div
+                className={`flex flex-col gap-3 border-b py-3 last:border-0 sm:grid sm:items-center sm:border-0 ${channelsGridClass}`}
+                key={platform}
+              >
+                <label className="flex min-h-9 flex-1 cursor-pointer items-center gap-2 font-semibold sm:flex-none">
+                  <Checkbox
+                    checked={entry.checked}
+                    name={`socialChannels.${platform}.selected`}
+                    onCheckedChange={(checked) =>
+                      handleChannelCheck(platform, Boolean(checked))
+                    }
+                  />
+                  <SocialPlatformIcon
+                    className="size-5 shrink-0"
+                    platform={platform}
+                  />
+                  {platformLabel}
+                </label>
+
+                {showChannelMetrics ? (
+                  <div className="flex flex-col gap-1 sm:contents">
+                    <label
+                      className="text-muted-foreground text-xs font-medium sm:hidden"
+                      htmlFor={followersInputId}
+                    >
+                      Seguidores
+                    </label>
+                    <Input
+                      aria-invalid={Boolean(
+                        resolveFieldErrors(
+                          `socialChannels.${platform}.followers`,
+                        )?.length,
+                      )}
+                      aria-label={`Seguidores no ${platformLabel}`}
+                      className="rounded-xl sm:text-center sm:tabular-nums"
+                      disabled={!entry.checked}
+                      id={followersInputId}
+                      inputMode="numeric"
+                      min={0}
+                      name={`socialChannels.${platform}.followers`}
+                      onChange={(event) =>
+                        updateChannelField(
+                          platform,
+                          "followers",
+                          event.target.value,
+                        )
+                      }
+                      placeholder="0"
+                      required={entry.checked}
+                      type="number"
+                      value={entry.followers}
+                    />
+                  </div>
+                ) : (
+                  <input
+                    name={`socialChannels.${platform}.followers`}
+                    type="hidden"
+                    value="0"
+                  />
+                )}
+
+                <div className="flex flex-col gap-1 sm:contents">
+                  <label
+                    className="text-muted-foreground text-xs font-medium sm:hidden"
+                    htmlFor={urlInputId}
+                  >
+                    Link do perfil
+                  </label>
+                  <Input
+                    aria-invalid={Boolean(
+                      resolveFieldErrors(`socialChannels.${platform}.url`)
+                        ?.length,
+                    )}
+                    aria-label={`Link do perfil no ${platformLabel}`}
+                    disabled={!entry.checked}
+                    id={urlInputId}
+                    inputMode="url"
+                    name={`socialChannels.${platform}.url`}
+                    onChange={(event) =>
+                      updateChannelField(platform, "url", event.target.value)
+                    }
+                    placeholder={
+                      socialChannelUrlPlaceholders[platform] ?? "https://..."
+                    }
+                    required={entry.checked}
+                    type="url"
+                    value={entry.url}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between gap-2 sm:contents">
+                  <span className="text-muted-foreground text-xs font-medium sm:hidden">
+                    Definir como principal
+                  </span>
+                  <div className="flex items-center justify-end">
+                    <button
+                      aria-label={
+                        entry.primary
+                          ? `${platformLabel} é a rede principal`
+                          : `Marcar ${platformLabel} como principal`
+                      }
+                      aria-pressed={entry.primary}
+                      className={`flex size-11 items-center justify-center rounded-full transition-colors ${
+                        entry.primary
+                          ? "text-amber-500"
+                          : "text-muted-foreground/40 hover:text-muted-foreground disabled:hover:text-muted-foreground/40"
+                      }`}
+                      disabled={!entry.checked}
+                      onClick={() => markPrimaryChannel(platform)}
+                      type="button"
+                    >
+                      <Star
+                        aria-hidden="true"
+                        className="size-5"
+                        fill={entry.primary ? "currentColor" : "none"}
+                      />
+                    </button>
+                    <input
+                      name={`socialChannels.${platform}.primary`}
+                      type="hidden"
+                      value={entry.primary ? "on" : ""}
+                    />
+                  </div>
+                </div>
+
+                {showChannelMetrics && platform === "INSTAGRAM" && entry.checked ? (
+                  <div className="bg-muted/40 col-span-4 rounded-xl border p-4">
+                    <p className="text-foreground mb-3 text-xs font-semibold">
+                      Métricas do Instagram (autodeclaradas)
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      <InstagramMetricField
+                        id="creator-instagram-views"
+                        label="Visualizações"
+                        onChange={(value) =>
+                          updateChannelField("INSTAGRAM", "views", value)
+                        }
+                        placeholder="Ex.: 50000"
+                        value={entry.views}
+                      />
+                      <InstagramMetricField
+                        id="creator-instagram-interactions"
+                        label="Interações"
+                        onChange={(value) =>
+                          updateChannelField(
+                            "INSTAGRAM",
+                            "interactions",
+                            value,
+                          )
+                        }
+                        placeholder="Ex.: 3200"
+                        value={entry.interactions}
+                      />
+                      <InstagramMetricField
+                        id="creator-instagram-new-followers"
+                        label="Novos seguidores"
+                        onChange={(value) =>
+                          updateChannelField(
+                            "INSTAGRAM",
+                            "newFollowers",
+                            value,
+                          )
+                        }
+                        placeholder="Ex.: 800"
+                        value={entry.newFollowers}
+                      />
+                      <InstagramMetricField
+                        id="creator-instagram-shared-content"
+                        label="Conteúdo que você compartilhou"
+                        maxLength={200}
+                        minLength={2}
+                        onChange={(value) =>
+                          updateChannelField(
+                            "INSTAGRAM",
+                            "sharedContent",
+                            value,
+                          )
+                        }
+                        placeholder="Ex.: Reels, vlogs, unboxings"
+                        tooltip="Essa informação você encontra no Painel Profissional, no seu perfil de Instagram"
+                        type="text"
+                        value={entry.sharedContent}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <ErrorMessages
+        errors={resolveFieldErrors("socialChannels")}
+        id="creator-social-channels-error"
+      />
+    </Field>
+  );
 
   return (
     <>
@@ -942,67 +1188,21 @@ export function ProfileFormFields({
             ) : null}
 
             {role === "COMPANY" ? (
-              <>
-                <TextField
-                  autoComplete="url"
-                  errors={resolveFieldErrors("websiteUrl")}
-                  id="company-website"
-                  inputMode="url"
-                  label="Site (opcional)"
-                  maxLength={2_000}
-                  name="websiteUrl"
-                  placeholder="https://suaempresa.com.br"
-                  required={false}
-                  type="url"
-                  defaultValue={companyInitialValues?.websiteUrl}
-                />
-                <ControlledCombobox
-                  errors={resolveFieldErrors("socialPlatform")}
-                  id="company-social-platform"
-                  label={
-                    companySocialUrl && !companySocialPlatform
-                      ? "Rede social"
-                      : "Rede social (opcional)"
-                  }
-                  name="socialPlatform"
-                  onFieldChange={onFieldChange}
-                  onValueChange={setCompanySocialPlatform}
-                  options={[
-                    ["INSTAGRAM", "Instagram"],
-                    ["TIKTOK", "TikTok"],
-                    ["YOUTUBE", "YouTube"],
-                    ["FACEBOOK", "Facebook"],
-                    ["X", "X"],
-                    ["LINKEDIN", "LinkedIn"],
-                    ["OTHER", "Outra"],
-                  ]}
-                  placeholder="Selecione uma rede"
-                  required={Boolean(companySocialUrl && !companySocialPlatform)}
-                  selectedValue={companySocialPlatform}
-                />
-                <TextField
-                  autoComplete="url"
-                  errors={resolveFieldErrors("socialUrl")}
-                  id="company-social-url"
-                  inputMode="url"
-                  label={
-                    companySocialPlatform && !companySocialUrl
-                      ? "Link da rede social"
-                      : "Link da rede social (opcional)"
-                  }
-                  maxLength={2_000}
-                  name="socialUrl"
-                  onChange={(event) => {
-                    setCompanySocialUrl(event.target.value);
-                    onFieldChange?.("socialUrl");
-                  }}
-                  placeholder="https://linkedin.com/company/suaempresa"
-                  required={Boolean(companySocialPlatform && !companySocialUrl)}
-                  type="url"
-                  value={companySocialUrl}
-                />
-              </>
+              <TextField
+                autoComplete="url"
+                errors={resolveFieldErrors("websiteUrl")}
+                id="company-website"
+                inputMode="url"
+                label="Site (opcional)"
+                maxLength={2_000}
+                name="websiteUrl"
+                placeholder="https://suaempresa.com.br"
+                required={false}
+                type="url"
+                defaultValue={companyInitialValues?.websiteUrl}
+              />
             ) : null}
+            {role === "COMPANY" ? socialChannelsField : null}
           </FieldGroup>
 
           <Field
@@ -1067,243 +1267,7 @@ export function ProfileFormFields({
               Os números são autodeclarados e serão identificados dessa forma no
               catálogo.
             </FieldDescription>
-            <Field
-              data-invalid={Boolean(
-                resolveFieldErrors("socialChannels")?.length,
-              )}
-            >
-              <FieldLabel id="creator-social-channels-label" required>
-                Redes sociais
-              </FieldLabel>
-              <div
-                aria-describedby="creator-social-channels-error"
-                aria-labelledby="creator-social-channels-label"
-                className="data-[invalid=true]:ring-destructive/20 mx-auto w-full max-w-2xl data-[invalid=true]:rounded-xl data-[invalid=true]:ring-3"
-                data-field-kind="checkbox-group"
-                data-field-name="socialChannels"
-                data-invalid={Boolean(
-                  resolveFieldErrors("socialChannels")?.length,
-                )}
-                data-required-field="true"
-                data-required-message="Selecione pelo menos uma rede social e informe o link."
-                role="group"
-              >
-                <div className="space-y-1">
-                  <div className="text-muted-foreground hidden grid-cols-[minmax(9rem,1fr)_6rem_minmax(0,2fr)_5rem] gap-3 px-1 text-xs font-semibold tracking-wide uppercase sm:grid">
-                    <span className="text-left">Rede social</span>
-                    <span className="text-center">Seguidores</span>
-                    <span className="text-left">Link do perfil</span>
-                    <span className="flex items-center justify-end gap-1 text-right normal-case">
-                      Principal
-                      <InfoTooltip
-                        label="O que é a rede principal"
-                        text="Escolha sua principal rede social, essa informação ganhará destaque no seu perfil"
-                      />
-                    </span>
-                  </div>
-
-                  {SOCIAL_CHANNEL_PLATFORMS.map((platform) => {
-                    const entry = channelState[platform];
-                    const followersInputId = `creator-channel-${platform.toLowerCase()}-followers`;
-                    const urlInputId = `creator-channel-${platform.toLowerCase()}-url`;
-                    const platformLabel = socialChannelPlatformLabels[platform];
-
-                    return (
-                      <div
-                        className="flex flex-col gap-3 border-b py-3 last:border-0 sm:grid sm:grid-cols-[minmax(9rem,1fr)_6rem_minmax(0,2fr)_5rem] sm:items-center sm:border-0"
-                        key={platform}
-                      >
-                        <label className="flex min-h-9 flex-1 cursor-pointer items-center gap-2 font-semibold sm:flex-none">
-                          <Checkbox
-                            checked={entry.checked}
-                            name={`socialChannels.${platform}.selected`}
-                            onCheckedChange={(checked) =>
-                              handleChannelCheck(platform, Boolean(checked))
-                            }
-                          />
-                          <SocialPlatformIcon
-                            className="size-5 shrink-0"
-                            platform={platform}
-                          />
-                          {platformLabel}
-                        </label>
-
-                        <div className="flex flex-col gap-1 sm:contents">
-                          <label
-                            className="text-muted-foreground text-xs font-medium sm:hidden"
-                            htmlFor={followersInputId}
-                          >
-                            Seguidores
-                          </label>
-                          <Input
-                            aria-invalid={Boolean(
-                              resolveFieldErrors(
-                                `socialChannels.${platform}.followers`,
-                              )?.length,
-                            )}
-                            aria-label={`Seguidores no ${platformLabel}`}
-                            className="rounded-xl sm:text-center sm:tabular-nums"
-                            disabled={!entry.checked}
-                            id={followersInputId}
-                            inputMode="numeric"
-                            min={0}
-                            name={`socialChannels.${platform}.followers`}
-                            onChange={(event) =>
-                              updateChannelField(
-                                platform,
-                                "followers",
-                                event.target.value,
-                              )
-                            }
-                            placeholder="0"
-                            required={entry.checked}
-                            type="number"
-                            value={entry.followers}
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-1 sm:contents">
-                          <label
-                            className="text-muted-foreground text-xs font-medium sm:hidden"
-                            htmlFor={urlInputId}
-                          >
-                            Link do perfil
-                          </label>
-                          <Input
-                            aria-invalid={Boolean(
-                              resolveFieldErrors(
-                                `socialChannels.${platform}.url`,
-                              )?.length,
-                            )}
-                            aria-label={`Link do perfil no ${platformLabel}`}
-                            disabled={!entry.checked}
-                            id={urlInputId}
-                            inputMode="url"
-                            name={`socialChannels.${platform}.url`}
-                            onChange={(event) =>
-                              updateChannelField(
-                                platform,
-                                "url",
-                                event.target.value,
-                              )
-                            }
-                            placeholder="https://..."
-                            required={entry.checked}
-                            type="url"
-                            value={entry.url}
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between gap-2 sm:contents">
-                          <span className="text-muted-foreground text-xs font-medium sm:hidden">
-                            Definir como principal
-                          </span>
-                          <div className="flex items-center justify-end">
-                            <button
-                              aria-label={
-                                entry.primary
-                                  ? `${platformLabel} é a rede principal`
-                                  : `Marcar ${platformLabel} como principal`
-                              }
-                              aria-pressed={entry.primary}
-                              className={`flex size-11 items-center justify-center rounded-full transition-colors ${
-                                entry.primary
-                                  ? "text-amber-500"
-                                  : "text-muted-foreground/40 hover:text-muted-foreground disabled:hover:text-muted-foreground/40"
-                              }`}
-                              disabled={!entry.checked}
-                              onClick={() => markPrimaryChannel(platform)}
-                              type="button"
-                            >
-                              <Star
-                                aria-hidden="true"
-                                className="size-5"
-                                fill={entry.primary ? "currentColor" : "none"}
-                              />
-                            </button>
-                            <input
-                              name={`socialChannels.${platform}.primary`}
-                              type="hidden"
-                              value={entry.primary ? "on" : ""}
-                            />
-                          </div>
-                        </div>
-
-                        {platform === "INSTAGRAM" && entry.checked ? (
-                          <div className="bg-muted/40 col-span-4 rounded-xl border p-4">
-                            <p className="text-foreground mb-3 text-xs font-semibold">
-                              Métricas do Instagram (autodeclaradas)
-                            </p>
-                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                              <InstagramMetricField
-                                id="creator-instagram-views"
-                                label="Visualizações"
-                                onChange={(value) =>
-                                  updateChannelField(
-                                    "INSTAGRAM",
-                                    "views",
-                                    value,
-                                  )
-                                }
-                                placeholder="Ex.: 50000"
-                                value={entry.views}
-                              />
-                              <InstagramMetricField
-                                id="creator-instagram-interactions"
-                                label="Interações"
-                                onChange={(value) =>
-                                  updateChannelField(
-                                    "INSTAGRAM",
-                                    "interactions",
-                                    value,
-                                  )
-                                }
-                                placeholder="Ex.: 3200"
-                                value={entry.interactions}
-                              />
-                              <InstagramMetricField
-                                id="creator-instagram-new-followers"
-                                label="Novos seguidores"
-                                onChange={(value) =>
-                                  updateChannelField(
-                                    "INSTAGRAM",
-                                    "newFollowers",
-                                    value,
-                                  )
-                                }
-                                placeholder="Ex.: 800"
-                                value={entry.newFollowers}
-                              />
-                              <InstagramMetricField
-                                id="creator-instagram-shared-content"
-                                label="Conteúdo que você compartilhou"
-                                maxLength={200}
-                                minLength={2}
-                                onChange={(value) =>
-                                  updateChannelField(
-                                    "INSTAGRAM",
-                                    "sharedContent",
-                                    value,
-                                  )
-                                }
-                                placeholder="Ex.: Reels, vlogs, unboxings"
-                                tooltip="Essa informação você encontra no Painel Profissional, no seu perfil de Instagram"
-                                type="text"
-                                value={entry.sharedContent}
-                              />
-                            </div>
-                          </div>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <ErrorMessages
-                errors={resolveFieldErrors("socialChannels")}
-                id="creator-social-channels-error"
-              />
-            </Field>
+            {socialChannelsField}
             <Field
               data-invalid={Boolean(resolveFieldErrors("nicheSlugs")?.length)}
             >

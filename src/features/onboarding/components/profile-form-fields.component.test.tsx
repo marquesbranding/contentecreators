@@ -366,27 +366,45 @@ describe("ProfileFormFields company CNPJ experience", () => {
     expect(screen.getByLabelText("Nome fantasia")).toHaveValue("Nome revisado");
   });
 
-  it("restores optional company social fields without marking them required", () => {
+  it("restores the company's selected social channels, no metric fields shown", () => {
     render(
       <ProfileFormFields
         initialValues={{
-          socialPlatform: "LINKEDIN",
-          socialUrl: "https://linkedin.com/company/empresa-exemplo",
+          socialChannels: [
+            {
+              followerCount: 0,
+              isPrimary: true,
+              platform: "LINKEDIN",
+              url: "https://linkedin.com/company/empresa-exemplo",
+            },
+          ],
           websiteUrl: "https://empresa.example",
         }}
         role="COMPANY"
       />,
     );
 
-    expect(screen.getByLabelText("Rede social (opcional)")).toHaveValue(
-      "LinkedIn",
-    );
-    expect(screen.getByLabelText("Link da rede social (opcional)")).toHaveValue(
-      "https://linkedin.com/company/empresa-exemplo",
-    );
+    expect(screen.getByRole("checkbox", { name: "LinkedIn" })).toBeChecked();
     expect(
-      screen.getByLabelText("Link da rede social (opcional)"),
-    ).not.toBeRequired();
+      screen.getByLabelText("Link do perfil no LinkedIn"),
+    ).toHaveValue("https://linkedin.com/company/empresa-exemplo");
+    expect(screen.queryByLabelText(/Seguidores no/u)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Métricas do Instagram (autodeclaradas)"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("lets a company select more than one social channel", async () => {
+    const user = userEvent.setup();
+    render(<ProfileFormFields role="COMPANY" />);
+
+    await user.click(screen.getByRole("checkbox", { name: "Instagram" }));
+    await user.click(screen.getByRole("checkbox", { name: "LinkedIn" }));
+
+    expect(
+      screen.getByLabelText("Link do perfil no Instagram"),
+    ).toBeRequired();
+    expect(screen.getByLabelText("Link do perfil no LinkedIn")).toBeRequired();
   });
 
   it("adds and removes editable secondary locations while keeping the headquarters primary", async () => {

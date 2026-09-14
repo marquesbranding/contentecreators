@@ -5,6 +5,7 @@ import "server-only";
 import { revalidatePath } from "next/cache";
 
 import { readAdditionalCompanyLocations } from "../../domain/company-location-form-data";
+import { readSocialChannels } from "../../domain/social-channels-form-data";
 import { companyProfileEditSchema } from "../../schemas/company-profile-edit-schema";
 import type { CompanyProfileActionState } from "../../types/company-profile.types";
 import { createServerCompanyProfileService } from "../services/server-company-profile.service";
@@ -23,8 +24,7 @@ function companyProfileFormPayload(formData: FormData) {
     number: formData.get("number"),
     postalCode: formData.get("postalCode"),
     segment: formData.get("segment"),
-    socialPlatform: formData.get("socialPlatform"),
-    socialUrl: formData.get("socialUrl"),
+    socialChannels: readSocialChannels(formData),
     state: formData.get("state"),
     street: formData.get("street"),
     tradeName: formData.get("tradeName"),

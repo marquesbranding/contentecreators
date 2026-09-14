@@ -105,8 +105,14 @@ describeLocalStack("Drizzle approved company profile repository", () => {
           number: "400",
           postalCode: "01001000",
           segment: "Marketing",
-          socialPlatform: "LINKEDIN",
-          socialUrl: "https://linkedin.com/company/empresa-quatro",
+          socialChannels: [
+            {
+              followerCount: 0,
+              isPrimary: true,
+              platform: "LINKEDIN",
+              url: "https://linkedin.com/company/empresa-quatro",
+            },
+          ],
           state: "SP",
           street: "Praça da Sé",
           tradeName: "Empresa Quatro Atualizada",
@@ -198,7 +204,7 @@ describeLocalStack("Drizzle approved company profile repository", () => {
     expect(proof).toMatchObject({
       accountCompletion: {
         percentage: 80,
-        version: 1,
+        version: 2,
       },
       accountStatus: "APPROVED",
       locationCount: 2,

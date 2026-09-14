@@ -153,8 +153,14 @@ describeLocalStack("Drizzle onboarding draft repository", () => {
     await companyService.saveOwnerDraft({
       expectedVersion: 0,
       payload: {
-        socialPlatform: "LINKEDIN",
-        socialUrl: "https://linkedin.com/company/primeira-versao",
+        socialChannels: [
+          {
+            followerCount: 0,
+            isPrimary: true,
+            platform: "LINKEDIN",
+            url: "https://linkedin.com/company/primeira-versao",
+          },
+        ],
       },
       requestId: "company-draft-initial",
       role: "COMPANY",
@@ -162,8 +168,14 @@ describeLocalStack("Drizzle onboarding draft repository", () => {
     await companyService.saveOwnerDraft({
       expectedVersion: 1,
       payload: {
-        socialPlatform: "LINKEDIN",
-        socialUrl: "https://linkedin.com/company/versao-atual",
+        socialChannels: [
+          {
+            followerCount: 0,
+            isPrimary: true,
+            platform: "LINKEDIN",
+            url: "https://linkedin.com/company/versao-atual",
+          },
+        ],
       },
       requestId: "company-draft-current",
       role: "COMPANY",
@@ -173,8 +185,14 @@ describeLocalStack("Drizzle onboarding draft repository", () => {
       companyService.saveOwnerDraft({
         expectedVersion: 1,
         payload: {
-          socialPlatform: "INSTAGRAM",
-          socialUrl: "https://instagram.com/versao-obsoleta",
+          socialChannels: [
+            {
+              followerCount: 0,
+              isPrimary: true,
+              platform: "INSTAGRAM",
+              url: "https://instagram.com/versao-obsoleta",
+            },
+          ],
         },
         requestId: "company-draft-stale",
         role: "COMPANY",
@@ -189,8 +207,12 @@ describeLocalStack("Drizzle onboarding draft repository", () => {
       }),
     ).resolves.toMatchObject({
       payload: {
-        socialPlatform: "LINKEDIN",
-        socialUrl: "https://linkedin.com/company/versao-atual",
+        socialChannels: [
+          expect.objectContaining({
+            platform: "LINKEDIN",
+            url: "https://linkedin.com/company/versao-atual",
+          }),
+        ],
       },
       version: 2,
     });
