@@ -2,7 +2,10 @@ import "server-only";
 
 import { operationalLogger } from "@/shared/server/observability/operational-logger";
 
-import type { ErrorContext, UserFacingError } from "../../lib/errors/user-facing-error";
+import type {
+  ErrorContext,
+  UserFacingError,
+} from "../../lib/errors/user-facing-error";
 
 /** Only the fallback branch is worth an operational alert — every other branch is an already-understood, expected failure. */
 export function logUserFacingError(

@@ -33,21 +33,23 @@ describeLocalStack("Drizzle admin moderation repository", () => {
 
     try {
       await drizzleClient.database.transaction(async (transaction) => {
-        const runVerifiedTransaction: VerifiedAccountTransactionRunner =
-          async (_input, work) => {
-            await transaction.execute(sql`
+        const runVerifiedTransaction: VerifiedAccountTransactionRunner = async (
+          _input,
+          work,
+        ) => {
+          await transaction.execute(sql`
               select
                 set_config('app.jwt.auth_user_id', ${adminContext.authUserId}, true),
                 set_config('app.jwt.account_id', ${adminContext.accountId}, true),
                 set_config('app.jwt.account_role', ${adminContext.role}, true),
                 set_config('app.jwt.account_status', ${adminContext.status}, true)
             `);
-            await transaction.execute(
-              sql.raw("set local role contente_app_user"),
-            );
+          await transaction.execute(
+            sql.raw("set local role contente_app_user"),
+          );
 
-            return work(transaction, adminContext);
-          };
+          return work(transaction, adminContext);
+        };
 
         const repository = createDrizzleAdminModerationRepository({
           runVerifiedTransaction,

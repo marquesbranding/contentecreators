@@ -22,10 +22,9 @@ describe("ResultScreen", () => {
       screen.getByRole("heading", { name: "Cadastro enviado para análise" }),
     ).toBeVisible();
     expect(screen.getByText("Recebemos suas informações.")).toBeVisible();
-    expect(screen.getByRole("link", { name: "Ir para o catálogo" })).toHaveAttribute(
-      "href",
-      "/app/catalog",
-    );
+    expect(
+      screen.getByRole("link", { name: "Ir para o catálogo" }),
+    ).toHaveAttribute("href", "/app/catalog");
     expect(screen.getByRole("link", { name: "Editar perfil" })).toHaveAttribute(
       "href",
       "/app/profile",

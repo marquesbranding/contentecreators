@@ -62,9 +62,7 @@ describe("CompanyDetailView", () => {
   });
 
   it("shows the CDL badge next to the name only when declared", () => {
-    const { rerender } = render(
-      <CompanyDetailView detail={detail} />,
-    );
+    const { rerender } = render(<CompanyDetailView detail={detail} />);
 
     expect(
       screen.queryByTitle("Associado da CDL (Câmara de Dirigentes Lojistas)"),

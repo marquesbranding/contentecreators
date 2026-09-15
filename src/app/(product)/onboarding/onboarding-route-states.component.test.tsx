@@ -28,7 +28,9 @@ describe("onboarding route states", () => {
 
     expect(container).not.toHaveTextContent("private database detail");
     expect(
-      screen.getByRole("heading", { name: "Não foi possível abrir seu cadastro" }),
+      screen.getByRole("heading", {
+        name: "Não foi possível abrir seu cadastro",
+      }),
     ).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Tentar novamente" }));
     expect(unstableRetry).toHaveBeenCalledOnce();

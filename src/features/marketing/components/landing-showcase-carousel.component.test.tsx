@@ -29,9 +29,8 @@ vi.mock("@/registry/magicui/scroll-based-velocity", async (importOriginal) => {
   return { ...actual, ScrollVelocityRow: MockScrollVelocityRow };
 });
 
-const { LandingShowcaseCarousel } = await import(
-  "./landing-showcase-carousel.client"
-);
+const { LandingShowcaseCarousel } =
+  await import("./landing-showcase-carousel.client");
 
 function creator(id: string): PublicShowcaseCreatorDto {
   return {

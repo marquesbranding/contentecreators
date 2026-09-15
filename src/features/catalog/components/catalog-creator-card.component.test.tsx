@@ -100,9 +100,7 @@ describe("CatalogCreatorCard", () => {
     expect(
       screen.getByRole("link", { name: "Ver meu perfil" }),
     ).toHaveAttribute("href", "/app/profile");
-    expect(
-      screen.queryByText(/chamaram no WhatsApp/),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/chamaram no WhatsApp/)).not.toBeInTheDocument();
   });
 
   it("shrinks a long display name instead of overflowing the card", () => {

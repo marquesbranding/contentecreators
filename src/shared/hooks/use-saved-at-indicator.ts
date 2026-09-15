@@ -13,7 +13,10 @@ export function useSavedAtIndicator() {
       return;
     }
 
-    const timeout = setTimeout(() => setSavedAtLabel(null), VISIBLE_DURATION_MS);
+    const timeout = setTimeout(
+      () => setSavedAtLabel(null),
+      VISIBLE_DURATION_MS,
+    );
     return () => clearTimeout(timeout);
   }, [savedAtLabel]);
 

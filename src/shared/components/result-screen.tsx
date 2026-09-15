@@ -92,7 +92,7 @@ export function ResultScreen({
         <CardHeader className="items-center gap-4 px-6 py-9 text-center sm:px-9">
           <span
             className={cn(
-              "flex size-14 items-center justify-center rounded-2xl motion-safe:animate-in motion-safe:zoom-in-75 motion-safe:duration-300",
+              "motion-safe:animate-in motion-safe:zoom-in-75 flex size-14 items-center justify-center rounded-2xl motion-safe:duration-300",
               toneIconClassNames[tone],
             )}
           >

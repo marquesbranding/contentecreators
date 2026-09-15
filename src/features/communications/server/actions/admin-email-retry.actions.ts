@@ -138,7 +138,8 @@ export async function retryFailedEmailsBatchAction(
   } catch (error) {
     if (error instanceof ZodError) {
       return {
-        message: error.issues[0]?.message ?? "Revise os dados do reenvio em lote.",
+        message:
+          error.issues[0]?.message ?? "Revise os dados do reenvio em lote.",
         status: "error",
       };
     }

@@ -20,7 +20,9 @@ export function CdlMemberBadge({ size = "sm" }: { size?: "sm" | "md" }) {
         width={78}
       />
       CDL
-      <span className="sr-only">: associado da Câmara de Dirigentes Lojistas</span>
+      <span className="sr-only">
+        : associado da Câmara de Dirigentes Lojistas
+      </span>
     </span>
   );
 }

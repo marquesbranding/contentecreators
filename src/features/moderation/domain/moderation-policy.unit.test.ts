@@ -23,7 +23,14 @@ const allowedTransitions = new Map<
   { action: ModerationAction; actor: "ADMIN" | "OWNER"; reason?: string }
 >([
   ["ONBOARDING>PENDING_REVIEW", { action: "SUBMIT", actor: "OWNER" }],
-  ["ONBOARDING>BANNED", { action: "BAN", actor: "ADMIN", reason: "Identidade suspeita detectada ainda no cadastro." }],
+  [
+    "ONBOARDING>BANNED",
+    {
+      action: "BAN",
+      actor: "ADMIN",
+      reason: "Identidade suspeita detectada ainda no cadastro.",
+    },
+  ],
   ["CHANGES_REQUESTED>PENDING_REVIEW", { action: "RESUBMIT", actor: "OWNER" }],
   ["PENDING_REVIEW>APPROVED", { action: "APPROVE", actor: "ADMIN" }],
   [
@@ -52,7 +59,11 @@ const allowedTransitions = new Map<
   ],
   [
     "CHANGES_REQUESTED>APPROVED",
-    { action: "APPROVE", actor: "ADMIN", reason: "Correções revisadas e aceitas." },
+    {
+      action: "APPROVE",
+      actor: "ADMIN",
+      reason: "Correções revisadas e aceitas.",
+    },
   ],
   [
     "CHANGES_REQUESTED>SUSPENDED",
@@ -266,12 +277,12 @@ describe("evaluateModerationCommand", () => {
   });
 
   it("keeps RESTORE valid only for compatibility with old events", () => {
-    expect(
-      evaluateModerationCommand(command(legacyRestoreTransition)),
-    ).toEqual({
-      kind: "allowed",
-      normalizedReason: legacyRestoreTransition.reason,
-    });
+    expect(evaluateModerationCommand(command(legacyRestoreTransition))).toEqual(
+      {
+        kind: "allowed",
+        normalizedReason: legacyRestoreTransition.reason,
+      },
+    );
   });
 
   it("authorizes owner submissions and denies cross-account or admin substitution", () => {

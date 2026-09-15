@@ -47,7 +47,14 @@ function markNotified(state: unknown) {
  */
 export function emitActionFeedback<TState extends ActionFeedbackState>(
   state: TState,
-  { description, errorStatuses = defaultErrorStatuses, errorTitle, onRetry, successStatuses = defaultSuccessStatuses, title }: ActionFeedbackOptions<TState>,
+  {
+    description,
+    errorStatuses = defaultErrorStatuses,
+    errorTitle,
+    onRetry,
+    successStatuses = defaultSuccessStatuses,
+    title,
+  }: ActionFeedbackOptions<TState>,
 ) {
   if (!markNotified(state)) {
     return;
@@ -82,8 +89,14 @@ export function useActionFeedback<TState extends ActionFeedbackState>(
 ) {
   const previousState = useRef(state);
   const errorAlertRef = useRef<HTMLDivElement | null>(null);
-  const { description, errorStatuses, errorTitle, onRetry, successStatuses, title } =
-    options;
+  const {
+    description,
+    errorStatuses,
+    errorTitle,
+    onRetry,
+    successStatuses,
+    title,
+  } = options;
 
   useEffect(() => {
     const isNewState = previousState.current !== state;

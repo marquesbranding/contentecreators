@@ -76,9 +76,7 @@ describe("AdminEmailOutboxView", () => {
     expect(screen.getByText("4 pendentes")).toBeVisible();
     expect(screen.getByText("3 tentativas automáticas")).toBeVisible();
     expect(screen.getByText("2 falhas definitivas")).toBeVisible();
-    expect(
-      screen.getByText(/mensagem permanece protegido/iu),
-    ).toBeVisible();
+    expect(screen.getByText(/mensagem permanece protegido/iu)).toBeVisible();
 
     rerender(
       <QueryClientProvider client={new QueryClient()}>

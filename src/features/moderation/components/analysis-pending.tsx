@@ -154,10 +154,7 @@ export function AnalysisPending({
             {reviewSection}
             {hasBackofficeAccess ? (
               <Link
-                className={cn(
-                  buttonVariants({ variant: "outline" }),
-                  "w-full",
-                )}
+                className={cn(buttonVariants({ variant: "outline" }), "w-full")}
                 href="/backoffice"
               >
                 <ArrowLeft aria-hidden="true" />

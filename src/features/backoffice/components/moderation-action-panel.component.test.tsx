@@ -151,9 +151,7 @@ describe("ModerationActionPanel", () => {
     ).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Aprovar cadastro" }));
-    expect(
-      screen.getByText(/ficará elegível ao catálogo/iu),
-    ).toBeVisible();
+    expect(screen.getByText(/ficará elegível ao catálogo/iu)).toBeVisible();
     expect(
       screen.getByLabelText(/motivo para reverter a decisão anterior/iu),
     ).toBeRequired();
@@ -174,9 +172,7 @@ describe("ModerationActionPanel", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "Aprovar cadastro" }));
-    expect(
-      screen.queryByLabelText(/motivo/iu),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/motivo/iu)).not.toBeInTheDocument();
   });
 
   it("has no blocking accessibility violations", async () => {

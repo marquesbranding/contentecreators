@@ -147,11 +147,11 @@ describe("PublicCommunityProof", () => {
 
     const dots = screen.getByRole("tablist", { name: "Escolher destaque" });
 
-    expect(within(dots).getAllByRole("tab")).toHaveLength(
-      rotatingItems.length,
-    );
+    expect(within(dots).getAllByRole("tab")).toHaveLength(rotatingItems.length);
     expect(
-      within(dots).getByRole("tab", { name: `Ir para 1 de ${rotatingItems.length}` }),
+      within(dots).getByRole("tab", {
+        name: `Ir para 1 de ${rotatingItems.length}`,
+      }),
     ).toHaveAttribute("aria-selected", "true");
 
     await user.click(

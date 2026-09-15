@@ -131,8 +131,8 @@ export function AdminEmailBatchRetryDialog({
 
         <div className="rounded-xl border bg-amber-50 p-4 text-sm leading-6 text-amber-950">
           Esta ação não cria novas mensagens. Ela reutiliza os mesmos itens
-          idempotentes, libera uma tentativa adicional para cada um e registra
-          o mesmo motivo na auditoria de todos eles.
+          idempotentes, libera uma tentativa adicional para cada um e registra o
+          mesmo motivo na auditoria de todos eles.
         </div>
 
         <form action={formAction} className="space-y-5">

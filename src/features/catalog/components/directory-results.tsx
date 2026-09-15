@@ -22,7 +22,10 @@ import { cn } from "@/shared/lib/cn";
 import type { DirectoryBrowserEntryDto } from "../api/catalog-directory.contract";
 import { CatalogEmptyState } from "./catalog-empty-state";
 import { DirectoryEntryCard } from "./directory-entry-card";
-import { STAGGER_CONTAINER_PADDING, staggerItemClassName } from "../lib/stagger";
+import {
+  STAGGER_CONTAINER_PADDING,
+  staggerItemClassName,
+} from "../lib/stagger";
 
 export type DirectoryResultsStatus = "error" | "loading" | "success";
 

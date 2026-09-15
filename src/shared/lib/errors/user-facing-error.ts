@@ -94,7 +94,9 @@ function findInChain(
     return error;
   }
 
-  return "cause" in error ? findInChain(error.cause, predicate, depth + 1) : null;
+  return "cause" in error
+    ? findInChain(error.cause, predicate, depth + 1)
+    : null;
 }
 
 function shortRequestId(requestId: string | undefined) {
@@ -116,7 +118,8 @@ function fallback(context: ErrorContext, retryable = true): UserFacingError {
 
 function result(
   context: ErrorContext,
-  overrides: Partial<UserFacingError> & Pick<UserFacingError, "code" | "message">,
+  overrides: Partial<UserFacingError> &
+    Pick<UserFacingError, "code" | "message">,
 ): UserFacingError {
   return {
     retryable: false,
@@ -258,8 +261,7 @@ function mapPostgresError(
   if (code === "42501") {
     return result(context, {
       code: "db.permission_denied",
-      message:
-        "Você não tem permissão para esta ação. Recarregue a página.",
+      message: "Você não tem permissão para esta ação. Recarregue a página.",
     });
   }
 

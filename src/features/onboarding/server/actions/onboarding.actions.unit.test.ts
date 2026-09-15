@@ -242,5 +242,4 @@ describe("onboarding actions", () => {
       values: { role: "COMPANY" },
     });
   });
-
 });

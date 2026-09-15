@@ -9,7 +9,11 @@ import { operationalLogger } from "@/shared/server/observability/operational-log
 import { createServerWhatsappContactRepository } from "../repositories/drizzle-whatsapp-contact.repository";
 import type { ConfirmWhatsappContactActionResult } from "../../types/whatsapp-contact.types";
 
-function logWhatsappFailure(operation: string, requestId: string, error: unknown) {
+function logWhatsappFailure(
+  operation: string,
+  requestId: string,
+  error: unknown,
+) {
   operationalLogger.error({
     details: {
       errorMessage: error instanceof Error ? error.message : String(error),

@@ -106,13 +106,19 @@ describe("toUserFacingError", () => {
   });
 
   it("maps a 413 payload error", () => {
-    const result = toUserFacingError({ status: 413 }, { operation: "upload_media" });
+    const result = toUserFacingError(
+      { status: 413 },
+      { operation: "upload_media" },
+    );
 
     expect(result.code).toBe("payload.too_large");
   });
 
   it("maps a 504 gateway timeout as retryable", () => {
-    const result = toUserFacingError({ status: 504 }, { operation: "save_profile" });
+    const result = toUserFacingError(
+      { status: 504 },
+      { operation: "save_profile" },
+    );
 
     expect(result.code).toBe("gateway.timeout");
     expect(result.retryable).toBe(true);

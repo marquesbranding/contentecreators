@@ -56,11 +56,14 @@ describe("useActionFeedback", () => {
       },
     });
 
-    expect(errorToast).toHaveBeenCalledWith("Não foi possível salvar sua empresa", {
-      action: undefined,
-      description: "O CNPJ já está cadastrado.",
-      duration: 8_000,
-    });
+    expect(errorToast).toHaveBeenCalledWith(
+      "Não foi possível salvar sua empresa",
+      {
+        action: undefined,
+        description: "O CNPJ já está cadastrado.",
+        duration: 8_000,
+      },
+    );
   });
 
   it("offers a retry action only when the error is retryable", () => {

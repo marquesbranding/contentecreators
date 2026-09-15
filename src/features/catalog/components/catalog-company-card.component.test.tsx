@@ -68,7 +68,9 @@ describe("CatalogCompanyCard", () => {
       screen.queryByTitle("Associado da CDL (Câmara de Dirigentes Lojistas)"),
     ).not.toBeInTheDocument();
 
-    rerender(<CatalogCompanyCard company={{ ...company, isCdlMember: true }} />);
+    rerender(
+      <CatalogCompanyCard company={{ ...company, isCdlMember: true }} />,
+    );
 
     expect(
       screen.getByTitle("Associado da CDL (Câmara de Dirigentes Lojistas)"),
@@ -77,9 +79,7 @@ describe("CatalogCompanyCard", () => {
 
   it("uses a safe fallback for a company without logo or cover", () => {
     const { container } = render(
-      <CatalogCompanyCard
-        company={{ ...company, cover: null, logo: null }}
-      />,
+      <CatalogCompanyCard company={{ ...company, cover: null, logo: null }} />,
     );
 
     expect(

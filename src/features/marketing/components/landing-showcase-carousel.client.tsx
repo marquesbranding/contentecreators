@@ -84,8 +84,7 @@ export function LandingShowcaseCarousel({
       }
 
       const wrappedOffset = wrap(0, unitWidthPx, offsetPx);
-      const itemIndex =
-        Math.floor(wrappedOffset / cardWidth) % items.length;
+      const itemIndex = Math.floor(wrappedOffset / cardWidth) % items.length;
 
       setActiveIndex(itemIndex);
     },
@@ -108,8 +107,7 @@ export function LandingShowcaseCarousel({
     const targetItemIndex = dotIndex * itemsPerDot;
     const currentWrapped = wrap(0, unitWidthPx, lastOffsetRef.current);
     const targetWrapped = wrap(0, unitWidthPx, targetItemIndex * cardWidth);
-    const targetOffset =
-      lastOffsetRef.current - currentWrapped + targetWrapped;
+    const targetOffset = lastOffsetRef.current - currentWrapped + targetWrapped;
 
     rowRef.current?.scrollToOffset(targetOffset);
   }

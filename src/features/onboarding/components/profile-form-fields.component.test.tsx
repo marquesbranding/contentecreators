@@ -385,9 +385,9 @@ describe("ProfileFormFields company CNPJ experience", () => {
     );
 
     expect(screen.getByRole("checkbox", { name: "LinkedIn" })).toBeChecked();
-    expect(
-      screen.getByLabelText("Link do perfil no LinkedIn"),
-    ).toHaveValue("https://linkedin.com/company/empresa-exemplo");
+    expect(screen.getByLabelText("Link do perfil no LinkedIn")).toHaveValue(
+      "https://linkedin.com/company/empresa-exemplo",
+    );
     expect(screen.queryByLabelText(/Seguidores no/u)).not.toBeInTheDocument();
     expect(
       screen.queryByText("Métricas do Instagram (autodeclaradas)"),
@@ -401,9 +401,7 @@ describe("ProfileFormFields company CNPJ experience", () => {
     await user.click(screen.getByRole("checkbox", { name: "Instagram" }));
     await user.click(screen.getByRole("checkbox", { name: "LinkedIn" }));
 
-    expect(
-      screen.getByLabelText("Link do perfil no Instagram"),
-    ).toBeRequired();
+    expect(screen.getByLabelText("Link do perfil no Instagram")).toBeRequired();
     expect(screen.getByLabelText("Link do perfil no LinkedIn")).toBeRequired();
   });
 
