@@ -118,11 +118,35 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 - After an invalid submission, each missing control receives a destructive border/ring, an adjacent `pt-BR` error, `aria-invalid`, and focus starts on the first invalid field
 - Native constraints cover inputs and textareas; the shared form-validation hook gives selects, radio groups, checkbox groups, and consent controls the same behavior before the Server Action runs
 
+### Multi-step wizard
+
+- Long flows (registration, onboarding profile) run inside `OnboardingFormShell`: one `rounded-3xl` card, `shadow-[0_28px_80px_rgba(8,8,8,0.1)]`, a `border-b` header, and a soft `bg-brand-blue/15 blur-3xl` radial glow behind it on the canvas — the same restrained-glow device marketing uses for hero depth, reused at product scale.
+- The shell header carries an uppercase eyebrow (`ShieldCheck` icon + "Cadastro para análise"), the step title, and a linear progress bar labeled "Etapa X de Y" on the left with the current step's name right-aligned in muted tabular text.
+- A step group that itself has sub-steps (profile → audience → location) additionally renders a numbered-dot stepper: filled blue circle with a check for done steps, ringed blue circle for the active step, outlined neutral circle for the rest, each with a short label underneath.
+- Every step that can lose unsaved work says so once, explicitly, in the shell description ("Seu cadastro pode ser retomado depois") — never leave resumability implicit.
+- A step backed by autosave shows one small status badge near the top-right of its card: "Rascunho salvo" (idle/synced), "Salvando rascunho..." (in flight), "Alterações pendentes", "Atualizado em outra aba" (conflict), "Não foi possível salvar" (error). One phrase, no icon-only state.
+- A step whose submit is irreversible (final "Enviar cadastro para análise") never fires on the first click: it opens a confirmation dialog naming the consequence plainly ("Depois do envio, você só poderá editar o cadastro se nossa equipe solicitar correções") with "Voltar e revisar" as the safe default and a distinct confirm label ("Confirmar envio") — never a bare "Sim"/"OK".
+- A step's own submit button stays disabled until the step is fully client-valid, instead of allowing a click and then intercepting it — required-field asterisks and helper copy still apply, but there is no invalid-submit/focus-first-error moment on these disabled-until-valid steps (that pattern is reserved for pages that keep the button always clickable, like login).
+
+### Duplicate or blocked identity feedback
+
+- Checking an identifier that already resolves to an account (email typed at sign-up, CNPJ typed at company profile) never waits for a full submit: it validates on blur/change and surfaces inline.
+- An existing, confirmed account is a blocking dialog ("Você já possui um cadastro"), not an inline error — it's a fork in the journey, not a typo. It offers the one exit that fits the account's state: password login when one exists, a passwordless access code when it doesn't. Never demand a password from an identity that has none.
+- A blocked identity gets a generic, calm failure message ("Não foi possível continuar com este e-mail. Fale com o suporte.") — it never says "banned" or exposes moderation state to the person doing the signing up.
+- A field-level duplicate caught only at final submission (e.g. CNPJ already registered, found after every step is filled) surfaces as a named item in a "Corrija os campos abaixo" list; each item is a link that jumps straight back to the step and field that owns it, not just prose telling the person to scroll around.
+
+### Assisted external lookup
+
+- When a person-entered identifier (CNPJ) can resolve public registry data, present it as an explicit, dismissable assist, not silent magic: a labeled callout inviting the lookup ("Comece pelo CNPJ" — "Buscaremos os dados oficiais... Você poderá revisar tudo depois"), then a confirmation alert once it fills fields ("Dados preenchidos automaticamente") with an explicit "Preencher novamente" affordance so the person can retrigger it after editing the source field.
+- Every autofilled field stays a normal, editable field immediately — assistance pre-fills, it never locks.
+- A failed or unavailable lookup (registry down, Google avatar fetch failing) degrades silently to the manual empty state; it never blocks or explains the failure as an error, since the person can always type the data themselves.
+
 ### Status surface
 
 - One clear status title, explanation, next action, and support path
 - Icon/color reinforce text but never replace it
 - Pending review uses calm blue, correction requests use warning, suspension/ban use danger
+- Two comparable terminal actions (e.g. "Ir para a página inicial" / "Sair da conta") share one full-width row, 50/50, instead of one standalone full-width link stacked above a second action — reserve a standalone full-width action for the single primary path, and a second row below for anything conditional/secondary (like a backoffice shortcut)
 
 ### Submit feedback
 
@@ -165,6 +189,13 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 - Sponsorship management is draft-first and URL-filtered. Activation, deactivation, reordering, and archival are separate audited actions with explicit consequences, optimistic-version feedback, and an in-context preview.
 - Sponsorship delivery receives only server-approved DTOs with signed private media. Every renderer labels sponsored content, suppresses ineligible audience/route/profile references, and converts desktop side placements into deliberate inline cards on narrow screens.
 
+## Transactional email patterns
+
+- Local Supabase Auth templates (`supabase/templates/*.html`) reuse the product's own tokens, not a separate email brand: a `#1265f6` header band holding the official white logo, an ink (`#18181b`) rounded CTA button, white card on `#f4f4f5` canvas, 20 px card radius, Arial/Helvetica fallback stack (email clients don't load the product's variable font).
+- Real email clients strip `<script>`, so anything needing interactivity (a "copy code" affordance) is done in pure HTML/CSS: the OTP digits sit in a dashed-border, light-gray, monospaced box (`Courier New`) with wide letter-spacing, followed by one small caption — "Toque e segure o código para copiá-lo." — instead of a fake button that would do nothing in Gmail/Outlook/Apple Mail.
+- Code-based and link-based confirmation ship in the same email (digits above, a "Confirmar meu e-mail"/"Continuar cadastro" button below) so the person can use whichever is easier — typing on the original device, or clicking through on a different one.
+- A `<table role="presentation">` layout throughout, not flex/grid — table-based layout is still the only reliably cross-client-compatible way to lay out an HTML email.
+
 ## Marketing patterns
 
 - Use only the supplied official white, pink, blue, lime, royal-blue, and black PNG variants; never recolor, reconstruct with CSS, or replace them with a wordmark.
@@ -179,16 +210,26 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 
 ## Decisions
 
-| Decision                                        | Rationale                                                                                                      | Date       |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------- |
-| Electric blue + ink + warm canvas               | Preserves the supplied logo's energy while keeping long product journeys comfortable and trustworthy           | 2026-07-23 |
-| One variable typeface                           | Reduces font/network cost and keeps product and marketing surfaces coherent                                    | 2026-07-23 |
-| Soft product geometry, bolder marketing framing | Supports mobile form usability while reflecting the playful speech-bubble logo on acquisition surfaces         | 2026-07-23 |
-| Minimal client boundaries                       | Protects Server Component performance and prevents the entire design system from entering the browser bundle   | 2026-07-23 |
-| Supporting marketing spectrum                   | Brings the approved mock's energy into acquisition pages without weakening blue's role in the SaaS product     | 2026-07-23 |
-| shadcn/ui-first product surfaces                | Keeps complex forms and backoffice interactions accessible, consistent, and fast to evolve                     | 2026-07-23 |
-| Untouched official logo variants                | Preserves the supplied brand artwork while the shared component handles safe responsive framing and contrast   | 2026-07-25 |
-| Shared approved-product navigation              | Keeps creator discovery, detail and profile editing oriented on phones without duplicating route behavior      | 2026-07-29 |
-| Direct official-logo delivery                   | Removes a runtime optimizer dependency from the brand mark while preserving the supplied artwork byte-for-byte | 2026-07-30 |
-| Branded mutation feedback                       | Makes long-running submits and completion unmistakable without adding blocking modal steps                     | 2026-07-30 |
-| Results-first company discovery                 | Keeps creator cards above the fold through header search, compact shortcuts, and on-demand advanced filters    | 2026-07-31 |
+| Decision                                        | Rationale                                                                                                                                                                            | Date       |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
+| Electric blue + ink + warm canvas               | Preserves the supplied logo's energy while keeping long product journeys comfortable and trustworthy                                                                                 | 2026-07-23 |
+| One variable typeface                           | Reduces font/network cost and keeps product and marketing surfaces coherent                                                                                                          | 2026-07-23 |
+| Soft product geometry, bolder marketing framing | Supports mobile form usability while reflecting the playful speech-bubble logo on acquisition surfaces                                                                               | 2026-07-23 |
+| Minimal client boundaries                       | Protects Server Component performance and prevents the entire design system from entering the browser bundle                                                                         | 2026-07-23 |
+| Supporting marketing spectrum                   | Brings the approved mock's energy into acquisition pages without weakening blue's role in the SaaS product                                                                           | 2026-07-23 |
+| shadcn/ui-first product surfaces                | Keeps complex forms and backoffice interactions accessible, consistent, and fast to evolve                                                                                           | 2026-07-23 |
+| Untouched official logo variants                | Preserves the supplied brand artwork while the shared component handles safe responsive framing and contrast                                                                         | 2026-07-25 |
+| Shared approved-product navigation              | Keeps creator discovery, detail and profile editing oriented on phones without duplicating route behavior                                                                            | 2026-07-29 |
+| Direct official-logo delivery                   | Removes a runtime optimizer dependency from the brand mark while preserving the supplied artwork byte-for-byte                                                                       | 2026-07-30 |
+| Branded mutation feedback                       | Makes long-running submits and completion unmistakable without adding blocking modal steps                                                                                           | 2026-07-30 |
+| Results-first company discovery                 | Keeps creator cards above the fold through header search, compact shortcuts, and on-demand advanced filters                                                                          | 2026-07-31 |
+| Resumable email-OTP/Google registration wizard  | Replaces the one-page combined form with per-step pages plus a persisted `registration_step`, so a person who leaves mid-signup returns to the exact same step instead of restarting | 2026-09-15 |
+| Table-based, script-free transactional email    | Email clients strip `<script>` and inconsistently support flex/grid, so OTP emphasis and layout stay pure HTML/CSS instead of relying on interactivity that silently breaks          | 2026-09-15 |
+
+### Sponsorship placement wizard
+
+- Sponsorship editing starts with human-readable locations and page wireframes; type, ratio and available fields come from the slot catalog.
+- On mobile, the dialog keeps steps and save controls visible while its content scrolls. A preview toggle preserves the editing state; desktop shows the preview beside the form.
+- Use the actual public components in a sandboxed, script-free preview frame so media queries reflect the selected viewport. Preview links do not navigate.
+- Draft save remains available in each step. Activation requirements are a separate checklist, and only publication commands require a human reason. Optional editing notes still accompany the immutable audit context.
+- Sponsorship crop proportions follow the selected position; other profile media retain their existing crop defaults.
