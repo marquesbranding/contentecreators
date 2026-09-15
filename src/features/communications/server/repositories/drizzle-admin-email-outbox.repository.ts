@@ -91,6 +91,7 @@ function selectSafeItemFields() {
     dueAt: emailOutbox.dueAt,
     id: emailOutbox.id,
     maxAttempts: emailOutbox.maxAttempts,
+    recipientEmail: emailOutbox.recipientEmail,
     sentAt: emailOutbox.sentAt,
     status: emailOutbox.status,
     template: emailOutbox.template,

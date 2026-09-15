@@ -1,4 +1,9 @@
 import "server-only";
+export {
+  prepareRegistrationMediaAction,
+  finalizeRegistrationMediaAction,
+} from "./server/actions/registration-media.actions";
+export { importRegistrationGoogleAvatar } from "./server/services/server-import-remote-avatar.service";
 
 export {
   activateProfileMediaAction,

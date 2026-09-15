@@ -34,6 +34,7 @@ function renderView(
   return render(
     <QueryClientProvider client={new QueryClient()}>
       <AdminEmailOutboxView
+        batchRetryAction={vi.fn()}
         filters={filters}
         onFiltersChange={onFiltersChange}
         query={query}
@@ -76,12 +77,13 @@ describe("AdminEmailOutboxView", () => {
     expect(screen.getByText("3 tentativas automáticas")).toBeVisible();
     expect(screen.getByText("2 falhas definitivas")).toBeVisible();
     expect(
-      screen.getByText(/endereços e conteúdo das mensagens/iu),
+      screen.getByText(/mensagem permanece protegido/iu),
     ).toBeVisible();
 
     rerender(
       <QueryClientProvider client={new QueryClient()}>
         <AdminEmailOutboxView
+          batchRetryAction={vi.fn()}
           filters={filters}
           onFiltersChange={vi.fn()}
           query={{ retry, status: "error" }}

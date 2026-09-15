@@ -72,9 +72,7 @@ export const adminEmailOutboxItemSchema = z
     dueAt: z.iso.datetime({ offset: true }),
     id: z.uuid(),
     maxAttempts: z.number().int().positive().max(20),
-    recipientReference: z
-      .string()
-      .regex(/^(?:Conta [a-f0-9]{8}|Destino do sistema)$/u),
+    recipientEmail: z.email(),
     reference: z.string().regex(/^E-mail #[a-f0-9]{8}$/u),
     retry: retryEligibilitySchema,
     status: adminEmailOutboxStatusSchema,

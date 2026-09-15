@@ -4,10 +4,7 @@ import { createServerSupabaseClient } from "@/shared/server/supabase/server-clie
 
 import { createServerOnboardingRegistrationService } from "../services/server-onboarding-registration.service";
 import { createServerCorrectedProfileResubmissionService } from "../services/server-corrected-profile-resubmission.service";
-import {
-  registerWithEmailAction,
-  submitGoogleProfileAction,
-} from "./onboarding.actions";
+import { submitGoogleProfileAction } from "./onboarding.actions";
 
 const { redirect } = vi.hoisted(() => ({
   redirect: vi.fn(),
@@ -154,7 +151,7 @@ describe("onboarding actions", () => {
         role: "INFLUENCER",
       }),
     });
-    expect(redirect).toHaveBeenCalledWith("/app/status/analysis");
+    expect(redirect).toHaveBeenCalledWith("/app/status/analysis?submitted=1");
   });
 
   it("resubmits a corrected profile with stable idempotency and expected versions", async () => {
@@ -246,104 +243,4 @@ describe("onboarding actions", () => {
     });
   });
 
-  it("never echoes credentials or private profile fields in an Action validation DTO", async () => {
-    const formData = completeCreatorProfile();
-    formData.set("email", "joana@example.com");
-    formData.set("password", "raw-password");
-    formData.set("passwordConfirmation", "different-password");
-
-    const result = await registerWithEmailAction({ status: "idle" }, formData);
-    const serializedResult = JSON.stringify(result);
-
-    expect(result).toMatchObject({
-      status: "error",
-      values: {
-        email: "joana@example.com",
-        role: "INFLUENCER",
-      },
-    });
-    expect(serializedResult).not.toContain("raw-password");
-    expect(serializedResult).not.toContain("different-password");
-    expect(serializedResult).not.toContain("(11) 99999-9999");
-    expect(serializedResult).not.toContain(
-      "Crio conteúdo de tecnologia e produtividade para a internet.",
-    );
-    expect(serializedResult).not.toContain("https://instagram.com/joanacria");
-  });
-
-  it("returns account-exists guidance without exposing private fields", async () => {
-    const registerWithEmail = vi.fn().mockResolvedValue({
-      kind: "account_exists",
-      message:
-        "Este e-mail já possui cadastro. Entre com sua senha ou recupere o acesso para continuar.",
-    });
-    mockedCreateRegistrationService.mockResolvedValue({
-      finalizePreparedEmailRegistration: vi.fn(),
-      registerWithEmail,
-      submitGoogleProfile: vi.fn(),
-    });
-
-    const result = await registerWithEmailAction(
-      { status: "idle" },
-      completeCompanyRegistration(),
-    );
-    const serializedResult = JSON.stringify(result);
-
-    expect(result).toMatchObject({
-      errorCode: "account_already_exists",
-      message:
-        "Este e-mail já possui cadastro. Entre com sua senha ou recupere o acesso para continuar.",
-      status: "error",
-      values: {
-        email: "empresa@example.com",
-        role: "COMPANY",
-      },
-    });
-    expect(serializedResult).not.toContain("StrongPass1");
-    expect(serializedResult).not.toContain("11.222.333/0001-81");
-    expect(serializedResult).not.toContain("(11) 99999-9999");
-  });
-
-  it("validates and canonicalizes optional company social data before registration", async () => {
-    const registerWithEmail = vi.fn().mockResolvedValue({
-      kind: "confirmation_required",
-      message: "Confirme seu e-mail.",
-    });
-    mockedCreateRegistrationService.mockResolvedValue({
-      finalizePreparedEmailRegistration: vi.fn(),
-      registerWithEmail,
-      submitGoogleProfile: vi.fn(),
-    });
-
-    await registerWithEmailAction(
-      { status: "idle" },
-      completeCompanyRegistration(),
-    );
-
-    expect(registerWithEmail).toHaveBeenCalledWith(
-      expect.objectContaining({
-        role: "COMPANY",
-        additionalLocations: [
-          expect.objectContaining({
-            city: "Curitiba",
-            label: "Filial Sul",
-          }),
-        ],
-        socialChannels: [
-          expect.objectContaining({
-            isPrimary: true,
-            platform: "LINKEDIN",
-            url: "https://linkedin.com/company/empresa-exemplo",
-          }),
-        ],
-      }),
-      /* Media files travel as a second argument since signup started
-       * accepting a logo and a cover. */
-      expect.objectContaining({
-        avatarFile: null,
-        coverFile: null,
-        logoFile: null,
-      }),
-    );
-  });
 });

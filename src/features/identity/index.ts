@@ -36,3 +36,4 @@ export type {
   AdminProvisioningAction,
   AdminProvisioningActionState,
 } from "./types/admin-provisioning.types";
+export { resetPasswordSchema } from "./schemas/auth-form-schemas";

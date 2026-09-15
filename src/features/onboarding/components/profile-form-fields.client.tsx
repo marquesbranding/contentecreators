@@ -503,7 +503,8 @@ export function ProfileFormFields({
     Record<(typeof SOCIAL_CHANNEL_PLATFORMS)[number], ChannelState>
   >(() => {
     const initialChannels = new Map(
-      (creatorInitialValues?.socialChannels ??
+      (
+        creatorInitialValues?.socialChannels ??
         companyInitialValues?.socialChannels ??
         []
       ).map((channel) => [channel.platform, channel]),
@@ -729,10 +730,11 @@ export function ProfileFormFields({
     ? "grid-cols-[minmax(9rem,1fr)_6rem_minmax(0,2fr)_5rem]"
     : "grid-cols-[minmax(9rem,1fr)_minmax(0,2fr)_5rem]";
   const socialChannelsField = (
-    <Field
-      data-invalid={Boolean(resolveFieldErrors("socialChannels")?.length)}
-    >
-      <FieldLabel id="creator-social-channels-label" required={showChannelMetrics}>
+    <Field data-invalid={Boolean(resolveFieldErrors("socialChannels")?.length)}>
+      <FieldLabel
+        id="creator-social-channels-label"
+        required={showChannelMetrics}
+      >
         Redes sociais
       </FieldLabel>
       <div
@@ -896,7 +898,9 @@ export function ProfileFormFields({
                   </div>
                 </div>
 
-                {showChannelMetrics && platform === "INSTAGRAM" && entry.checked ? (
+                {showChannelMetrics &&
+                platform === "INSTAGRAM" &&
+                entry.checked ? (
                   <div className="bg-muted/40 col-span-4 rounded-xl border p-4">
                     <p className="text-foreground mb-3 text-xs font-semibold">
                       Métricas do Instagram (autodeclaradas)
@@ -915,11 +919,7 @@ export function ProfileFormFields({
                         id="creator-instagram-interactions"
                         label="Interações"
                         onChange={(value) =>
-                          updateChannelField(
-                            "INSTAGRAM",
-                            "interactions",
-                            value,
-                          )
+                          updateChannelField("INSTAGRAM", "interactions", value)
                         }
                         placeholder="Ex.: 3200"
                         value={entry.interactions}
@@ -928,11 +928,7 @@ export function ProfileFormFields({
                         id="creator-instagram-new-followers"
                         label="Novos seguidores"
                         onChange={(value) =>
-                          updateChannelField(
-                            "INSTAGRAM",
-                            "newFollowers",
-                            value,
-                          )
+                          updateChannelField("INSTAGRAM", "newFollowers", value)
                         }
                         placeholder="Ex.: 800"
                         value={entry.newFollowers}
@@ -1216,7 +1212,9 @@ export function ProfileFormFields({
                 defaultValue={companyInitialValues?.websiteUrl}
               />
             ) : null}
-            {role === "COMPANY" ? socialChannelsField : null}
+            {role === "COMPANY" && currentStep === undefined
+              ? socialChannelsField
+              : null}
           </FieldGroup>
 
           <Field
@@ -1300,9 +1298,17 @@ export function ProfileFormFields({
         </FieldSet>
       </div>
 
+      {role === "COMPANY" && currentStep !== undefined ? (
+        <div data-step="3" hidden={currentStep !== "audience"}>
+          {socialChannelsField}
+        </div>
+      ) : null}
       <div
-        data-step="3"
-        hidden={currentStep !== undefined && currentStep !== "audience"}
+        data-step={role === "COMPANY" && currentStep !== undefined ? "4" : "3"}
+        hidden={
+          currentStep !== undefined &&
+          currentStep !== (role === "COMPANY" ? "location" : "audience")
+        }
       >
         {role === "INFLUENCER" ? (
           <FieldSet>

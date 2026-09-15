@@ -332,7 +332,10 @@ describeLocalStack("local Auth and application email journeys", () => {
       }),
     ]);
     expect(confirmationMessage.Subject).toMatch(/confirme seu cadastro/iu);
-    expect(rawMessage.includes(`${supabaseUrl}/auth/v1/verify`)).toBe(true);
+    expect(rawMessage.replace(/=\r?\n/g, "").replace(/=3D/g, "=")).toContain(
+      "/auth/callback?next=/sign-up/account",
+    );
+    expect(rawMessage).toContain("token_hash=");
   });
 
   it("captures a synthetic moderation message in the application Mailpit inbox", async () => {

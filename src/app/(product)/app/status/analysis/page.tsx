@@ -1,3 +1,4 @@
+import { createServerSupabaseClient } from "@/shared/server/supabase/server-client";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -8,6 +9,7 @@ import {
 } from "@/features/identity/server";
 import { AnalysisPending } from "@/features/moderation";
 import { PendingReviewMediaStep } from "@/features/media/server";
+import { RegistrationReview } from "@/features/onboarding/server";
 
 export const metadata: Metadata = {
   title: "Cadastro em análise",
@@ -16,6 +18,7 @@ export const metadata: Metadata = {
 interface AnalysisStatusPageProps {
   searchParams: Promise<{
     confirmed?: string | string[];
+    submitted?: string | string[];
   }>;
 }
 
@@ -46,8 +49,17 @@ export default async function AnalysisStatusPage({
 
   return (
     <AnalysisPending
-      emailConfirmed={confirmedValue === "1"}
+      email={
+        (await (await createServerSupabaseClient()).auth.getUser()).data.user
+          ?.email
+      }
+      emailConfirmed={confirmedValue === "1" || parameters.submitted === "1"}
       mediaSection={mediaSection}
+      reviewSection={
+        account?.role === "INFLUENCER" || account?.role === "COMPANY" ? (
+          <RegistrationReview role={account.role} />
+        ) : null
+      }
       signOutAction={signOutAction}
     />
   );

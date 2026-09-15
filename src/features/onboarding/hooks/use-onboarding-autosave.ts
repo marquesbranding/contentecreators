@@ -237,6 +237,9 @@ export function useOnboardingAutosave({
   const basePayloadRef = useRef<OnboardingDraftPayload>(
     initialDraft?.payload ?? {},
   );
+  const stageRef = useRef<
+    "PROFILE" | "AUDIENCE" | "LOCATION_TERMS" | undefined
+  >(undefined);
   const mountedRef = useRef(true);
   const processingRef = useRef(false);
   const queuedPayloadRef = useRef<OnboardingDraftPayload | null>(null);
@@ -273,6 +276,7 @@ export function useOnboardingAutosave({
 
       try {
         result = await action({
+          registrationStep: stageRef.current,
           expectedVersion: versionRef.current,
           payload,
           role,
@@ -333,7 +337,50 @@ export function useOnboardingAutosave({
     [flush, role],
   );
 
+  async function saveStep(
+    form: HTMLFormElement,
+    stage: "PROFILE" | "AUDIENCE" | "LOCATION_TERMS",
+  ) {
+    if (processingRef.current) return false;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    stageRef.current = stage;
+    const payload = {
+      ...basePayloadRef.current,
+      ...collectDraftPayload(form, role),
+    };
+    queuedPayloadRef.current = null;
+    processingRef.current = true;
+    setStatus(createStatus("saving"));
+    try {
+      const result = await action({
+        expectedVersion: versionRef.current,
+        payload,
+        role,
+        registrationStep: stage,
+      });
+      if (result.kind !== "saved") {
+        setStatus(
+          createStatus(result.kind === "conflict" ? "conflict" : "error"),
+        );
+        return false;
+      }
+      basePayloadRef.current = result.draft.payload;
+      versionRef.current = result.draft.version;
+      if (!queuedPayloadRef.current) {
+        setHasUnsavedChanges(false);
+        setStatus(createStatus("saved"));
+      }
+      return true;
+    } catch {
+      setStatus(createStatus("error"));
+      return false;
+    } finally {
+      processingRef.current = false;
+      if (queuedPayloadRef.current) void flush();
+    }
+  }
   return {
+    saveStep,
     hasUnsavedChanges,
     onFormInput,
     status,

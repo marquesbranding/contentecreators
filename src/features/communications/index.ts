@@ -8,6 +8,12 @@ export {
   AdminEmailAttemptDialogView,
 } from "./components/admin-email-attempt-dialog.client";
 export {
+  AdminEmailBatchRetryDialog,
+  type AdminEmailBatchRetryAction,
+  type AdminEmailBatchRetryActionState,
+  type AdminEmailBatchRetryItem,
+} from "./components/admin-email-batch-retry-dialog.client";
+export {
   AdminEmailRetryDialog,
   type AdminEmailRetryAction,
   type AdminEmailRetryActionState,

@@ -1,6 +1,7 @@
 const defaultAuthReturnPath = "/onboarding/role";
 const allowedAuthReturnPrefixes = [
   "/app",
+  "/sign-up/account",
   "/onboarding",
   "/backoffice",
   "/reset-password",

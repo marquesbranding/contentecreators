@@ -111,6 +111,9 @@ export const onboardingDraftSaveSchema = z
   .discriminatedUnion("role", [
     z
       .object({
+        registrationStep: z
+          .enum(["PROFILE", "AUDIENCE", "LOCATION_TERMS"])
+          .optional(),
         expectedVersion: z.number().int().min(0),
         payload: creatorOnboardingDraftPayloadSchema,
         role: z.literal("INFLUENCER"),
@@ -118,6 +121,9 @@ export const onboardingDraftSaveSchema = z
       .strict(),
     z
       .object({
+        registrationStep: z
+          .enum(["PROFILE", "AUDIENCE", "LOCATION_TERMS"])
+          .optional(),
         expectedVersion: z.number().int().min(0),
         payload: companyOnboardingDraftPayloadSchema,
         role: z.literal("COMPANY"),

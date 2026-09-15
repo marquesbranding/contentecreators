@@ -10,5 +10,6 @@ export function toCurrentAccountDto(
     id: context.accountId,
     role: context.role,
     status: context.status,
+    registrationStep: context.registrationStep,
   };
 }

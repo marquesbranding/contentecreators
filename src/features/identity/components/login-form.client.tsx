@@ -28,6 +28,7 @@ import { PasswordField } from "./password-field.client";
 
 interface LoginFormProps {
   googleAction: AuthRedirectAction;
+  initialEmail?: string;
   initialMessage?: string;
   initialNextPath: string;
   mode?: "backoffice" | "member";
@@ -35,6 +36,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({
+  initialEmail,
   googleAction,
   initialMessage,
   initialNextPath,
@@ -91,6 +93,7 @@ export function LoginForm({
               aria-describedby={emailErrorId}
               aria-invalid={Boolean(emailErrors?.length)}
               autoComplete="email"
+              defaultValue={initialEmail}
               id="login-email"
               inputMode="email"
               name="email"

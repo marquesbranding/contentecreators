@@ -27,8 +27,8 @@
 6. **[2026-07-23] Keep Base UI value state controlled for the component lifetime**
    Do instead: initialize selection controls with `null`, never `undefined`, and remount mutually exclusive role-specific form subtrees with a stable role key so inputs do not switch between controlled and uncontrolled modes.
 
-7. **[2026-07-24] Publish each completed implementation wave**
-   Do instead: after the relevant validations pass, commit the finished scoped changes and push the current branch without waiting for a separate reminder.
+7. **[2026-09-15] Leave changes available for local review**
+   Do instead: run the relevant validations, but do not commit or push until the user explicitly requests it.
 
 8. **[2026-07-24] Serialize local integration test files that share Supabase**
    Do instead: keep the Vitest integration project on `fileParallelism: false` with Docker-tolerant test/hook timeouts, isolate or archive synthetic records in teardown, and never launch multiple reset-enabled Vitest processes. After one deterministic reset, use `SKIP_LOCAL_STACK_RESET=true` for targeted reruns; concurrent Docker prune/reset operations can tear down the shared stack.
@@ -87,3 +87,11 @@
 
 5. **[2026-07-30] Remove generated Playwright reports before repository-wide lint**
    Do instead: delete the ignored `playwright-report` and `test-results` artifacts after local E2E runs; the current ESLint traversal still inspects generated report bundles and can report false repository failures.
+
+## Authentication & Registration
+
+1. **[2026-09-15] OTP identities can have a generated password hash**
+   Do instead: use the registration password-pending marker to distinguish a user-defined password; clear it when setting or recovering a password. Do not infer password readiness from `encrypted_password` alone.
+
+2. **[2026-09-15] Keep local callback origins aligned**
+   Do instead: use port 3010 and `NEXT_PUBLIC_APP_URL=http://localhost:3010` for local registration QA, matching Supabase Site URL; accept the bounded `pkce_` token-hash prefix in email verification.

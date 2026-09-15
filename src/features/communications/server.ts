@@ -4,7 +4,10 @@ export {
   createScheduledOutboxHandler,
   isValidScheduledAuthorization,
 } from "./server/route-handlers/scheduled-outbox.handler";
-export { retryFailedEmailAction } from "./server/actions/admin-email-retry.actions";
+export {
+  retryFailedEmailAction,
+  retryFailedEmailsBatchAction,
+} from "./server/actions/admin-email-retry.actions";
 export {
   createServerAdminEmailOutboxDetailRouteHandler,
   createServerAdminEmailOutboxListRouteHandler,

@@ -95,3 +95,7 @@ Reviewers reject speculative promotion.
 6. No remote entity or security state was copied into Zustand.
 7. New folders and abstractions are used now, not reserved for later.
 8. Naming describes product behavior in English; interface copy is `pt-BR`.
+
+# Registration journey
+
+Identity owns verified access, email identity lookup and idempotent roleless account creation. Onboarding owns email/account screens, account details and draft stage persistence. Media stages private images before role selection and imports bounded Google avatars through its upload service. App routes compose these public slice APIs.

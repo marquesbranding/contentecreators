@@ -98,6 +98,7 @@ describeLocalStack("verified account transaction", () => {
 
     expect(resolveVerifiedAuthUserId).toHaveBeenCalledOnce();
     expect(result.accountContext).toEqual({
+      registrationStep: "SUBMITTED",
       accountId: approvedCreatorAccountId,
       authUserId: approvedCreatorAuthUserId,
       role: "INFLUENCER",

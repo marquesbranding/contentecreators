@@ -4,11 +4,11 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 export default function OnboardingLoading() {
   return (
     <OnboardingFormShell
-      currentStep={2}
+      showProgress={false}
       description="Estamos recuperando com segurança o progresso do seu cadastro."
       progressLabel="Carregando seus dados"
       title="Preparando seu formulário"
-      totalSteps={2}
+      totalSteps={6}
     >
       <div
         aria-busy="true"

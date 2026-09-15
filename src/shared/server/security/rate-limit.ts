@@ -3,6 +3,16 @@ import "server-only";
 import { createHash } from "node:crypto";
 
 export const RATE_LIMIT_POLICIES = {
+  registrationCodeVerify: {
+    limit: 10,
+    scope: "registration_code_verify",
+    windowSeconds: 600,
+  },
+  registrationCodeResend: {
+    limit: 1,
+    scope: "registration_code_resend",
+    windowSeconds: 60,
+  },
   adminCommand: {
     limit: 20,
     scope: "admin_command",

@@ -122,7 +122,10 @@ export function createSupabaseAuthGateway(
     },
 
     async updatePassword(password) {
-      const { error } = await client.auth.updateUser({ password });
+      const { error } = await client.auth.updateUser({
+        password,
+        data: { registration_password_pending: false },
+      });
 
       return error ? failure(error.code) : { kind: "success" };
     },

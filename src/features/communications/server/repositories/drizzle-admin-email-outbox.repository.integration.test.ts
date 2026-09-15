@@ -98,7 +98,7 @@ describeLocalStack("Drizzle admin email outbox read repository", () => {
       expect(list.items).toEqual([
         expect.objectContaining({
           id: terminalId,
-          recipientReference: "Conta 00000001",
+          recipientEmail: "destinatario-secreto@example.test",
           retry: { eligible: true, reason: "ELIGIBLE" },
           status: "DEAD_LETTER",
           template: "APPROVED",
@@ -120,8 +120,6 @@ describeLocalStack("Drizzle admin email outbox read repository", () => {
 
       const serialized = JSON.stringify({ detail, list });
       for (const forbidden of [
-        "destinatario-secreto@example.test",
-        "outro-destinatario@example.test",
         "Conteúdo que não pode sair",
         "segredo-operacional",
         "PRIVATE_PROVIDER_CODE",

@@ -59,6 +59,7 @@ describe("identity auth service", () => {
           password: "SenhaSegura123",
         }),
       ).resolves.toEqual({
+        code,
         kind: "failure",
         message: AUTH_MESSAGES.invalidCredentials,
       });
@@ -180,7 +181,7 @@ describe("identity auth service", () => {
     });
     expect(gateway.beginGoogleSignIn).toHaveBeenCalledWith({
       redirectTo:
-        "http://localhost:3000/auth/callback?next=%2Fonboarding%2Frole",
+        "http://localhost:3000/auth/callback?next=%2Fonboarding%2Faccount%3Fintent%3Dcompany",
     });
   });
 

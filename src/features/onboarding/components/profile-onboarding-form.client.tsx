@@ -1,7 +1,9 @@
 "use client";
 
+import { RegistrationStepper } from "./registration-stepper.client";
+import { Button } from "@/shared/components/ui/button";
 import { CircleAlert } from "lucide-react";
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
 
 import {
   ProfileHeaderMediaEditor,
@@ -50,6 +52,7 @@ export interface OnboardingMediaState {
 }
 
 type ProfileOnboardingFormProps = {
+  initialStep?: "profile" | "audience" | "location";
   action: OnboardingAction;
   correctionCommand?: CorrectedProfileResubmissionCommand;
   draftAction: OnboardingDraftAction;
@@ -71,6 +74,7 @@ export function ProfileOnboardingForm(props: ProfileOnboardingFormProps) {
 
 function ProfileOnboardingFormContent({
   action,
+  initialStep = "profile",
   correctionCommand,
   draftAction,
   initialDraft,
@@ -80,6 +84,8 @@ function ProfileOnboardingFormContent({
   mediaActions,
   role,
 }: ProfileOnboardingFormProps) {
+  const [step, setStep] = useState(initialStep);
+  const [changingStep, startStepTransition] = useTransition();
   const [state, formAction, pending] = useActionState(
     action,
     initialOnboardingActionState,
@@ -91,7 +97,10 @@ function ProfileOnboardingFormContent({
     formRef,
     formValidationProps,
     getFieldErrors,
-  } = useRequiredFieldValidation();
+  } = useRequiredFieldValidation({
+    onRequestStep: (key) =>
+      setStep(key === "2" ? "profile" : key === "3" ? "audience" : "location"),
+  });
   const submitConfirmation = useSubmitConfirmation();
   const autosave = useOnboardingAutosave({
     action: draftAction,
@@ -185,6 +194,25 @@ function ProfileOnboardingFormContent({
     });
   }
 
+  function navigateStep(next: "profile" | "audience" | "location") {
+    const form = formRef.current;
+    if (!form) return;
+    startStepTransition(async () => {
+      if (
+        await autosave.saveStep(
+          form,
+          next === "profile"
+            ? "PROFILE"
+            : next === "audience"
+              ? "AUDIENCE"
+              : "LOCATION_TERMS",
+        )
+      ) {
+        setStep(next);
+        window.history.replaceState(null, "", `?step=${next}`);
+      }
+    });
+  }
   const badges: ProfileHeaderPreviewBadge[] =
     role === "COMPANY"
       ? [
@@ -245,6 +273,19 @@ function ProfileOnboardingFormContent({
             />
           </>
         ) : null}
+        {!correctionCommand ? (
+          <RegistrationStepper
+            currentStep={step === "profile" ? 4 : step === "audience" ? 5 : 6}
+            steps={[
+              { label: "E-mail" },
+              { label: "Confirmação" },
+              { label: "Conta" },
+              { label: "Perfil" },
+              { label: "Redes sociais" },
+              { label: "Localização e termos" },
+            ]}
+          />
+        ) : null}
         <OnboardingAutosaveStatus status={autosave.status} />
         {state.message ? (
           <Alert aria-live="polite" variant="destructive">
@@ -289,7 +330,14 @@ function ProfileOnboardingFormContent({
           errors={summaryErrors}
           onFieldSelect={focusInvalidField}
         />
+        {!correctionCommand && role === "INFLUENCER" && seedName ? (
+          <input type="hidden" name="legalName" value={seedName} />
+        ) : null}
         <ProfileFormFields
+          hideDisplayNameField={
+            !correctionCommand && role === "INFLUENCER" && Boolean(seedName)
+          }
+          currentStep={correctionCommand ? undefined : step}
           creatorType={knownCreatorType}
           fieldErrors={state.fieldErrors}
           getFieldErrors={getFieldErrors}
@@ -297,14 +345,44 @@ function ProfileOnboardingFormContent({
           onFieldChange={clearFieldError}
           role={role}
         />
-        <ActionSubmitButton
-          className="w-full"
-          pending={pending}
-          pendingLabel="Enviando para análise..."
-          size="lg"
-        >
-          Enviar perfil para análise
-        </ActionSubmitButton>
+        {!correctionCommand ? (
+          <div className="flex gap-3">
+            {step !== "profile" ? (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={changingStep}
+                onClick={() =>
+                  navigateStep(step === "location" ? "audience" : "profile")
+                }
+              >
+                Voltar
+              </Button>
+            ) : null}
+            {step !== "location" ? (
+              <Button
+                className="ml-auto"
+                type="button"
+                disabled={changingStep}
+                onClick={() =>
+                  navigateStep(step === "profile" ? "audience" : "location")
+                }
+              >
+                {changingStep ? "Salvando..." : "Continuar"}
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+        <div hidden={!correctionCommand && step !== "location"}>
+          <ActionSubmitButton
+            className="w-full"
+            pending={pending}
+            pendingLabel="Enviando para análise..."
+            size="lg"
+          >
+            Enviar perfil para análise
+          </ActionSubmitButton>
+        </div>
       </form>
       <OnboardingSubmitConfirmation
         onConfirm={submitConfirmation.confirmSubmission}

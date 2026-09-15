@@ -1,7 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { sanitizeAuthReturnPath } from "@/features/identity";
 import {
+  getAccountDestination,
+  sanitizeAuthReturnPath,
+} from "@/features/identity";
+import {
+  ensureCurrentOnboardingAccount,
+  verifyRegistrationEmailLink,
   createServerBannedAccountDefenseService,
   createServerIdentityAuthService,
 } from "@/features/identity/server";
@@ -26,7 +31,11 @@ export async function GET(request: NextRequest) {
   }
 
   const authService = await createServerIdentityAuthService();
-  const result = await authService.exchangeCallback(code);
+  const tokenHash = request.nextUrl.searchParams.get("token_hash");
+  const result =
+    tokenHash && request.nextUrl.searchParams.get("type") === "email"
+      ? await verifyRegistrationEmailLink(tokenHash)
+      : await authService.exchangeCallback(code);
 
   if (result.kind === "failure") {
     const loginPath = destination.startsWith("/backoffice")
@@ -68,5 +77,12 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  if (!destination.startsWith("/backoffice")) {
+    const account = await ensureCurrentOnboardingAccount();
+    if (account)
+      return NextResponse.redirect(
+        new URL(getAccountDestination(account), request.url),
+      );
+  }
   return NextResponse.redirect(new URL(destination, request.url));
 }

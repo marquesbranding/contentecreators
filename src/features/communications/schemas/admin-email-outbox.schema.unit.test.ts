@@ -13,7 +13,7 @@ const safeItem = {
   dueAt: "2026-07-28T13:00:00.000Z",
   id: "90000000-0000-4000-8000-000000000001",
   maxAttempts: 5,
-  recipientReference: "Conta 00000001",
+  recipientEmail: "pessoa@example.test",
   reference: "E-mail #90000000",
   retry: { eligible: true, reason: "ELIGIBLE" },
   status: "DEAD_LETTER",
@@ -45,14 +45,13 @@ describe("admin email outbox schemas", () => {
     );
   });
 
-  it("rejects hidden recipient, payload, body and provider metadata", () => {
+  it("rejects hidden payload, body and provider metadata", () => {
     const unsafeList = {
       counts: { DEAD_LETTER: 1, FAILED: 0, PENDING: 0 },
       items: [
         {
           ...safeItem,
           payload: { body: "segredo" },
-          recipientEmail: "pessoa@example.test",
         },
       ],
       pagination: {

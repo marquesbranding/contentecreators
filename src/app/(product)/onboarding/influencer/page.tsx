@@ -18,7 +18,7 @@ import {
   loadCurrentPreparedInfluencerProfile,
   loadCurrentCorrectionContext,
   saveOnboardingDraftAction,
-  submitGoogleProfileAction,
+  submitOnboardingProfileAction,
 } from "@/features/onboarding/server";
 
 export const metadata: Metadata = {
@@ -35,7 +35,7 @@ export default async function InfluencerOnboardingPage() {
   const correctionRequested =
     decision.destination === "/onboarding/influencer?corrections=requested";
   if (
-    decision.destination !== "/onboarding/influencer" &&
+    !decision.destination.startsWith("/onboarding/influencer") &&
     !correctionRequested
   ) {
     redirect(decision.destination);
@@ -64,17 +64,31 @@ export default async function InfluencerOnboardingPage() {
 
   return (
     <OnboardingFormShell
-      currentStep={2}
+      showProgress={correctionRequested}
+      currentStep={
+        decision.destination.includes("step=audience")
+          ? 5
+          : decision.destination.includes("step=location")
+            ? 6
+            : 4
+      }
       description="Complete seu perfil de creator. Ao enviar, o cadastro ficará aguardando a revisão da nossa equipe."
       correctionReason={correctionContext?.reason}
       correctionRequested={correctionRequested}
       correctionRequestedFields={correctionContext?.requestedFields}
       progressLabel="Dados do perfil"
       title="Conte sobre o seu trabalho"
-      totalSteps={2}
+      totalSteps={6}
     >
       <ProfileOnboardingForm
-        action={submitGoogleProfileAction}
+        initialStep={
+          decision.destination.includes("step=audience")
+            ? "audience"
+            : decision.destination.includes("step=location")
+              ? "location"
+              : "profile"
+        }
+        action={submitOnboardingProfileAction}
         correctionCommand={correctionContext?.command}
         draftAction={saveOnboardingDraftAction}
         initialDraft={initialDraft}

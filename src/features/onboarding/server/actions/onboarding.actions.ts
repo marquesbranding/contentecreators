@@ -2,7 +2,6 @@
 
 import "server-only";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { getPublicEnv } from "@/shared/lib/env/public-env";
@@ -14,16 +13,10 @@ import { createServerSupabaseClient } from "@/shared/server/supabase/server-clie
 import { readAdditionalCompanyLocations } from "../../domain/company-location-form-data";
 import { readSocialChannels } from "../../domain/social-channels-form-data";
 import { correctedProfileResubmissionCommandSchema } from "../../schemas/corrected-profile-resubmission-schema";
-import {
-  emailRegistrationSchema,
-  googleProfileSchema,
-} from "../../schemas/onboarding-form-schema";
+import { googleProfileSchema } from "../../schemas/onboarding-form-schema";
 import type { OnboardingActionState } from "../../types/onboarding-action.types";
 import { createServerCorrectedProfileResubmissionService } from "../services/server-corrected-profile-resubmission.service";
-import {
-  createServerOnboardingRegistrationService,
-  createServerRegistrationEmailAvailabilityService,
-} from "../services/server-onboarding-registration.service";
+import { createServerOnboardingRegistrationService } from "../services/server-onboarding-registration.service";
 import { isUniqueViolation } from "../services/unique-violation";
 
 function formPayload(formData: FormData) {
@@ -64,12 +57,6 @@ function formPayload(formData: FormData) {
   };
 }
 
-/** Walks postgres.js's `cause` chain looking for a specific unique violation. */
-function readOptionalImageFile(formData: FormData, field: string) {
-  const value = formData.get(field);
-  return value instanceof File && value.size > 0 ? value : null;
-}
-
 function validationFailure(
   error: { flatten(): { fieldErrors: Record<string, string[] | undefined> } },
   formData: FormData,
@@ -93,75 +80,7 @@ function validationFailure(
   };
 }
 
-/**
- * Lets the sign-up form warn, as soon as the e-mail field is left, that the
- * e-mail already belongs to a company or creator account. Failures answer
- * "not registered": the sign-up itself still rejects a duplicate.
- */
-export async function checkRegistrationEmailAction(
-  email: string,
-): Promise<{ registered: boolean }> {
-  try {
-    const requestHeaders = await headers();
-    const networkIdentity =
-      requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      requestHeaders.get("x-real-ip")?.trim() ||
-      "local";
-    const result =
-      await createServerRegistrationEmailAvailabilityService().check({
-        email: typeof email === "string" ? email : "",
-        networkIdentity,
-      });
-
-    return { registered: result.status === "registered" };
-  } catch {
-    return { registered: false };
-  }
-}
-
-export async function registerWithEmailAction(
-  _previousState: OnboardingActionState,
-  formData: FormData,
-): Promise<OnboardingActionState> {
-  const parsed = emailRegistrationSchema.safeParse(formPayload(formData));
-
-  if (!parsed.success) {
-    return validationFailure(parsed.error, formData);
-  }
-
-  const service = await createServerOnboardingRegistrationService();
-  const result = await service.registerWithEmail(parsed.data, {
-    avatarFile: readOptionalImageFile(formData, "avatarFile"),
-    coverFile: readOptionalImageFile(formData, "coverFile"),
-    logoFile: readOptionalImageFile(formData, "logoFile"),
-  });
-
-  if (result.kind === "redirect") {
-    redirect(result.destination);
-  }
-
-  if (result.kind === "duplicate_cnpj") {
-    return {
-      fieldErrors: { cnpj: [result.message] },
-      message: "Revise os campos destacados para continuar.",
-      status: "error",
-      values: { email: parsed.data.email, role: parsed.data.role },
-    };
-  }
-
-  return {
-    errorCode:
-      result.kind === "account_exists" ? "account_already_exists" : undefined,
-    message: result.message,
-    status:
-      result.kind === "confirmation_required"
-        ? "confirmation_required"
-        : "error",
-    values: { email: parsed.data.email, role: parsed.data.role },
-  };
-}
-
-export async function submitGoogleProfileAction(
+export async function submitOnboardingProfileAction(
   _previousState: OnboardingActionState,
   formData: FormData,
 ): Promise<OnboardingActionState> {
@@ -290,8 +209,10 @@ export async function submitGoogleProfileAction(
     };
   }
 
-  redirect(result.destination);
+  redirect(`${result.destination}?submitted=1`);
 }
+
+export const submitGoogleProfileAction = submitOnboardingProfileAction;
 
 export async function resendPreparedRegistrationConfirmationAction(
   _previousState: OnboardingActionState,

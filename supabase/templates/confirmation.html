@@ -55,8 +55,13 @@
                   Falta apenas confirmar seu e-mail para continuar o cadastro na
                   Contente Creators.
                 </p>
+                <p
+                  style="font-size: 32px; font-weight: 700; letter-spacing: 8px"
+                >
+                  {{ .Token }}
+                </p>
                 <a
-                  href="{{ .ConfirmationURL }}"
+                  href="{{ .SiteURL }}/auth/callback?next=/sign-up/account&amp;token_hash={{ .TokenHash }}&amp;type=email"
                   style="
                     display: inline-block;
                     border-radius: 12px;

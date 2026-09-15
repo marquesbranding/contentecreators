@@ -17,6 +17,7 @@ export interface VerifiedAccountContext {
   authUserId: string;
   role: VerifiedAccountRole;
   status: Account["status"];
+  registrationStep?: Account["registrationStep"];
 }
 
 export type VerifiedAccountTransactionErrorCode =
@@ -103,6 +104,7 @@ export function createVerifiedAccountTransactionRunner({
           id: accounts.id,
           role: accounts.role,
           status: accounts.status,
+          registrationStep: accounts.registrationStep,
         })
         .from(accounts)
         .where(
@@ -124,6 +126,7 @@ export function createVerifiedAccountTransactionRunner({
         authUserId,
         role: account.role,
         status: account.status,
+        registrationStep: account.registrationStep,
       };
 
       await transaction.execute(sql`

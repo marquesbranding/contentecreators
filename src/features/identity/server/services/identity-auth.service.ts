@@ -134,6 +134,7 @@ export function createIdentityAuthService(
 
       if (result.kind === "failure") {
         return {
+          code: result.code,
           kind: "failure" as const,
           message: AUTH_MESSAGES.invalidCredentials,
         };
@@ -186,8 +187,11 @@ export function createIdentityAuthService(
 
     async beginGoogleSignIn(destination: unknown, intent?: RegistrationIntent) {
       void destination;
-      void intent;
-      return beginGoogleSignInAt(buildRoleSelectionPath());
+      return beginGoogleSignInAt(
+        intent
+          ? `/onboarding/account?intent=${intent.toLowerCase()}`
+          : "/onboarding/account",
+      );
     },
 
     beginGoogleSignInAt,

@@ -52,3 +52,12 @@ export type {
   CurrentAccountDto,
   CurrentSessionDto,
 } from "./types/current-account.types";
+export { createRegistrationIdentityRepository } from "./server/repositories/registration-identity.repository";
+export type { RegistrationIdentityAvailability } from "./server/repositories/registration-identity.repository";
+export {
+  consumeRegistrationLimit,
+  sendRegistrationCode,
+  loadRegistrationAccount,
+  ensureCurrentOnboardingAccount,
+} from "./server/services/registration-session.service";
+export { verifyRegistrationEmailLink } from "./server/services/registration-session.service";

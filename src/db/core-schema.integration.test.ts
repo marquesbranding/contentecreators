@@ -34,6 +34,7 @@ const requiredEnums = [
   "moderation_action",
   "placement_audience",
   "placement_type",
+  "registration_step",
   "social_platform",
   "whatsapp_contact_status",
 ] as const;

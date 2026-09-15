@@ -21,7 +21,7 @@ const detail: AdminEmailOutboxDetailDto = {
     dueAt: "2026-07-28T13:00:00.000Z",
     id: "90000000-0000-4000-8000-000000000001",
     maxAttempts: 5,
-    recipientReference: "Conta 00000001",
+    recipientEmail: "pessoa1@example.test",
     reference: "E-mail #90000000",
     retry: { eligible: true, reason: "ELIGIBLE" },
     status: "DEAD_LETTER",

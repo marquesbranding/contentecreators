@@ -4,7 +4,10 @@ import {
   AdminEmailOutboxScreen,
   parseAdminEmailOutboxSearchParams,
 } from "@/features/communications";
-import { retryFailedEmailAction } from "@/features/communications/server";
+import {
+  retryFailedEmailAction,
+  retryFailedEmailsBatchAction,
+} from "@/features/communications/server";
 
 export const metadata: Metadata = {
   title: "Operações de e-mail",
@@ -37,6 +40,7 @@ export default async function BackofficeEmailsPage({
 
   return (
     <AdminEmailOutboxScreen
+      batchRetryAction={retryFailedEmailsBatchAction}
       filters={filters}
       retryAction={retryFailedEmailAction}
     />

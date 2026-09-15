@@ -33,6 +33,7 @@ export function OnboardingFormShell({
   progress,
   progressLabel = "Dados do perfil",
   showBrandHeader = true,
+  showProgress = true,
   title,
   totalSteps = 1,
 }: {
@@ -46,6 +47,7 @@ export function OnboardingFormShell({
   progress?: number;
   progressLabel?: string;
   showBrandHeader?: boolean;
+  showProgress?: boolean;
   title: string;
   totalSteps?: number;
 }) {
@@ -100,16 +102,18 @@ export function OnboardingFormShell({
             <CardDescription className="max-w-3xl space-y-3 text-base leading-7">
               {description}
             </CardDescription>
-            <Progress
-              aria-label="Progresso do cadastro"
-              aria-valuetext={`${stepText}: ${progressLabel}`}
-              value={progressValue}
-            >
-              <ProgressLabel>{stepText}</ProgressLabel>
-              <span className="text-muted-foreground ml-auto text-sm tabular-nums">
-                {progressLabel}
-              </span>
-            </Progress>
+            {showProgress ? (
+              <Progress
+                aria-label="Progresso do cadastro"
+                aria-valuetext={`${stepText}: ${progressLabel}`}
+                value={progressValue}
+              >
+                <ProgressLabel>{stepText}</ProgressLabel>
+                <span className="text-muted-foreground ml-auto text-sm tabular-nums">
+                  {progressLabel}
+                </span>
+              </Progress>
+            ) : null}
           </CardHeader>
           <CardContent className="px-5 py-6 sm:px-9 sm:py-8">
             {correctionRequested ? (

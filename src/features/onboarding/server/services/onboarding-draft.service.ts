@@ -102,6 +102,7 @@ export function createOnboardingDraftService({
       input: OnboardingDraftSaveInput & { requestId: string },
     ) {
       const parsed = onboardingDraftSaveSchema.safeParse({
+        registrationStep: input.registrationStep,
         expectedVersion: input.expectedVersion,
         payload: input.payload,
         role: input.role,

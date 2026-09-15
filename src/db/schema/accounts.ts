@@ -12,7 +12,11 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { authUsers } from "./auth";
-import { accountRoleEnum, accountStatusEnum } from "./enums";
+import {
+  accountRoleEnum,
+  accountStatusEnum,
+  registrationStepEnum,
+} from "./enums";
 
 export const accounts = pgTable(
   "accounts",
@@ -22,6 +26,10 @@ export const accounts = pgTable(
       .notNull()
       .references(() => authUsers.id, { onDelete: "restrict" }),
     role: accountRoleEnum("role"),
+    registrationStep: registrationStepEnum("registration_step")
+      .notNull()
+      .default("ACCOUNT_DETAILS"),
+    fullName: varchar("full_name", { length: 160 }),
     status: accountStatusEnum("status").notNull().default("ONBOARDING"),
     operationalEmail: varchar("operational_email", { length: 320 }).notNull(),
     submittedAt: timestamp("submitted_at", { withTimezone: true }),

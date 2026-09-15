@@ -6,7 +6,7 @@ import {
 } from "./admin-email-outbox.mapper";
 
 describe("admin email outbox mapper", () => {
-  it("maps an outbox item without recipient, payload or idempotency data", () => {
+  it("maps an outbox item without payload or idempotency data", () => {
     const result = mapAdminEmailOutboxItem({
       accountId: "a0000000-0000-4000-8000-000000000001",
       attemptCount: 5,
@@ -14,6 +14,7 @@ describe("admin email outbox mapper", () => {
       dueAt: new Date("2026-07-28T13:00:00.000Z"),
       id: "90000000-0000-4000-8000-000000000001",
       maxAttempts: 5,
+      recipientEmail: "pessoa@example.test",
       sentAt: null,
       status: "DEAD_LETTER",
       template: "APPROVED",
@@ -26,14 +27,13 @@ describe("admin email outbox mapper", () => {
       dueAt: "2026-07-28T13:00:00.000Z",
       id: "90000000-0000-4000-8000-000000000001",
       maxAttempts: 5,
-      recipientReference: "Conta 00000001",
+      recipientEmail: "pessoa@example.test",
       reference: "E-mail #90000000",
       retry: { eligible: true, reason: "ELIGIBLE" },
       status: "DEAD_LETTER",
       template: "APPROVED",
       updatedAt: "2026-07-28T12:05:00.000Z",
     });
-    expect(JSON.stringify(result)).not.toContain("@");
     expect(JSON.stringify(result)).not.toContain("payload");
     expect(JSON.stringify(result)).not.toContain("idempotency");
   });
@@ -52,6 +52,7 @@ describe("admin email outbox mapper", () => {
         dueAt: new Date("2026-07-28T13:00:00.000Z"),
         id: "90000000-0000-4000-8000-000000000001",
         maxAttempts,
+        recipientEmail: "destino-sistema@example.test",
         sentAt: null,
         status,
         template: "APPROVED",
@@ -59,7 +60,7 @@ describe("admin email outbox mapper", () => {
       });
 
       expect(result.retry).toEqual({ eligible: false, reason });
-      expect(result.recipientReference).toBe("Destino do sistema");
+      expect(result.recipientEmail).toBe("destino-sistema@example.test");
     },
   );
 

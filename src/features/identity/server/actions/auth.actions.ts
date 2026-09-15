@@ -2,6 +2,12 @@
 
 import "server-only";
 
+import { cookies } from "next/headers";
+import { createRegistrationIdentityRepository } from "../repositories/registration-identity.repository";
+import {
+  consumeRegistrationLimit,
+  sendRegistrationCode,
+} from "../services/registration-session.service";
 import { redirect } from "next/navigation";
 import type { ZodError } from "zod";
 
@@ -112,6 +118,24 @@ export async function signInAction(
     redirect(result.destination);
   }
 
+  let codeSent = false;
+  try {
+    if (
+      result.code === "invalid_credentials" &&
+      (await consumeRegistrationLimit(parsed.data.email, "passwordRecovery"))
+    ) {
+      const identity = await createRegistrationIdentityRepository().lookup(
+        parsed.data.email,
+      );
+      if (identity.status === "registered" && !identity.hasPassword) {
+        await sendRegistrationCode(parsed.data.email, false);
+        codeSent = true;
+      }
+    }
+  } catch {
+    // Keep the same login response when the access-code service is unavailable.
+  }
+  if (codeSent) redirect("/sign-up/verify");
   return {
     message: result.message,
     status: "error",
@@ -238,7 +262,20 @@ export async function startGoogleSignInAction(
   formData: FormData,
 ): Promise<void> {
   const service = await createServerIdentityAuthService();
-  const intent = parseRegistrationIntent(formValue(formData, "intent"));
+  const rawIntent = formValue(formData, "intent");
+  const intent = parseRegistrationIntent(rawIntent);
+  if (
+    typeof rawIntent === "string" &&
+    ["INFLUENCER", "UGC", "COMPANY"].includes(rawIntent)
+  ) {
+    (await cookies()).set("cc_signup_intent", rawIntent, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 1800,
+    });
+  }
   const result = await service.beginGoogleSignIn(
     formValue(formData, "nextPath"),
     intent,

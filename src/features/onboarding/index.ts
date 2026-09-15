@@ -36,3 +36,7 @@ export type {
   OnboardingDraftAction,
   OnboardingDraftClientDto,
 } from "./types/onboarding-draft.types";
+
+export { RegistrationEmailStep } from "./components/registration-email-step.client";
+export { RegistrationVerifyStep } from "./components/registration-verify-step.client";
+export { RegistrationAccountStep } from "./components/registration-account-step.client";

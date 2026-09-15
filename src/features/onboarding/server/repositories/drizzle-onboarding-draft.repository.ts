@@ -1,9 +1,10 @@
 import "server-only";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 import type { ApplicationTransaction } from "@/db/client";
 import { onboardingDrafts } from "@/db/schema";
+import { applyVerifiedAuditContext } from "@/features/audit/server";
 
 import { onboardingDraftSaveSchema } from "../../schemas/onboarding-draft-schema";
 import type {
@@ -76,6 +77,18 @@ export function createDrizzleOnboardingDraftRepository(): OnboardingDraftReposit
               .returning();
 
       if (savedRow) {
+        await applyVerifiedAuditContext(transaction, {
+          actorAccountId: input.accountId,
+          actorRole: input.role,
+          actorType: "USER",
+          source: "APPLICATION",
+          reason: "Save registration progress",
+          requestId: crypto.randomUUID(),
+        });
+        if (input.registrationStep)
+          await transaction.execute(
+            sql`select public.app_set_registration_step(${input.registrationStep}::public.registration_step)`,
+          );
         return {
           draft: toDraftDto(savedRow),
           kind: "saved",

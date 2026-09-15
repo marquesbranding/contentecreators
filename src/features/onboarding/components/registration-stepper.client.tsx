@@ -24,7 +24,14 @@ export function RegistrationStepper({
         {String(steps.length).padStart(2, "0")}
         {currentLabel ? ` · ${currentLabel}` : ""}
       </p>
-      <ol className="flex items-start" role="list">
+      <ol
+        className={
+          steps.length > 4
+            ? "grid grid-cols-3 gap-x-2 gap-y-4 sm:flex sm:items-start"
+            : "flex items-start"
+        }
+        role="list"
+      >
         {steps.map((step, index) => {
           const n = index + 1;
           const done = n < currentStep;
@@ -34,6 +41,7 @@ export function RegistrationStepper({
             <li
               className={cn(
                 "flex items-center",
+                steps.length > 4 && "justify-center sm:justify-start",
                 n < steps.length ? "flex-1" : "flex-none",
               )}
               key={step.label}
@@ -60,7 +68,7 @@ export function RegistrationStepper({
                 </span>
                 <span
                   className={cn(
-                    "text-[11px] whitespace-nowrap",
+                    "max-w-20 text-center text-[11px] sm:whitespace-nowrap",
                     active
                       ? "text-brand-blue font-bold"
                       : done
@@ -75,6 +83,7 @@ export function RegistrationStepper({
                 <div
                   className={cn(
                     "mx-1.5 mb-4 h-0.5 flex-1 rounded-full",
+                    steps.length > 4 && "hidden sm:block",
                     done ? "bg-brand-blue" : "bg-border",
                   )}
                 />

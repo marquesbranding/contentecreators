@@ -15,6 +15,7 @@ export interface AdminEmailOutboxSafeRow {
   dueAt: Date | string;
   id: string;
   maxAttempts: number;
+  recipientEmail: string;
   sentAt: Date | string | null;
   status: AdminEmailOutboxStatus;
   template: AdminEmailTemplate;
@@ -103,9 +104,7 @@ export function mapAdminEmailOutboxItem(
     dueAt: serializeDate(row.dueAt),
     id: row.id,
     maxAttempts: row.maxAttempts,
-    recipientReference: row.accountId
-      ? `Conta ${row.accountId.slice(-8).toLowerCase()}`
-      : "Destino do sistema",
+    recipientEmail: row.recipientEmail,
     reference: `E-mail #${row.id.slice(0, 8).toLowerCase()}`,
     retry: retryEligibility(row),
     status: row.status,

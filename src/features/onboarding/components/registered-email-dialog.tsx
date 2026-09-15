@@ -2,6 +2,7 @@
 
 import { LogIn } from "lucide-react";
 import Link from "next/link";
+import { GoogleAuthOption } from "@/features/identity/client";
 
 import { Button, buttonVariants } from "@/shared/components/ui/button";
 import {
@@ -18,24 +19,36 @@ export function RegisteredEmailDialog({
   onOpenChange,
   onUseAnotherEmail,
   open,
+  providers,
+  googleAction,
 }: {
   email: string;
   onOpenChange: (open: boolean) => void;
   onUseAnotherEmail: () => void;
   open: boolean;
+  providers?: ("email" | "google")[];
+  googleAction?: (data: FormData) => Promise<void>;
 }) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Você já tem cadastro</DialogTitle>
+          <DialogTitle>Você já possui um cadastro</DialogTitle>
           <DialogDescription>
-            O e-mail <strong className="text-foreground">{email}</strong> já
-            está cadastrado na Contente Creators. Faça login — com sua senha ou
-            com o Google — para acessar sua conta, acompanhar a análise e editar
-            seu perfil.
+            Encontramos uma conta com{" "}
+            <strong className="text-foreground break-all">{email}</strong>.
+            Acesse o login para entrar no sistema e continuar de onde parou.
           </DialogDescription>
         </DialogHeader>
+        {providers?.includes("google") && googleAction ? (
+          <GoogleAuthOption action={googleAction} />
+        ) : null}
+        <Link
+          className="text-brand-blue text-sm font-semibold"
+          href="/forgot-password"
+        >
+          Esqueci minha senha
+        </Link>
         <DialogFooter>
           <Button onClick={onUseAnotherEmail} type="button" variant="outline">
             Usar outro e-mail

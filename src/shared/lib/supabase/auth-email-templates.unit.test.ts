@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 const projectRoot = resolve(import.meta.dirname, "../../../../");
 const templateNames = [
   "confirmation",
+  "magic_link",
   "recovery",
   "invite",
   "email-change",
@@ -31,13 +32,17 @@ describe("local Supabase Auth email templates", () => {
           "{{ .SiteURL }}/reset-password?token_hash={{ .TokenHash }}&amp;type=recovery",
         );
         expect(html).not.toContain("{{ .ConfirmationURL }}");
+      } else if (
+        templateName === "confirmation" ||
+        templateName === "magic_link"
+      ) {
+        expect(html).toContain("{{ .Token }}");
+        expect(html).toContain("token_hash={{ .TokenHash }}&amp;type=email");
       } else {
         expect(html).toContain("{{ .ConfirmationURL }}");
       }
-      expect(html).not.toMatch(
-        /{{\s*\.(?:Token|Data|Email|NewEmail|OldEmail)\s*}}/,
-      );
-      if (templateName !== "recovery") {
+      expect(html).not.toMatch(/{{\s*\.(?:Data|Email|NewEmail|OldEmail)\s*}}/);
+      if (!["recovery", "confirmation", "magic_link"].includes(templateName)) {
         expect(html).not.toContain("{{ .TokenHash }}");
       }
       expect(html).not.toMatch(

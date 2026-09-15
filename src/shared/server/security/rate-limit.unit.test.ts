@@ -24,6 +24,8 @@ describe("privacy-safe rate limiting", () => {
       "cnpjLookup",
       "contactReveal",
       "passwordRecovery",
+      "registrationCodeResend",
+      "registrationCodeVerify",
       "registrationEmailCheck",
       "signUp",
     ]);

@@ -7,6 +7,7 @@ import type { AdminEmailOutboxListDto } from "../types/admin-email-outbox.types"
 import { AdminEmailOutboxResults } from "./admin-email-outbox-results";
 
 const retryAction = vi.fn(async () => ({ status: "success" as const }));
+const batchRetryAction = vi.fn(async () => ({ status: "success" as const }));
 const response: AdminEmailOutboxListDto = {
   counts: { DEAD_LETTER: 1, FAILED: 1, PENDING: 0 },
   items: [
@@ -16,7 +17,7 @@ const response: AdminEmailOutboxListDto = {
       dueAt: "2026-07-28T13:00:00.000Z",
       id: "90000000-0000-4000-8000-000000000001",
       maxAttempts: 5,
-      recipientReference: "Conta 00000001",
+      recipientEmail: "pessoa1@example.test",
       reference: "E-mail #90000000",
       retry: { eligible: true, reason: "ELIGIBLE" },
       status: "DEAD_LETTER",
@@ -29,7 +30,7 @@ const response: AdminEmailOutboxListDto = {
       dueAt: "2026-07-28T13:10:00.000Z",
       id: "91000000-0000-4000-8000-000000000002",
       maxAttempts: 5,
-      recipientReference: "Conta 00000002",
+      recipientEmail: "pessoa2@example.test",
       reference: "E-mail #91000000",
       retry: { eligible: false, reason: "AUTOMATIC_RETRY" },
       status: "FAILED",
@@ -47,7 +48,11 @@ function renderResults() {
         new QueryClient({ defaultOptions: { queries: { retry: false } } })
       }
     >
-      <AdminEmailOutboxResults response={response} retryAction={retryAction} />
+      <AdminEmailOutboxResults
+        batchRetryAction={batchRetryAction}
+        response={response}
+        retryAction={retryAction}
+      />
     </QueryClientProvider>,
   );
 }
@@ -62,7 +67,9 @@ describe("AdminEmailOutboxResults", () => {
     ]) {
       expect(within(presentation).getByText("Cadastro aprovado")).toBeVisible();
       expect(within(presentation).getByText("Falha definitiva")).toBeVisible();
-      expect(within(presentation).getByText("Conta 00000001")).toBeVisible();
+      expect(
+        within(presentation).getByText("pessoa1@example.test"),
+      ).toBeVisible();
       expect(
         within(presentation).getByText(/preservando a mesma mensagem/iu),
       ).toBeVisible();
@@ -73,7 +80,6 @@ describe("AdminEmailOutboxResults", () => {
       ).toBeVisible();
     }
 
-    expect(screen.queryByText(/@/u)).not.toBeInTheDocument();
     expect(
       screen.queryByText(/corpo|payload|idempotency/iu),
     ).not.toBeInTheDocument();
@@ -93,12 +99,41 @@ describe("AdminEmailOutboxResults", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("paginates without selecting or bulk-retrying messages", async () => {
+  it("selects only eligible messages and opens the batch retry dialog with the shared reason", async () => {
+    const user = userEvent.setup();
+    renderResults();
+    const table = screen.getByLabelText("E-mails operacionais em tabela");
+
+    expect(
+      within(table).queryByRole("checkbox", {
+        name: /selecionar e-mail #91000000/iu,
+      }),
+    ).not.toBeInTheDocument();
+
+    await user.click(
+      within(table).getByRole("checkbox", {
+        name: /selecionar e-mail #90000000/iu,
+      }),
+    );
+
+    expect(screen.getByText(/1 e-mails selecionados/iu)).toBeVisible();
+
+    await user.click(
+      screen.getByRole("button", { name: /reenviar 1 e-mails selecionados/iu }),
+    );
+
+    expect(screen.getByRole("dialog")).toHaveTextContent(
+      "pessoa1@example.test",
+    );
+  });
+
+  it("paginates independently of the current selection", async () => {
     const user = userEvent.setup();
     const onPageChange = vi.fn();
     render(
       <QueryClientProvider client={new QueryClient()}>
         <AdminEmailOutboxResults
+          batchRetryAction={batchRetryAction}
           onPageChange={onPageChange}
           response={{
             ...response,
@@ -114,8 +149,5 @@ describe("AdminEmailOutboxResults", () => {
 
     expect(onPageChange).toHaveBeenNthCalledWith(1, 1);
     expect(onPageChange).toHaveBeenNthCalledWith(2, 3);
-    expect(
-      screen.queryByRole("checkbox", { name: /selecionar/iu }),
-    ).not.toBeInTheDocument();
   });
 });

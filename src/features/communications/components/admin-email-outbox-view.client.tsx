@@ -35,6 +35,7 @@ import type {
   AdminEmailOutboxStatus,
   AdminEmailTemplate,
 } from "../types/admin-email-outbox.types";
+import type { AdminEmailBatchRetryAction } from "./admin-email-batch-retry-dialog.client";
 import { AdminEmailOutboxResults } from "./admin-email-outbox-results";
 import type { AdminEmailRetryAction } from "./admin-email-retry-dialog.client";
 
@@ -87,11 +88,13 @@ function SummaryCards({ data }: { data: AdminEmailOutboxListDto }) {
 }
 
 export function AdminEmailOutboxView({
+  batchRetryAction,
   filters,
   onFiltersChange,
   query,
   retryAction,
 }: {
+  batchRetryAction: AdminEmailBatchRetryAction;
   filters: AdminEmailOutboxFilters;
   onFiltersChange: (filters: AdminEmailOutboxFilters) => void;
   query: ListQuery;
@@ -111,8 +114,9 @@ export function AdminEmailOutboxView({
           E-mails operacionais
         </h1>
         <p className="text-muted-foreground max-w-3xl leading-7">
-          Acompanhe mensagens pendentes e falhas de entrega. Endereços e
-          conteúdo das mensagens permanecem protegidos nesta visualização.
+          Acompanhe mensagens pendentes e falhas de entrega. O destinatário é
+          exibido para conferência antes de qualquer reenvio; o conteúdo da
+          mensagem permanece protegido nesta visualização.
         </p>
       </div>
 
@@ -230,6 +234,8 @@ export function AdminEmailOutboxView({
 
       {query.status === "success" ? (
         <AdminEmailOutboxResults
+          batchRetryAction={batchRetryAction}
+          key={query.data.pagination.page}
           onPageChange={(page) => onFiltersChange({ ...filters, page })}
           response={query.data}
           retryAction={retryAction}
@@ -240,9 +246,11 @@ export function AdminEmailOutboxView({
 }
 
 export function AdminEmailOutboxScreen({
+  batchRetryAction,
   filters,
   retryAction,
 }: {
+  batchRetryAction: AdminEmailBatchRetryAction;
   filters: AdminEmailOutboxFilters;
   retryAction: AdminEmailRetryAction;
 }) {
@@ -251,6 +259,7 @@ export function AdminEmailOutboxScreen({
 
   return (
     <AdminEmailOutboxView
+      batchRetryAction={batchRetryAction}
       filters={filters}
       onFiltersChange={(nextFilters) => {
         router.replace(

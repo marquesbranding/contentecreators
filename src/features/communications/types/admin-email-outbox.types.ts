@@ -45,7 +45,7 @@ export interface AdminEmailOutboxItemDto {
   dueAt: string;
   id: string;
   maxAttempts: number;
-  recipientReference: string;
+  recipientEmail: string;
   reference: string;
   retry: AdminEmailRetryEligibility;
   status: AdminEmailOutboxStatus;

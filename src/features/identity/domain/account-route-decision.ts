@@ -4,13 +4,19 @@ import type {
 } from "../types/role-selection.types";
 
 interface AccountRouteInput {
+  registrationStep?:
+    "ACCOUNT_DETAILS" | "PROFILE" | "AUDIENCE" | "LOCATION_TERMS" | "SUBMITTED";
   role: ApplicationRole | null;
   status: ApplicationAccountStatus;
 }
 
-export function getAccountDestination({ role, status }: AccountRouteInput) {
+export function getAccountDestination({
+  role,
+  status,
+  registrationStep,
+}: AccountRouteInput) {
   if (!role) {
-    return "/onboarding/role";
+    return "/onboarding/account";
   }
 
   if (role === "ADMIN") {
@@ -38,5 +44,9 @@ export function getAccountDestination({ role, status }: AccountRouteInput) {
 
   return status === "CHANGES_REQUESTED"
     ? `${onboardingPath}?corrections=requested`
-    : onboardingPath;
+    : registrationStep === "AUDIENCE"
+      ? `${onboardingPath}?step=audience`
+      : registrationStep === "LOCATION_TERMS"
+        ? `${onboardingPath}?step=location`
+        : onboardingPath;
 }

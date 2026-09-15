@@ -6,6 +6,8 @@ import type {
 export interface CurrentAccountDto {
   id: string;
   role: ApplicationRole;
+  registrationStep?:
+    "ACCOUNT_DETAILS" | "PROFILE" | "AUDIENCE" | "LOCATION_TERMS" | "SUBMITTED";
   status: ApplicationAccountStatus;
 }
 

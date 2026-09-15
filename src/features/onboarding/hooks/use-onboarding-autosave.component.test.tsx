@@ -20,6 +20,14 @@ function AutosaveHarness({ action }: { action: OnboardingDraftAction }) {
         <input defaultValue="NaoPersistir123" name="password" />
         <input defaultChecked name="termsAccepted" type="checkbox" />
       </form>
+      <button
+        onClick={() => {
+          if (formRef.current)
+            void autosave.saveStep(formRef.current, "AUDIENCE");
+        }}
+      >
+        Próxima etapa
+      </button>
       <output>{autosave.status.message}</output>
       <span>{autosave.hasUnsavedChanges ? "pendente" : "sincronizado"}</span>
     </>
@@ -27,6 +35,56 @@ function AutosaveHarness({ action }: { action: OnboardingDraftAction }) {
 }
 
 describe("useOnboardingAutosave", () => {
+  it("flushes edits made while a stage save is still in flight", async () => {
+    vi.useFakeTimers();
+    let resolveFirst!: (
+      value: Awaited<ReturnType<OnboardingDraftAction>>,
+    ) => void;
+    const action = vi
+      .fn<OnboardingDraftAction>()
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveFirst = resolve;
+          }),
+      )
+      .mockResolvedValueOnce({
+        kind: "saved",
+        draft: {
+          role: "INFLUENCER",
+          payload: { displayName: "Nome atualizado" },
+          version: 2,
+          updatedAt: "2026-09-15T12:00:00.000Z",
+        },
+      });
+    render(<AutosaveHarness action={action} />);
+    fireEvent.input(screen.getByLabelText("Nome de creator"), {
+      target: { value: "Nome inicial" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Próxima etapa" }));
+    fireEvent.input(screen.getByLabelText("Nome de creator"), {
+      target: { value: "Nome atualizado" },
+    });
+    await act(() => vi.advanceTimersByTimeAsync(900));
+    await act(async () =>
+      resolveFirst({
+        kind: "saved",
+        draft: {
+          role: "INFLUENCER",
+          payload: { displayName: "Nome inicial" },
+          version: 1,
+          updatedAt: "2026-09-15T12:00:00.000Z",
+        },
+      }),
+    );
+    expect(action).toHaveBeenLastCalledWith({
+      expectedVersion: 1,
+      registrationStep: "AUDIENCE",
+      role: "INFLUENCER",
+      payload: { displayName: "Nome atualizado" },
+    });
+    expect(screen.getByText("sincronizado")).toBeInTheDocument();
+  });
   afterEach(() => {
     vi.useRealTimers();
   });

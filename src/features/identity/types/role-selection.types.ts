@@ -12,6 +12,8 @@ export type ApplicationAccountStatus =
 export interface IdentityAccountSummary {
   id: string;
   role: ApplicationRole | null;
+  registrationStep?:
+    "ACCOUNT_DETAILS" | "PROFILE" | "AUDIENCE" | "LOCATION_TERMS" | "SUBMITTED";
   status: ApplicationAccountStatus;
 }
 

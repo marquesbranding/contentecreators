@@ -185,7 +185,7 @@ describe("combined registration form", () => {
     await user.tab();
 
     const dialog = await screen.findByRole("dialog", {
-      name: "Você já tem cadastro",
+      name: "Você já possui um cadastro",
     });
     expect(dialog).toHaveTextContent("vevox@example.com");
     expect(

@@ -38,3 +38,7 @@ never a security boundary.
 4. Is a command exposed by only one transport?
 5. Could this Zustand field live in local state, the URL, a form, or TanStack
    Query instead? If yes, it must.
+
+# Registration state
+
+The database owns `accounts.registration_step` and the versioned onboarding draft. Navigation saves both in one transaction before changing the visible step. Short-lived HttpOnly cookies hold the email awaiting verification and registration intent; email addresses never appear in registration URLs. Component state owns OTP input, resend countdown and dialog visibility. Supabase owns sessions and passwords; passwords never enter drafts.

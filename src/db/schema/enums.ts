@@ -1,5 +1,13 @@
 import { pgEnum } from "drizzle-orm/pg-core";
 
+export const registrationStepEnum = pgEnum("registration_step", [
+  "ACCOUNT_DETAILS",
+  "PROFILE",
+  "AUDIENCE",
+  "LOCATION_TERMS",
+  "SUBMITTED",
+]);
+
 export const accountRoleEnum = pgEnum("account_role", [
   "ADMIN",
   "INFLUENCER",

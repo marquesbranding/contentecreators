@@ -26,6 +26,7 @@ function toAccountSummary(
     id: account.id,
     role: account.role,
     status: account.status,
+    registrationStep: account.registrationStep,
   };
 }
 
@@ -83,6 +84,9 @@ export function createDrizzleRoleSelectionRepository(
           source: "AUTH_HOOK",
         },
         async (transaction) => {
+          await transaction.execute(
+            sql`select pg_advisory_xact_lock(hashtextextended(${identityId}, 0))`,
+          );
           const identityAccounts = await findAccountsForIdentity(
             transaction,
             identityId,

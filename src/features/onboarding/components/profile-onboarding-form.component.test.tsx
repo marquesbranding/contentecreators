@@ -78,6 +78,7 @@ describe("ProfileOnboardingForm correction mode", () => {
     render(
       <QueryTestProvider client={createQueryTestClient()}>
         <ProfileOnboardingForm
+          initialStep="location"
           action={vi.fn(async () => ({ status: "idle" as const }))}
           draftAction={vi.fn(async () => ({
             kind: "unavailable" as const,

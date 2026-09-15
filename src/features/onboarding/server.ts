@@ -28,8 +28,6 @@ export type {
   AdminProfileTargetRepository,
 } from "./server/services/admin-profile-edit.service";
 export {
-  checkRegistrationEmailAction,
-  registerWithEmailAction,
   resendPreparedRegistrationConfirmationAction,
   submitGoogleProfileAction,
 } from "./server/actions/onboarding.actions";
@@ -44,3 +42,14 @@ export {
   persistCurrentAccountProfileCompletion,
   persistProfileCompletionDirect,
 } from "./server/repositories/drizzle-profile-completion.repository";
+
+export {
+  startEmailRegistrationAction,
+  checkRegistrationStartEmailAction,
+  verifyRegistrationCodeAction,
+  resendRegistrationCodeAction,
+} from "./server/actions/registration-start.actions";
+export { saveRegistrationAccountAction } from "./server/actions/registration-account.actions";
+
+export { submitOnboardingProfileAction } from "./server/actions/onboarding.actions";
+export { RegistrationReview } from "./server/components/registration-review";

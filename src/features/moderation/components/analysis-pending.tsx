@@ -8,6 +8,9 @@ import {
   LogOut,
 } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { useBackofficeAccess } from "@/features/identity";
 import { BrandLogo } from "@/shared/components/brand-logo";
@@ -25,14 +28,28 @@ import { cn } from "@/shared/lib/cn";
 
 export function AnalysisPending({
   emailConfirmed = false,
+  email,
   mediaSection,
+  reviewSection,
   signOutAction,
 }: {
   emailConfirmed?: boolean;
+  email?: string;
   mediaSection?: React.ReactNode;
+  reviewSection?: React.ReactNode;
   signOutAction: () => Promise<void>;
 }) {
   const hasBackofficeAccess = useBackofficeAccess();
+  const router = useRouter();
+  const notified = useRef(false);
+  const [showConfirmation] = useState(emailConfirmed);
+  useEffect(() => {
+    if (emailConfirmed && !notified.current) {
+      notified.current = true;
+      toast.success("Cadastro enviado para análise");
+      router.replace("/app/status/analysis", { scroll: false });
+    }
+  }, [emailConfirmed, router]);
 
   return (
     <main
@@ -48,9 +65,7 @@ export function AnalysisPending({
         {mediaSection}
         <Card className="gap-0 overflow-hidden rounded-3xl py-0 shadow-[0_28px_80px_rgba(8,8,8,0.1)]">
           <CardHeader className="items-start gap-4 border-b px-6 py-7 sm:px-9 sm:py-9">
-            <span className="bg-brand-night rounded-md">
-              <BrandLogo />
-            </span>
+            <BrandLogo background="transparent" variant="blue" />
             <Badge className="gap-2 rounded-full" variant="secondary">
               <Clock3 aria-hidden="true" />
               Análise em andamento
@@ -64,16 +79,25 @@ export function AnalysisPending({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 px-6 py-7 sm:px-9">
-            {emailConfirmed ? (
+            {showConfirmation ? (
               <div className="flex gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-950">
                 <CheckCircle2
                   aria-hidden="true"
                   className="mt-0.5 size-5 shrink-0 text-emerald-600"
                 />
-                <div>
-                  <strong className="text-sm">E-mail confirmado</strong>
+                <div className="min-w-0">
+                  <strong className="text-sm">
+                    Cadastro enviado para análise
+                  </strong>
                   <p className="mt-1 text-sm leading-5 text-emerald-800">
-                    Seu cadastro foi enviado para análise.
+                    Você receberá um e-mail
+                    {email ? (
+                      <>
+                        {" "}
+                        em <strong className="break-all">{email}</strong>
+                      </>
+                    ) : null}{" "}
+                    assim que a análise terminar.
                   </p>
                 </div>
               </div>
@@ -109,6 +133,10 @@ export function AnalysisPending({
               necessárias correções, o formulário será reaberto com as
               orientações.
             </p>
+            <Link className={buttonVariants({ variant: "outline" })} href="/">
+              Ir para a página inicial
+            </Link>
+            {reviewSection}
             <div className="grid gap-3 sm:grid-cols-2">
               {hasBackofficeAccess ? (
                 <Link

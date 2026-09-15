@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import type { Metadata } from "next";
 
 import { AuthPageShell, LoginForm } from "@/features/identity";
@@ -41,6 +42,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       title="Entre na sua conta"
     >
       <LoginForm
+        initialEmail={(await cookies()).get("cc_login_email")?.value}
         googleAction={startGoogleSignInAction}
         initialMessage={error ? errorMessages[error] : undefined}
         initialNextPath={nextPath}

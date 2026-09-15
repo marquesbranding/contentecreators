@@ -18,7 +18,7 @@ import {
   loadCurrentPreparedCompanyProfile,
   loadCurrentCorrectionContext,
   saveOnboardingDraftAction,
-  submitGoogleProfileAction,
+  submitOnboardingProfileAction,
 } from "@/features/onboarding/server";
 
 export const metadata: Metadata = {
@@ -34,7 +34,10 @@ export default async function CompanyOnboardingPage() {
   }
   const correctionRequested =
     decision.destination === "/onboarding/company?corrections=requested";
-  if (decision.destination !== "/onboarding/company" && !correctionRequested) {
+  if (
+    !decision.destination.startsWith("/onboarding/company") &&
+    !correctionRequested
+  ) {
     redirect(decision.destination);
   }
   const [initialDraft, mediaFormState, preparedProfile] = await Promise.all([
@@ -61,17 +64,31 @@ export default async function CompanyOnboardingPage() {
 
   return (
     <OnboardingFormShell
-      currentStep={2}
+      showProgress={correctionRequested}
+      currentStep={
+        decision.destination.includes("step=audience")
+          ? 5
+          : decision.destination.includes("step=location")
+            ? 6
+            : 4
+      }
       description="Complete os dados da empresa. Ao enviar, o cadastro ficará aguardando a revisão da nossa equipe."
       correctionReason={correctionContext?.reason}
       correctionRequested={correctionRequested}
       correctionRequestedFields={correctionContext?.requestedFields}
       progressLabel="Dados da empresa"
       title="Conte sobre a sua empresa"
-      totalSteps={2}
+      totalSteps={6}
     >
       <ProfileOnboardingForm
-        action={submitGoogleProfileAction}
+        initialStep={
+          decision.destination.includes("step=audience")
+            ? "audience"
+            : decision.destination.includes("step=location")
+              ? "location"
+              : "profile"
+        }
+        action={submitOnboardingProfileAction}
         correctionCommand={correctionContext?.command}
         draftAction={saveOnboardingDraftAction}
         initialDraft={initialDraft}
