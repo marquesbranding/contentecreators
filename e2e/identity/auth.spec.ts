@@ -1,6 +1,36 @@
+import postgres from "postgres";
 import { expect, test } from "@playwright/test";
 
 import { getBlockingAccessibilityViolations } from "../../src/test/accessibility";
+import {
+  acceptanceEmail,
+  cleanupAcceptanceIdentity,
+  seedRolelessAcceptanceIdentity,
+} from "../support/local-acceptance";
+
+async function readAccessCode(email: string) {
+  let code: string | undefined;
+  await expect
+    .poll(
+      async () => {
+        const inbox = await (
+          await fetch(
+            `http://127.0.0.1:54324/api/v1/search?query=${encodeURIComponent(`to:${email}`)}`,
+          )
+        ).json();
+        const message = inbox.messages?.[0];
+        if (!message) return false;
+        const body = await (
+          await fetch(`http://127.0.0.1:54324/api/v1/message/${message.ID}`)
+        ).json();
+        code = (body.HTML as string).match(/>\s*(\d{6})\s*</)?.[1];
+        return Boolean(code);
+      },
+      { timeout: 15_000 },
+    )
+    .toBe(true);
+  return code!;
+}
 
 test.describe("identity and first-access routes", () => {
   test("renders supported login methods and recovery navigation", async ({
@@ -63,21 +93,18 @@ test.describe("identity and first-access routes", () => {
     ).toHaveCSS("color", "rgb(199, 44, 65)");
 
     await page.goto("/sign-up");
-    await page
-      .getByRole("button", { name: "Criar conta e enviar perfil" })
-      .click();
+    const continueButton = page.getByRole("button", {
+      name: "Continuar",
+      exact: true,
+    });
 
-    await expect(
-      page.getByRole("radiogroup", {
-        name: "Como você vai usar a plataforma?",
-      }),
-    ).toHaveAttribute("aria-invalid", "true");
-    await expect(
-      page.getByRole("radio", { name: /sou creator/iu }),
-    ).toBeFocused();
-    await expect(page.locator("#registration-role-error")).toHaveText(
-      "Escolha como você vai usar a plataforma.",
-    );
+    await expect(continueButton).toBeDisabled();
+    await page.getByLabel("E-mail", { exact: true }).fill("not-an-email");
+    await expect(continueButton).toBeDisabled();
+    await page
+      .getByLabel("E-mail", { exact: true })
+      .fill(acceptanceEmail("required-field-check"));
+    await expect(continueButton).toBeEnabled();
   });
 
   test("validates touched fields and keeps password controls usable on mobile", async ({
@@ -111,54 +138,118 @@ test.describe("identity and first-access routes", () => {
     await visibilityButton.click();
     await expect(password).toHaveAttribute("type", "text");
 
-    await page.goto("/sign-up?intent=influencer");
-    const registrationVisibilityButtons = page.getByRole("button", {
-      name: "Mostrar senha",
-    });
+    const registrationEmail = acceptanceEmail("mobile-password-visibility");
+    const database = postgres(
+      "postgresql://postgres:postgres@127.0.0.1:54322/postgres",
+      { max: 1 },
+    );
+    try {
+      await seedRolelessAcceptanceIdentity(registrationEmail);
+      await database`update auth.users set encrypted_password = '' where email = ${registrationEmail}`;
+      await page.goto("/login");
+      await page
+        .getByLabel("E-mail", { exact: true })
+        .fill(registrationEmail);
+      await page.getByLabel("Senha", { exact: true }).fill("Unknown123!");
+      await page.getByRole("button", { name: "Entrar", exact: true }).click();
+      await expect(page).toHaveURL(/\/sign-up\/verify$/);
+      await page
+        .getByLabel("Código de 6 dígitos")
+        .fill(await readAccessCode(registrationEmail));
+      await page
+        .getByRole("button", { name: "Confirmar", exact: true })
+        .click();
+      await expect(page).toHaveURL(/\/onboarding\/account$/);
 
-    await expect(registrationVisibilityButtons).toHaveCount(2);
-    await expect(registrationVisibilityButtons.first()).toBeVisible();
-    await expect(registrationVisibilityButtons.last()).toBeVisible();
+      const registrationVisibilityButtons = page.getByRole("button", {
+        name: "Mostrar senha",
+      });
+
+      await expect(registrationVisibilityButtons).toHaveCount(2);
+      await expect(registrationVisibilityButtons.first()).toBeVisible();
+      await expect(registrationVisibilityButtons.last()).toBeVisible();
+    } finally {
+      await database.end();
+      await cleanupAcceptanceIdentity(registrationEmail);
+    }
   });
 
   test("opens the complete company variant from landing intent", async ({
     page,
   }) => {
-    await page.goto("/sign-up?intent=company");
+    const email = acceptanceEmail("company-landing-intent");
+    try {
+      await page.goto("/sign-up?intent=company");
+      await page.getByLabel("E-mail", { exact: true }).fill(email);
+      await page
+        .getByRole("button", { name: "Continuar", exact: true })
+        .click();
+      await expect(page).toHaveURL(/\/sign-up\/verify$/);
+      await page
+        .getByLabel("Código de 6 dígitos")
+        .fill(await readAccessCode(email));
+      await page
+        .getByRole("button", { name: "Confirmar", exact: true })
+        .click();
+      await expect(page).toHaveURL(/\/onboarding\/account$/);
 
-    await expect(
-      page.getByRole("heading", {
-        level: 1,
-        name: "Crie sua conta e seu perfil",
-      }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("radio", { name: /sou empresa/iu }),
-    ).toBeChecked();
-    await expect(page.getByLabel("CNPJ")).toBeVisible();
-    await expect(page.getByLabel("Razão social")).toBeVisible();
-    await expect(page.getByLabel("Nome de creator")).toHaveCount(0);
-    await expect(
-      page
-        .getByRole("button", { name: "Continuar com o Google" })
-        .locator("xpath=ancestor::form")
-        .locator('input[name="role"]'),
-    ).toHaveCount(0);
-    await expect(page.getByText("ADMIN", { exact: true })).toHaveCount(0);
+      await expect(
+        page.getByRole("radio", { name: "Sou empresa", exact: true }),
+      ).toBeChecked();
+      await expect(page.getByLabel("CNPJ")).toHaveCount(0);
+      await expect(page.getByLabel("Nome de creator")).toHaveCount(0);
+
+      await page
+        .getByLabel("Nome completo", { exact: true })
+        .fill("Responsável pela Empresa");
+      await page.getByLabel("Senha", { exact: true }).fill("LocalTest123!");
+      await page
+        .getByLabel("Confirmar senha", { exact: true })
+        .fill("LocalTest123!");
+      await page.getByLabel("WhatsApp com DDD").fill("11988887777");
+      await page
+        .getByRole("button", { name: "Continuar para o perfil" })
+        .click();
+      await expect(page).toHaveURL(/\/onboarding\/company$/);
+      await expect(page.getByLabel("CNPJ")).toBeVisible();
+      await expect(page.getByLabel("Razão social")).toBeVisible();
+    } finally {
+      await cleanupAcceptanceIdentity(email);
+    }
   });
 
-  test("switches role-specific fields inside the same registration request", async ({
+  test("switches account type inside the registration account step", async ({
     page,
   }) => {
-    await page.goto("/sign-up?intent=influencer");
+    const email = acceptanceEmail("account-type-switch");
+    try {
+      await seedRolelessAcceptanceIdentity(email);
+      await page.goto("/login");
+      await page.getByLabel("E-mail", { exact: true }).fill(email);
+      await page.getByLabel("Senha", { exact: true }).fill("LocalTest123!");
+      await page.getByRole("button", { name: "Entrar", exact: true }).click();
+      await expect(page).toHaveURL(/\/onboarding\/account$/);
 
-    await expect(page.getByLabel("Nome de creator")).toBeVisible();
-    await page.getByText("Sou empresa", { exact: true }).click();
-    await expect(
-      page.getByRole("radio", { name: /sou empresa/iu }),
-    ).toBeChecked();
-    await expect(page.getByLabel("CNPJ")).toBeVisible();
-    await expect(page.getByLabel("Nome de creator")).toHaveCount(0);
+      await page
+        .getByRole("radio", { name: "Sou empresa", exact: true })
+        .check();
+      await expect(
+        page.getByRole("radio", { name: "Sou empresa", exact: true }),
+      ).toBeChecked();
+      await expect(page.getByLabel("CNPJ")).toHaveCount(0);
+
+      await page
+        .getByRole("radio", { name: "Sou influencer", exact: true })
+        .check();
+      await expect(
+        page.getByRole("radio", { name: "Sou influencer", exact: true }),
+      ).toBeChecked();
+      await expect(
+        page.getByRole("radio", { name: "Sou empresa", exact: true }),
+      ).not.toBeChecked();
+    } finally {
+      await cleanupAcceptanceIdentity(email);
+    }
   });
 
   test("redirects anonymous protected access and rejects an empty callback", async ({

@@ -133,20 +133,13 @@ export function AnalysisPending({
               necessárias correções, o formulário será reaberto com as
               orientações.
             </p>
-            <Link className={buttonVariants({ variant: "outline" })} href="/">
-              Ir para a página inicial
-            </Link>
-            {reviewSection}
             <div className="grid gap-3 sm:grid-cols-2">
-              {hasBackofficeAccess ? (
-                <Link
-                  className={cn(buttonVariants({ variant: "outline" }))}
-                  href="/backoffice"
-                >
-                  <ArrowLeft aria-hidden="true" />
-                  Acessar backoffice
-                </Link>
-              ) : null}
+              <Link
+                className={cn(buttonVariants({ variant: "outline" }), "w-full")}
+                href="/"
+              >
+                Ir para a página inicial
+              </Link>
               <form action={signOutAction}>
                 <FormStatusSubmitButton
                   className="w-full"
@@ -158,6 +151,19 @@ export function AnalysisPending({
                 </FormStatusSubmitButton>
               </form>
             </div>
+            {reviewSection}
+            {hasBackofficeAccess ? (
+              <Link
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "w-full",
+                )}
+                href="/backoffice"
+              >
+                <ArrowLeft aria-hidden="true" />
+                Acessar backoffice
+              </Link>
+            ) : null}
           </CardContent>
         </Card>
       </div>

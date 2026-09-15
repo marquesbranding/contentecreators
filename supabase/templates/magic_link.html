@@ -55,10 +55,38 @@
                   Falta apenas confirmar seu e-mail para continuar o cadastro na
                   Contente Creators.
                 </p>
-                <p
-                  style="font-size: 32px; font-weight: 700; letter-spacing: 8px"
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin: 0 0 8px"
                 >
-                  {{ .Token }}
+                  <tr>
+                    <td
+                      style="
+                        border: 1px dashed #d4d4d8;
+                        border-radius: 12px;
+                        background: #fafafa;
+                        padding: 14px 20px;
+                        font-family: 'Courier New', Courier, monospace;
+                        font-size: 32px;
+                        font-weight: 700;
+                        letter-spacing: 8px;
+                      "
+                    >
+                      {{ .Token }}
+                    </td>
+                  </tr>
+                </table>
+                <p
+                  style="
+                    margin: 0 0 24px;
+                    color: #71717a;
+                    font-size: 13px;
+                    line-height: 1.5;
+                  "
+                >
+                  Toque e segure o código para copiá-lo.
                 </p>
                 <a
                   href="{{ .SiteURL }}/auth/callback?next=/sign-up/account&amp;token_hash={{ .TokenHash }}&amp;type=email"

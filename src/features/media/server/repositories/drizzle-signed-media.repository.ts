@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 
 import { mediaAssets } from "@/db/schema";
 import {
@@ -42,13 +42,14 @@ export function createDrizzleSignedMediaRepository({
               mimeType: mediaAssets.mimeType,
               objectPath: mediaAssets.objectPath,
               ownerAccountId: mediaAssets.ownerAccountId,
+              status: mediaAssets.status,
               width: mediaAssets.width,
             })
             .from(mediaAssets)
             .where(
               and(
                 eq(mediaAssets.id, assetId),
-                eq(mediaAssets.status, "ACTIVE"),
+                inArray(mediaAssets.status, ["ACTIVE", "PENDING"]),
                 isNull(mediaAssets.archivedAt),
               ),
             )
@@ -63,7 +64,11 @@ export function createDrizzleSignedMediaRepository({
             ownsMedia &&
             context.status !== "SUSPENDED" &&
             context.status !== "BANNED";
-          const canReadAuthorizedMedia = context.status === "APPROVED";
+          // A PENDING asset is only staged, never yet reviewed or published:
+          // never let the APPROVED-context sharing rule surface it to anyone
+          // but the owner still finishing their own upload.
+          const canReadAuthorizedMedia =
+            media.status === "ACTIVE" && context.status === "APPROVED";
 
           if (!canReadOwnMedia && !canReadAuthorizedMedia) {
             return null;
