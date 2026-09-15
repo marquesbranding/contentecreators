@@ -16,7 +16,7 @@ function ComboboxInputGroup({
     <ComboboxPrimitive.InputGroup
       data-slot="combobox-input-group"
       className={cn(
-        "border-input has-[[data-slot=combobox-input]:focus-visible]:border-ring has-[[data-slot=combobox-input]:focus-visible]:ring-ring/50 has-[[data-slot=combobox-input][aria-invalid=true]]:border-destructive has-[[data-slot=combobox-input][aria-invalid=true]]:ring-destructive/20 dark:bg-input/30 dark:hover:bg-input/50 flex min-h-9 w-full flex-wrap items-center gap-1.5 rounded-lg border bg-transparent py-1 pr-2 pl-2.5 text-sm transition-colors outline-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-[[data-slot=combobox-input]:focus-visible]:ring-3 has-[[data-slot=combobox-input][aria-invalid=true]]:ring-3 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "border-input has-[[data-slot=combobox-input]:focus-visible]:border-ring has-[[data-slot=combobox-input]:focus-visible]:ring-ring/50 has-[[data-slot=combobox-input][aria-invalid=true]]:border-destructive has-[[data-slot=combobox-input][aria-invalid=true]]:ring-destructive/20 dark:bg-input/30 dark:hover:bg-input/50 flex min-h-11 w-full flex-wrap items-center gap-1.5 rounded-lg border bg-transparent py-1 pr-2 pl-2.5 text-sm transition-colors outline-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-[[data-slot=combobox-input]:focus-visible]:ring-3 has-[[data-slot=combobox-input][aria-invalid=true]]:ring-3 lg:min-h-9 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
       {...props}
@@ -29,7 +29,7 @@ function ComboboxInput({ className, ...props }: ComboboxPrimitive.Input.Props) {
     <ComboboxPrimitive.Input
       data-slot="combobox-input"
       className={cn(
-        "placeholder:text-muted-foreground h-full min-w-8 flex-1 bg-transparent text-sm outline-none disabled:cursor-not-allowed",
+        "placeholder:text-muted-foreground h-full min-w-8 flex-1 bg-transparent text-base outline-none disabled:cursor-not-allowed lg:text-sm",
         "[[data-slot=combobox-chips]_&]:min-w-16 [[data-slot=combobox-chips]_&]:basis-16",
         className,
       )}

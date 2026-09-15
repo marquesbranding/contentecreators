@@ -11,6 +11,7 @@ import {
 import { createServerSupabaseClient } from "@/shared/server/supabase/server-client";
 import { createRegistrationIdentityRepository } from "../repositories/registration-identity.repository";
 import { getAccountDestination } from "../../domain/account-route-decision";
+import { shouldUseSecureCookies } from "@/shared/server/security/secure-cookies";
 
 export async function consumeRegistrationLimit(
   email: string,
@@ -58,7 +59,7 @@ export async function sendRegistrationCode(
   cookieStore.set("cc_signup_email", email, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: shouldUseSecureCookies(),
     path: "/",
     maxAge: 1800,
   });

@@ -127,7 +127,7 @@ function CatalogHeaderSearch({
       />
       <Button
         aria-label="Buscar no catálogo"
-        className="absolute top-1/2 right-1 size-9 -translate-y-1/2 rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+        className="absolute top-1/2 right-0 size-11 -translate-y-1/2 rounded-full text-white/70 hover:bg-white/10 hover:text-white lg:right-1 lg:size-9"
         disabled={isPending}
         size="icon"
         type="submit"

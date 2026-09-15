@@ -13,6 +13,7 @@ import { createServerSupabaseClient } from "@/shared/server/supabase/server-clie
 import { toUserFacingError } from "@/shared/lib/errors/user-facing-error";
 import type { RegistrationStepState } from "../../types/registration-step.types";
 import { createServerRegistrationStartService } from "../services/server-registration-start.service";
+import { shouldUseSecureCookies } from "@/shared/server/security/secure-cookies";
 
 function failure(error: unknown): RegistrationStepState {
   const mapped = toUserFacingError(error, {
@@ -38,7 +39,7 @@ export async function checkRegistrationStartEmailAction(
       (await cookies()).set("cc_login_email", result.email, {
         httpOnly: true,
         sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
+        secure: shouldUseSecureCookies(),
         path: "/",
         maxAge: 1800,
       });
@@ -61,7 +62,7 @@ export async function startEmailRegistrationAction(
     const options = {
       httpOnly: true,
       sameSite: "lax" as const,
-      secure: process.env.NODE_ENV === "production",
+      secure: shouldUseSecureCookies(),
       path: "/",
       maxAge: 1800,
     };

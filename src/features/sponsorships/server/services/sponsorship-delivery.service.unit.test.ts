@@ -173,6 +173,38 @@ describe("sponsorship delivery service", () => {
     ).resolves.toEqual([]);
   });
 
+  it("backfills a slot when the top placement's media can no longer be signed", async () => {
+    const brokenAssetId = "40000000-0000-4000-8000-000000000002";
+    const broken: SponsorshipDeliveryCandidateRecord = {
+      ...genericCandidate,
+      media: { ...genericCandidate.media!, id: brokenAssetId },
+      placement: {
+        ...genericCandidate.placement,
+        creativeAssetId: brokenAssetId,
+        id: "50000000-0000-4000-8000-000000000002",
+        sortOrder: 0,
+      },
+    };
+    const service = createSponsorshipDeliveryService({
+      repository: repository([broken, genericCandidate]),
+      resolveSignedMedia: vi.fn(async (id: string) =>
+        id === brokenAssetId
+          ? null
+          : {
+              height: 600,
+              url: "https://storage.example.test/ok",
+              width: 1200,
+            },
+      ),
+    });
+
+    const result = await service.load({ ...query, limit: 1 });
+
+    expect(result.map((placement) => placement.id)).toEqual([
+      genericCandidate.placement.id,
+    ]);
+  });
+
   it("binds a featured creator avatar signature to its eligible placement", async () => {
     const featuredProfileId = "70000000-0000-4000-8000-000000000001";
     const avatarAssetId = "80000000-0000-4000-8000-000000000001";

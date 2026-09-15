@@ -27,6 +27,7 @@ import type { AuthActionState, AuthFieldName } from "../../types/auth.types";
 import { createServerBackofficeAuthService } from "../services/server-backoffice-auth.service";
 import { createServerBannedAccountDefenseService } from "../services/server-banned-account-defense.service";
 import { createServerIdentityAuthService } from "../services/server-identity-auth.service";
+import { shouldUseSecureCookies } from "@/shared/server/security/secure-cookies";
 
 function formValue(formData: FormData, key: string) {
   return formData.get(key);
@@ -271,7 +272,7 @@ export async function startGoogleSignInAction(
     (await cookies()).set("cc_signup_intent", rawIntent, {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: shouldUseSecureCookies(),
       path: "/",
       maxAge: 1800,
     });
