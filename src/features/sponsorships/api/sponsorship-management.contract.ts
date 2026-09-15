@@ -107,7 +107,15 @@ export const sponsorshipPlacementWriteSchema = z
     linkLabel: z.string().trim().min(1).max(80).nullable(),
     linkUrl: safeSponsorshipLinkSchema.nullable(),
     placementType: sponsorshipPlacementTypeSchema,
-    reason: z.string().trim().min(8).max(500),
+    reason: z
+      .string()
+      .trim()
+      .max(500)
+      .refine(
+        (value) => !value || value.length >= 3,
+        "Use pelo menos 3 caracteres na nota.",
+      )
+      .default(""),
     slotKey: z
       .string()
       .trim()

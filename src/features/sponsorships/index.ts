@@ -71,3 +71,8 @@ export type {
   SponsorshipLinkViewModel,
   SponsorshipMediaViewModel,
 } from "./components/sponsorship-presentation";
+
+export {
+  getPlacementSlot,
+  placementSlotCatalog,
+} from "./domain/placement-slot-catalog";

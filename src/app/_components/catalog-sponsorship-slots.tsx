@@ -46,6 +46,7 @@ function toCreativeViewModel(
 ): SponsorshipCreativeViewModel {
   return {
     audienceMatches: true,
+    advertiserLabel: placement.advertiserLabel,
     body: placement.body,
     eligible: placement.eligible,
     id: placement.id,

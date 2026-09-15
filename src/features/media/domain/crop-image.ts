@@ -54,11 +54,18 @@ export async function cropImageFile(
   file: File,
   purpose: MediaPurpose,
   settings: ImageCropSettings,
+  requestedAspectRatio?: number,
 ): Promise<File> {
   const image = await createImageBitmap(file);
 
   try {
-    const aspectRatio = aspectRatioByPurpose[purpose];
+    const aspectRatio =
+      purpose === "SPONSORSHIP_CREATIVE" &&
+      requestedAspectRatio &&
+      Number.isFinite(requestedAspectRatio) &&
+      requestedAspectRatio > 0
+        ? requestedAspectRatio
+        : aspectRatioByPurpose[purpose];
     const sourceAspectRatio = image.width / image.height;
     const baseCropWidth =
       sourceAspectRatio > aspectRatio

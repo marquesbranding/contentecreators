@@ -10,6 +10,8 @@ import type {
 } from "../types/media-upload.types";
 
 export interface HeaderMediaSlotConfig {
+  cropAspectRatio?: number;
+  cropAspectClassName?: string;
   /** When set, a hidden input with this name carries the asset id for a form
    * that doesn't activate the upload immediately (onboarding, pre-submit). */
   assetIdFieldName?: string;
@@ -41,6 +43,7 @@ export function useHeaderMediaSlot({
     actions,
     activateOnUpload,
     currentAssetId: assetId,
+    cropAspectRatio: slot.cropAspectRatio,
     onComplete: (nextAssetId) => {
       setAssetId(nextAssetId);
       toast.success(`${slot.label} atualizada.`);

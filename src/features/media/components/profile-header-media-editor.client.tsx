@@ -74,7 +74,9 @@ export function CropDialog({
         </DialogHeader>
 
         <MediaCropFields
-          aspectClassName={cropAspectByPurpose[slot.purpose]}
+          aspectClassName={
+            slot.cropAspectClassName ?? cropAspectByPurpose[slot.purpose]
+          }
           crop={state.upload.crop}
           displayFrames={
             slot.purpose === "COVER" ? coverDisplayFrames : undefined

@@ -64,3 +64,34 @@ describe("public sponsorship promotion API", () => {
     ).resolves.toBeNull();
   });
 });
+
+describe("public sponsorship advertiser and responsive variants", () => {
+  it("keeps the sponsor and validated mobile/tablet media in the renderer DTO", async () => {
+    const value = {
+      ...promotion,
+      advertiserLabel: "Marca Aurora",
+      mediaMobile: { alt: "Mobile", url: "https://example.com/mobile.png" },
+      mediaTablet: null,
+    };
+    await expect(
+      fetchPublicSponsorshipPromotion(
+        new AbortController().signal,
+        async () => ({ ok: true, json: async () => value }),
+      ),
+    ).resolves.toEqual(value);
+  });
+  it("rejects an unsafe responsive media URL", async () => {
+    await expect(
+      fetchPublicSponsorshipPromotion(
+        new AbortController().signal,
+        async () => ({
+          ok: true,
+          json: async () => ({
+            ...promotion,
+            mediaMobile: { alt: "Invalid", url: "javascript:alert(1)" },
+          }),
+        }),
+      ),
+    ).resolves.toBeNull();
+  });
+});

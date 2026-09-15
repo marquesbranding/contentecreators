@@ -1,5 +1,6 @@
 import "server-only";
 
+import { getPlacementSlot } from "../../domain/placement-slot-catalog";
 import type { RendererPlacementDto } from "../../types/sponsorship-placement.types";
 import type { SponsorshipDeliveryQuery } from "../repositories/sponsorship-delivery.repository";
 
@@ -26,8 +27,8 @@ export async function loadPublicSponsorshipPromotion({
 }): Promise<RendererPlacementDto | null> {
   try {
     const placements = await delivery.load({
-      allowedPlacementTypes: ["TOP_BANNER"],
-      limit: 1,
+      allowedPlacementTypes: [getPlacementSlot("landing-top")!.placementType],
+      limit: getPlacementSlot("landing-top")!.limit,
       now,
       route: "PUBLIC_LANDING",
       slotKey: "landing-top",

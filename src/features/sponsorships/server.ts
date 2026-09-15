@@ -19,3 +19,5 @@ export { loadPublicSponsorshipPromotion } from "./server/queries/public-sponsors
 export { createPublicSponsorshipPromotionRouteHandler } from "./server/route-handlers/public-sponsorship-promotion.handler";
 export type { SponsorshipDeliveryQuery } from "./server/repositories/sponsorship-delivery.repository";
 export { createSponsorshipManagementViewService } from "./server/services/sponsorship-management-view.service";
+
+export { getEligibleSponsorshipCreators } from "./server/route-handlers/eligible-creators.handler";

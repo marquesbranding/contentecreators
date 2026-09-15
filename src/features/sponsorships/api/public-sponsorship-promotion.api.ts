@@ -1,6 +1,7 @@
 import type { RendererPlacementDto } from "../types/sponsorship-placement.types";
 
 const allowedPromotionKeys = new Set([
+  "advertiserLabel",
   "body",
   "eligible",
   "featuredCreator",
@@ -8,6 +9,8 @@ const allowedPromotionKeys = new Set([
   "linkLabel",
   "linkUrl",
   "media",
+  "mediaMobile",
+  "mediaTablet",
   "sortOrder",
   "title",
   "type",
@@ -55,6 +58,10 @@ function parsePublicSponsorshipPromotion(
   const media = input.media;
 
   if (
+    (input.advertiserLabel !== undefined &&
+      (!isNullableString(input.advertiserLabel) ||
+        (typeof input.advertiserLabel === "string" &&
+          input.advertiserLabel.length > 160))) ||
     input.eligible !== true ||
     input.type !== "TOP_BANNER" ||
     (input.featuredCreator !== undefined && input.featuredCreator !== null) ||
@@ -87,7 +94,31 @@ function parsePublicSponsorshipPromotion(
     return null;
   }
 
+  const variants: Pick<RendererPlacementDto, "mediaMobile" | "mediaTablet"> =
+    {};
+  for (const key of ["mediaMobile", "mediaTablet"] as const) {
+    const variant = input[key];
+    if (variant === undefined) continue;
+    if (variant === null) {
+      variants[key] = null;
+      continue;
+    }
+    if (typeof variant !== "object" || Array.isArray(variant)) return null;
+    const item = variant as Record<string, unknown>;
+    if (
+      Object.keys(item).some((key) => key !== "url" && key !== "alt") ||
+      typeof item.alt !== "string" ||
+      !item.alt.trim() ||
+      !isSafeHttpUrl(item.url)
+    )
+      return null;
+    variants[key] = { alt: item.alt, url: item.url };
+  }
   return {
+    ...variants,
+    ...(input.advertiserLabel !== undefined
+      ? { advertiserLabel: input.advertiserLabel as string | null }
+      : {}),
     body: input.body,
     eligible: true,
     featuredCreator: null,

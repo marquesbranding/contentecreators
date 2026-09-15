@@ -83,12 +83,14 @@ describe("SponsorshipManagementView", () => {
     expect(screen.getAllByText("Banner em rascunho").length).toBeGreaterThan(1);
     await user.click(screen.getAllByRole("button", { name: "Visualizar" })[0]);
     expect(
-      screen.getByRole("heading", { name: "Prévia do placement" }),
+      screen.getByRole("heading", { name: "Prévia do patrocínio" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Somente prévia administrativa")).toBeVisible();
+    expect(
+      screen.getByTitle("Prévia do patrocínio no site"),
+    ).toBeInTheDocument();
   });
 
-  it("marks required fields and blocks an empty create submission", async () => {
+  it("saves an incomplete draft without requesting a reason", async () => {
     const user = userEvent.setup();
     const create = vi.fn();
 
@@ -104,35 +106,25 @@ describe("SponsorshipManagementView", () => {
 
     await user.click(screen.getByRole("button", { name: "Novo patrocínio" }));
     expect(screen.getByText("Campos obrigatórios")).toBeVisible();
-    expect(screen.getByLabelText("Título")).toBeRequired();
-    expect(screen.getByLabelText("Motivo da alteração")).toBeRequired();
+    expect(screen.getAllByRole("radio")).toHaveLength(6);
     expect(
-      document.getElementById("sponsorship-placement-type"),
-    ).toHaveAttribute("aria-required", "true");
-    expect(
-      document.getElementById("sponsorship-placement-audience"),
-    ).toHaveAttribute("aria-required", "true");
-    expect(screen.getByLabelText("Posição")).toBeRequired();
-
-    await user.clear(screen.getByLabelText("Título"));
-    await user.clear(screen.getByLabelText("Motivo da alteração"));
+      screen.queryByLabelText("Motivo da alteração"),
+    ).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Salvar rascunho" }));
-
-    expect(await screen.findAllByText("Campo obrigatório.")).not.toHaveLength(
-      0,
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: null,
+        reason: "",
+        slotKey: "catalog-top",
+        isActive: false,
+      }),
     );
-    expect(create).not.toHaveBeenCalled();
   });
 
   it("presents persisted UTC dates as local datetime values while editing", async () => {
     const user = userEvent.setup();
     const startsAt = "2026-08-05T18:30:00.000Z";
-    const date = new Date(startsAt);
-    const expectedLocalValue = new Date(
-      date.getTime() - date.getTimezoneOffset() * 60_000,
-    )
-      .toISOString()
-      .slice(0, 16);
+    const expectedLocalValue = "2026-08-05T15:30";
 
     render(
       <SponsorshipManagementView
@@ -156,6 +148,7 @@ describe("SponsorshipManagementView", () => {
 
     await user.click(screen.getAllByRole("button", { name: "Editar" })[0]);
 
+    await user.click(screen.getByRole("button", { name: /Público e agenda/ }));
     expect(screen.getByLabelText("Início (opcional)")).toHaveValue(
       expectedLocalValue,
     );
@@ -293,7 +286,8 @@ describe("SponsorshipManagementView", () => {
 
     await user.click(screen.getByRole("button", { name: "Novo patrocínio" }));
 
-    const results = await axe.run(document.body);
+    // jsdom does not expose real iframe windows; the browser suite checks the preview.
+    const results = await axe.run(document.body, { iframes: false });
     expect(results.violations).toEqual([]);
   });
 });

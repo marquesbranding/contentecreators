@@ -79,6 +79,7 @@ const statusByPhase: Readonly<Record<MediaUploadPhase, string>> = {
 };
 
 interface UseMediaUploadInput {
+  cropAspectRatio?: number;
   actions: MediaUploadActions;
   activateOnUpload?: boolean;
   currentAssetId: string | null;
@@ -96,6 +97,7 @@ export function useMediaUpload({
   actions,
   activateOnUpload = true,
   currentAssetId,
+  cropAspectRatio,
   onComplete,
   onProfileVersionChange,
   onRemove,
@@ -153,7 +155,12 @@ export function useMediaUpload({
     try {
       setError(null);
       setPhase("preparing");
-      const croppedFile = await cropImageFile(file, purpose, crop);
+      const croppedFile = await cropImageFile(
+        file,
+        purpose,
+        crop,
+        cropAspectRatio,
+      );
       const validation = validateImageUpload({
         declaredMimeType: croppedFile.type,
         fileName: croppedFile.name,
@@ -250,6 +257,7 @@ export function useMediaUpload({
     onComplete,
     onProfileVersionChange,
     purpose,
+    cropAspectRatio,
   ]);
 
   const retry = useCallback(async () => {

@@ -4,6 +4,7 @@ import {
   createServerSponsorshipDeliveryService,
   type SponsorshipDeliveryQuery,
 } from "@/features/sponsorships/server";
+import { getPlacementSlot } from "@/features/sponsorships";
 import type { RendererPlacementDto } from "@/features/sponsorships";
 
 import type { CatalogSponsorshipSlotsDto } from "../_components/catalog-sponsorship-slots";
@@ -40,26 +41,32 @@ export async function loadCatalogSponsorshipSlots(
   const [top, side, carousel, featured, midlist] = await Promise.all([
     dependencies.load({
       ...baseQuery,
-      allowedPlacementTypes: ["TOP_BANNER"],
-      limit: 1,
+      allowedPlacementTypes: [getPlacementSlot("catalog-top")!.placementType],
+      limit: getPlacementSlot("catalog-top")!.limit,
       slotKey: "catalog-top",
     }),
     dependencies.load({
       ...baseQuery,
-      allowedPlacementTypes: ["INLINE_BANNER"],
-      limit: 1,
+      allowedPlacementTypes: [
+        getPlacementSlot("catalog-inline")!.placementType,
+      ],
+      limit: getPlacementSlot("catalog-inline")!.limit,
       slotKey: "catalog-inline",
     }),
     dependencies.load({
       ...baseQuery,
-      allowedPlacementTypes: ["CAROUSEL"],
-      limit: 10,
+      allowedPlacementTypes: [
+        getPlacementSlot("catalog-carousel")!.placementType,
+      ],
+      limit: getPlacementSlot("catalog-carousel")!.limit,
       slotKey: "catalog-carousel",
     }),
     dependencies.load({
       ...baseQuery,
-      allowedPlacementTypes: ["FEATURED_CREATOR"],
-      limit: 1,
+      allowedPlacementTypes: [
+        getPlacementSlot("catalog-featured")!.placementType,
+      ],
+      limit: getPlacementSlot("catalog-featured")!.limit,
       slotKey: "catalog-featured",
     }),
     /* A second wave of ads rendered partway down the listing. It reuses the
@@ -67,8 +74,10 @@ export async function loadCatalogSponsorshipSlots(
      * migration is needed — operators just pick this slot key. */
     dependencies.load({
       ...baseQuery,
-      allowedPlacementTypes: ["CAROUSEL"],
-      limit: 3,
+      allowedPlacementTypes: [
+        getPlacementSlot("catalog-midlist")!.placementType,
+      ],
+      limit: getPlacementSlot("catalog-midlist")!.limit,
       slotKey: "catalog-midlist",
     }),
   ]);

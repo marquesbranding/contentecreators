@@ -103,6 +103,7 @@ export function createSponsorshipDeliveryService({
                 : null;
 
               return {
+                advertiserLabel: placement.advertiserLabel,
                 body: placement.body,
                 eligible: true,
                 featuredCreator: {
@@ -158,6 +159,7 @@ export function createSponsorshipDeliveryService({
             const alt = creativeAlt(candidate);
 
             return {
+              advertiserLabel: placement.advertiserLabel,
               body: placement.body,
               eligible: true,
               featuredCreator: null,

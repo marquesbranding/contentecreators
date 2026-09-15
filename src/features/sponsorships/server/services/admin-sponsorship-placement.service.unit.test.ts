@@ -269,6 +269,30 @@ describe("admin sponsorship placement service", () => {
     );
   });
 
+  it("audits creation and editing with an empty optional note", async () => {
+    const repository = createRepository();
+    const { runner, transaction } = createRunner();
+    const service = createAdminSponsorshipPlacementService({
+      repository,
+      runVerifiedTransaction: runner,
+    });
+    await service.create({
+      placement: createPlacementData,
+      reason: "",
+      requestId: "draft-no-note",
+    });
+    await service.update({
+      placementId,
+      expectedVersion: placement.version,
+      patch: { title: "Updated draft" },
+      reason: "",
+      requestId: "edit-no-note",
+    });
+    expect(repository.create).toHaveBeenCalled();
+    expect(repository.update).toHaveBeenCalled();
+    expect(transaction.execute).toHaveBeenCalled();
+  });
+
   it("detects stale expectedVersion before attempting an update", async () => {
     const repository = createRepository({
       update: vi.fn(async () => {

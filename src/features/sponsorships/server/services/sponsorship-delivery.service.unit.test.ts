@@ -77,6 +77,7 @@ describe("sponsorship delivery service", () => {
 
     expect(result).toEqual([
       {
+        advertiserLabel: "Marca parceira",
         body: "Uma oportunidade para sua marca.",
         eligible: true,
         featuredCreator: null,

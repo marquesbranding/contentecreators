@@ -12,7 +12,7 @@ import {
 /* Roughly 60px shorter than the previous 4/3 · 16/7 · 16/6 ratios at typical
  * viewport widths. */
 const heroAspectClassName =
-  "aspect-[16/9] w-full sm:aspect-[16/6] lg:aspect-[16/5]";
+  "col-start-1 row-start-1 aspect-[16/9] h-full w-full sm:aspect-[16/6] lg:aspect-[16/5]";
 
 /**
  * A full-bleed promotional banner for the logged-in catalog: the creative fills
@@ -37,7 +37,7 @@ export function SponsorshipHeroBanner({
   return (
     <section
       aria-label={`Patrocínio: ${creative.title}`}
-      className="relative isolate w-full overflow-hidden rounded-3xl"
+      className="relative isolate grid w-full overflow-hidden rounded-3xl"
       data-slot="sponsorship-hero-banner"
     >
       {creative.media ? (
@@ -78,12 +78,12 @@ export function SponsorshipHeroBanner({
         className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-transparent"
       />
 
-      <div className="absolute inset-0 flex flex-col justify-center gap-3 p-5 text-white sm:gap-4 sm:p-8 lg:p-12">
+      <div className="relative col-start-1 row-start-1 flex min-w-0 flex-col justify-center gap-3 p-5 text-white sm:gap-4 sm:p-8 lg:p-12">
         <SponsorshipLabels
           advertiserLabel={creative.advertiserLabel}
           previewMode={creative.previewMode}
         />
-        <h2 className="max-w-xl text-2xl leading-[1.1] font-extrabold tracking-[-0.035em] text-balance sm:text-4xl lg:text-5xl">
+        <h2 className="max-w-xl text-2xl leading-[1.1] font-extrabold tracking-[-0.035em] text-balance break-words sm:text-4xl lg:text-5xl">
           {creative.title}
         </h2>
         {creative.body ? (
@@ -94,7 +94,7 @@ export function SponsorshipHeroBanner({
         {href && creative.link ? (
           <a
             className={cn(
-              "bg-brand-lime text-brand-night mt-1 inline-flex min-h-11 w-fit items-center justify-center rounded-full px-5 text-sm font-bold whitespace-nowrap transition-colors",
+              "bg-brand-lime text-brand-night mt-1 inline-flex min-h-11 w-fit max-w-full items-center justify-center rounded-full px-5 text-center text-sm font-bold break-words whitespace-normal transition-colors",
               "hover:bg-brand-lime/90 focus-visible:ring-3 focus-visible:ring-white/80 focus-visible:outline-none sm:text-base",
             )}
             href={href}

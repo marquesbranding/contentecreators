@@ -46,6 +46,7 @@ export function PublicSponsorshipPromotion({
       <SponsorshipTopBanner
         creative={{
           audienceMatches: true,
+          advertiserLabel: promotion.advertiserLabel,
           body: promotion.body,
           eligible: true,
           id: promotion.id,

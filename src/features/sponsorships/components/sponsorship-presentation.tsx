@@ -93,12 +93,17 @@ export function SponsorshipLabels({
         Conteúdo patrocinado
       </Badge>
       {advertiserLabel ? (
-        <Badge variant="outline">Por {advertiserLabel}</Badge>
+        <Badge
+          className="bg-background/95 h-auto max-w-full break-words whitespace-normal"
+          variant="outline"
+        >
+          Patrocinado por {advertiserLabel}
+        </Badge>
       ) : null}
       {previewMode ? (
         <Badge
           aria-label="Pré-visualização não publicada"
-          className="gap-1.5"
+          className="bg-background/95 gap-1.5"
           role="status"
           variant="outline"
         >

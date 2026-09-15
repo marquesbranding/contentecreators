@@ -5,6 +5,8 @@ import {
   PLACEMENT_TYPES,
 } from "../types/sponsorship-placement.types";
 
+import { getPlacementSlot } from "../domain/placement-slot-catalog";
+
 const emptyToNull = (value: unknown) =>
   value === "" || value === undefined ? null : value;
 
@@ -113,7 +115,11 @@ export const sponsorshipPlacementActivationSchema =
       });
     }
 
-    if (value.placementType === "INLINE_BANNER" && !value.body) {
+    if (
+      (getPlacementSlot(value.slotKey)?.bodyRequired ??
+        value.placementType === "INLINE_BANNER") &&
+      !value.body
+    ) {
       context.addIssue({
         code: "custom",
         message: "Informe o texto antes de ativar este formato.",

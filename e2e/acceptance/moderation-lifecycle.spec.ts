@@ -289,10 +289,10 @@ test.describe("moderation lifecycle acceptance journeys", () => {
 
       await adminPage.goto(reviewPath);
       await applyModerationDecision(adminPage, {
-        action: "Restaurar acesso",
+        action: "Aprovar cadastro",
         reason: "Condição temporária resolvida e acesso validado novamente.",
-        reasonLabel: "Motivo para restaurar",
-        submit: "Confirmar restauração",
+        reasonLabel: "Motivo para reverter a decisão anterior",
+        submit: "Confirmar aprovação",
       });
       await expect
         .poll(async () => (await readAcceptanceAccount(email))?.status, {
@@ -408,6 +408,8 @@ test.describe("moderation lifecycle acceptance journeys", () => {
       audience: "COMPANY",
       body: null,
       creativeAssetId: null,
+      creativeAssetMobileId: null,
+      creativeAssetTabletId: null,
       endsAt: scheduledEnd.toISOString(),
       featuredCreatorProfileId: creator.profileId ?? null,
       isActive: false,
@@ -533,10 +535,10 @@ test.describe("moderation lifecycle acceptance journeys", () => {
 
       await adminPage.goto(reviewPath);
       await applyModerationDecision(adminPage, {
-        action: "Restaurar acesso",
+        action: "Aprovar cadastro",
         reason: "Referência restaurada após a validação de supressão.",
-        reasonLabel: "Motivo para restaurar",
-        submit: "Confirmar restauração",
+        reasonLabel: "Motivo para reverter a decisão anterior",
+        submit: "Confirmar aprovação",
       });
       await expect
         .poll(async () => (await readAcceptanceAccount(creatorEmail))?.status, {

@@ -212,8 +212,13 @@ export function createAdminSponsorshipPlacementService({
       transaction: ApplicationTransaction,
       actor: VerifiedAccountContext,
     ) => Promise<T>,
+    optionalReason = false,
   ): Promise<T> {
-    const reason = requireHumanReason(context.reason);
+    const reason = optionalReason
+      ? context.reason.trim()
+      : requireHumanReason(context.reason);
+    if ((reason.length > 0 && reason.length < 3) || reason.length > 500)
+      throw new SponsorshipPlacementServiceError("INVALID_REASON");
 
     try {
       return await runVerifiedTransaction(
@@ -228,7 +233,7 @@ export function createAdminSponsorshipPlacementService({
             actorAccountId: actor.accountId,
             actorRole: "ADMIN",
             actorType: "ADMIN",
-            reason,
+            reason: reason || null,
             requestId: context.requestId,
             source: "BACKOFFICE",
           });
@@ -335,17 +340,21 @@ export function createAdminSponsorshipPlacementService({
       reason: string;
       requestId: string;
     }) {
-      return runAdminMutation(command, (transaction) => {
-        const placement = parseDraft({
-          ...command.placement,
-          isActive: false,
-        });
+      return runAdminMutation(
+        command,
+        (transaction) => {
+          const placement = parseDraft({
+            ...command.placement,
+            isActive: false,
+          });
 
-        return repository.create(transaction, {
-          ...placement,
-          isActive: false,
-        });
-      });
+          return repository.create(transaction, {
+            ...placement,
+            isActive: false,
+          });
+        },
+        true,
+      );
     },
 
     deactivate(command: {
@@ -419,85 +428,114 @@ export function createAdminSponsorshipPlacementService({
     }) {
       requireExpectedVersion(command.expectedVersion);
 
-      return runAdminMutation(command, async (transaction, actor) => {
-        const current = await repository.findById(
-          transaction,
-          command.placementId,
-        );
+      return runAdminMutation(
+        command,
+        async (transaction, actor) => {
+          const current = await repository.findById(
+            transaction,
+            command.placementId,
+          );
 
-        if (!current) {
-          throw new SponsorshipPlacementServiceError("NOT_FOUND");
-        }
+          if (!current) {
+            throw new SponsorshipPlacementServiceError("NOT_FOUND");
+          }
 
-        if (current.version !== command.expectedVersion) {
-          throw new SponsorshipPlacementServiceError("VERSION_CONFLICT");
-        }
+          if (current.version !== command.expectedVersion) {
+            throw new SponsorshipPlacementServiceError("VERSION_CONFLICT");
+          }
 
-        const parsed = parseDraft({
-          advertiserAccountId: current.advertiserAccountId,
-          advertiserLabel: current.advertiserLabel,
-          audience: current.audience,
-          body: current.body,
-          creativeAssetId: current.creativeAssetId,
-          creativeAssetMobileId: current.creativeAssetMobileId,
-          creativeAssetTabletId: current.creativeAssetTabletId,
-          endsAt: current.endsAt,
-          featuredCreatorProfileId: current.featuredCreatorProfileId,
-          isActive: current.isActive,
-          linkLabel: current.linkLabel,
-          linkUrl: current.linkUrl,
-          placementType: current.placementType,
-          slotKey: current.slotKey,
-          sortOrder: current.sortOrder,
-          startsAt: current.startsAt,
-          title: current.title,
-          ...command.patch,
-        });
-        const patch = Object.fromEntries(
-          Object.keys(command.patch).map((key) => [
-            key,
-            parsed[key as keyof typeof parsed],
-          ]),
-        ) as SponsorshipPlacementUpdateData;
+          const parsed = parseDraft({
+            advertiserAccountId: current.advertiserAccountId,
+            advertiserLabel: current.advertiserLabel,
+            audience: current.audience,
+            body: current.body,
+            creativeAssetId: current.creativeAssetId,
+            creativeAssetMobileId: current.creativeAssetMobileId,
+            creativeAssetTabletId: current.creativeAssetTabletId,
+            endsAt: current.endsAt,
+            featuredCreatorProfileId: current.featuredCreatorProfileId,
+            isActive: current.isActive,
+            linkLabel: current.linkLabel,
+            linkUrl: current.linkUrl,
+            placementType: current.placementType,
+            slotKey: current.slotKey,
+            sortOrder: current.sortOrder,
+            startsAt: current.startsAt,
+            title: current.title,
+            ...command.patch,
+          });
+          const patch = Object.fromEntries(
+            Object.keys(command.patch).map((key) => [
+              key,
+              parsed[key as keyof typeof parsed],
+            ]),
+          ) as SponsorshipPlacementUpdateData;
 
-        const updated = await repository.update(
-          transaction,
-          command.placementId,
-          command.expectedVersion,
-          patch,
-        );
+          const updated = await repository.update(
+            transaction,
+            command.placementId,
+            command.expectedVersion,
+            patch,
+          );
 
-        const creativeSlots = [
-          {
-            current: current.creativeAssetId,
-            field: "creativeAssetId" as const,
-            media: (e: SponsorshipActivationEvidence) => e.media,
-            updated: updated.creativeAssetId,
-          },
-          {
-            current: current.creativeAssetTabletId,
-            field: "creativeAssetTabletId" as const,
-            media: (e: SponsorshipActivationEvidence) => e.mediaTablet,
-            updated: updated.creativeAssetTabletId,
-          },
-          {
-            current: current.creativeAssetMobileId,
-            field: "creativeAssetMobileId" as const,
-            media: (e: SponsorshipActivationEvidence) => e.mediaMobile,
-            updated: updated.creativeAssetMobileId,
-          },
-        ];
-        let evidence: SponsorshipActivationEvidence | null = null;
+          const creativeSlots = [
+            {
+              current: current.creativeAssetId,
+              field: "creativeAssetId" as const,
+              media: (e: SponsorshipActivationEvidence) => e.media,
+              updated: updated.creativeAssetId,
+            },
+            {
+              current: current.creativeAssetTabletId,
+              field: "creativeAssetTabletId" as const,
+              media: (e: SponsorshipActivationEvidence) => e.mediaTablet,
+              updated: updated.creativeAssetTabletId,
+            },
+            {
+              current: current.creativeAssetMobileId,
+              field: "creativeAssetMobileId" as const,
+              media: (e: SponsorshipActivationEvidence) => e.mediaMobile,
+              updated: updated.creativeAssetMobileId,
+            },
+          ];
+          let evidence: SponsorshipActivationEvidence | null = null;
 
-        for (const slot of creativeSlots) {
-          const wasReplaced =
-            Object.hasOwn(command.patch, slot.field) &&
-            slot.current !== slot.updated &&
-            slot.current !== null &&
-            slot.updated !== null;
+          for (const slot of creativeSlots) {
+            const wasReplaced =
+              Object.hasOwn(command.patch, slot.field) &&
+              slot.current !== slot.updated &&
+              slot.current !== null &&
+              slot.updated !== null;
 
-          if (!wasReplaced) {
-            continue;
+            if (!wasReplaced) {
+              continue;
+            }
+
+            evidence ??= await repository.findActivationEvidence(
+              transaction,
+              command.placementId,
+            );
+
+            if (
+              !evidence ||
+              !isEligibleReplacementCreative(
+                slot.updated,
+                slot.media(evidence),
+                actor.accountId,
+              )
+            ) {
+              throw new SponsorshipPlacementServiceError("INVALID_ACTIVATION");
+            }
+
+            await repository.archiveReplacedCreativeIfUnreferenced(
+              transaction,
+              slot.current!,
+              slot.updated!,
+            );
+          }
+
+          if (!updated.isActive) {
+            return updated;
           }
 
           evidence ??= await repository.findActivationEvidence(
@@ -507,40 +545,16 @@ export function createAdminSponsorshipPlacementService({
 
           if (
             !evidence ||
-            !isEligibleReplacementCreative(
-              slot.updated,
-              slot.media(evidence),
-              actor.accountId,
-            )
+            !validatePlacementForActivation(toActivationInput(evidence))
+              .eligible
           ) {
             throw new SponsorshipPlacementServiceError("INVALID_ACTIVATION");
           }
 
-          await repository.archiveReplacedCreativeIfUnreferenced(
-            transaction,
-            slot.current!,
-            slot.updated!,
-          );
-        }
-
-        if (!updated.isActive) {
           return updated;
-        }
-
-        evidence ??= await repository.findActivationEvidence(
-          transaction,
-          command.placementId,
-        );
-
-        if (
-          !evidence ||
-          !validatePlacementForActivation(toActivationInput(evidence)).eligible
-        ) {
-          throw new SponsorshipPlacementServiceError("INVALID_ACTIVATION");
-        }
-
-        return updated;
-      });
+        },
+        true,
+      );
     },
   };
 }

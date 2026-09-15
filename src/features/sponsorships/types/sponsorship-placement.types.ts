@@ -119,6 +119,7 @@ export interface RendererFeaturedCreatorDto {
 }
 
 export interface RendererPlacementDto {
+  advertiserLabel?: string | null;
   body: string | null;
   eligible: true;
   featuredCreator?: RendererFeaturedCreatorDto | null;

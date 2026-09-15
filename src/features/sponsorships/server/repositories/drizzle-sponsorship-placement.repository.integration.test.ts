@@ -88,7 +88,7 @@ describeLocalStack("Drizzle sponsorship placement repository", () => {
           startsAt: new Date("2020-01-01T00:00:00.000Z"),
           title: "Campanha de integração",
         },
-        reason: "Cadastrar campanha para validação integrada",
+        reason: "",
         requestId: `${requestPrefix}:create`,
       });
       createdPlacementId = created.id;
@@ -106,7 +106,7 @@ describeLocalStack("Drizzle sponsorship placement repository", () => {
           title: "Campanha integrada atualizada",
         },
         placementId: created.id,
-        reason: "Atualizar ordem e título da campanha",
+        reason: "",
         requestId: `${requestPrefix}:update`,
       });
 
@@ -312,7 +312,7 @@ describeLocalStack("Drizzle sponsorship placement repository", () => {
           source: "BACKOFFICE",
         }),
       ]);
-      expect(revisions.every(({ reason }) => reason?.trim())).toBe(true);
+      expect(revisions.filter(({ reason }) => reason === null)).toHaveLength(2);
     } finally {
       if (createdPlacementId) {
         await client.database
