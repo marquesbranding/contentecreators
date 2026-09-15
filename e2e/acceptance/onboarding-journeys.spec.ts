@@ -5,12 +5,11 @@ import {
   cleanupAcceptanceIdentity,
   confirmOnboardingSubmission,
   fillCompanyProfileForm,
-  fillCreatorProfileForm,
   makeValidCnpj,
   readAcceptanceAccount,
+  resetLocalRegistrationRateLimits,
   seedRolelessAcceptanceIdentity,
   signInAcceptanceUser,
-  waitForConfirmationLink,
 } from "../support/local-acceptance";
 
 function runOnce(testInfo: TestInfo) {
@@ -20,67 +19,22 @@ function runOnce(testInfo: TestInfo) {
   );
 }
 
-async function chooseCompanyRole(page: Page) {
-  await expect(
-    page.getByRole("dialog", {
-      name: "Como você vai usar a Contente Creators?",
-    }),
-  ).toBeVisible();
-  await page.getByRole("radio", { name: /represento uma empresa/iu }).check();
-  await page.getByRole("button", { name: "Confirmar tipo de perfil" }).click();
+async function completeAccountStepAsCompany(page: Page, email: string) {
+  await signInAcceptanceUser(page, {
+    email,
+    nextPath: "/onboarding/account",
+  });
+  await page
+    .getByLabel("Nome completo", { exact: true })
+    .fill("Responsável pela Empresa");
+  await page.getByRole("radio", { name: "Sou empresa", exact: true }).check();
+  await page.getByLabel("WhatsApp com DDD").fill("11988887777");
+  await page.getByRole("button", { name: "Continuar para o perfil" }).click();
   await expect(page).toHaveURL(/\/onboarding\/company$/u);
 }
 
 test.describe("onboarding acceptance journeys", () => {
-  test("completes landing intent, combined creator registration, confirmation and pending fallback without a second role step", async ({
-    page,
-  }, testInfo) => {
-    runOnce(testInfo);
-    const email = acceptanceEmail("combined-creator");
-
-    try {
-      await page.goto("http://localhost:3000/");
-      await page
-        .getByRole("link", { name: "Sou influencer", exact: true })
-        .first()
-        .click();
-      await expect(page).toHaveURL(/\/sign-up\?intent=influencer$/u);
-      await expect(
-        page.getByRole("radio", { name: /sou creator/iu }),
-      ).toBeChecked();
-
-      await page.getByLabel("E-mail").fill(email);
-      await page.getByLabel("Senha", { exact: true }).fill("LocalTest123!");
-      await page.getByLabel("Confirmar senha").fill("LocalTest123!");
-      await fillCreatorProfileForm(page);
-      await confirmOnboardingSubmission(page);
-
-      await expect(
-        page.getByText("Confirme seu e-mail", { exact: true }),
-      ).toBeVisible();
-      const confirmationLink = await waitForConfirmationLink(email);
-      await page.goto(confirmationLink);
-
-      await expect(page).toHaveURL(/\/app\/status\/analysis$/u, {
-        timeout: 20_000,
-      });
-      await expect(
-        page.getByRole("heading", {
-          name: "Seu cadastro está sendo analisado",
-        }),
-      ).toBeVisible();
-      expect(page.url()).not.toContain("/onboarding/role");
-
-      await expect
-        .poll(async () => (await readAcceptanceAccount(email))?.status)
-        .toBe("PENDING_REVIEW");
-      expect((await readAcceptanceAccount(email))?.role).toBe("INFLUENCER");
-    } finally {
-      await cleanupAcceptanceIdentity(email);
-    }
-  });
-
-  test("uses the blocking post-Google role choice, applies editable CNPJ suggestions and submits a company", async ({
+  test("completes the account step, applies editable CNPJ suggestions and submits a company", async ({
     page,
   }, testInfo) => {
     runOnce(testInfo);
@@ -88,6 +42,7 @@ test.describe("onboarding acceptance journeys", () => {
     const cnpj = makeValidCnpj(927364810001);
 
     try {
+      await resetLocalRegistrationRateLimits();
       await seedRolelessAcceptanceIdentity(email);
       await page.route("**/api/company-registry/cnpj/**", async (route) => {
         await route.fulfill({
@@ -110,19 +65,12 @@ test.describe("onboarding acceptance journeys", () => {
           status: 200,
         });
       });
-      await signInAcceptanceUser(page, {
-        email,
-        nextPath: "/onboarding/role",
-      });
-      await chooseCompanyRole(page);
+      await completeAccountStepAsCompany(page, email);
 
       await page.getByLabel("CNPJ").fill(cnpj);
       await expect(
-        page.getByText("Dados encontrados", { exact: true }),
+        page.getByText("Dados preenchidos automaticamente", { exact: true }),
       ).toBeVisible();
-      await page
-        .getByRole("button", { name: "Preencher dados encontrados" })
-        .click();
       await expect(page.getByLabel("Razão social")).toHaveValue(
         "Razão sugerida pela consulta",
       );
@@ -131,7 +79,6 @@ test.describe("onboarding acceptance journeys", () => {
         "Razão revisada pelo usuário",
       );
       await fillCompanyProfileForm(page, {
-        cnpj,
         legalName: "Razão revisada pelo usuário",
         tradeName: "Empresa Google Aceite",
       });
@@ -162,6 +109,7 @@ test.describe("onboarding acceptance journeys", () => {
     const cnpj = makeValidCnpj(617253940001);
 
     try {
+      await resetLocalRegistrationRateLimits();
       await seedRolelessAcceptanceIdentity(email);
       await page.route("**/api/company-registry/cnpj/**", async (route) => {
         await route.fulfill({
@@ -170,11 +118,7 @@ test.describe("onboarding acceptance journeys", () => {
           status: 503,
         });
       });
-      await signInAcceptanceUser(page, {
-        email,
-        nextPath: "/onboarding/role",
-      });
-      await chooseCompanyRole(page);
+      await completeAccountStepAsCompany(page, email);
 
       await page.getByLabel("CNPJ").fill(cnpj);
       await expect(
@@ -186,7 +130,6 @@ test.describe("onboarding acceptance journeys", () => {
         ),
       ).toBeVisible();
       await fillCompanyProfileForm(page, {
-        cnpj,
         tradeName: "Empresa Manual Aceite",
       });
       await confirmOnboardingSubmission(page);

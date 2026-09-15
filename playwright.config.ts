@@ -43,6 +43,9 @@ export default defineConfig({
     command: `npm run build && npm run start -- --hostname 127.0.0.1 --port ${port}`,
     env: {
       APP_ENV: process.env.APP_ENV ?? "local",
+      // Email links must point at the server under test, not a dev port
+      // configured in .env.local.
+      NEXT_PUBLIC_APP_URL: `http://localhost:${port}`,
     },
     url: `http://127.0.0.1:${port}`,
     reuseExistingServer: !process.env.CI,

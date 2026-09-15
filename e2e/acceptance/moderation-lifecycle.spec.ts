@@ -9,6 +9,7 @@ import {
   readAcceptanceAudit,
   readAcceptanceIdentityState,
   readAcceptanceOutbox,
+  resetLocalRegistrationRateLimits,
   seedAcceptanceAccount,
   seedAcceptanceDeadLetterEmail,
   setAcceptanceAccountStatus,
@@ -117,10 +118,9 @@ test.describe("moderation lifecycle acceptance journeys", () => {
         page.getByText("Correções solicitadas", { exact: true }),
       ).toBeVisible();
       await expect(page.getByText(correctionReason)).toBeVisible();
-      await fillCreatorProfileForm(page);
-      await page
-        .getByLabel("Nome de creator")
-        .fill("Creator Jornada Corrigido");
+      await fillCreatorProfileForm(page, {
+        fullName: "Creator Jornada Corrigido",
+      });
       await confirmOnboardingSubmission(page);
       await expect(page).toHaveURL(/\/app\/status\/analysis$/u, {
         timeout: 20_000,
@@ -186,7 +186,9 @@ test.describe("moderation lifecycle acceptance journeys", () => {
         email,
         nextPath: "/app/profile",
       });
-      await page.getByLabel("Nome de creator").fill(updatedDisplayName);
+      await page
+        .getByLabel("Nome completo", { exact: true })
+        .fill(updatedDisplayName);
       await page.getByRole("button", { name: "Salvar alterações" }).click();
       await expect(
         page.getByText("Alterações publicadas", { exact: true }).first(),
@@ -285,7 +287,7 @@ test.describe("moderation lifecycle acceptance journeys", () => {
         JSON.stringify(
           await (await companyPage.request.get("/api/catalog/creators")).json(),
         ),
-      ).not.toContain("Creator Aceite");
+      ).not.toContain(fixture.profileId!);
 
       await adminPage.goto(reviewPath);
       await applyModerationDecision(adminPage, {
@@ -337,17 +339,23 @@ test.describe("moderation lifecycle acceptance journeys", () => {
         JSON.stringify(
           await (await companyPage.request.get("/api/catalog/creators")).json(),
         ),
-      ).not.toContain("Creator Aceite");
+      ).not.toContain(fixture.profileId!);
 
       await userContext.clearCookies();
+      await resetLocalRegistrationRateLimits();
       await userPage.goto("/sign-up?intent=influencer");
-      await userPage.getByLabel("E-mail").fill(email);
-      await userPage.getByLabel("Senha", { exact: true }).fill("LocalTest123!");
-      await userPage.getByLabel("Confirmar senha").fill("LocalTest123!");
-      await fillCreatorProfileForm(userPage);
-      await confirmOnboardingSubmission(userPage);
+      await userPage.getByLabel("E-mail", { exact: true }).fill(email);
+      await userPage
+        .getByRole("button", { name: "Continuar", exact: true })
+        .click();
       await expect(
-        userPage.getByText("Revise seu cadastro", { exact: true }),
+        userPage
+          .getByRole("alert")
+          .filter({
+            hasText:
+              "Não foi possível continuar com este e-mail. Fale com o suporte.",
+          })
+          .first(),
       ).toBeVisible({ timeout: 20_000 });
       const deniedState = await readAcceptanceIdentityState(email);
       expect(deniedState.accountCount).toBe(1);
@@ -355,11 +363,11 @@ test.describe("moderation lifecycle acceptance journeys", () => {
 
       await adminPage.goto(reviewPath);
       await applyModerationDecision(adminPage, {
-        action: "Remover banimento",
+        action: "Aprovar cadastro",
         reason:
           "Recuperação excepcional aprovada e registrada pela jornada de aceite.",
-        reasonLabel: "Motivo para remover o banimento",
-        submit: "Confirmar recuperação",
+        reasonLabel: "Motivo para reverter a decisão anterior",
+        submit: "Confirmar aprovação",
       });
       await expect
         .poll(async () => (await readAcceptanceAccount(email))?.status, {
@@ -369,7 +377,8 @@ test.describe("moderation lifecycle acceptance journeys", () => {
       const recoveredState = await readAcceptanceIdentityState(email);
       expect(recoveredState.activeBlockCount).toBe(0);
       expect(recoveredState.moderationActions).toEqual(
-        expect.arrayContaining(["BAN", "RESTORE", "SUSPEND", "UNBAN"]),
+        // Suspended and banned accounts are restored through APPROVE.
+        expect.arrayContaining(["APPROVE", "BAN", "SUSPEND"]),
       );
     } finally {
       await userContext.close();

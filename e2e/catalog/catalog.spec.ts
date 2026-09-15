@@ -17,7 +17,7 @@ async function signInAsApprovedCompany(page: Page) {
 
   await expect(page).toHaveURL(new RegExp(`${CATALOG_PATH}$`, "u"));
   await expect(
-    page.getByRole("searchbox", { name: "Buscar criadores" }),
+    page.getByRole("searchbox", { name: "Buscar creator por nome ou nicho" }),
   ).toBeVisible();
 }
 
@@ -105,12 +105,14 @@ test.describe("approved private catalog", () => {
       await page.setViewportSize({ height: 900, width });
       await page.goto(CATALOG_PATH);
       await expect(
-        page.getByRole("searchbox", { name: "Buscar criadores" }),
+        page.getByRole("searchbox", {
+          name: "Buscar creator por nome ou nicho",
+        }),
       ).toBeVisible();
       await expectNoHorizontalPageOverflow(page, width);
 
       const searchBox = page.getByRole("searchbox", {
-        name: "Buscar criadores",
+        name: "Buscar creator por nome ou nicho",
       });
       const searchBoxBounds = await searchBox.boundingBox();
 
@@ -151,7 +153,7 @@ test.describe("approved private catalog", () => {
     const sheet = page.getByRole("dialog");
     await expect(sheet).toBeVisible();
     await expect(
-      sheet.getByRole("heading", { name: "Filtrar criadores" }),
+      sheet.getByRole("heading", { name: "Filtrar catálogo" }),
     ).toBeVisible();
     await expect
       .poll(() =>
@@ -175,7 +177,7 @@ test.describe("approved private catalog", () => {
 
     await signInAsApprovedCompany(page);
     await expect(
-      page.getByRole("list", { name: "Lista de criadores" }),
+      page.getByRole("list", { name: "Lista do catálogo" }),
     ).toBeVisible();
 
     expect(await getBlockingAccessibilityViolations(page)).toEqual([]);
@@ -193,7 +195,7 @@ test.describe("approved private catalog", () => {
     await signInAsApprovedCompany(page);
 
     const searchBox = page.getByRole("searchbox", {
-      name: "Buscar criadores",
+      name: "Buscar creator por nome ou nicho",
     });
     await searchBox.fill("Diego");
     await searchBox.press("Enter");
@@ -202,7 +204,7 @@ test.describe("approved private catalog", () => {
     await expect(searchBox).toHaveValue("Diego");
     await expect(
       page
-        .getByRole("list", { name: "Lista de criadores" })
+        .getByRole("list", { name: "Lista do catálogo" })
         .getByRole("heading", { name: "Diego Aprova", exact: true }),
     ).toBeVisible();
 
@@ -213,7 +215,7 @@ test.describe("approved private catalog", () => {
 
     const sheet = page.getByRole("dialog");
     await expect(
-      sheet.getByRole("heading", { name: "Filtrar criadores" }),
+      sheet.getByRole("heading", { name: "Filtrar catálogo" }),
     ).toBeVisible();
     await sheet.getByRole("button", { name: "Mostrar resultados" }).click();
     await expect(sheet).toBeHidden();

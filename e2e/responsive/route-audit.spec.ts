@@ -27,6 +27,8 @@ async function signIn(
     backoffice,
     email: `${localPart}@${LOCAL_DOMAIN}`,
     nextPath,
+    // Seeded local administrators use the documented local admin password.
+    password: localPart === "admin" ? "ContenteCreators@01" : undefined,
   });
 }
 
@@ -50,14 +52,14 @@ test.describe("global responsive route matrix", () => {
     ]);
   });
 
-  test("audits role selection and both onboarding forms", async ({
+  test("audits the account step and both onboarding forms", async ({
     page,
   }, testInfo) => {
     skipOutsideExplicitMatrix(testInfo);
 
-    await signIn(page, "role-choice-e2e", "/onboarding/role");
+    await signIn(page, "role-choice-e2e", "/onboarding/account");
     await auditResponsiveRoutes(page, testInfo, [
-      { label: "Role selection", path: "/onboarding/role" },
+      { label: "Account step", path: "/onboarding/account" },
     ]);
 
     await page.context().clearCookies();
@@ -99,11 +101,6 @@ test.describe("global responsive route matrix", () => {
         label: "Suspended account",
         path: "/app/status/suspended",
       },
-      {
-        email: "ugc-banned",
-        label: "Blocked account",
-        path: "/app/status/blocked",
-      },
     ] as const;
 
     for (const route of authenticatedRoutes) {
@@ -111,6 +108,12 @@ test.describe("global responsive route matrix", () => {
       await signIn(page, route.email, route.path);
       await auditResponsiveRoutes(page, testInfo, [route]);
     }
+
+    // Banned identities cannot open a session; the blocked page is public.
+    await page.context().clearCookies();
+    await auditResponsiveRoutes(page, testInfo, [
+      { label: "Blocked account", path: "/app/status/blocked" },
+    ]);
   });
 
   test("audits both approved catalog and profile experiences", async ({

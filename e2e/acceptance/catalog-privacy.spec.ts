@@ -73,7 +73,7 @@ test.describe("catalog acceptance and privacy", () => {
         page.getByRole("heading", { name: account.fallbackHeading }),
       ).toBeVisible();
       await expect(
-        page.getByRole("list", { name: "Lista de criadores" }),
+        page.getByRole("list", { name: "Lista do catálogo" }),
       ).toHaveCount(0);
 
       await expectCatalogDenied(page);
@@ -93,12 +93,14 @@ test.describe("catalog acceptance and privacy", () => {
     runOnce(testInfo);
 
     await signIn(page, "company-approved", "/app/catalog");
-    const search = page.getByRole("searchbox", { name: "Buscar criadores" });
+    const search = page.getByRole("searchbox", {
+      name: "Buscar creator por nome ou nicho",
+    });
 
     await search.fill("Diego");
     await search.press("Enter");
     const resultLink = page
-      .getByRole("list", { name: "Lista de criadores" })
+      .getByRole("list", { name: "Lista do catálogo" })
       .getByRole("link", { name: "Ver perfil de Diego Aprova" });
     await expect(resultLink).toBeVisible();
     await resultLink.click();
@@ -106,28 +108,24 @@ test.describe("catalog acceptance and privacy", () => {
       new RegExp(`/app/creators/${APPROVED_CREATOR_ID}$`, "u"),
     );
     await expect(
-      page.getByRole("link", { name: "Chamar no WhatsApp" }),
+      page.getByRole("link", { name: "Chamar Diego Aprova no WhatsApp" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "Enviar e-mail" }),
+      page.getByRole("link", { name: "Enviar e-mail para Diego Aprova" }),
     ).toBeVisible();
 
     await page.goto(`/app/creators/${CONTACT_HIDDEN_CREATOR_ID}`);
-    const contact = page.getByRole("complementary", {
-      name: "Ações de contato",
-    });
-    await expect(contact).toContainText("Contato");
     await expect(
-      contact.getByText(
+      page.getByText(
         "Este creator ainda não habilitou o compartilhamento de contatos.",
       ),
     ).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: "Chamar no WhatsApp" }),
-    ).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Enviar e-mail" })).toHaveCount(
+    await expect(page.getByRole("link", { name: /no WhatsApp$/u })).toHaveCount(
       0,
     );
+    await expect(
+      page.getByRole("link", { name: /^Enviar e-mail para/u }),
+    ).toHaveCount(0);
   });
 
   test("gives an approved creator an other-creator catalog with self-exclusion and safe company carousel", async ({
@@ -138,21 +136,28 @@ test.describe("catalog acceptance and privacy", () => {
     await signIn(page, "creator-approved", "/app/catalog");
 
     const creatorList = page.getByRole("list", {
-      name: "Lista de criadores",
+      name: "Lista do catálogo",
     });
     await expect(
       creatorList.getByRole("heading", { name: "Gabi Conecta" }),
     ).toBeVisible();
+    // The viewer's own card stays in the list, marked as theirs.
+    const ownCard = creatorList
+      .getByRole("listitem")
+      .filter({ has: page.getByRole("heading", { name: "Diego Aprova" }) });
+    await expect(ownCard.getByText("Você", { exact: true })).toBeVisible();
     await expect(
-      creatorList.getByRole("heading", { name: "Diego Aprova" }),
+      ownCard.getByRole("link", { name: "Ver meu perfil" }),
+    ).toBeVisible();
+    await expect(
+      creatorList.getByRole("link", { name: "Ver perfil de Diego Aprova" }),
     ).toHaveCount(0);
 
-    const companies = page.getByRole("list", {
-      name: "Marcas cadastradas",
-    });
-    await expect(companies).toBeVisible();
-    await expect(companies).toContainText("Empresa Quatro");
-    await expect(companies).not.toContainText(/CNPJ|@contentecreators|\+55/u);
+    // Approved companies share the same catalog list as creators.
+    await expect(
+      creatorList.getByRole("heading", { name: "Empresa Quatro" }),
+    ).toBeVisible();
+    await expect(creatorList).not.toContainText(/CNPJ|@contentecreators|\+55/u);
 
     const detail = await page.request.get(
       `/api/catalog/creators/${CONTACT_HIDDEN_CREATOR_ID}`,

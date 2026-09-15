@@ -52,6 +52,20 @@ async function withLocalDatabase<T>(operation: (sql: Sql) => Promise<T>) {
   }
 }
 
+/**
+ * Registration and CNPJ lookup throttle by network, and every local journey shares one
+ * address; clear the local sign-up buckets so journeys stay independent.
+ */
+export async function resetLocalRegistrationRateLimits() {
+  await withLocalDatabase(async (sql) => {
+    await sql`
+      delete from public.rate_limit_buckets
+      where scope in ('sign_up', 'password_recovery', 'cnpj_lookup')
+        or scope like 'registration_%'
+    `;
+  });
+}
+
 export function acceptanceEmail(label: string) {
   return `${label}-${crypto.randomUUID()}@${LOCAL_DOMAIN}`;
 }
@@ -797,38 +811,53 @@ export async function waitForConfirmationLink(email: string) {
   throw new Error(`No local confirmation link was captured for ${email}.`);
 }
 
-export async function fillCreatorProfileForm(page: Page) {
-  await page.getByLabel("Nome completo").fill("Creator Jornada Aceite");
-  await page.getByLabel("Nome de creator").fill("Creator Jornada");
-  await page.getByLabel("Tipo de atuação").click();
-  await page.getByRole("option", { name: "Influencer", exact: true }).click();
-  await page.getByLabel("Número de seguidores").fill("15000");
-  await page.getByLabel("Taxa de engajamento (%)").fill("5");
-  await page.getByLabel("WhatsApp com DDD").fill("(11) 99999-9999");
+/** Fills the single-page creator profile form (corrections and profile edit). */
+export async function fillCreatorProfileForm(
+  page: Page,
+  input: { fullName?: string } = {},
+) {
+  await page
+    .getByLabel("Nome completo", { exact: true })
+    .fill(input.fullName ?? "Creator Jornada Aceite");
+  await page.getByLabel("WhatsApp com DDD").fill("11999999999");
   await page
     .getByLabel("Conte sobre seu conteúdo")
     .fill("Crio conteúdo sobre tecnologia, cultura e negócios locais.");
-  await page.getByLabel("Canal principal").click();
-  await page.getByRole("option", { name: "Instagram", exact: true }).click();
+  const instagram = page.getByRole("checkbox", {
+    name: "Instagram",
+    exact: true,
+  });
+  if (!(await instagram.isChecked())) {
+    await instagram.check();
+  }
   await page
-    .getByLabel("Link do perfil")
+    .getByLabel("Seguidores no Instagram", { exact: true })
+    .fill("15000");
+  await page
+    .getByLabel("Link do perfil no Instagram", { exact: true })
     .fill("https://instagram.com/creator_jornada");
-  await page.getByRole("checkbox", { name: "Tecnologia" }).check();
   await page.getByLabel("Cidade", { exact: true }).fill("São Paulo");
   await page.getByLabel("UF", { exact: true }).click();
   await page.getByRole("option", { name: "SP", exact: true }).click();
-  await page
-    .getByRole("checkbox", { name: /Li e aceito os Termos de Uso/iu })
-    .check();
-  await page
-    .getByRole("checkbox", { name: /Li e aceito a Política de Privacidade/iu })
-    .check();
+
+  for (const name of [
+    /Li e aceito os Termos de Uso/iu,
+    /Li e aceito a Política de Privacidade/iu,
+  ]) {
+    const consent = page.getByRole("checkbox", { name });
+    if ((await consent.count()) > 0 && !(await consent.isChecked())) {
+      await consent.check();
+    }
+  }
 }
 
+/**
+ * Completes the three company onboarding steps (profile, audience, location)
+ * after the CNPJ field has been filled on the first step.
+ */
 export async function fillCompanyProfileForm(
   page: Page,
   input: {
-    cnpj: string;
     legalName?: string;
     tradeName?: string;
   },
@@ -839,8 +868,7 @@ export async function fillCompanyProfileForm(
   await page
     .getByLabel("Nome fantasia")
     .fill(input.tradeName ?? "Empresa Jornada");
-  await page.getByLabel("CNPJ").fill(input.cnpj);
-  await page.getByLabel("Segmento").click();
+  await page.getByLabel("Segmento", { exact: true }).click();
   await page
     .getByRole("option", { name: "Tecnologia, games e inovação", exact: true })
     .click();
@@ -848,14 +876,17 @@ export async function fillCompanyProfileForm(
   await page
     .getByRole("option", { name: "11 a 50 pessoas", exact: true })
     .click();
-  await page.getByLabel("WhatsApp com DDD").fill("(11) 98888-7777");
   await page
     .getByLabel("Apresente a empresa")
     .fill("Empresa sintética para validar o fluxo completo de aceite.");
-  await page.getByLabel("CEP").fill("01001-000");
-  await page.getByLabel("Logradouro").fill("Praça da Sé");
-  await page.getByLabel("Número").fill("100");
-  await page.getByLabel("Bairro").fill("Sé");
+  await page.getByRole("button", { name: "Continuar", exact: true }).click();
+  await expect(page).toHaveURL(/step=audience/u);
+  await page.getByRole("button", { name: "Continuar", exact: true }).click();
+  await expect(page).toHaveURL(/step=location/u);
+  await page.getByLabel("CEP", { exact: true }).fill("01001000");
+  await page.getByLabel("Logradouro", { exact: true }).fill("Praça da Sé");
+  await page.getByLabel("Número", { exact: true }).fill("100");
+  await page.getByLabel("Bairro", { exact: true }).fill("Sé");
   await page.getByLabel("Cidade", { exact: true }).fill("São Paulo");
   await page.getByLabel("UF", { exact: true }).click();
   await page.getByRole("option", { name: "SP", exact: true }).click();

@@ -5,6 +5,7 @@ import { getBlockingAccessibilityViolations } from "../../src/test/accessibility
 import {
   acceptanceEmail,
   cleanupAcceptanceIdentity,
+  resetLocalRegistrationRateLimits,
   seedRolelessAcceptanceIdentity,
 } from "../support/local-acceptance";
 
@@ -144,12 +145,11 @@ test.describe("identity and first-access routes", () => {
       { max: 1 },
     );
     try {
+      await resetLocalRegistrationRateLimits();
       await seedRolelessAcceptanceIdentity(registrationEmail);
       await database`update auth.users set encrypted_password = '' where email = ${registrationEmail}`;
       await page.goto("/login");
-      await page
-        .getByLabel("E-mail", { exact: true })
-        .fill(registrationEmail);
+      await page.getByLabel("E-mail", { exact: true }).fill(registrationEmail);
       await page.getByLabel("Senha", { exact: true }).fill("Unknown123!");
       await page.getByRole("button", { name: "Entrar", exact: true }).click();
       await expect(page).toHaveURL(/\/sign-up\/verify$/);
@@ -179,6 +179,7 @@ test.describe("identity and first-access routes", () => {
   }) => {
     const email = acceptanceEmail("company-landing-intent");
     try {
+      await resetLocalRegistrationRateLimits();
       await page.goto("/sign-up?intent=company");
       await page.getByLabel("E-mail", { exact: true }).fill(email);
       await page

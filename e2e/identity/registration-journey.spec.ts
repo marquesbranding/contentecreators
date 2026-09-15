@@ -5,7 +5,12 @@ import {
   seedRolelessAcceptanceIdentity,
   acceptanceEmail,
   cleanupAcceptanceIdentity,
+  resetLocalRegistrationRateLimits,
 } from "../support/local-acceptance";
+
+test.beforeEach(async () => {
+  await resetLocalRegistrationRateLimits();
+});
 
 async function readCode(email: string) {
   let code: string | undefined;
@@ -177,7 +182,12 @@ test("opens the confirmation link in another browser context", async ({
       .replaceAll("&amp;", "&");
     expect(link).toBeTruthy();
     const otherPage = await other.newPage();
-    await otherPage.goto(link!);
+    // Local Auth emails use supabase/config.toml site_url (the dev port);
+    // keep the host but target the server under test.
+    const testPort = new URL(test.info().project.use.baseURL!).port;
+    const emailLink = new URL(link!);
+    emailLink.port = testPort;
+    await otherPage.goto(emailLink.toString());
     await expect(otherPage).toHaveURL(/\/onboarding\/account$/);
     await expect(otherPage.getByLabel("E-mail", { exact: true })).toHaveValue(
       email,
