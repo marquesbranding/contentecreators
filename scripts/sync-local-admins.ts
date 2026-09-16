@@ -14,6 +14,7 @@ interface AuthUserRow extends Record<string, unknown> {
 }
 
 interface AccountRow extends Record<string, unknown> {
+  id: string;
   role: "ADMIN" | "COMPANY" | "INFLUENCER" | null;
 }
 
@@ -138,10 +139,14 @@ async function ensureLocalAdminAccount(
   email: string,
   summary: ProvisioningSummary,
 ) {
+  /* An administrator who also uses the product owns a second, roleless account
+   * for their own profile; the administrator row is the one to synchronize. */
   const [account] = await transaction<AccountRow[]>`
-    select role
+    select id, role
     from public.accounts
     where auth_user_id = ${authUserId}::uuid
+    order by coalesce(role = 'ADMIN', false) desc, created_at, id
+    limit 1
     for update
   `;
 
@@ -188,7 +193,7 @@ async function ensureLocalAdminAccount(
       banned_at = null,
       archived_at = null,
       completion_percentage = 100
-    where auth_user_id = ${authUserId}::uuid
+    where id = ${account.id}::uuid
       and (
         role is distinct from 'ADMIN'::public.account_role
         or status is distinct from 'APPROVED'::public.account_status

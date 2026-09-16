@@ -337,6 +337,82 @@ describeLocalStack("Drizzle admin provisioning repository", () => {
     expect(result?.first.accountId).toBe(result?.repeated.accountId);
   });
 
+  it("keeps an administrator who also owns a roleless product account", async () => {
+    const productAccountId = "b1000000-0000-4000-8000-00000000000a";
+    let result:
+      | {
+          outcome: { accountId: string; kind: string };
+          rows: { id: string; role: string | null; status: string }[];
+        }
+      | undefined;
+
+    try {
+      await drizzleClient.database.transaction(async (transaction) => {
+        await applyVerifiedAuditContext(transaction, {
+          actorAccountId: null,
+          actorRole: null,
+          actorType: "SYSTEM",
+          reason: "Synthetic roleless product account for the seeded admin",
+          requestId: "admin-dual-account-setup",
+          source: "SCRIPT",
+        });
+        await transaction.insert(accounts).values({
+          authUserId: seedAdmin.authUserId,
+          completionPercentage: 0,
+          id: productAccountId,
+          operationalEmail: seedAdmin.email,
+          role: null,
+          status: "ONBOARDING",
+        });
+        const repository = createDrizzleAdminProvisioningRepository({
+          database: transaction,
+          runBootstrapTransaction: async (context, work) => {
+            await applyVerifiedAuditContext(transaction, context);
+            return work(transaction);
+          },
+        });
+
+        const outcome = await repository.bootstrapInitialAdmin({
+          allowExistingAdmins: true,
+          approvalReference: "CLIENTE-ADMIN-PRODUCTION-2026-07-31",
+          email: seedAdmin.email,
+          identityId: seedAdmin.authUserId,
+          requestId: "admin-dual-account-integration",
+        });
+
+        if (outcome.kind === "rejected") {
+          throw new Error(`Unexpected rejection: ${outcome.code}`);
+        }
+
+        const rows = await transaction
+          .select({
+            id: accounts.id,
+            role: accounts.role,
+            status: accounts.status,
+          })
+          .from(accounts)
+          .where(eq(accounts.authUserId, seedAdmin.authUserId))
+          .orderBy(accounts.id);
+
+        result = { outcome, rows };
+        throw rollback;
+      });
+    } catch (error) {
+      if (error !== rollback) {
+        throw error;
+      }
+    }
+
+    expect(result?.outcome).toEqual({
+      accountId: seedAdmin.accountId,
+      kind: "already_provisioned",
+    });
+    expect(result?.rows).toEqual([
+      { id: seedAdmin.accountId, role: "ADMIN", status: "APPROVED" },
+      { id: productAccountId, role: null, status: "ONBOARDING" },
+    ]);
+  });
+
   it("lets a verified admin provision another identity once with attributed audit", async () => {
     let result:
       | {

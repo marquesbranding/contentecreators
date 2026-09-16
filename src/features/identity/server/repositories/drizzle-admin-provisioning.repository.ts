@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, eq, isNull, notInArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, notInArray, sql } from "drizzle-orm";
 
 import {
   getDatabaseClient,
@@ -99,10 +99,20 @@ export function createDrizzleAdminProvisioningRepository(
           await transaction.execute(
             sql`select pg_advisory_xact_lock(hashtext('contente-creators-initial-admin'))`,
           );
+          /* An administrator who also uses the product owns a second, roleless
+           * account for their creator/company profile. Always resolve the
+           * administrator row first: promoting the roleless one would collide
+           * with the unique (auth_user_id, role) index. */
           const [targetAccount] = await transaction
             .select()
             .from(accounts)
             .where(eq(accounts.authUserId, input.identityId))
+            .orderBy(
+              // A null role compares as null, which sorts first under desc.
+              desc(sql`coalesce(${accounts.role} = 'ADMIN', false)`),
+              asc(accounts.createdAt),
+              asc(accounts.id),
+            )
             .limit(1);
           const activeAdmins = await transaction
             .select({ id: accounts.id })
