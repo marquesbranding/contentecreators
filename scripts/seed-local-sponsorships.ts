@@ -73,7 +73,7 @@ const FIXTURES: SponsorshipFixture[] = [
     title: null,
   },
   {
-    body: "Badge \"Conteúdo patrocinado\" continua visível; só o selo do anunciante some.",
+    body: 'Badge "Conteúdo patrocinado" continua visível; só o selo do anunciante some.',
     buttonBackgroundColor: null,
     buttonTextColor: null,
     fontFamily: null,
@@ -270,14 +270,17 @@ async function main() {
         linkLabel: fixture.linkLabel,
         linkOnCreative: fixture.linkOnCreative,
         linkUrl: fixture.linkUrl,
-        placementType: fixture.slotKey === "catalog-inline" ? "INLINE_BANNER" : "CAROUSEL",
+        placementType:
+          fixture.slotKey === "catalog-inline" ? "INLINE_BANNER" : "CAROUSEL",
         showAdvertiserLabel: fixture.showAdvertiserLabel ?? true,
         showSponsoredBadge: true,
         slotKey: fixture.slotKey,
         sortOrder: sortOrder++,
         startsAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
         textColor: fixture.textColor,
-        title: fixture.title ? `${TITLE_PREFIX}${fixture.title}` : fixture.title,
+        title: fixture.title
+          ? `${TITLE_PREFIX}${fixture.title}`
+          : fixture.title,
       });
     }
 
