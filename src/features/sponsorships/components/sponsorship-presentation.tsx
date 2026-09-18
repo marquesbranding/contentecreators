@@ -186,7 +186,10 @@ export function SponsorshipExternalLink({
     <a
       className={cn(
         buttonVariants({ size: "lg" }),
-        "relative z-20 h-auto min-h-12 py-3",
+        // Match the creator/company card CTA by default; an advertiser's
+        // own buttonBackgroundColor/buttonTextColor overrides this via the
+        // inline style below, which always wins over these classes.
+        "bg-brand-night hover:bg-brand-night/90 relative z-20 h-auto min-h-12 py-3 text-white",
         className,
       )}
       style={toAppearanceStyle(appearance, true)}
