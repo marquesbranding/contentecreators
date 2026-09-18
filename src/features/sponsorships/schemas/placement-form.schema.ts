@@ -1,3 +1,8 @@
+import {
+  sponsorshipColorSchema,
+  addCreativeLinkIssues,
+} from "./sponsorship-creative-options.schema";
+import { SPONSORSHIP_FONT_KEYS } from "../domain/sponsorship-appearance";
 import { z } from "zod";
 import {
   sponsorshipAudienceSchema,
@@ -8,6 +13,14 @@ import { getPlacementSlot } from "../domain/placement-slot-catalog";
 import { safeSponsorshipLinkSchema } from "./sponsorship-placement.schema";
 export const placementFormSchema = z
   .object({
+    linkOnCreative: z.boolean(),
+    showSponsoredBadge: z.boolean(),
+    showAdvertiserLabel: z.boolean(),
+    textColor: z.union([z.literal(""), sponsorshipColorSchema]),
+    buttonBackgroundColor: z.union([z.literal(""), sponsorshipColorSchema]),
+    buttonTextColor: z.union([z.literal(""), sponsorshipColorSchema]),
+    fontFamily: z.union([z.literal(""), z.enum(SPONSORSHIP_FONT_KEYS)]),
+    imageAlt: z.string().trim().max(200),
     advertiserLabel: z.string().trim().max(160),
     audience: sponsorshipAudienceSchema,
     body: z.string().trim().max(500),
@@ -68,13 +81,7 @@ export const placementFormSchema = z
       });
     }
 
-    if (Boolean(values.linkLabel) !== Boolean(values.linkUrl)) {
-      context.addIssue({
-        code: "custom",
-        message: "Preencha o texto do botão e o endereço em conjunto.",
-        path: [values.linkUrl ? "linkLabel" : "linkUrl"],
-      });
-    }
+    addCreativeLinkIssues(values, context);
     if (
       values.startsAt &&
       values.endsAt &&
@@ -120,7 +127,15 @@ export function formDefaults(
   placement?: SponsorshipAdminPlacementDto,
 ): PlacementFormValues {
   return {
-    advertiserLabel: placement?.advertiserLabel ?? "",
+    linkOnCreative: placement?.linkOnCreative ?? false,
+    showSponsoredBadge: placement?.showSponsoredBadge ?? true,
+    showAdvertiserLabel: placement?.showAdvertiserLabel ?? false,
+    textColor: placement?.textColor ?? "",
+    buttonBackgroundColor: placement?.buttonBackgroundColor ?? "",
+    buttonTextColor: placement?.buttonTextColor ?? "",
+    fontFamily: placement?.fontFamily ?? "",
+    imageAlt: placement?.imageAlt ?? "",
+    advertiserLabel: placement?.advertiserLabel ?? "Contente Creators",
     audience: placement?.audience ?? "ALL",
     body: placement?.body ?? "",
     creativeAssetId: placement?.creativeAssetId ?? "",

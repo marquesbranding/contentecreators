@@ -46,6 +46,18 @@ export const sponsorshipPlacements = pgTable(
     ),
     title: varchar("title", { length: 160 }),
     body: varchar("body", { length: 500 }),
+    linkOnCreative: boolean("link_on_creative").notNull().default(false),
+    showSponsoredBadge: boolean("show_sponsored_badge").notNull().default(true),
+    showAdvertiserLabel: boolean("show_advertiser_label")
+      .notNull()
+      .default(false),
+    textColor: varchar("text_color", { length: 7 }),
+    buttonBackgroundColor: varchar("button_background_color", { length: 7 }),
+    buttonTextColor: varchar("button_text_color", { length: 7 }),
+    fontFamily: varchar("font_family", { length: 32 }).$type<
+      "default" | "serif" | "display" | "rounded" | "mono"
+    >(),
+    imageAlt: varchar("image_alt", { length: 200 }),
     linkUrl: text("link_url"),
     linkLabel: varchar("link_label", { length: 80 }),
     startsAt: timestamp("starts_at", { withTimezone: true }),
@@ -100,6 +112,30 @@ export const sponsorshipPlacements = pgTable(
     check(
       "sponsorship_placements_featured_creator_check",
       sql`${table.placementType} <> 'FEATURED_CREATOR' or ${table.featuredCreatorProfileId} is not null`,
+    ),
+    check(
+      "sponsorship_placements_text_color_check",
+      sql`${table.textColor} is null or ${table.textColor} ~ '^#[0-9A-Fa-f]{6}$'`,
+    ),
+    check(
+      "sponsorship_placements_button_background_color_check",
+      sql`${table.buttonBackgroundColor} is null or ${table.buttonBackgroundColor} ~ '^#[0-9A-Fa-f]{6}$'`,
+    ),
+    check(
+      "sponsorship_placements_button_text_color_check",
+      sql`${table.buttonTextColor} is null or ${table.buttonTextColor} ~ '^#[0-9A-Fa-f]{6}$'`,
+    ),
+    check(
+      "sponsorship_placements_font_family_check",
+      sql`${table.fontFamily} is null or ${table.fontFamily} in ('default','serif','display','rounded','mono')`,
+    ),
+    check(
+      "sponsorship_placements_link_on_creative_check",
+      sql`not ${table.linkOnCreative} or ${table.linkUrl} is not null`,
+    ),
+    check(
+      "sponsorship_placements_advertiser_label_visible_check",
+      sql`not ${table.showAdvertiserLabel} or ${table.advertiserLabel} is not null`,
     ),
     check("sponsorship_placements_version_check", sql`${table.version} > 0`),
   ],

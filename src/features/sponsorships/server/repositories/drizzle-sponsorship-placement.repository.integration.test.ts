@@ -36,6 +36,25 @@ describeLocalStack("Drizzle sponsorship placement repository", () => {
     await client.client.end({ timeout: 2 });
   });
 
+  it.each([
+    { textColor: "red" },
+    { buttonBackgroundColor: "#fff" },
+    { buttonTextColor: "url(evil)" },
+    { linkOnCreative: true },
+    { showAdvertiserLabel: true },
+  ])(
+    "rejects invalid creative options at the database boundary: %j",
+    async (options) => {
+      await expect(
+        client.database.insert(sponsorshipPlacements).values({
+          placementType: "TOP_BANNER",
+          slotKey: "invalid-options",
+          ...options,
+        }),
+      ).rejects.toThrow();
+    },
+  );
+
   it("persists audited CRUD with private media and optimistic versions", async () => {
     const activeAssetId = crypto.randomUUID();
     const pendingAssetId = crypto.randomUUID();
@@ -75,6 +94,14 @@ describeLocalStack("Drizzle sponsorship placement repository", () => {
         placement: {
           advertiserAccountId: null,
           advertiserLabel: "Marca de integração",
+          linkOnCreative: true,
+          showSponsoredBadge: false,
+          showAdvertiserLabel: true,
+          textColor: "#111111",
+          buttonBackgroundColor: "#FF5500",
+          buttonTextColor: "#FFFFFF",
+          fontFamily: "serif",
+          imageAlt: "Oferta de integração",
           audience: "ALL",
           body: "Criativo privado para teste local.",
           creativeAssetId: activeAssetId,
@@ -95,6 +122,14 @@ describeLocalStack("Drizzle sponsorship placement repository", () => {
 
       expect(created).toMatchObject({
         isActive: false,
+        linkOnCreative: true,
+        showSponsoredBadge: false,
+        showAdvertiserLabel: true,
+        textColor: "#111111",
+        buttonBackgroundColor: "#FF5500",
+        buttonTextColor: "#FFFFFF",
+        fontFamily: "serif",
+        imageAlt: "Oferta de integração",
         version: 1,
       });
 

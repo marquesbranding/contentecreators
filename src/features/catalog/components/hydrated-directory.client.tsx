@@ -8,16 +8,16 @@ import { BrowserQueryProvider } from "@/shared/query/browser-query-provider";
 import { DirectoryView } from "./directory-view.client";
 
 export function HydratedDirectory({
-  midlistSlots,
+  sponsoredCards,
   state,
 }: {
-  midlistSlots?: ReactNode[];
+  sponsoredCards?: { key: string; node: ReactNode }[];
   state: DehydratedState;
 }) {
   return (
     <BrowserQueryProvider>
       <HydrationBoundary state={state}>
-        <DirectoryView midlistSlots={midlistSlots} />
+        <DirectoryView sponsoredCards={sponsoredCards} />
       </HydrationBoundary>
     </BrowserQueryProvider>
   );

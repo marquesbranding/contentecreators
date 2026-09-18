@@ -22,6 +22,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
   ),
+  other: { "facebook-domain-verification": "r89ugiw0uurxqmq9ttdfy2xjwhzyod" },
   applicationName: "Contente Creators",
   title: {
     default: "Contente Creators",

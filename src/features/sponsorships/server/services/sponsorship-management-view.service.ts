@@ -1,3 +1,4 @@
+import { sponsorshipAccessibleName } from "../../domain/sponsorship-appearance";
 import "server-only";
 
 import type {
@@ -76,9 +77,7 @@ function stateOf(
 }
 
 function creativeAlt(placement: SponsorshipPlacementRecord) {
-  return placement.advertiserLabel
-    ? `${placement.title ?? "Criativo patrocinado"} — ${placement.advertiserLabel}`
-    : (placement.title ?? "Criativo patrocinado");
+  return sponsorshipAccessibleName(placement);
 }
 
 function toAdminMedia(
@@ -131,6 +130,14 @@ async function toDto(
     isActive: placement.isActive,
     linkLabel: placement.linkLabel,
     linkUrl: placement.linkUrl,
+    linkOnCreative: placement.linkOnCreative,
+    showSponsoredBadge: placement.showSponsoredBadge,
+    showAdvertiserLabel: placement.showAdvertiserLabel,
+    textColor: placement.textColor,
+    buttonBackgroundColor: placement.buttonBackgroundColor,
+    buttonTextColor: placement.buttonTextColor,
+    fontFamily: placement.fontFamily,
+    imageAlt: placement.imageAlt,
     placementType: placement.placementType,
     slotKey: placement.slotKey,
     sortOrder: placement.sortOrder,
@@ -155,6 +162,14 @@ function toPersistenceWrite(input: SponsorshipPlacementWriteInput) {
     featuredCreatorProfileId: input.featuredCreatorProfileId,
     linkLabel: input.linkLabel,
     linkUrl: input.linkUrl,
+    linkOnCreative: input.linkOnCreative,
+    showSponsoredBadge: input.showSponsoredBadge,
+    showAdvertiserLabel: input.showAdvertiserLabel,
+    textColor: input.textColor,
+    buttonBackgroundColor: input.buttonBackgroundColor,
+    buttonTextColor: input.buttonTextColor,
+    fontFamily: input.fontFamily,
+    imageAlt: input.imageAlt,
     placementType: input.placementType,
     slotKey: input.slotKey,
     sortOrder: input.sortOrder,

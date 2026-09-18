@@ -13,8 +13,7 @@ function isGenericPublicPromotion(placement: RendererPlacementDto) {
     placement.eligible &&
     placement.type === "TOP_BANNER" &&
     placement.featuredCreator == null &&
-    placement.media &&
-    placement.title.trim(),
+    placement.media,
   );
 }
 

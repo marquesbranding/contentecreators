@@ -150,9 +150,9 @@ function activeFilterList(
 }
 
 export function DirectoryView({
-  midlistSlots,
+  sponsoredCards,
 }: {
-  midlistSlots?: ReactNode[];
+  sponsoredCards?: { key: string; node: ReactNode }[];
 }) {
   const { clearFilters, filters, updateFilters } = useDirectoryUrlState();
   const [optimisticFilters, addOptimisticFiltersPatch] = useOptimistic(
@@ -259,7 +259,7 @@ export function DirectoryView({
         hasNextPage={directory.hasNextPage}
         isFetchingNextPage={directory.isFetchingNextPage}
         items={directory.items}
-        midlistSlots={midlistSlots}
+        sponsoredCards={sponsoredCards}
         onClearFilters={() => navigate("clear")}
         onLoadMore={() => void directory.fetchNextPage()}
         onRetry={() => void directory.refetch()}

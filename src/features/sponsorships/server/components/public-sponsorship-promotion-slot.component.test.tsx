@@ -10,6 +10,14 @@ const promotion: RendererPlacementDto = {
   eligible: true,
   featuredCreator: null,
   id: "50000000-0000-4000-8000-000000000001",
+  linkOnCreative: false,
+  showSponsoredBadge: true,
+  showAdvertiserLabel: true,
+  textColor: null,
+  buttonBackgroundColor: null,
+  buttonTextColor: null,
+  fontFamily: null,
+  imageAlt: null,
   linkLabel: null,
   linkUrl: null,
   media: {
@@ -35,7 +43,7 @@ describe("public sponsorship promotion server slot", () => {
 
     expect(
       screen.getByRole("region", {
-        name: "Patrocínio: Conteúdo patrocinado",
+        name: "Conteúdo patrocinado",
       }),
     ).toBeVisible();
     expect(load).toHaveBeenCalledExactlyOnceWith({

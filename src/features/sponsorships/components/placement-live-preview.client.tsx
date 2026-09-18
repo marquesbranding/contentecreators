@@ -9,12 +9,9 @@ import { getPlacementSlot } from "../domain/placement-slot-catalog";
 import { SponsorshipHeroBanner } from "./sponsorship-hero-banner";
 import { SponsorshipSidePlacement } from "./sponsorship-side-placement";
 import { SponsorshipCarousel } from "./sponsorship-carousel.client";
-import { SponsorshipGridRow } from "./sponsorship-grid-row";
+import { SponsorshipCatalogCard } from "./sponsorship-catalog-card";
 import { SponsorshipFeaturedCreator } from "./sponsorship-featured-creator";
-import {
-  SponsorshipTopBanner,
-  type SponsorshipCreativeViewModel,
-} from "./sponsorship-presentation";
+import { type SponsorshipCreativeViewModel } from "./sponsorship-presentation";
 
 const viewports = [
   { label: "Mobile", width: 375, Icon: Smartphone },
@@ -80,30 +77,41 @@ export function PlacementLivePreview({
     url
       ? {
           url,
-          alt: values.advertiserLabel || values.title || "Imagem do patrocínio",
+          alt:
+            values.imageAlt ||
+            values.title ||
+            (values.advertiserLabel
+              ? `Patrocínio de ${values.advertiserLabel}`
+              : "Patrocínio"),
         }
       : null;
   const creative: SponsorshipCreativeViewModel = {
+    ...values,
+    appearance: values,
     id: "administrative-preview",
     advertiserLabel: values.advertiserLabel,
     audienceMatches: true,
     eligible: true,
     routeMatches: true,
     previewMode: true,
-    title: values.title || "Sua campanha começa aqui",
+    title: values.title || null,
     body: values.body || null,
     media: media(images.desktop),
     mediaMobile: media(images.mobile),
     mediaTablet: media(images.tablet),
     link: values.linkUrl
-      ? { href: values.linkUrl, label: values.linkLabel || "Conheça a oferta" }
+      ? {
+          href: values.linkUrl,
+          buttonLabel: values.linkLabel || null,
+          onCreative: values.linkOnCreative,
+        }
       : null,
   };
   const content =
     slot.slotKey === "catalog-top" ? (
       <SponsorshipHeroBanner creative={creative} />
     ) : slot.slotKey === "landing-top" ? (
-      <SponsorshipTopBanner creative={creative} />
+      <SponsorshipHeroBanner creative={creative} />
     ) : slot.slotKey === "catalog-inline" ? (
       <div className="flex justify-end">
         <SponsorshipSidePlacement creative={creative} />
@@ -111,7 +119,21 @@ export function PlacementLivePreview({
     ) : slot.slotKey === "catalog-carousel" ? (
       <SponsorshipCarousel creatives={[creative]} />
     ) : slot.slotKey === "catalog-midlist" ? (
-      <SponsorshipGridRow creatives={[creative]} />
+      <div className="grid auto-rows-fr grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div
+          aria-label="Exemplo de perfil"
+          className="bg-card text-muted-foreground flex min-h-80 items-end rounded-2xl border p-4 text-sm"
+        >
+          Perfil do catálogo
+        </div>
+        <SponsorshipCatalogCard creative={creative} />
+        <div
+          aria-label="Exemplo de perfil"
+          className="bg-card text-muted-foreground flex min-h-80 items-end rounded-2xl border p-4 text-sm"
+        >
+          Perfil do catálogo
+        </div>
+      </div>
     ) : (
       <SponsorshipFeaturedCreator
         creative={creative}

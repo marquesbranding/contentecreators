@@ -5,7 +5,8 @@ import {
   SponsorshipCarousel,
   type SponsorshipCreativeViewModel,
   SponsorshipFeaturedCreator,
-  SponsorshipGridRow,
+  SponsorshipCatalogCard,
+  getSafeSponsorshipExternalHref,
   SponsorshipHeroBanner,
   SponsorshipSidePlacement,
 } from "@/features/sponsorships";
@@ -45,16 +46,19 @@ function toCreativeViewModel(
   placement: RendererPlacementDto,
 ): SponsorshipCreativeViewModel {
   return {
+    ...placement,
+    appearance: placement,
     audienceMatches: true,
     advertiserLabel: placement.advertiserLabel,
     body: placement.body,
     eligible: placement.eligible,
     id: placement.id,
     link:
-      placement.linkLabel && placement.linkUrl
+      placement.linkUrl && getSafeSponsorshipExternalHref(placement.linkUrl)
         ? {
             href: placement.linkUrl,
-            label: placement.linkLabel,
+            buttonLabel: placement.linkLabel,
+            onCreative: placement.linkOnCreative,
           }
         : null,
     media: placement.media,
@@ -67,17 +71,10 @@ function toCreativeViewModel(
   };
 }
 
-/**
- * Built separately from `CatalogSponsorshipSlots` because it belongs *inside*
- * the listing, not around it. The catalog feature cannot import sponsorships
- * (see the boundaries rule in eslint.config.mjs), so the app layer builds one
- * row per eligible midlist placement here and hands the list down as opaque
- * nodes — the catalog listing then repeats and cycles through them every N
- * items, instead of showing a single combined block once.
- */
-export function buildCatalogMidlistSlots(
+/** The app composes opaque sponsored cards; catalog owns their insertion positions. */
+export function buildCatalogSponsoredCards(
   slots?: CatalogSponsorshipSlotsDto,
-): ReactNode[] {
+): { key: string; node: ReactNode }[] {
   const midlist =
     slots?.midlist?.flatMap((slot) => {
       const placement = placementForSlot(slot, "CAROUSEL");
@@ -85,13 +82,10 @@ export function buildCatalogMidlistSlots(
       return placement ? [placement] : [];
     }) ?? [];
 
-  return midlist.map((placement) => (
-    <SponsorshipGridRow
-      creatives={[toCreativeViewModel(placement)]}
-      key={placement.id}
-      label="Patrocínios no catálogo"
-    />
-  ));
+  return midlist.slice(0, 3).map((placement) => ({
+    key: placement.id,
+    node: <SponsorshipCatalogCard creative={toCreativeViewModel(placement)} />,
+  }));
 }
 
 export function CatalogSponsorshipSlots({
@@ -116,15 +110,8 @@ export function CatalogSponsorshipSlots({
     return children;
   }
 
-  return (
-    <div
-      className="w-full min-w-0 space-y-4 sm:space-y-6"
-      data-slot="catalog-sponsorship-layout"
-    >
-      {top ? (
-        <SponsorshipHeroBanner creative={toCreativeViewModel(top)} />
-      ) : null}
-
+  const mainContent = (
+    <div className="min-w-0 space-y-4 sm:space-y-6">
       {carousel.length > 0 ? (
         <SponsorshipCarousel
           creatives={carousel.map(toCreativeViewModel)}
@@ -145,6 +132,19 @@ export function CatalogSponsorshipSlots({
         />
       ) : null}
 
+      {children}
+    </div>
+  );
+
+  return (
+    <div
+      className="w-full min-w-0 space-y-4 sm:space-y-6"
+      data-slot="catalog-sponsorship-layout"
+    >
+      {top ? (
+        <SponsorshipHeroBanner creative={toCreativeViewModel(top)} />
+      ) : null}
+
       {side ? (
         <div
           className="grid min-w-0 gap-7 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start"
@@ -154,7 +154,7 @@ export function CatalogSponsorshipSlots({
             className="order-2 min-w-0 lg:order-1"
             data-slot="catalog-main-content"
           >
-            {children}
+            {mainContent}
           </div>
           <div
             className="order-1 min-w-0 lg:order-2"
@@ -164,7 +164,7 @@ export function CatalogSponsorshipSlots({
           </div>
         </div>
       ) : (
-        children
+        mainContent
       )}
     </div>
   );

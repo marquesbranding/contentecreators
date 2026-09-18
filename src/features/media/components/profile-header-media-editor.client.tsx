@@ -64,8 +64,8 @@ export function CropDialog({
       }}
       open={state.isEditing}
     >
-      <DialogContent className="sm:max-w-xl">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden sm:max-w-xl">
+        <DialogHeader className="shrink-0">
           <DialogTitle>Ajustar {slot.label.toLowerCase()}</DialogTitle>
           <DialogDescription>
             Amplie e reposicione a imagem. O recorte final respeita o formato
@@ -73,38 +73,39 @@ export function CropDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <MediaCropFields
-          aspectClassName={
-            slot.cropAspectClassName ?? cropAspectByPurpose[slot.purpose]
-          }
-          crop={state.upload.crop}
-          displayFrames={
-            slot.purpose === "COVER" ? coverDisplayFrames : undefined
-          }
-          previewUrl={state.upload.previewUrl}
-          setCrop={state.upload.setCrop}
-        />
+        <div className="min-h-0 space-y-4 overflow-y-auto">
+          <MediaCropFields
+            aspectClassName={
+              slot.cropAspectClassName ?? cropAspectByPurpose[slot.purpose]
+            }
+            crop={state.upload.crop}
+            displayFrames={
+              slot.purpose === "COVER" ? coverDisplayFrames : undefined
+            }
+            previewUrl={state.upload.previewUrl}
+            setCrop={state.upload.setCrop}
+          />
 
-        {state.upload.isBusy ? (
-          <Progress
-            aria-label="Progresso do envio"
-            aria-live="polite"
-            value={state.upload.progress}
-          >
-            <ProgressLabel>{state.upload.statusMessage}</ProgressLabel>
-            <ProgressValue>{() => `${state.upload.progress}%`}</ProgressValue>
-          </Progress>
-        ) : null}
+          {state.upload.isBusy ? (
+            <Progress
+              aria-label="Progresso do envio"
+              aria-live="polite"
+              value={state.upload.progress}
+            >
+              <ProgressLabel>{state.upload.statusMessage}</ProgressLabel>
+              <ProgressValue>{() => `${state.upload.progress}%`}</ProgressValue>
+            </Progress>
+          ) : null}
 
-        {state.upload.error ? (
-          <Alert aria-live="assertive" variant="destructive">
-            <CircleAlert aria-hidden="true" />
-            <AlertTitle>Não foi possível concluir</AlertTitle>
-            <AlertDescription>{state.upload.error}</AlertDescription>
-          </Alert>
-        ) : null}
-
-        <DialogFooter>
+          {state.upload.error ? (
+            <Alert aria-live="assertive" variant="destructive">
+              <CircleAlert aria-hidden="true" />
+              <AlertTitle>Não foi possível concluir</AlertTitle>
+              <AlertDescription>{state.upload.error}</AlertDescription>
+            </Alert>
+          ) : null}
+        </div>
+        <DialogFooter className="shrink-0">
           <Button
             disabled={state.upload.isBusy}
             onClick={state.upload.reset}

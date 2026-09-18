@@ -88,6 +88,12 @@
 5. **[2026-07-30] Remove generated Playwright reports before repository-wide lint**
    Do instead: delete the ignored `playwright-report` and `test-results` artifacts after local E2E runs; the current ESLint traversal still inspects generated report bundles and can report false repository failures.
 
+6. **[2026-09-18] Derive Zod write contracts before adding cross-field refinements**
+   Do instead: create POST/PATCH schemas from the unrefined object, then apply the common refinement; Zod 4 rejects `.omit()` on refined objects.
+
+7. **[2026-09-18] Use the integration suite’s reset for deterministic fixture assertions**
+   Do instead: let `test:integration:local` perform its own reset for the complete suite; `local:reset` also provisions configured admins, which violate the suite’s synthetic-email-only assertion. Run `local:env` and `local:storage` afterward for browser QA, and keep E2E separate from integration execution.
+
 ## Authentication & Registration
 
 1. **[2026-09-15] OTP identities can have a generated password hash**

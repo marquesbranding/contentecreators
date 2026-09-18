@@ -34,24 +34,14 @@ interface DirectoryResultsProps {
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
   items: DirectoryBrowserEntryDto[];
-  midlistSlots?: ReactNode[];
+  sponsoredCards?: { key: string; node: ReactNode }[];
   onClearFilters?: () => void;
   onLoadMore?: () => void;
   onRetry?: () => void;
   status: DirectoryResultsStatus;
 }
 
-const ENTRIES_BEFORE_MIDLIST = 8;
-
-function chunkItems<T>(items: T[], size: number): T[][] {
-  const chunks: T[][] = [];
-
-  for (let start = 0; start < items.length; start += size) {
-    chunks.push(items.slice(start, start + size));
-  }
-
-  return chunks;
-}
+export const SPONSORED_CARD_INTERVAL = 8;
 
 export function DirectoryLoadingSkeleton({ count = 8 }: { count?: number }) {
   return (
@@ -110,7 +100,7 @@ export function DirectoryResults({
   hasNextPage = false,
   isFetchingNextPage = false,
   items,
-  midlistSlots = [],
+  sponsoredCards = [],
   onClearFilters,
   onLoadMore,
   onRetry,
@@ -152,11 +142,6 @@ export function DirectoryResults({
     );
   }
 
-  const hasMidlist = midlistSlots.length > 0;
-  const itemChunks = hasMidlist
-    ? chunkItems(items, ENTRIES_BEFORE_MIDLIST)
-    : [items];
-
   return (
     <section aria-label="Catálogo" className="space-y-4">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
@@ -169,36 +154,55 @@ export function DirectoryResults({
         </p>
       </div>
 
-      {itemChunks.map((chunkOfItems, chunkIndex) => (
-        <Fragment key={chunkIndex}>
-          <ul
-            aria-label={
-              chunkIndex === 0
-                ? "Lista do catálogo"
-                : "Lista do catálogo, continuação"
-            }
-            className={cn(
-              "grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
-              STAGGER_CONTAINER_PADDING,
-            )}
-          >
-            {chunkOfItems.map((entry, index) => (
+      <ul
+        aria-label="Lista do catálogo"
+        className={cn(
+          "grid auto-rows-fr grid-cols-1 items-stretch gap-4 sm:auto-rows-auto sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+          STAGGER_CONTAINER_PADDING,
+        )}
+      >
+        {items.map((entry, index) => {
+          const displayIndex =
+            index +
+            (sponsoredCards.length
+              ? Math.floor(index / SPONSORED_CARD_INTERVAL)
+              : 0);
+          const adIndex = index / SPONSORED_CARD_INTERVAL - 1;
+          const sponsored =
+            index > 0 &&
+            index % SPONSORED_CARD_INTERVAL === 0 &&
+            items.length >= 4 &&
+            sponsoredCards.length > 0
+              ? sponsoredCards[adIndex % sponsoredCards.length]
+              : null;
+          return (
+            <Fragment
+              key={entry.kind === "COMPANY" ? entry.companyId : entry.creatorId}
+            >
+              {sponsored ? (
+                <li
+                  aria-label="Patrocínio"
+                  className={cn(
+                    "h-full min-w-0",
+                    staggerItemClassName(displayIndex - 1),
+                  )}
+                  key={`sponsor-${sponsored.key}-${adIndex}`}
+                >
+                  {sponsored.node}
+                </li>
+              ) : null}
               <li
-                className={cn("h-full min-w-0", staggerItemClassName(index))}
-                key={
-                  entry.kind === "COMPANY" ? entry.companyId : entry.creatorId
-                }
+                className={cn(
+                  "h-full min-w-0",
+                  staggerItemClassName(displayIndex),
+                )}
               >
                 <DirectoryEntryCard entry={entry} />
               </li>
-            ))}
-          </ul>
-
-          {chunkIndex < itemChunks.length - 1
-            ? midlistSlots[chunkIndex % midlistSlots.length]
-            : null}
-        </Fragment>
-      ))}
+            </Fragment>
+          );
+        })}
+      </ul>
 
       {hasNextPage ? (
         <div className="flex flex-col items-center gap-2 pt-2">

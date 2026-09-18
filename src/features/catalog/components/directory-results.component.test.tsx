@@ -46,19 +46,15 @@ describe("DirectoryResults", () => {
 
   it("repeats the midlist block every N items and cycles through the available slots", () => {
     const items = Array.from({ length: 20 }, (_, index) => companyEntry(index));
-    const midlistSlots = [
-      <p data-testid="midlist-slot" key="a">
-        Slot A
-      </p>,
-      <p data-testid="midlist-slot" key="b">
-        Slot B
-      </p>,
+    const sponsoredCards = [
+      { key: "a", node: <p data-testid="midlist-slot">Slot A</p> },
+      { key: "b", node: <p data-testid="midlist-slot">Slot B</p> },
     ];
 
     render(
       <DirectoryResults
         items={items}
-        midlistSlots={midlistSlots}
+        sponsoredCards={sponsoredCards}
         status="success"
       />,
     );
@@ -68,20 +64,54 @@ describe("DirectoryResults", () => {
     const slots = screen.getAllByTestId("midlist-slot");
     expect(slots.map((slot) => slot.textContent)).toEqual(["Slot A", "Slot B"]);
     expect(screen.getAllByRole("article")).toHaveLength(20);
+    const list = screen.getByRole("list");
+    expect(list.children[8]).toHaveTextContent("Slot A");
+    expect(list.children[17]).toHaveTextContent("Slot B");
+    expect(screen.getByText("20 perfis nesta página")).toBeVisible();
   });
 
   it("does not append a midlist block after the final chunk", () => {
     const items = Array.from({ length: 8 }, (_, index) => companyEntry(index));
-    const midlistSlots = [<p data-testid="midlist-slot" key="a" />];
+    const sponsoredCards = [
+      { key: "a", node: <p data-testid="midlist-slot" /> },
+    ];
 
     render(
       <DirectoryResults
         items={items}
-        midlistSlots={midlistSlots}
+        sponsoredCards={sponsoredCards}
         status="success"
       />,
     );
 
     expect(screen.queryByTestId("midlist-slot")).not.toBeInTheDocument();
   });
+});
+
+it("keeps existing sponsored nodes stable when more profiles are appended and cycles A/B/A", () => {
+  const items = Array.from({ length: 28 }, (_, index) => companyEntry(index));
+  const sponsoredCards = [
+    { key: "a", node: <span>Campanha A</span> },
+    { key: "b", node: <span>Campanha B</span> },
+  ];
+  const { rerender } = render(
+    <DirectoryResults
+      items={items.slice(0, 10)}
+      sponsoredCards={sponsoredCards}
+      status="success"
+    />,
+  );
+  const first = screen.getByRole("list").children[8];
+  rerender(
+    <DirectoryResults
+      items={items}
+      sponsoredCards={sponsoredCards}
+      status="success"
+    />,
+  );
+  const list = screen.getByRole("list");
+  expect(list.children[8]).toBe(first);
+  expect(list.children[8]).toHaveTextContent("Campanha A");
+  expect(list.children[17]).toHaveTextContent("Campanha B");
+  expect(list.children[26]).toHaveTextContent("Campanha A");
 });

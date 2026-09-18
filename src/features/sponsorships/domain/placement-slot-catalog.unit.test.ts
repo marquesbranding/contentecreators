@@ -21,13 +21,13 @@ describe("placement slot catalog", () => {
     expect(getPlacementSlot("catalog-midlist")).toMatchObject({
       supportsVariants: false,
       limit: 3,
-      image: { width: 1000, height: 800 },
+      image: { width: 900, height: 1200 },
     });
     expect(getPlacementSlot("catalog-featured")).toMatchObject({
       usesImage: false,
       usesLink: false,
     });
-    expect(getPlacementSlot("catalog-inline")?.bodyRequired).toBe(true);
+    expect(getPlacementSlot("catalog-inline")?.bodyRequired).toBe(false);
     expect(getPlacementSlot("unknown")).toBeUndefined();
   });
   it("accepts incomplete drafts while preventing mismatched type/slot and half a CTA", () => {
@@ -42,7 +42,7 @@ describe("placement slot catalog", () => {
         ...draft,
         linkUrl: "https://example.com",
       }).success,
-    ).toBe(false);
+    ).toBe(true);
     expect(
       placementFormSchema.safeParse({
         ...draft,
@@ -57,4 +57,44 @@ describe("placement slot catalog", () => {
     expect(toIso("2026-09-15T16:30")).toBe(date);
     expect(toIso("")).toBeNull();
   });
+});
+
+it("validates optional link controls consistently in the wizard", () => {
+  const draft = formDefaults();
+  expect(draft.showSponsoredBadge).toBe(true);
+  expect(draft.showAdvertiserLabel).toBe(false);
+  expect(draft.advertiserLabel).toBe("Contente Creators");
+  for (const linkOnCreative of [true, false]) {
+    for (const linkLabel of ["", "Conheça"]) {
+      expect(
+        placementFormSchema.safeParse({
+          ...draft,
+          linkOnCreative,
+          linkLabel,
+          linkUrl: "https://example.com",
+        }).success,
+      ).toBe(true);
+      expect(
+        placementFormSchema.safeParse({
+          ...draft,
+          linkOnCreative,
+          linkLabel,
+          linkUrl: "",
+        }).success,
+      ).toBe(!linkOnCreative && !linkLabel);
+    }
+  }
+  expect(
+    placementFormSchema.safeParse({
+      ...draft,
+      showAdvertiserLabel: true,
+      advertiserLabel: "",
+    }).success,
+  ).toBe(false);
+  expect(
+    placementFormSchema.safeParse({ ...draft, textColor: "red" }).success,
+  ).toBe(false);
+  expect(getPlacementSlot("landing-top")?.image).toEqual(
+    getPlacementSlot("catalog-top")?.image,
+  );
 });

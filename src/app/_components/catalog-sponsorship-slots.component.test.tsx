@@ -29,6 +29,14 @@ function placement(
           }
         : null,
     id: `10000000-0000-4000-8000-00000000000${type.length % 10}`,
+    linkOnCreative: false,
+    showSponsoredBadge: true,
+    showAdvertiserLabel: true,
+    textColor: null,
+    buttonBackgroundColor: null,
+    buttonTextColor: null,
+    fontFamily: null,
+    imageAlt: null,
     linkLabel: "Conhecer oportunidade",
     linkUrl: "https://example.test/oportunidade",
     media:
@@ -96,7 +104,7 @@ describe("CatalogSponsorshipSlots", () => {
 
     expect(
       screen.getByRole("region", {
-        name: "Patrocínio: Patrocínio TOP_BANNER",
+        name: "Patrocínio TOP_BANNER",
       }),
     ).toBeVisible();
     expect(

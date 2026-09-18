@@ -53,11 +53,14 @@ export const placementSlotCatalog = [
     slotKey: "landing-top",
     placementType: "TOP_BANNER",
     name: "Banner na página inicial pública",
-    description: "Texto e imagem na página inicial, antes do login.",
+    description: "Banner em largura total na página inicial, antes do login.",
     bestFor: "Alcançar visitantes sem login",
     route: "PUBLIC_LANDING",
     path: "/",
     audience: "Público",
+    image: { width: 1600, height: 500, aspectClassName: "aspect-[16/5]" },
+    tabletImage: { width: 1024, height: 384, aspectClassName: "aspect-[8/3]" },
+    mobileImage: mobile,
   },
   {
     ...base,
@@ -72,13 +75,14 @@ export const placementSlotCatalog = [
     ...base,
     slotKey: "catalog-midlist",
     placementType: "CAROUSEL",
-    name: "Anúncios no meio da listagem",
+    name: "Card patrocinado no catálogo",
     description:
-      "Cards intercalados entre os criadores. O card inteiro é clicável.",
+      "Aparece como um card do catálogo, misturado aos perfis (a cada 8).",
     bestFor: "Anúncio nativo entre criadores",
     limit: 3,
     supportsVariants: false,
-    image: { width: 1000, height: 800, aspectClassName: "aspect-[5/4]" },
+    // Browser QA: 308×416 px at 1440px; a 3:4 creative closely fits the desktop card.
+    image: { width: 900, height: 1200, aspectClassName: "aspect-[3/4]" },
   },
   {
     ...base,
@@ -87,7 +91,7 @@ export const placementSlotCatalog = [
     name: "Barra lateral do catálogo",
     description: "Fixa na lateral no desktop; acima da listagem no celular.",
     bestFor: "Presença contínua durante a rolagem",
-    bodyRequired: true,
+    bodyRequired: false,
     image: { width: 1200, height: 900, aspectClassName: "aspect-[4/3]" },
   },
   {

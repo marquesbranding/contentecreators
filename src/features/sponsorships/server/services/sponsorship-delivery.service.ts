@@ -1,3 +1,4 @@
+import { sponsorshipAccessibleName } from "../../domain/sponsorship-appearance";
 import "server-only";
 
 import {
@@ -27,11 +28,7 @@ interface SponsorshipDeliveryServiceDependencies {
 }
 
 function creativeAlt(candidate: SponsorshipDeliveryCandidateRecord) {
-  const advertiser = candidate.placement.advertiserLabel?.trim();
-
-  return advertiser
-    ? `${candidate.placement.title} — ${advertiser}`
-    : candidate.placement.title!;
+  return sponsorshipAccessibleName(candidate.placement);
 }
 
 export function createSponsorshipDeliveryService({
@@ -81,10 +78,6 @@ export function createSponsorshipDeliveryService({
       ): Promise<RendererPlacementDto | null> => {
         const { placement } = candidate;
 
-        if (!placement.title) {
-          return null;
-        }
-
         if (placement.placementType === "FEATURED_CREATOR") {
           if (
             !placement.featuredCreatorProfileId ||
@@ -118,6 +111,14 @@ export function createSponsorshipDeliveryService({
             id: placement.id,
             linkLabel: placement.linkLabel,
             linkUrl: placement.linkUrl,
+            linkOnCreative: placement.linkOnCreative,
+            showSponsoredBadge: placement.showSponsoredBadge,
+            showAdvertiserLabel: placement.showAdvertiserLabel,
+            textColor: placement.textColor,
+            buttonBackgroundColor: placement.buttonBackgroundColor,
+            buttonTextColor: placement.buttonTextColor,
+            fontFamily: placement.fontFamily,
+            imageAlt: placement.imageAlt,
             media: null,
             sortOrder: placement.sortOrder,
             title: placement.title,
@@ -165,6 +166,14 @@ export function createSponsorshipDeliveryService({
           id: placement.id,
           linkLabel: placement.linkLabel,
           linkUrl: placement.linkUrl,
+          linkOnCreative: placement.linkOnCreative,
+          showSponsoredBadge: placement.showSponsoredBadge,
+          showAdvertiserLabel: placement.showAdvertiserLabel,
+          textColor: placement.textColor,
+          buttonBackgroundColor: placement.buttonBackgroundColor,
+          buttonTextColor: placement.buttonTextColor,
+          fontFamily: placement.fontFamily,
+          imageAlt: placement.imageAlt,
           media: { alt, url: media.url },
           mediaMobile: mediaMobile ? { alt, url: mediaMobile.url } : null,
           mediaTablet: mediaTablet ? { alt, url: mediaTablet.url } : null,

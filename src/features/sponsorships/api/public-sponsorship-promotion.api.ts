@@ -1,6 +1,15 @@
+import { sponsorshipCreativeOptionsSchema } from "../schemas/sponsorship-creative-options.schema";
 import type { RendererPlacementDto } from "../types/sponsorship-placement.types";
 
 const allowedPromotionKeys = new Set([
+  "linkOnCreative",
+  "showSponsoredBadge",
+  "showAdvertiserLabel",
+  "textColor",
+  "buttonBackgroundColor",
+  "buttonTextColor",
+  "fontFamily",
+  "imageAlt",
   "advertiserLabel",
   "body",
   "eligible",
@@ -56,6 +65,8 @@ function parsePublicSponsorshipPromotion(
 
   const input = value as Record<string, unknown>;
   const media = input.media;
+  const options = sponsorshipCreativeOptionsSchema.safeParse(input);
+  if (!options.success) return null;
 
   if (
     (input.advertiserLabel !== undefined &&
@@ -74,8 +85,7 @@ function parsePublicSponsorshipPromotion(
       (input.linkUrl !== undefined && isSafeHttpUrl(input.linkUrl))
     ) ||
     !Number.isSafeInteger(input.sortOrder) ||
-    typeof input.title !== "string" ||
-    input.title.trim().length === 0 ||
+    !isNullableString(input.title) ||
     typeof media !== "object" ||
     media === null ||
     Array.isArray(media)
@@ -116,6 +126,7 @@ function parsePublicSponsorshipPromotion(
   }
   return {
     ...variants,
+    ...options.data,
     ...(input.advertiserLabel !== undefined
       ? { advertiserLabel: input.advertiserLabel as string | null }
       : {}),

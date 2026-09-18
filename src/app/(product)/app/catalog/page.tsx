@@ -18,7 +18,7 @@ import { AccountStatusBoundary } from "@/features/moderation/server";
 import { getServerQueryClient } from "@/shared/server/query-client";
 
 import {
-  buildCatalogMidlistSlots,
+  buildCatalogSponsoredCards,
   CatalogSponsorshipSlots,
 } from "@/app/_components/catalog-sponsorship-slots";
 import { loadServerCatalogDirectoryPage } from "@/app/_server/catalog-directory-page.loader";
@@ -96,7 +96,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             <CatalogSponsorshipSlots slots={sponsorshipSlots}>
               <div className="mb-8 space-y-12">
                 <HydratedDirectory
-                  midlistSlots={buildCatalogMidlistSlots(sponsorshipSlots)}
+                  sponsoredCards={buildCatalogSponsoredCards(sponsorshipSlots)}
                   state={dehydrate(queryClient)}
                 />
                 {account.role === "INFLUENCER" ? <CatalogTipsPanel /> : null}

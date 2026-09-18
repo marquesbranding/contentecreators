@@ -3,6 +3,15 @@ import { describe, expect, it, vi } from "vitest";
 import { fetchPublicSponsorshipPromotion } from "./public-sponsorship-promotion.api";
 
 const promotion = {
+  linkOnCreative: false,
+  showSponsoredBadge: true,
+  showAdvertiserLabel: false,
+  textColor: null,
+  buttonBackgroundColor: null,
+  buttonTextColor: null,
+  fontFamily: null,
+  imageAlt: null,
+
   body: "Uma oportunidade para a comunidade.",
   eligible: true,
   featuredCreator: null,
@@ -94,4 +103,31 @@ describe("public sponsorship advertiser and responsive variants", () => {
       ),
     ).resolves.toBeNull();
   });
+});
+
+it("accepts image-only options and fails closed for injected appearance", async () => {
+  const value = {
+    ...promotion,
+    title: null,
+    body: null,
+    linkLabel: null,
+    linkOnCreative: true,
+    textColor: "#111111",
+    fontFamily: "serif",
+    showSponsoredBadge: false,
+    imageAlt: "Oferta na imagem",
+  };
+  const fetchValue = (data: unknown) =>
+    fetchPublicSponsorshipPromotion(new AbortController().signal, async () => ({
+      ok: true,
+      json: async () => data,
+    }));
+  await expect(fetchValue(value)).resolves.toMatchObject(value);
+  await expect(fetchValue({ ...value, textColor: "red" })).resolves.toBeNull();
+  await expect(
+    fetchValue({ ...value, showSponsoredBadge: "false" }),
+  ).resolves.toBeNull();
+  await expect(
+    fetchValue({ ...value, fontFamily: "url(evil)" }),
+  ).resolves.toBeNull();
 });

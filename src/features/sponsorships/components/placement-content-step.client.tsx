@@ -1,7 +1,21 @@
 "use client";
 import { useFormContext, useWatch } from "react-hook-form";
-import { ImagePlus, ChevronDown, X } from "lucide-react";
+import { ImagePlus, ChevronDown, X, Megaphone } from "lucide-react";
 import { CropDialog, useHeaderMediaSlot } from "@/features/media";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import {
+  contrastRatio,
+  sponsorshipFontFamilies,
+  SPONSORSHIP_FONT_KEYS,
+} from "../domain/sponsorship-appearance";
+import { sponsorshipFontVariables } from "../domain/sponsorship-fonts";
 import { Button } from "@/shared/components/ui/button";
 import {
   Field,
@@ -103,7 +117,13 @@ export function PlacementTextField({
   hint,
 }: {
   name:
-    "title" | "body" | "linkLabel" | "linkUrl" | "advertiserLabel" | "reason";
+    | "imageAlt"
+    | "title"
+    | "body"
+    | "linkLabel"
+    | "linkUrl"
+    | "advertiserLabel"
+    | "reason";
   label: string;
   max: number;
   multiline?: boolean;
@@ -163,6 +183,11 @@ export function PlacementContentStep({
   onCreator(value: EligibleCreator | null): void;
 }) {
   const form = useFormContext<PlacementFormValues>();
+  const values = useWatch({ control: form.control });
+  const contrast = contrastRatio(
+    values.buttonTextColor ?? "",
+    values.buttonBackgroundColor ?? "",
+  );
   const creatorId = useWatch({
     control: form.control,
     name: "featuredCreatorProfileId",
@@ -242,12 +267,19 @@ export function PlacementContentStep({
           </FieldDescription>
         </Field>
       )}
+      {slot.usesImage ? (
+        <PlacementTextField
+          name="imageAlt"
+          label="Texto alternativo da imagem (opcional)"
+          max={200}
+          hint="Descreva a mensagem da arte para quem usa leitor de tela."
+        />
+      ) : null}
       <PlacementTextField
         name="title"
-        label="Título"
+        label="Título (opcional)"
         max={160}
-        required
-        hint="Obrigatório para ativar. Você pode completar o rascunho depois."
+        hint="Deixe vazio para publicar apenas a imagem."
       />
       <PlacementTextField
         name="body"
@@ -259,31 +291,214 @@ export function PlacementContentStep({
       {slot.usesLink ? (
         <fieldset className="space-y-4 rounded-2xl border p-4">
           <legend className="px-2 text-sm font-bold">
-            Botão de ação (opcional)
+            Link do anúncio (opcional)
           </legend>
-          <p className="text-muted-foreground text-sm leading-6">
-            {slot.slotKey === "catalog-midlist"
-              ? "O card inteiro vira clicável e abre este endereço em nova aba. O texto do botão identifica a ação, mas não aparece como botão."
-              : "Quando a pessoa clicar no botão, abre este endereço em nova aba."}
-          </p>
-          <PlacementTextField
-            name="linkLabel"
-            label="Texto do botão"
-            max={80}
-          />
           <PlacementTextField
             name="linkUrl"
             label="Para onde leva (URL)"
             max={2048}
           />
+          <PlacementCheckbox
+            name="linkOnCreative"
+            label="Banner clicável — a imagem e o texto abrem o link"
+          />
+          <PlacementTextField
+            name="linkLabel"
+            label="Texto do botão (opcional)"
+            max={80}
+            hint="Deixe vazio para não exibir botão."
+          />
+          {values.linkUrl && !values.linkOnCreative && !values.linkLabel ? (
+            <p role="status" className="text-muted-foreground text-sm">
+              O link não aparece no anúncio: ative “Banner clicável” ou preencha
+              o texto do botão.
+            </p>
+          ) : null}
         </fieldset>
       ) : null}
-      <PlacementTextField
-        name="advertiserLabel"
-        label="Marca patrocinadora (opcional)"
-        max={160}
-        hint="Aparece no anúncio como “Patrocinado por X”."
-      />
+      {slot.usesImage ? (
+        <details
+          className={`rounded-2xl border p-4 ${sponsorshipFontVariables}`}
+        >
+          <summary className="cursor-pointer text-sm font-bold">
+            Aparência (opcional)
+          </summary>
+          <div className="mt-4 space-y-4">
+            <p className="text-muted-foreground text-sm">
+              Sem sombreamento automático: escolha uma imagem com área limpa
+              para o texto ou use uma cor de texto que contraste com ela.
+            </p>
+            <PlacementColor name="textColor" label="Cor do texto" />
+            <PlacementColor
+              name="buttonBackgroundColor"
+              label="Cor de fundo do botão"
+            />
+            <PlacementColor
+              name="buttonTextColor"
+              label="Cor do texto do botão"
+            />
+            <Field>
+              <FieldLabel htmlFor="sponsorship-fontFamily">Fonte</FieldLabel>
+              <Select
+                value={values.fontFamily ?? ""}
+                onValueChange={(value) =>
+                  form.setValue("fontFamily", value ?? "", {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+              >
+                <SelectTrigger
+                  id="sponsorship-fontFamily"
+                  className="min-h-12 w-full rounded-xl"
+                  style={{
+                    fontFamily: values.fontFamily
+                      ? sponsorshipFontFamilies[values.fontFamily]
+                      : undefined,
+                  }}
+                >
+                  <SelectValue>
+                    {values.fontFamily
+                      ? {
+                          default: "Geist",
+                          serif: "Playfair Display",
+                          display: "Montserrat",
+                          rounded: "Nunito",
+                          mono: "Geist Mono",
+                        }[values.fontFamily]
+                      : "Usar padrão"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className={sponsorshipFontVariables}>
+                  <SelectItem value="">Usar padrão</SelectItem>
+                  {SPONSORSHIP_FONT_KEYS.map((key) => (
+                    <SelectItem
+                      key={key}
+                      value={key}
+                      style={{ fontFamily: sponsorshipFontFamilies[key] }}
+                    >
+                      {
+                        {
+                          default: "Geist",
+                          serif: "Playfair Display",
+                          display: "Montserrat",
+                          rounded: "Nunito",
+                          mono: "Geist Mono",
+                        }[key]
+                      }
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            {contrast !== null && contrast < 4.5 ? (
+              <p role="status" className="text-sm text-amber-800">
+                Contraste baixo entre o texto e o fundo do botão (
+                {contrast.toFixed(2)}:1). Escolha cores com contraste de pelo
+                menos 4,5:1.
+              </p>
+            ) : null}
+          </div>
+        </details>
+      ) : null}
+      <fieldset className="space-y-4 rounded-2xl border p-4">
+        <legend className="px-2 text-sm font-bold">Identificação</legend>
+        <PlacementCheckbox
+          name="showSponsoredBadge"
+          label={
+            <>
+              <Megaphone aria-hidden="true" className="size-4" />
+              Exibir “Conteúdo patrocinado”
+            </>
+          }
+        />
+        <p className="text-muted-foreground text-sm">
+          Desmarque apenas se a imagem já deixar claro que é publicidade.
+        </p>
+        <PlacementCheckbox
+          name="showAdvertiserLabel"
+          label="Exibir empresa patrocinadora"
+        />
+        {values.showAdvertiserLabel ? (
+          <PlacementTextField
+            name="advertiserLabel"
+            label="Nome da empresa"
+            max={160}
+            required
+            hint="Aparece como “Patrocinado por Contente Creators”."
+          />
+        ) : null}
+      </fieldset>
     </section>
+  );
+}
+function PlacementCheckbox({
+  name,
+  label,
+}: {
+  name: "linkOnCreative" | "showSponsoredBadge" | "showAdvertiserLabel";
+  label: React.ReactNode;
+}) {
+  const form = useFormContext<PlacementFormValues>();
+  const value = useWatch({ control: form.control, name });
+  return (
+    <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-medium">
+      <Checkbox
+        checked={value}
+        onCheckedChange={(checked) =>
+          form.setValue(name, checked === true, {
+            shouldDirty: true,
+            shouldValidate: true,
+          })
+        }
+      />
+      <span className="flex items-center gap-2">{label}</span>
+    </label>
+  );
+}
+function PlacementColor({
+  name,
+  label,
+}: {
+  name: "textColor" | "buttonBackgroundColor" | "buttonTextColor";
+  label: string;
+}) {
+  const form = useFormContext<PlacementFormValues>();
+  const value = useWatch({ control: form.control, name });
+  return (
+    <Field>
+      <FieldLabel htmlFor={`sponsorship-${name}`}>{label}</FieldLabel>
+      <div className="flex gap-2">
+        <input
+          type="color"
+          aria-label={`Selecionar ${label.toLowerCase()}`}
+          className="h-12 w-12 shrink-0 rounded-xl border"
+          value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#000000"}
+          onChange={(event) =>
+            form.setValue(name, event.target.value, {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
+        />
+        <Input
+          id={`sponsorship-${name}`}
+          placeholder="#FF5500"
+          maxLength={7}
+          aria-invalid={Boolean(form.formState.errors[name])}
+          {...form.register(name)}
+        />
+        <Button
+          variant="outline"
+          type="button"
+          onClick={() =>
+            form.setValue(name, "", { shouldDirty: true, shouldValidate: true })
+          }
+        >
+          Usar padrão
+        </Button>
+      </div>
+      <FieldError errors={[form.formState.errors[name]]} />
+    </Field>
   );
 }

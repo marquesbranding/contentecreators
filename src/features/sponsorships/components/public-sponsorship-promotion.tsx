@@ -1,8 +1,6 @@
+import { SponsorshipHeroBanner } from "./sponsorship-hero-banner";
 import type { RendererPlacementDto } from "../types/sponsorship-placement.types";
-import {
-  getSafeSponsorshipExternalHref,
-  SponsorshipTopBanner,
-} from "./sponsorship-presentation";
+import { getSafeSponsorshipExternalHref } from "./sponsorship-presentation";
 
 function isRenderablePublicPromotion(
   promotion: RendererPlacementDto | null,
@@ -16,8 +14,7 @@ function isRenderablePublicPromotion(
     promotion.type === "TOP_BANNER" &&
     promotion.featuredCreator == null &&
     promotion.media &&
-    getSafeSponsorshipExternalHref(promotion.media.url) &&
-    promotion.title.trim(),
+    getSafeSponsorshipExternalHref(promotion.media.url),
   );
 }
 
@@ -31,21 +28,24 @@ export function PublicSponsorshipPromotion({
   }
 
   const link =
-    promotion.linkLabel && promotion.linkUrl
+    promotion.linkUrl && getSafeSponsorshipExternalHref(promotion.linkUrl)
       ? {
           href: promotion.linkUrl,
-          label: promotion.linkLabel,
+          buttonLabel: promotion.linkLabel,
+          onCreative: promotion.linkOnCreative,
         }
       : null;
 
   return (
     <div
-      className="mx-auto w-full max-w-[90rem] min-w-0 px-5 py-12 sm:px-8 sm:py-16 lg:px-12"
+      className="mx-auto w-full max-w-[90rem] min-w-0 px-5 py-6 sm:px-8 sm:py-8 lg:px-12"
       data-slot="public-sponsorship-promotion"
     >
-      <SponsorshipTopBanner
+      <SponsorshipHeroBanner
         creative={{
           audienceMatches: true,
+          ...promotion,
+          appearance: promotion,
           advertiserLabel: promotion.advertiserLabel,
           body: promotion.body,
           eligible: true,

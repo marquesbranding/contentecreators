@@ -17,7 +17,8 @@ import {
   sponsorshipManagementResponseSchema,
   sponsorshipPlacementCommandSchema,
   sponsorshipPlacementMutationResponseSchema,
-  sponsorshipPlacementWriteSchema,
+  sponsorshipPlacementCreateSchema,
+  sponsorshipPlacementUpdateSchema,
   type SponsorshipManagementFilters,
   type SponsorshipManagementResponseDto,
   type SponsorshipPlacementCommand,
@@ -247,9 +248,9 @@ export function createSponsorshipManagementRouteHandlers(
       if (denied) return denied;
 
       try {
-        const input = sponsorshipPlacementWriteSchema
-          .omit({ expectedVersion: true })
-          .parse(await request.json());
+        const input = sponsorshipPlacementCreateSchema.parse(
+          await request.json(),
+        );
         const result = parseServerResponse(
           sponsorshipPlacementMutationResponseSchema,
           await dependencies.create(input, requestId),
@@ -282,9 +283,9 @@ export function createSponsorshipManagementRouteHandlers(
 
       try {
         const safePlacementId = placementIdSchema.parse(placementId);
-        const input = sponsorshipPlacementWriteSchema
-          .required({ expectedVersion: true })
-          .parse(await request.json());
+        const input = sponsorshipPlacementUpdateSchema.parse(
+          await request.json(),
+        );
         const result = parseServerResponse(
           sponsorshipPlacementMutationResponseSchema,
           await dependencies.update(safePlacementId, input, requestId),

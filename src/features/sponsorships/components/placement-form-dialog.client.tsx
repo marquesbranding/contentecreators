@@ -173,11 +173,21 @@ function PlacementForm({
     if (!next.usesLink) {
       setValue("linkLabel", "");
       setValue("linkUrl", "");
+      setValue("linkOnCreative", false);
     }
     if (!next.usesImage) {
       desktop.clear();
       tablet.clear();
       mobile.clear();
+      for (const field of [
+        "textColor",
+        "buttonBackgroundColor",
+        "buttonTextColor",
+        "fontFamily",
+        "imageAlt",
+      ] as const) {
+        setValue(field, "", { shouldValidate: true });
+      }
     }
     if (!next.supportsVariants) {
       tablet.clear();
@@ -191,6 +201,12 @@ function PlacementForm({
   function payload(input: PlacementFormValues): SponsorshipPlacementWriteInput {
     return {
       ...input,
+      textColor: nullable(input.textColor),
+      buttonBackgroundColor: nullable(input.buttonBackgroundColor),
+      buttonTextColor: nullable(input.buttonTextColor),
+      fontFamily: input.fontFamily || null,
+      imageAlt: nullable(input.imageAlt),
+
       ...(placement ? { expectedVersion: placement.version } : {}),
       advertiserLabel: nullable(input.advertiserLabel),
       body: nullable(input.body),
@@ -214,6 +230,14 @@ function PlacementForm({
     };
   }
   const activation = sponsorshipPlacementActivationSchema.safeParse({
+    linkOnCreative: values.linkOnCreative,
+    showSponsoredBadge: values.showSponsoredBadge,
+    showAdvertiserLabel: values.showAdvertiserLabel,
+    textColor: nullable(values.textColor),
+    buttonBackgroundColor: nullable(values.buttonBackgroundColor),
+    buttonTextColor: nullable(values.buttonTextColor),
+    fontFamily: nullable(values.fontFamily),
+    imageAlt: nullable(values.imageAlt),
     advertiserLabel: nullable(values.advertiserLabel),
     audience: values.audience,
     body: nullable(values.body),

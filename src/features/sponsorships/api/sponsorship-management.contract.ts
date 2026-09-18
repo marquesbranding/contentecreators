@@ -1,3 +1,7 @@
+import {
+  sponsorshipCreativeOptionsShape,
+  addCreativeLinkIssues,
+} from "../schemas/sponsorship-creative-options.schema";
 import { z } from "zod";
 
 import { safeSponsorshipLinkSchema } from "../schemas/sponsorship-placement.schema";
@@ -50,6 +54,7 @@ const sponsorshipAdminMediaSchema = z
 export const sponsorshipAdminPlacementSchema = z
   .object({
     activationIssues: z.array(z.string().min(1)).default([]),
+    ...sponsorshipCreativeOptionsShape,
     advertiserLabel: z.string().nullable(),
     archivedAt: z.iso.datetime().nullable(),
     audience: sponsorshipAudienceSchema,
@@ -92,8 +97,9 @@ export const sponsorshipManagementResponseSchema = z
   })
   .strict();
 
-export const sponsorshipPlacementWriteSchema = z
+const sponsorshipPlacementWriteBaseSchema = z
   .object({
+    ...sponsorshipCreativeOptionsShape,
     advertiserLabel: z.string().trim().min(1).max(160).nullable(),
     audience: sponsorshipAudienceSchema,
     body: z.string().trim().max(500).nullable(),
@@ -126,6 +132,17 @@ export const sponsorshipPlacementWriteSchema = z
     title: z.string().trim().min(1).max(160).nullable(),
   })
   .strict();
+
+export const sponsorshipPlacementWriteSchema =
+  sponsorshipPlacementWriteBaseSchema.superRefine(addCreativeLinkIssues);
+export const sponsorshipPlacementCreateSchema =
+  sponsorshipPlacementWriteBaseSchema
+    .omit({ expectedVersion: true })
+    .superRefine(addCreativeLinkIssues);
+export const sponsorshipPlacementUpdateSchema =
+  sponsorshipPlacementWriteBaseSchema
+    .required({ expectedVersion: true })
+    .superRefine(addCreativeLinkIssues);
 
 export const sponsorshipPlacementMutationResponseSchema = z
   .object({

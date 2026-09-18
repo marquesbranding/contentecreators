@@ -11,6 +11,9 @@ const resolve = {
   alias: {
     "@": srcPath,
     "server-only": serverOnlyStubPath,
+    "next/font/google": fileURLToPath(
+      new URL("./src/test/next-font.ts", import.meta.url),
+    ),
   },
 };
 

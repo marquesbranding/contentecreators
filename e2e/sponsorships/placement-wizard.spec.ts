@@ -52,7 +52,7 @@ test("mobile-first sponsorship wizard previews each placement and saves an unfin
       "Banner no topo do catálogo",
       "Banner na página inicial pública",
       "Carrossel do catálogo",
-      "Anúncios no meio da listagem",
+      "Card patrocinado no catálogo",
       "Barra lateral do catálogo",
       "Criador em destaque",
     ];
@@ -83,7 +83,7 @@ test("mobile-first sponsorship wizard previews each placement and saves an unfin
     await expect(
       dialog.getByRole("button", { name: /Enviar imagem/ }),
     ).toHaveCount(0);
-    await expect(dialog.getByText("Botão de ação (opcional)")).toHaveCount(0);
+    await expect(dialog.getByText("Link do anúncio (opcional)")).toHaveCount(0);
     await expect(
       dialog.getByText("Somente criadores aprovados com perfil 100% completo."),
     ).toBeVisible();
@@ -106,14 +106,17 @@ test("mobile-first sponsorship wizard previews each placement and saves an unfin
       .click();
     await dialog.getByRole("button", { name: "Continuar" }).click();
     await dialog
-      .getByLabel("Título", { exact: true })
+      .getByLabel("Título (opcional)", { exact: true })
       .fill(
         "Uma campanha para conectar marcas e criadores com novas oportunidades. "
           .repeat(3)
           .slice(0, 160),
       );
     await dialog
-      .getByLabel("Marca patrocinadora (opcional)")
+      .getByRole("checkbox", { name: "Exibir empresa patrocinadora" })
+      .check();
+    await dialog
+      .getByLabel("Nome da empresa")
       .fill(
         "Uma marca com um nome muito longo para validar a legibilidade no celular "
           .repeat(3)
@@ -141,10 +144,8 @@ test("mobile-first sponsorship wizard previews each placement and saves an unfin
       .click();
     await dialog.getByRole("button", { name: "Continuar" }).click();
     const title = `Campanha visual ${Date.now()}`;
-    await dialog.getByLabel("Título", { exact: true }).fill(title);
-    await dialog
-      .getByLabel("Marca patrocinadora (opcional)")
-      .fill("Marca Aurora");
+    await dialog.getByLabel("Título (opcional)", { exact: true }).fill(title);
+    await dialog.getByLabel("Nome da empresa").fill("Marca Aurora");
     await page.screenshot({ path: testInfo.outputPath("02-content.png") });
     await dialog.getByRole("button", { name: "Continuar" }).click();
     await expect(dialog.getByLabel("Audiência")).toBeDisabled();
@@ -185,7 +186,7 @@ async function cleanupPlacement(id?: string) {
   }
 }
 
-test("uploads a 5:4 creative, validates its CTA and edits without a required note", async ({
+test("uploads a portrait creative, validates its CTA and edits without a required note", async ({
   page,
 }, testInfo) => {
   test.setTimeout(90000);
@@ -200,7 +201,7 @@ test("uploads a 5:4 creative, validates its CTA and edits without a required not
     });
     const dialog = await openNewPlacementDialog(page);
     await dialog
-      .getByText("Anúncios no meio da listagem", { exact: true })
+      .getByText("Card patrocinado no catálogo", { exact: true })
       .click();
     await dialog.getByRole("button", { name: "Continuar" }).click();
     await expect(dialog.getByText("Opções avançadas de imagem")).toHaveCount(0);
@@ -209,25 +210,35 @@ test("uploads a 5:4 creative, validates its CTA and edits without a required not
       .setInputFiles("public/brand/official/contente-creators-blue.png");
     const crop = page.getByRole("dialog", { name: "Ajustar imagem desktop" });
     await expect(crop).toBeVisible();
-    await page.screenshot({ path: testInfo.outputPath("05-crop.png") });
+    await expect(
+      crop.getByRole("button", { name: "Salvar imagem" }),
+    ).toBeInViewport();
+    await crop.screenshot({
+      path: testInfo.outputPath("05-crop.png"),
+      animations: "disabled",
+    });
     await crop.getByRole("button", { name: "Salvar imagem" }).click();
     await expect(crop).not.toBeVisible({ timeout: 20000 });
     await expect(
       dialog.getByRole("button", { name: "Remover imagem desktop" }),
     ).toBeVisible();
     const title = `Patrocínio com imagem ${Date.now()}`;
-    await dialog.getByLabel("Título", { exact: true }).fill(title);
+    await dialog.getByLabel("Título (opcional)", { exact: true }).fill(title);
+    await dialog
+      .getByLabel("Texto do botão (opcional)", { exact: true })
+      .fill("Conhecer oferta");
+    await dialog.getByRole("button", { name: "Salvar rascunho" }).click();
+    await expect(
+      dialog.getByText("Informe o endereço para o botão.").first(),
+    ).toBeVisible();
     await dialog
       .getByLabel("Para onde leva (URL)")
       .fill("https://example.com/oferta");
-    await dialog.getByRole("button", { name: "Salvar rascunho" }).click();
-    await expect(
-      dialog.getByText("Preencha o texto do botão e o endereço em conjunto."),
-    ).toBeVisible();
+    await dialog.getByRole("checkbox", { name: /Banner clicável/ }).check();
     await dialog
-      .getByLabel("Texto do botão", { exact: true })
-      .fill("Conhecer oferta");
-    await dialog.getByLabel("Marca patrocinadora (opcional)").fill("Aurora");
+      .getByRole("checkbox", { name: "Exibir empresa patrocinadora" })
+      .check();
+    await dialog.getByLabel("Nome da empresa").fill("Aurora");
     if (testInfo.project.name.startsWith("mobile"))
       await dialog.getByRole("button", { name: "Ver prévia ao vivo" }).click();
     await expect(
@@ -245,7 +256,7 @@ test("uploads a 5:4 creative, validates its CTA and edits without a required not
     const { placement } = await response.json();
     placementId = placement.id;
     expect(placement.creative.width / placement.creative.height).toBeCloseTo(
-      1.25,
+      0.75,
       2,
     );
     const endpoint = `/api/backoffice/sponsorships/${placement.id}/commands`;
@@ -267,6 +278,8 @@ test("uploads a 5:4 creative, validates its CTA and edits without a required not
       },
     });
     expect(activated.status(), await activated.text()).toBe(200);
+    // Activation above bypasses the UI mutation hook and its query invalidation.
+    await page.reload();
     await page.getByLabel("Buscar patrocínio").fill(title);
     await page.getByRole("button", { name: "Buscar", exact: true }).click();
     await page
@@ -298,3 +311,319 @@ async function openNewPlacementDialog(page: Page) {
   }).toPass({ timeout: 30000 });
   return dialog;
 }
+
+test("publishes image-only and styled banners and equal-sized catalog cards", async ({
+  page,
+  browser,
+}, testInfo) => {
+  test.setTimeout(180000);
+  const adminEmail = acceptanceEmail("creative-options-admin");
+  const viewerEmail = acceptanceEmail("creative-options-viewer");
+  const profileEmails = Array.from({ length: 9 }, () =>
+    acceptanceEmail("creative-options-profile"),
+  );
+  const placementIds: string[] = [];
+  await seedAcceptanceAccount({ email: adminEmail, role: "ADMIN" });
+  const publicContext = await browser.newContext({
+    baseURL: testInfo.project.use.baseURL,
+  });
+  const viewerContext = await browser.newContext({
+    baseURL: testInfo.project.use.baseURL,
+  });
+  const origin = new URL(testInfo.project.use.baseURL!).origin;
+  const publicPage = await publicContext.newPage();
+  const viewerPage = await viewerContext.newPage();
+  try {
+    await signInAcceptanceUser(page, {
+      email: adminEmail,
+      backoffice: true,
+      nextPath: "/backoffice/sponsorships",
+    });
+    const dialog = await openNewPlacementDialog(page);
+    await dialog
+      .getByText("Banner na página inicial pública", { exact: true })
+      .click();
+    await dialog.getByRole("button", { name: "Continuar" }).click();
+    await dialog
+      .getByLabel("Imagem desktop", { exact: true })
+      .setInputFiles("public/brand/official/contente-creators-blue.png");
+    const crop = page.getByRole("dialog", { name: "Ajustar imagem desktop" });
+    await crop.getByRole("button", { name: "Salvar imagem" }).click();
+    await expect(crop).not.toBeVisible({ timeout: 20000 });
+    await dialog
+      .getByRole("checkbox", { name: /Exibir “Conteúdo patrocinado”/ })
+      .uncheck();
+    const imageAlt = `Campanha somente imagem ${testInfo.project.name}`;
+    await dialog
+      .getByLabel("Texto alternativo da imagem (opcional)")
+      .fill(imageAlt);
+    const created = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/backoffice/sponsorships") &&
+        response.request().method() === "POST",
+    );
+    await dialog.getByRole("button", { name: "Salvar rascunho" }).click();
+    const response = await created;
+    expect(response.status(), await response.text()).toBe(201);
+    const { placement } = await response.json();
+    placementIds.push(placement.id);
+    const activate = async (id: string, version: number) => {
+      const result = await page.request.post(
+        `${origin}/api/backoffice/sponsorships/${id}/commands`,
+        {
+          headers: { Origin: origin },
+          data: {
+            action: "ACTIVATE",
+            expectedVersion: version,
+            reason: "Validar publicação e aparência em ambiente local",
+          },
+        },
+      );
+      expect(result.status(), await result.text()).toBe(200);
+    };
+    await activate(placement.id, placement.version);
+    expect(placement.title).toBeNull();
+    await publicPage.goto(`${origin}/`);
+    const landing = publicPage.locator('[data-slot="sponsorship-hero-banner"]');
+    await expect(landing.getByRole("img", { name: imageAlt })).toBeVisible();
+    await expect(landing.getByText("Conteúdo patrocinado")).toHaveCount(0);
+    await expect(landing.getByRole("heading")).toHaveCount(0);
+    await expect(
+      publicPage.locator('head meta[name="facebook-domain-verification"]'),
+    ).toHaveAttribute("content", "r89ugiw0uurxqmq9ttdfy2xjwhzyod");
+    for (const width of [1440, 768, 375]) {
+      await publicPage.setViewportSize({ width, height: 1000 });
+      await landing.scrollIntoViewIfNeeded();
+      await expect(landing.locator("img")).toHaveJSProperty("complete", true);
+      expect(
+        await publicPage.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      await publicPage.screenshot({
+        path: testInfo.outputPath(`landing-${width}.png`),
+      });
+    }
+    await publicPage.goto(`${origin}/privacy`);
+    await expect(
+      publicPage.locator('head meta[name="facebook-domain-verification"]'),
+    ).toHaveAttribute("content", "r89ugiw0uurxqmq9ttdfy2xjwhzyod");
+    const editing = await openNewPlacementDialog(page);
+    await editing.getByRole("button", { name: "Continuar" }).click();
+    await editing
+      .getByLabel("Imagem desktop", { exact: true })
+      .setInputFiles("public/brand/official/contente-creators-blue.png");
+    const topCrop = page.getByRole("dialog", {
+      name: "Ajustar imagem desktop",
+    });
+    await topCrop.getByRole("button", { name: "Salvar imagem" }).click();
+    await expect(topCrop).not.toBeVisible({ timeout: 20000 });
+    await editing
+      .getByLabel("Título (opcional)", { exact: true })
+      .fill("Campanha com aparência");
+    await editing
+      .getByLabel("Para onde leva (URL)")
+      .fill("https://example.com/oferta");
+    await editing
+      .getByLabel("Texto do botão (opcional)", { exact: true })
+      .fill("Conheça a oferta");
+    await editing.getByText("Aparência (opcional)", { exact: true }).click();
+    await editing.getByLabel("Cor do texto", { exact: true }).fill("#111111");
+    await editing
+      .getByLabel("Cor de fundo do botão", { exact: true })
+      .fill("#FF5500");
+    await editing
+      .getByLabel("Cor do texto do botão", { exact: true })
+      .fill("#FFFFFF");
+    await editing.getByRole("combobox", { name: "Fonte", exact: true }).click();
+    await page
+      .getByRole("option", { name: "Playfair Display", exact: true })
+      .click();
+    for (const width of [1440, 768, 375]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.screenshot({
+        path: testInfo.outputPath(`backoffice-${width}.png`),
+      });
+      expect(
+        await editing.evaluate(
+          (element) => element.scrollWidth <= element.clientWidth + 1,
+        ),
+      ).toBe(true);
+    }
+    const topSavedResponse = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/backoffice/sponsorships") &&
+        response.request().method() === "POST",
+    );
+    await editing.getByRole("button", { name: "Salvar rascunho" }).click();
+    const topResponse = await topSavedResponse;
+    expect(topResponse.status(), await topResponse.text()).toBe(201);
+    const { placement: styled } = await topResponse.json();
+    placementIds.push(styled.id);
+    expect(styled).toMatchObject({
+      textColor: "#111111",
+      buttonBackgroundColor: "#FF5500",
+      buttonTextColor: "#FFFFFF",
+      fontFamily: "serif",
+      linkOnCreative: false,
+    });
+    const first = await page.request.post(
+      `${origin}/api/backoffice/sponsorships/${styled.id}/commands`,
+      {
+        headers: { Origin: origin },
+        data: {
+          action: "REORDER",
+          expectedVersion: styled.version,
+          sortOrder: 0,
+          reason: "Priorizar campanha sintética para validação",
+        },
+      },
+    );
+    expect(first.status(), await first.text()).toBe(200);
+    await activate(styled.id, (await first.json()).placement.version);
+    // Create additional placements through the same validated HTTP boundary.
+    const write = {
+      advertiserLabel: "Contente Creators",
+      audience: "ALL",
+      body: null,
+      creativeAssetId: placement.creativeAssetId,
+      creativeAssetMobileId: null,
+      creativeAssetTabletId: null,
+      endsAt: null,
+      featuredCreatorProfileId: null,
+      isActive: false,
+      linkLabel: "Conheça a oferta",
+      linkUrl: "https://example.com/oferta",
+      linkOnCreative: false,
+      showSponsoredBadge: true,
+      showAdvertiserLabel: true,
+      textColor: "#111111",
+      buttonBackgroundColor: "#FF5500",
+      buttonTextColor: "#FFFFFF",
+      fontFamily: "serif",
+      imageAlt,
+      placementType: "TOP_BANNER",
+      reason: "",
+      slotKey: "catalog-top",
+      sortOrder: 0,
+      startsAt: null,
+      title: "Campanha com aparência",
+    };
+    for (const data of [
+      { ...write, placementType: "CAROUSEL", slotKey: "catalog-carousel" },
+      {
+        ...write,
+        title: null,
+        linkLabel: null,
+        linkOnCreative: true,
+        placementType: "CAROUSEL",
+        slotKey: "catalog-midlist",
+      },
+    ]) {
+      const result = await page.request.post(
+        `${origin}/api/backoffice/sponsorships`,
+        { headers: { Origin: origin }, data },
+      );
+      expect(result.status(), await result.text()).toBe(201);
+      const { placement: saved } = await result.json();
+      placementIds.push(saved.id);
+      const reordered = await page.request.post(
+        `${origin}/api/backoffice/sponsorships/${saved.id}/commands`,
+        {
+          headers: { Origin: origin },
+          data: {
+            action: "REORDER",
+            expectedVersion: saved.version,
+            sortOrder: 0,
+            reason: "Priorizar campanha sintética para validação",
+          },
+        },
+      );
+      expect(reordered.status(), await reordered.text()).toBe(200);
+      await activate(saved.id, (await reordered.json()).placement.version);
+    }
+    await seedAcceptanceAccount({ email: viewerEmail });
+    for (const email of profileEmails) await seedAcceptanceAccount({ email });
+    await viewerPage.goto(origin);
+    await signInAcceptanceUser(viewerPage, {
+      email: viewerEmail,
+      nextPath: "/app/catalog",
+    });
+    const top = viewerPage.locator('[data-slot="sponsorship-hero-banner"]');
+    await expect(
+      top.getByRole("heading", { name: "Campanha com aparência" }),
+    ).toBeVisible();
+    await expect(top.getByRole("link", { name: "Conheça a oferta" })).toHaveCSS(
+      "background-color",
+      "rgb(255, 85, 0)",
+    );
+    await expect(top.getByRole("heading")).toHaveCSS(
+      "color",
+      "rgb(17, 17, 17)",
+    );
+    expect(
+      await top
+        .locator("h2")
+        .evaluate((element) => getComputedStyle(element).fontFamily),
+    ).toContain("Playfair");
+    await expect(
+      viewerPage.locator('head meta[name="facebook-domain-verification"]'),
+    ).toHaveAttribute("content", "r89ugiw0uurxqmq9ttdfy2xjwhzyod");
+    const list = viewerPage.getByRole("list", {
+      name: "Lista do catálogo",
+      exact: true,
+    });
+    const card = list.locator(":scope > li").nth(8);
+    await expect(card).toHaveAttribute("aria-label", "Patrocínio");
+    for (const width of [1440, 768, 375]) {
+      await viewerPage.setViewportSize({ width, height: 1000 });
+      await card.scrollIntoViewIfNeeded();
+      const sizes = await list.evaluate((element) =>
+        Array.from(element.children)
+          .slice(8, 10)
+          .map((li) => {
+            const rect = li
+              .querySelector("article, [role=article]")!
+              .getBoundingClientRect();
+            return { width: rect.width, height: rect.height };
+          }),
+      );
+      expect(Math.abs(sizes[0].width - sizes[1].width)).toBeLessThanOrEqual(1);
+      const carouselCard = viewerPage
+        .getByRole("list", { name: "Lista de patrocínios", exact: true })
+        .locator("article")
+        .first();
+      const carouselWidth = await carouselCard.evaluate(
+        (element) => element.getBoundingClientRect().width,
+      );
+      expect(Math.abs(carouselWidth - sizes[0].width)).toBeLessThanOrEqual(1);
+      expect(Math.abs(sizes[0].height - sizes[1].height)).toBeLessThanOrEqual(
+        1,
+      );
+      await testInfo.attach(`catalog-measures-${width}`, {
+        body: JSON.stringify(sizes),
+        contentType: "application/json",
+      });
+      await viewerPage.screenshot({
+        path: testInfo.outputPath(`catalog-${width}.png`),
+      });
+      expect(
+        await viewerPage.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    }
+    expect(await viewerPage.locator("a a").count()).toBe(0);
+    const popupPromise = viewerPage.waitForEvent("popup");
+    await card.getByRole("link").click();
+    const popup = await popupPromise;
+    await expect(popup).toHaveURL("https://example.com/oferta");
+    await popup.close();
+  } finally {
+    await publicContext.close();
+    await viewerContext.close();
+    for (const id of placementIds) await cleanupPlacement(id);
+    for (const email of [...profileEmails, viewerEmail, adminEmail])
+      await cleanupAcceptanceIdentity(email);
+  }
+});

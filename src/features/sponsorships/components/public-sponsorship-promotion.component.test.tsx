@@ -12,6 +12,14 @@ const promotion: RendererPlacementDto = {
   eligible: true,
   featuredCreator: null,
   id: "50000000-0000-4000-8000-000000000001",
+  linkOnCreative: false,
+  showSponsoredBadge: true,
+  showAdvertiserLabel: true,
+  textColor: null,
+  buttonBackgroundColor: null,
+  buttonTextColor: null,
+  fontFamily: null,
+  imageAlt: null,
   linkLabel: "Conhecer promoção",
   linkUrl: "https://example.test/promocao",
   media: {
@@ -32,7 +40,7 @@ describe("PublicSponsorshipPromotion", () => {
 
     expect(
       screen.getByRole("region", {
-        name: "Patrocínio: Conteúdo patrocinado em destaque",
+        name: "Conteúdo patrocinado em destaque",
       }),
     ).toBeVisible();
     expect(
@@ -45,7 +53,7 @@ describe("PublicSponsorshipPromotion", () => {
       name: "Conhecer promoção",
     });
     expect(link).toHaveAttribute("target", "_blank");
-    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    expect(link).toHaveAttribute("rel", "sponsored noopener noreferrer");
     await user.tab();
     expect(link).toHaveFocus();
     expect(
@@ -87,7 +95,7 @@ describe("PublicSponsorshipPromotion", () => {
 
     expect(
       screen.getByRole("region", {
-        name: "Patrocínio: Conteúdo patrocinado em destaque",
+        name: "Conteúdo patrocinado em destaque",
       }),
     ).toBeVisible();
     expect(

@@ -78,3 +78,7 @@ The following histories are independently append-only:
 See [moderation state machine](./moderation-state-machine.md) and
 [RLS permission matrix](./rls-permission-matrix.md) for transition and access
 rules.
+
+### Sponsorship creative options
+
+`sponsorship_placements` supports optional independent creative/button links (`link_on_creative`, `link_url`, `link_label`), disclosure toggles (`show_sponsored_badge`, default true; `show_advertiser_label`, default false), accessible `image_alt` (200 characters), three nullable six-digit hex colors (`text_color`, `button_background_color`, `button_text_color`) and nullable `font_family` (`default`, `serif`, `display`, `rounded`, `mono`). Creative clicks require a destination; advertiser disclosure requires a name. Image-based placements may activate without title/body/button. The compatibility backfill preserves versions and existing midlist click/disclosure behavior.

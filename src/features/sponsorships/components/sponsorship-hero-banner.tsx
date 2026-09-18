@@ -1,8 +1,14 @@
+import { sponsorshipFontVariables } from "../domain/sponsorship-fonts";
+import {
+  toAppearanceStyle,
+  sponsorshipAccessibleName,
+} from "../domain/sponsorship-appearance";
 import { SignedImage } from "@/shared/components/signed-image";
 import { cn } from "@/shared/lib/cn";
 
 import {
-  getSafeSponsorshipExternalHref,
+  SponsorshipCreativeLink,
+  SponsorshipExternalLink,
   isSponsorshipCreativeVisible,
   SPONSORSHIP_TABLET_BREAKPOINT,
   SponsorshipLabels,
@@ -14,13 +20,7 @@ import {
 const heroAspectClassName =
   "col-start-1 row-start-1 aspect-[16/9] h-full w-full sm:aspect-[16/6] lg:aspect-[16/5]";
 
-/**
- * A full-bleed promotional banner for the logged-in catalog: the creative fills
- * the frame and the copy sits on top of it.
- *
- * Deliberately separate from `SponsorshipTopBanner`, which is a side-by-side
- * card shared with the public landing page — this layout is catalog-only.
- */
+/** Full-width creative shared by the public landing and catalog. */
 export function SponsorshipHeroBanner({
   creative,
 }: {
@@ -30,14 +30,13 @@ export function SponsorshipHeroBanner({
     return null;
   }
 
-  const href = creative.link
-    ? getSafeSponsorshipExternalHref(creative.link.href)
-    : null;
-
   return (
     <section
-      aria-label={`Patrocínio: ${creative.title}`}
-      className="relative isolate grid w-full overflow-hidden rounded-3xl"
+      aria-label={sponsorshipAccessibleName(creative)}
+      className={cn(
+        "relative isolate grid w-full overflow-hidden rounded-3xl",
+        sponsorshipFontVariables,
+      )}
       data-slot="sponsorship-hero-banner"
     >
       {creative.media ? (
@@ -64,47 +63,44 @@ export function SponsorshipHeroBanner({
       ) : (
         <div
           aria-hidden="true"
-          className={cn(
-            "from-brand-night via-brand-royal to-brand-blue bg-gradient-to-br",
-            heroAspectClassName,
-          )}
+          className={cn("bg-brand-night", heroAspectClassName)}
         />
       )}
 
-      {/* Darkens the side the copy sits on so the text stays legible over any
-       * creative the advertiser uploads. */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-transparent"
-      />
-
-      <div className="relative col-start-1 row-start-1 flex min-w-0 flex-col justify-center gap-3 p-5 text-white sm:gap-4 sm:p-8 lg:p-12">
-        <SponsorshipLabels
-          advertiserLabel={creative.advertiserLabel}
-          previewMode={creative.previewMode}
-        />
-        <h2 className="max-w-xl text-2xl leading-[1.1] font-extrabold tracking-[-0.035em] text-balance break-words sm:text-4xl lg:text-5xl">
-          {creative.title}
-        </h2>
-        {creative.body ? (
-          <p className="hidden max-w-md text-sm leading-6 text-white/80 sm:block sm:text-base sm:leading-7">
-            {creative.body}
-          </p>
-        ) : null}
-        {href && creative.link ? (
-          <a
-            className={cn(
-              "bg-brand-lime text-brand-night mt-1 inline-flex min-h-11 w-fit max-w-full items-center justify-center rounded-full px-5 text-center text-sm font-bold break-words whitespace-normal transition-colors",
-              "hover:bg-brand-lime/90 focus-visible:ring-3 focus-visible:ring-white/80 focus-visible:outline-none sm:text-base",
-            )}
-            href={href}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            {creative.link.label}
-          </a>
-        ) : null}
-      </div>
+      <SponsorshipCreativeLink creative={creative} />
+      {creative.title ||
+      creative.body ||
+      creative.link?.buttonLabel ||
+      creative.showSponsoredBadge !== false ||
+      (creative.showAdvertiserLabel && creative.advertiserLabel) ||
+      creative.previewMode ? (
+        <div
+          style={toAppearanceStyle(creative.appearance)}
+          className="relative col-start-1 row-start-1 flex min-w-0 flex-col justify-center gap-3 p-5 text-white sm:gap-4 sm:p-8 lg:p-12"
+        >
+          <SponsorshipLabels {...creative} previewMode={creative.previewMode} />
+          {creative.title ? (
+            <h2 className="max-w-xl text-2xl leading-[1.1] font-extrabold tracking-[-0.035em] text-balance break-words sm:text-4xl lg:text-5xl">
+              {creative.title}
+            </h2>
+          ) : null}
+          {creative.body ? (
+            <p
+              style={toAppearanceStyle(creative.appearance)}
+              className="hidden max-w-md text-sm leading-6 text-white/80 sm:block sm:text-base sm:leading-7"
+            >
+              {creative.body}
+            </p>
+          ) : null}
+          {creative.link?.buttonLabel ? (
+            <SponsorshipExternalLink
+              appearance={creative.appearance}
+              className="bg-brand-lime text-brand-night hover:bg-brand-lime/90 mt-1 w-fit max-w-full rounded-full font-bold whitespace-normal"
+              link={creative.link}
+            />
+          ) : null}
+        </div>
+      ) : null}
     </section>
   );
 }

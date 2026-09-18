@@ -1,3 +1,14 @@
+export interface SponsorshipCreativeOptions {
+  linkOnCreative: boolean;
+  showSponsoredBadge: boolean;
+  showAdvertiserLabel: boolean;
+  textColor: string | null;
+  buttonBackgroundColor: string | null;
+  buttonTextColor: string | null;
+  fontFamily: string | null;
+  imageAlt: string | null;
+}
+
 export const PLACEMENT_TYPES = [
   "TOP_BANNER",
   "INLINE_BANNER",
@@ -15,7 +26,7 @@ export type PlacementRoute = "PUBLIC_LANDING" | "CATALOG";
 export type PlacementViewer =
   "PUBLIC" | "APPROVED_INFLUENCER" | "APPROVED_COMPANY";
 
-export interface PlacementCreative {
+export interface PlacementCreative extends SponsorshipCreativeOptions {
   assetId: string | null;
   body: string | null;
   linkLabel: string | null;
@@ -24,7 +35,7 @@ export interface PlacementCreative {
   title: string | null;
 }
 
-export interface SponsorshipPlacementDraft {
+export interface SponsorshipPlacementDraft extends SponsorshipCreativeOptions {
   advertiserAccountId: string | null;
   advertiserLabel: string | null;
   audience: PlacementAudience;
@@ -118,7 +129,7 @@ export interface RendererFeaturedCreatorDto {
   displayName: string;
 }
 
-export interface RendererPlacementDto {
+export interface RendererPlacementDto extends SponsorshipCreativeOptions {
   advertiserLabel?: string | null;
   body: string | null;
   eligible: true;
@@ -133,6 +144,6 @@ export interface RendererPlacementDto {
   /** Optional mid-width variant (640–1023px viewport); falls back to `media` when absent. */
   mediaTablet?: RendererPlacementMediaDto | null;
   sortOrder: number;
-  title: string;
+  title: string | null;
   type: PlacementType;
 }

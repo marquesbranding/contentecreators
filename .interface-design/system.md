@@ -159,7 +159,7 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 ### Media upload surface
 
 - Use a product card with a persistent required label, file constraints, preview, and one primary upload action.
-- Avatar and logo open a square crop dialog; cover and sponsorship creative use a 16:9 crop. Zoom and horizontal/vertical position remain keyboard-operable range controls.
+- Avatar and logo open a square crop dialog; covers use 16:9 and sponsorship creatives follow their slot’s prescribed ratio. Zoom and horizontal/vertical position remain keyboard-operable range controls.
 - Announce preparation, transfer, validation, activation, completion, and errors through visible `pt-BR` status copy plus an `aria-live` region.
 - Upload progress is a labeled shadcn/ui progress indicator. Recoverable errors stay beside the field and expose an explicit retry action.
 - Keep the selected file, preview, crop, and transient progress local to the upload hook. Server media records remain authoritative and are never copied into Zustand.
@@ -187,7 +187,7 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 - Creator cards never receive Storage identifiers or object paths. The app composition layer exchanges active media references for short-lived signed URLs, labels metrics as creator-reported, and falls back without hiding an otherwise eligible profile.
 - Company logos appear only inside the approved influencer experience. Detail contacts remain role- and consent-gated, with a neutral unavailable state instead of inferred or partially exposed contact data.
 - Sponsorship management is draft-first and URL-filtered. Activation, deactivation, reordering, and archival are separate audited actions with explicit consequences, optimistic-version feedback, and an in-context preview.
-- Sponsorship delivery receives only server-approved DTOs with signed private media. Every renderer labels sponsored content, suppresses ineligible audience/route/profile references, and converts desktop side placements into deliberate inline cards on narrow screens.
+- Sponsorship delivery receives only server-approved DTOs with signed private media. Renderers default to a sponsored disclosure and honor the admin’s explicit disclosure controls, suppresses ineligible audience/route/profile references, and converts desktop side placements into deliberate inline cards on narrow screens.
 
 ## Transactional email patterns
 
@@ -233,3 +233,7 @@ Headlines are short, direct, and sentence case. Avoid all-caps body copy; reserv
 - Use the actual public components in a sandboxed, script-free preview frame so media queries reflect the selected viewport. Preview links do not navigate.
 - Draft save remains available in each step. Activation requirements are a separate checklist, and only publication commands require a human reason. Optional editing notes still accompany the immutable audit context.
 - Sponsorship crop proportions follow the selected position; other profile media retain their existing crop defaults.
+
+- Sponsorship text, buttons and click targets are independent optional controls. A single safe URL can power the creative overlay and/or button, with no nested anchors.
+- Public and catalog top placements share a full-width image banner without automatic shading. Appearance is restricted to validated hex colors and five font choices; extra fonts are scoped to sponsorship wrappers without preload.
+- Sponsored catalog cards share the profile grid and cycle after every eight profiles. Disclosure defaults on; advertiser disclosure is separately opt-in. Image-only creatives have no empty copy layer and use descriptive alternative text.

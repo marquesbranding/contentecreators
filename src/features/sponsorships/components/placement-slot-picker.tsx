@@ -92,9 +92,6 @@ export function PlacementWireframe({ slotKey }: { slotKey: string }) {
         rx="4"
         className={slotKey === "catalog-inline" ? highlight : muted}
       />
-      {slotKey === "landing-top" ? (
-        <path d="M126 29V51" className="stroke-background" strokeWidth="2" />
-      ) : null}
     </svg>
   );
 }

@@ -8,7 +8,8 @@ import {
   sponsorshipManagementResponseSchema,
   sponsorshipPlacementCommandSchema,
   sponsorshipPlacementMutationResponseSchema,
-  sponsorshipPlacementWriteSchema,
+  sponsorshipPlacementCreateSchema,
+  sponsorshipPlacementUpdateSchema,
   type SponsorshipManagementFilters,
   type SponsorshipManagementResponseDto,
   type SponsorshipPlacementCommand,
@@ -50,9 +51,7 @@ export async function createSponsorshipPlacement(
   input: SponsorshipPlacementWriteInput,
   client: AxiosInstance = httpClient,
 ) {
-  const command = sponsorshipPlacementWriteSchema
-    .omit({ expectedVersion: true })
-    .parse(input);
+  const command = sponsorshipPlacementCreateSchema.parse(input);
   const response = await client.post<unknown>(
     "/backoffice/sponsorships",
     command,
@@ -66,9 +65,7 @@ export async function updateSponsorshipPlacement(
   input: SponsorshipPlacementWriteInput,
   client: AxiosInstance = httpClient,
 ) {
-  const command = sponsorshipPlacementWriteSchema
-    .required({ expectedVersion: true })
-    .parse(input);
+  const command = sponsorshipPlacementUpdateSchema.parse(input);
   const response = await client.patch<unknown>(
     `/backoffice/sponsorships/${placementId}`,
     command,

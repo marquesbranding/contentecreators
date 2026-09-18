@@ -49,7 +49,17 @@ describeLocalStack("Drizzle sponsorship delivery repository", () => {
         {
           advertiserLabel: "Marca externa",
           audience: "ALL",
-          body: "Criativo público seguro.",
+          body: null,
+          title: null,
+          linkOnCreative: true,
+          linkUrl: "https://example.test/offer",
+          showSponsoredBadge: false,
+          showAdvertiserLabel: true,
+          textColor: "#111111",
+          buttonBackgroundColor: "#FF5500",
+          buttonTextColor: "#FFFFFF",
+          fontFamily: "serif",
+          imageAlt: "Oferta somente na arte",
           creativeAssetId: assetId,
           endsAt: new Date("2026-09-01T00:00:00.000Z"),
           id: genericPlacementId,
@@ -58,7 +68,6 @@ describeLocalStack("Drizzle sponsorship delivery repository", () => {
           slotKey,
           sortOrder: 10,
           startsAt: new Date("2026-07-01T00:00:00.000Z"),
-          title: "Campanha pública",
         },
         {
           advertiserAccountId: seedCompanyAccountId,
@@ -135,11 +144,20 @@ describeLocalStack("Drizzle sponsorship delivery repository", () => {
       expect(result).toEqual([
         expect.objectContaining({
           id: genericPlacementId,
+          title: null,
+          linkOnCreative: true,
+          showSponsoredBadge: false,
+          showAdvertiserLabel: true,
+          textColor: "#111111",
+          buttonBackgroundColor: "#FF5500",
+          buttonTextColor: "#FFFFFF",
+          fontFamily: "serif",
+          imageAlt: "Oferta somente na arte",
           media: {
-            alt: "Campanha pública — Marca externa",
+            alt: "Oferta somente na arte",
             url: "https://storage.example.test/signed-campaign",
           },
-          title: "Campanha pública",
+
           type: "TOP_BANNER",
         }),
       ]);

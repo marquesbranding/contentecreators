@@ -60,12 +60,6 @@ describe("sponsorship placement schemas", () => {
       error: expect.objectContaining({
         issues: expect.arrayContaining([
           expect.objectContaining({
-            message: "Informe o título antes de ativar.",
-          }),
-          expect.objectContaining({
-            message: "Informe o texto antes de ativar este formato.",
-          }),
-          expect.objectContaining({
             message: "Selecione uma mídia privada válida antes de ativar.",
           }),
         ]),
@@ -154,3 +148,68 @@ describe("sponsorship placement schemas", () => {
     expectTypeOf<SponsorshipPlacementDraft>().not.toHaveProperty("renewal");
   });
 });
+
+it.each([
+  { linkUrl: null, linkLabel: null, linkOnCreative: false },
+  { linkUrl: "https://example.com", linkLabel: null, linkOnCreative: false },
+  { linkUrl: "https://example.com", linkLabel: null, linkOnCreative: true },
+  {
+    linkUrl: "https://example.com",
+    linkLabel: "Conheça",
+    linkOnCreative: false,
+  },
+  {
+    linkUrl: "https://example.com",
+    linkLabel: "Conheça",
+    linkOnCreative: true,
+  },
+])(
+  "activates image-only ads with optional independent click points: %j",
+  (links) => {
+    for (const slot of [
+      "landing-top",
+      "catalog-top",
+      "catalog-inline",
+      "catalog-midlist",
+    ]) {
+      const value = {
+        ...validPlacement,
+        ...links,
+        slotKey: slot,
+        title: null,
+        body: null,
+      };
+      expect(sponsorshipPlacementDraftSchema.safeParse(value).success).toBe(
+        true,
+      );
+      expect(
+        sponsorshipPlacementActivationSchema.safeParse(value).success,
+      ).toBe(true);
+    }
+  },
+);
+it.each([
+  { linkOnCreative: true, linkUrl: null, linkLabel: null },
+  { linkOnCreative: false, linkUrl: null, linkLabel: "Conheça" },
+  { showAdvertiserLabel: true, advertiserLabel: null },
+  { textColor: "red" },
+  { buttonTextColor: "#fff" },
+  { buttonBackgroundColor: "url(evil)" },
+  { fontFamily: "Arial" },
+])(
+  "rejects invalid creative options for drafts and activation: %j",
+  (options) => {
+    expect(
+      sponsorshipPlacementDraftSchema.safeParse({
+        ...validPlacement,
+        ...options,
+      }).success,
+    ).toBe(false);
+    expect(
+      sponsorshipPlacementActivationSchema.safeParse({
+        ...validPlacement,
+        ...options,
+      }).success,
+    ).toBe(false);
+  },
+);

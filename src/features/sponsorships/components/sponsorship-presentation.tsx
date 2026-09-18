@@ -1,15 +1,13 @@
+import {
+  toAppearanceStyle,
+  sponsorshipAccessibleName,
+  type SponsorshipAppearance,
+} from "../domain/sponsorship-appearance";
 import { ExternalLink, Eye, Megaphone } from "lucide-react";
 
 import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
 import { buttonVariants } from "@/shared/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
 import { cn } from "@/shared/lib/cn";
 
 export interface SponsorshipMediaViewModel {
@@ -21,11 +19,16 @@ export interface SponsorshipMediaViewModel {
 
 export interface SponsorshipLinkViewModel {
   href: string;
-  label: string;
+  buttonLabel: string | null;
+  onCreative: boolean;
 }
 
 export interface SponsorshipCreativeViewModel {
   advertiserLabel?: string | null;
+  imageAlt?: string | null;
+  appearance?: SponsorshipAppearance;
+  showSponsoredBadge?: boolean;
+  showAdvertiserLabel?: boolean;
   audienceMatches: boolean;
   body?: string | null;
   eligible: boolean;
@@ -41,7 +44,7 @@ export interface SponsorshipCreativeViewModel {
   previewMode?: boolean;
   publicSocialProofEnabled?: boolean;
   routeMatches: boolean;
-  title: string;
+  title: string | null;
   viewerIsPublic?: boolean;
 }
 
@@ -85,14 +88,30 @@ export function getSafeSponsorshipExternalHref(href: string) {
 export function SponsorshipLabels({
   advertiserLabel,
   previewMode = false,
-}: Pick<SponsorshipCreativeViewModel, "advertiserLabel" | "previewMode">) {
+  showSponsoredBadge = true,
+  showAdvertiserLabel = false,
+}: Pick<
+  SponsorshipCreativeViewModel,
+  | "advertiserLabel"
+  | "previewMode"
+  | "showSponsoredBadge"
+  | "showAdvertiserLabel"
+>) {
+  if (
+    !showSponsoredBadge &&
+    !(showAdvertiserLabel && advertiserLabel) &&
+    !previewMode
+  )
+    return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Badge className="gap-1.5" variant="secondary">
-        <Megaphone aria-hidden="true" />
-        Conteúdo patrocinado
-      </Badge>
-      {advertiserLabel ? (
+      {showSponsoredBadge ? (
+        <Badge className="gap-1.5" variant="secondary">
+          <Megaphone aria-hidden="true" />
+          Conteúdo patrocinado
+        </Badge>
+      ) : null}
+      {showAdvertiserLabel && advertiserLabel ? (
         <Badge
           className="bg-background/95 h-auto max-w-full break-words whitespace-normal"
           variant="outline"
@@ -151,83 +170,52 @@ export function SponsorshipMedia({
 export function SponsorshipExternalLink({
   className,
   link,
+  appearance,
 }: {
   className?: string;
   link: SponsorshipLinkViewModel;
+  appearance?: SponsorshipAppearance;
 }) {
   const href = getSafeSponsorshipExternalHref(link.href);
 
-  if (!href) {
+  if (!href || !link.buttonLabel) {
     return null;
   }
 
   return (
     <a
-      className={buttonVariants({
-        className: cn("min-h-12", className),
-        size: "lg",
-      })}
+      className={cn(
+        buttonVariants({ size: "lg" }),
+        "relative z-20 h-auto min-h-12 py-3",
+        className,
+      )}
+      style={toAppearanceStyle(appearance, true)}
       href={href}
-      rel="noopener noreferrer"
+      rel="sponsored noopener noreferrer"
       target="_blank"
     >
-      {link.label}
+      {link.buttonLabel}
       <ExternalLink aria-hidden="true" />
     </a>
   );
 }
 
-export function SponsorshipTopBanner({
+export function SponsorshipCreativeLink({
   creative,
 }: {
   creative: SponsorshipCreativeViewModel;
 }) {
-  if (!isSponsorshipCreativeVisible(creative)) {
-    return null;
-  }
-
+  const href = creative.link?.onCreative
+    ? getSafeSponsorshipExternalHref(creative.link.href)
+    : null;
+  if (!href) return null;
   return (
-    <section
-      aria-label={`Patrocínio: ${creative.title}`}
-      data-slot="sponsorship-top-banner"
-      role="region"
-    >
-      <Card className="border-brand-blue/20 grid gap-0 overflow-hidden rounded-2xl bg-white py-0 shadow-sm md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        {creative.media ? (
-          <SponsorshipMedia
-            className="aspect-[16/8] h-full max-h-80 border-b md:order-2 md:border-b-0 md:border-l"
-            media={creative.media}
-            mediaMobile={creative.mediaMobile}
-            mediaTablet={creative.mediaTablet}
-          />
-        ) : null}
-        <div className="flex min-w-0 flex-col justify-center py-5 md:order-1 md:py-7">
-          <CardHeader className="gap-3 px-5 md:px-7">
-            <SponsorshipLabels
-              advertiserLabel={creative.advertiserLabel}
-              previewMode={creative.previewMode}
-            />
-            <CardTitle>
-              <h2 className="text-2xl font-bold tracking-[-0.03em] sm:text-3xl">
-                {creative.title}
-              </h2>
-            </CardTitle>
-            {creative.body ? (
-              <CardDescription className="max-w-xl text-base leading-6">
-                {creative.body}
-              </CardDescription>
-            ) : null}
-          </CardHeader>
-          {creative.link ? (
-            <CardContent className="mt-1 px-5 md:px-7">
-              <SponsorshipExternalLink
-                className="w-full sm:w-fit"
-                link={creative.link}
-              />
-            </CardContent>
-          ) : null}
-        </div>
-      </Card>
-    </section>
+    <a
+      aria-label={sponsorshipAccessibleName(creative)}
+      className="absolute inset-0 z-10 cursor-pointer rounded-[inherit] focus-visible:ring-3 focus-visible:ring-blue-400 focus-visible:outline-none focus-visible:ring-inset"
+      href={href}
+      target="_blank"
+      rel="sponsored noopener noreferrer"
+    />
   );
 }

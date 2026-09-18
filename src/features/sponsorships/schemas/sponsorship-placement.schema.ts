@@ -1,11 +1,13 @@
+import {
+  sponsorshipCreativeOptionsShape,
+  addCreativeLinkIssues,
+} from "./sponsorship-creative-options.schema";
 import { z } from "zod";
 
 import {
   PLACEMENT_AUDIENCES,
   PLACEMENT_TYPES,
 } from "../types/sponsorship-placement.types";
-
-import { getPlacementSlot } from "../domain/placement-slot-catalog";
 
 const emptyToNull = (value: unknown) =>
   value === "" || value === undefined ? null : value;
@@ -47,6 +49,7 @@ const nullableSafeLink = z.preprocess(
 const sponsorshipPlacementDraftBaseSchema = z
   .object({
     advertiserAccountId: nullableUuid.default(null),
+    ...sponsorshipCreativeOptionsShape,
     advertiserLabel: nullableText(160).default(null),
     audience: z.enum(PLACEMENT_AUDIENCES),
     body: nullableText(500).default(null),
@@ -83,13 +86,7 @@ function addScheduleAndLinkIssues(
     });
   }
 
-  if (Boolean(value.linkUrl) !== Boolean(value.linkLabel)) {
-    context.addIssue({
-      code: "custom",
-      message: "Informe o link e o texto do botão em conjunto.",
-      path: value.linkUrl ? ["linkLabel"] : ["linkUrl"],
-    });
-  }
+  addCreativeLinkIssues(value, context);
 }
 
 export const sponsorshipPlacementDraftSchema =
@@ -104,26 +101,6 @@ export const sponsorshipPlacementActivationSchema =
         code: "custom",
         message: "Marque o posicionamento como ativo.",
         path: ["isActive"],
-      });
-    }
-
-    if (!value.title) {
-      context.addIssue({
-        code: "custom",
-        message: "Informe o título antes de ativar.",
-        path: ["title"],
-      });
-    }
-
-    if (
-      (getPlacementSlot(value.slotKey)?.bodyRequired ??
-        value.placementType === "INLINE_BANNER") &&
-      !value.body
-    ) {
-      context.addIssue({
-        code: "custom",
-        message: "Informe o texto antes de ativar este formato.",
-        path: ["body"],
       });
     }
 

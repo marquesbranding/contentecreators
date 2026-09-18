@@ -1,23 +1,14 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
-import { Button, buttonVariants } from "@/shared/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { SponsorshipCatalogCard } from "./sponsorship-catalog-card";
 
 import {
-  getSafeSponsorshipExternalHref,
   isSponsorshipCreativeVisible,
   type SponsorshipCreativeViewModel,
-  SponsorshipLabels,
-  SponsorshipMedia,
 } from "./sponsorship-presentation";
 
 export function SponsorshipCarousel({
@@ -32,7 +23,7 @@ export function SponsorshipCarousel({
     [creatives],
   );
   const [activeIndex, setActiveIndex] = useState(0);
-  const linkRefs = useRef<Array<HTMLAnchorElement | null>>([]);
+  const linkRefs = useRef<Array<HTMLLIElement | null>>([]);
 
   if (visibleCreatives.length === 0) {
     return null;
@@ -51,6 +42,11 @@ export function SponsorshipCarousel({
 
     setActiveIndex(boundedIndex);
     linkRefs.current[boundedIndex]?.focus();
+    linkRefs.current[boundedIndex]?.scrollIntoView?.({
+      block: "nearest",
+      inline: "nearest",
+      behavior: "smooth",
+    });
   }
 
   return (
@@ -113,61 +109,19 @@ export function SponsorshipCarousel({
         className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0"
       >
         {visibleCreatives.map((creative, index) => {
-          const safeHref = creative.link
-            ? getSafeSponsorshipExternalHref(creative.link.href)
-            : null;
-
           return (
             <li
               aria-current={
                 index === normalizedActiveIndex ? "true" : undefined
               }
-              className="min-w-[min(18rem,82vw)] snap-start sm:min-w-80"
+              className="min-w-0 shrink-0 basis-full snap-start sm:basis-[calc((100%-1rem)/2)] lg:basis-[calc((100%-2rem)/3)] xl:basis-[calc((100%-3rem)/4)]"
+              tabIndex={-1}
+              ref={(element) => {
+                linkRefs.current[index] = element;
+              }}
               key={creative.id}
             >
-              <Card className="h-full gap-0 overflow-hidden rounded-2xl border bg-white py-0 shadow-sm">
-                {creative.media ? (
-                  <SponsorshipMedia
-                    className="aspect-[16/8] border-b"
-                    media={creative.media}
-                    mediaMobile={creative.mediaMobile}
-                    mediaTablet={creative.mediaTablet}
-                  />
-                ) : null}
-                <CardHeader className="gap-3 px-5 pt-5">
-                  <SponsorshipLabels
-                    advertiserLabel={creative.advertiserLabel}
-                    previewMode={creative.previewMode}
-                  />
-                  <CardTitle>
-                    <h3 className="text-xl font-bold">{creative.title}</h3>
-                  </CardTitle>
-                  {creative.body ? (
-                    <CardDescription className="leading-6">
-                      {creative.body}
-                    </CardDescription>
-                  ) : null}
-                </CardHeader>
-                {creative.link && safeHref ? (
-                  <CardContent className="mt-auto px-5 pb-5">
-                    <a
-                      className={buttonVariants({
-                        className: "min-h-12 w-full",
-                        size: "lg",
-                      })}
-                      href={safeHref}
-                      ref={(element) => {
-                        linkRefs.current[index] = element;
-                      }}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      {creative.link.label}
-                      <ExternalLink aria-hidden="true" />
-                    </a>
-                  </CardContent>
-                ) : null}
-              </Card>
+              <SponsorshipCatalogCard creative={creative} />
             </li>
           );
         })}

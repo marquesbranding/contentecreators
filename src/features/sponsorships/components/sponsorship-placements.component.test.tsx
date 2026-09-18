@@ -4,12 +4,10 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { getBlockingComponentAccessibilityViolations } from "@/test/component-accessibility";
 
+import { SponsorshipHeroBanner } from "./sponsorship-hero-banner";
 import { SponsorshipCarousel } from "./sponsorship-carousel.client";
 import { SponsorshipFeaturedCreator } from "./sponsorship-featured-creator";
-import {
-  type SponsorshipCreativeViewModel,
-  SponsorshipTopBanner,
-} from "./sponsorship-presentation";
+import { type SponsorshipCreativeViewModel } from "./sponsorship-presentation";
 import { SponsorshipSidePlacement } from "./sponsorship-side-placement";
 
 const baseCreative: SponsorshipCreativeViewModel = {
@@ -20,7 +18,8 @@ const baseCreative: SponsorshipCreativeViewModel = {
   id: "10000000-0000-4000-8000-000000000001",
   link: {
     href: "https://example.test/oportunidade",
-    label: "Conhecer oportunidade",
+    onCreative: false,
+    buttonLabel: "Conhecer oportunidade",
   },
   media: {
     alt: "Campanha da Marca Parceira",
@@ -35,14 +34,14 @@ const baseCreative: SponsorshipCreativeViewModel = {
 describe("sponsorship placement presentation", () => {
   it("renders a labelled top banner with authorized media and a safe external link", async () => {
     const { container, rerender } = render(
-      <SponsorshipTopBanner
+      <SponsorshipHeroBanner
         creative={{ ...baseCreative, previewMode: true }}
       />,
     );
 
     expect(
       screen.getByRole("region", {
-        name: "Patrocínio: Conteúdo que combina com você",
+        name: "Conteúdo que combina com você",
       }),
     ).toBeVisible();
     expect(screen.getByText("Conteúdo patrocinado")).toBeVisible();
@@ -57,18 +56,19 @@ describe("sponsorship placement presentation", () => {
       name: "Conhecer oportunidade",
     });
     expect(link).toHaveAttribute("target", "_blank");
-    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    expect(link).toHaveAttribute("rel", "sponsored noopener noreferrer");
     expect(
       await getBlockingComponentAccessibilityViolations(container),
     ).toEqual([]);
 
     rerender(
-      <SponsorshipTopBanner
+      <SponsorshipHeroBanner
         creative={{
           ...baseCreative,
           link: {
             href: "javascript:alert('unsafe')",
-            label: "Link inseguro",
+            onCreative: false,
+            buttonLabel: "Link inseguro",
           },
         }}
       />,
@@ -84,7 +84,7 @@ describe("sponsorship placement presentation", () => {
     ["route mismatch", { routeMatches: false }],
   ])("suppresses a placement after %s", (_scenario, override) => {
     const { container } = render(
-      <SponsorshipTopBanner creative={{ ...baseCreative, ...override }} />,
+      <SponsorshipHeroBanner creative={{ ...baseCreative, ...override }} />,
     );
 
     expect(container).toBeEmptyDOMElement();
@@ -92,7 +92,7 @@ describe("sponsorship placement presentation", () => {
 
   it("suppresses participant-derived public creative while social proof is disabled", () => {
     const { container, rerender } = render(
-      <SponsorshipTopBanner
+      <SponsorshipHeroBanner
         creative={{
           ...baseCreative,
           participantDerived: true,
@@ -105,7 +105,7 @@ describe("sponsorship placement presentation", () => {
     expect(container).toBeEmptyDOMElement();
 
     rerender(
-      <SponsorshipTopBanner
+      <SponsorshipHeroBanner
         creative={{
           ...baseCreative,
           participantDerived: false,
@@ -115,7 +115,7 @@ describe("sponsorship placement presentation", () => {
     );
     expect(
       screen.getByRole("region", {
-        name: "Patrocínio: Conteúdo que combina com você",
+        name: "Conteúdo que combina com você",
       }),
     ).toBeVisible();
   });
@@ -154,7 +154,8 @@ describe("sponsorship placement presentation", () => {
             id: "10000000-0000-4000-8000-000000000002",
             link: {
               href: "https://example.test/segunda",
-              label: "Conhecer segunda oportunidade",
+              onCreative: false,
+              buttonLabel: "Conhecer segunda oportunidade",
             },
             title: "Segunda oportunidade",
           },
@@ -183,9 +184,11 @@ describe("sponsorship placement presentation", () => {
       "Patrocínio 2 de 2: Segunda oportunidade",
     );
     expect(
-      screen.getByRole("link", {
-        name: "Conhecer segunda oportunidade",
-      }),
+      screen
+        .getByRole("link", {
+          name: "Conhecer segunda oportunidade",
+        })
+        .closest("li"),
     ).toHaveFocus();
 
     carousel.focus();
@@ -263,7 +266,7 @@ describe("sponsorship placement presentation", () => {
     >().toEqualTypeOf<never>();
 
     const { container } = render(
-      <SponsorshipTopBanner creative={baseCreative} />,
+      <SponsorshipHeroBanner creative={baseCreative} />,
     );
     expect(container.textContent).not.toMatch(
       /preço|pagamento|fatura|comissão|split|escrow|renovação|checkout/iu,
@@ -274,4 +277,61 @@ describe("sponsorship placement presentation", () => {
       }),
     ).not.toBeInTheDocument();
   });
+});
+
+it("renders independent creative/button links without nested anchors and applies appearance", () => {
+  const { container } = render(
+    <SponsorshipHeroBanner
+      creative={{
+        ...baseCreative,
+        showSponsoredBadge: false,
+        showAdvertiserLabel: true,
+        appearance: {
+          textColor: "#111111",
+          buttonBackgroundColor: "#FF5500",
+          buttonTextColor: "#FFFFFF",
+          fontFamily: "serif",
+        },
+        link: {
+          href: "https://example.com",
+          onCreative: true,
+          buttonLabel: "Saiba mais",
+        },
+      }}
+    />,
+  );
+  expect(screen.queryByText("Conteúdo patrocinado")).not.toBeInTheDocument();
+  expect(screen.getByText("Patrocinado por Marca Parceira")).toBeVisible();
+  expect(screen.getAllByRole("link")).toHaveLength(2);
+  expect(container.querySelector("a a")).toBeNull();
+  expect(container.querySelector('[class*="gradient"]')).toBeNull();
+  expect(screen.getByRole("link", { name: "Saiba mais" })).toHaveStyle({
+    color: "#FFFFFF",
+    backgroundColor: "#FF5500",
+  });
+  expect(screen.getByRole("heading").parentElement).toHaveStyle({
+    color: "#111111",
+    fontFamily: "var(--font-sponsor-serif, serif)",
+  });
+});
+it("renders just an image with no empty copy layer or badge", () => {
+  const { container } = render(
+    <SponsorshipHeroBanner
+      creative={{
+        ...baseCreative,
+        title: null,
+        body: null,
+        link: null,
+        showSponsoredBadge: false,
+        showAdvertiserLabel: false,
+      }}
+    />,
+  );
+  expect(screen.getByRole("img")).toBeVisible();
+  expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+  expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  expect(container.querySelectorAll("section > div")).toHaveLength(1);
+  expect(container.querySelector("section > div")).toContainElement(
+    screen.getByRole("img"),
+  );
 });

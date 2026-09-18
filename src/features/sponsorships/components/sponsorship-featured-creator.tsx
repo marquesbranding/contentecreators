@@ -121,7 +121,7 @@ export function SponsorshipFeaturedCreator({
           >
             <div className="flex flex-wrap items-center gap-2">
               <SponsorshipLabels
-                advertiserLabel={creative.advertiserLabel}
+                {...creative}
                 previewMode={creative.previewMode}
               />
               <Badge>Creator em destaque</Badge>
