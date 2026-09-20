@@ -3,7 +3,7 @@
 ## Publicação
 
 1. Aplicar `20260915180000_registration_journey.sql` pelo fluxo normal de migrations. Não editar a migration inicial.
-2. No Supabase hospedado, copiar `supabase/templates/confirmation.html` para **Confirm signup** e `supabase/templates/magic_link.html` para **Magic Link**. Ambos exibem código e link. O link usa `TokenHash` para funcionar em outro navegador sem depender do verificador PKCE da aba original.
+2. No Supabase hospedado, publicar os templates com `npm run supabase:config:push`, que envia `supabase/templates/confirmation.html` para **Confirm signup** e `supabase/templates/magic_link.html` para **Magic Link**. Ambos exibem código e link. O link usa `TokenHash` para funcionar em outro navegador sem depender do verificador PKCE da aba original.
 3. Configurar código com 6 dígitos, expiração de 3600 segundos, SMTP próprio e a URL final em Site URL. Autorizar `/auth/callback` nas Redirect URLs. Validar o OAuth Google com a configuração existente (`openid email profile`).
 4. Validar um cadastro por código, outro pelo link em navegador diferente e um login Google. Testar também uma identidade confirmada sem senha e a retomada da etapa de redes sociais.
 

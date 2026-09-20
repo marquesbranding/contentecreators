@@ -153,7 +153,8 @@ No projeto `contente-creators-prd`:
 3. Configure o Google OAuth de produção com callback do próprio projeto
    Supabase: `https://kstbhqeiebutpfvswyla.supabase.co/auth/v1/callback`.
 4. Configure o SMTP da Marques Branding para o Supabase Auth.
-5. Publique os templates `pt-BR` versionados em `supabase/templates/`.
+5. Publique os templates `pt-BR` versionados em `supabase/templates/` com
+   `npm run supabase:config:push`.
 6. Confirme que buckets, RLS, hooks e schema correspondem às migrations
    versionadas.
 

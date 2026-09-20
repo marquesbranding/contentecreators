@@ -29,24 +29,53 @@ between development and production.
 
 ## Supabase Auth template setup
 
-Local Supabase loads the committed confirmation, recovery, invite, and email
-change templates from `supabase/config.toml`. Hosted Supabase projects do not
-automatically inherit those files.
+Local Supabase loads the committed confirmation, recovery, invite, magic link,
+and email change templates from `supabase/config.toml`. Hosted projects receive
+the same files through `supabase config push`, which reads the
+`[remotes.production]` block at the end of that file.
 
-For each hosted project:
+Production project ref: `kstbhqeiebutpfvswyla` (`contente-creators-prd`).
 
-1. Open **Authentication → Email Templates**.
-2. Copy the matching subject and HTML from `supabase/templates/`.
-3. Preserve only supported Supabase variables. Current templates use
-   `{{ .ConfirmationURL }}` for the action and `{{ .SiteURL }}` for the
-   environment-owned official logo; they do not render profile metadata.
-4. Set the project **Site URL** to that stage's exact application origin.
-5. Add only the stage's `/auth/callback` and `/reset-password` destinations to
-   the redirect allowlist.
-6. Send confirmation, recovery, invite, and email-change tests to an approved
+One-time setup per machine:
+
+```bash
+npx supabase login
+cp supabase/.env.example supabase/.env
+```
+
+Fill `supabase/.env` with the hosted Marques Branding SMTP values. The file is
+git-ignored and only resolves the `env(...)` placeholders during the push.
+
+Sync:
+
+```bash
+npm run smtp:check -- --to=<approved mailbox>
+npm run supabase:config:push
+```
+
+The CLI prints the remote/local diff and waits for confirmation. One push
+applies rate limits, Site URL, redirect allowlist, SMTP, and all five
+templates. Never edit those fields in the dashboard: the next push overwrites
+them, and the repository is the source of truth.
+
+After a push:
+
+1. Confirm the project **Site URL** is that stage's exact application origin.
+2. Send confirmation, recovery, invite, and email-change tests to an approved
    synthetic mailbox.
-7. Confirm every link returns to the same environment and completes only once.
-8. Disable provider link tracking or URL rewriting for Auth links.
+3. Confirm every link returns to the same environment and completes only once.
+4. Disable provider link tracking or URL rewriting for Auth links.
+
+Confirmation and magic link templates point at
+`{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email`, and
+recovery points at `{{ .SiteURL }}/reset-password?token_hash={{ .TokenHash }}`.
+Those routes finalize onboarding and enforce the banned-account defense, so do
+not replace them with `{{ .ConfirmationURL }}`. Invite and email change do use
+`{{ .ConfirmationURL }}`. `{{ .SiteURL }}` also serves the official logo.
+
+The development project has no remote block yet. Add a `[remotes.development]`
+section with its own project ref before syncing it, and never reuse the
+production Google client, SMTP credentials, or redirect settings.
 
 Do not use a development callback in production or a wildcard preview URL.
 

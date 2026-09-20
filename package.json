@@ -51,6 +51,8 @@
     "mail:start": "docker compose -f compose.local.yml up -d --wait",
     "mail:stop": "docker compose -f compose.local.yml down",
     "mail:status": "docker compose -f compose.local.yml ps",
+    "smtp:check": "node --env-file-if-exists=.env.local --import tsx scripts/check-smtp.ts",
+    "supabase:config:push": "supabase config push --project-ref kstbhqeiebutpfvswyla --workdir .",
     "local:admins": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/sync-local-admins.ts",
     "local:env": "node --import tsx scripts/sync-local-env.ts",
     "local:showcase": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/seed-local-landing-showcase.ts",

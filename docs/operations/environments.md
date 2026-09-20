@@ -87,8 +87,9 @@ Marques Branding SMTP adapter use Mailpit locally. This separation makes Auth
 and business-notification tests independently observable.
 
 The committed local Auth templates are under `supabase/templates/`. Hosted
-Supabase projects require those templates to be copied through the dashboard
-or Management API because they do not read the repository files directly.
+projects do not read the repository directly; `npm run supabase:config:push`
+sends them, together with the Site URL, redirect allowlist, rate limits, and
+SMTP declared in the `[remotes.production]` block of `supabase/config.toml`.
 Follow [the email delivery runbook](./email-delivery.md) for redirect isolation,
 SMTP/DNS verification, and the local end-to-end acceptance flow.
 

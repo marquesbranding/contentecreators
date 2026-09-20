@@ -122,8 +122,8 @@ For each Supabase project:
 - [ ] Configure a dedicated Google OAuth client and the matching
       `https://<project-ref>.supabase.co/auth/v1/callback`. Production uses
       `https://kstbhqeiebutpfvswyla.supabase.co/auth/v1/callback`.
-- [ ] Configure Marques Branding SMTP and copy the reviewed `pt-BR` templates
-      from `supabase/templates/`.
+- [ ] Configure Marques Branding SMTP and publish the reviewed `pt-BR`
+      templates with `npm run supabase:config:push`.
 - [ ] Confirm sender ownership, SPF, DKIM, DMARC, provider limits, and
       non-production labeling where applicable.
 - [ ] Apply committed migrations; do not create tables, policies, functions, or

@@ -37,6 +37,8 @@ TanStack Query, Zustand, Vitest e Playwright.
 - Autenticação, PostgreSQL e Storage: Supabase, projeto
   `contente-creators-prd`
 - Branch publicada em produção: `main`
+- Project ref do Supabase de produção: `kstbhqeiebutpfvswyla`
+  (`https://kstbhqeiebutpfvswyla.supabase.co`)
 
 O domínio sem `www` pertence ao mesmo ambiente de produção e atualmente é
 redirecionado pela Vercel para a origem canônica com `www`. URLs temporárias
@@ -174,6 +176,41 @@ Em um build Vercel de produção autorizado, esse comando:
 Não execute `drizzle-kit push` e não aplique alterações de schema manualmente
 no dashboard. Consulte o
 [runbook de deploy e migrations](docs/operations/deployment-runbook.md).
+
+## Configuração do Supabase hospedado
+
+Templates de e-mail, Site URL, redirect allowlist, rate limits e SMTP do Auth
+são versionados em `supabase/config.toml`. O bloco `[remotes.production]`
+guarda os valores de produção; tudo que ele não repete é herdado das seções
+locais, inclusive os assuntos e os arquivos de `supabase/templates/`.
+
+Pré-requisitos, executados uma única vez por máquina:
+
+```bash
+npx supabase login
+cp supabase/.env.example supabase/.env
+```
+
+Preencha `supabase/.env` com as credenciais SMTP da Marques Branding usadas em
+produção. O arquivo é ignorado pelo Git e só é lido pela CLI do Supabase para
+resolver os `env(...)` do bloco de produção.
+
+Antes de enviar, valide a conta SMTP:
+
+```bash
+npm run smtp:check -- --to=seu@email.com
+```
+
+Envie a configuração para o projeto hospedado:
+
+```bash
+npm run supabase:config:push
+```
+
+A CLI mostra o diff entre o projeto hospedado e o repositório e pede
+confirmação. Revise o diff: ele aplica rate limits, Site URL, allowlist de
+redirect, SMTP e os cinco templates de uma vez. Editar esses campos pelo
+dashboard cria divergência que o próximo push desfaz.
 
 ## Documentação operacional
 

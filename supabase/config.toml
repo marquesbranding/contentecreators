@@ -449,3 +449,43 @@ enabled = true
 [auth.email.template.magic_link]
 subject = "Seu código de acesso à Contente Creators"
 content_path = "./supabase/templates/magic_link.html"
+
+# --------------------------------------------------------------------------
+# Hosted production overrides (project contente-creators-prd).
+# Applied only by `npm run supabase:config:push`, never by `supabase start`.
+# Everything not repeated here is inherited from the sections above, including
+# the e-mail subjects and the templates under ./supabase/templates.
+# The SMTP values come from supabase/.env, which is git-ignored.
+# --------------------------------------------------------------------------
+[remotes.production]
+project_id = "kstbhqeiebutpfvswyla"
+
+[remotes.production.auth]
+site_url = "https://www.contentecreators.com"
+additional_redirect_urls = [
+  "https://www.contentecreators.com/auth/callback",
+  "https://www.contentecreators.com/reset-password",
+]
+
+[remotes.production.auth.rate_limit]
+# Deliberately generous: real people retry, and a locked-out signup costs more
+# than an extra e-mail. The SMTP provider quota is the real ceiling.
+email_sent = 500
+sign_in_sign_ups = 300
+token_verifications = 300
+token_refresh = 600
+anonymous_users = 30
+sms_sent = 30
+
+[remotes.production.auth.email]
+# Minimum wait before the same address can request another e-mail.
+max_frequency = "60s"
+
+[remotes.production.auth.email.smtp]
+enabled = true
+host = "env(SMTP_HOST)"
+port = 587
+user = "env(SMTP_USER)"
+pass = "env(SMTP_PASSWORD)"
+admin_email = "env(SMTP_FROM_EMAIL)"
+sender_name = "Contente Creators"
