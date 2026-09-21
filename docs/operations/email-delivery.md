@@ -43,13 +43,19 @@ npx supabase login
 cp supabase/.env.example supabase/.env
 ```
 
-Fill `supabase/.env` with the hosted Marques Branding SMTP values. The file is
-git-ignored and only resolves the `env(...)` placeholders during the push.
+Fill `supabase/.env` with the hosted Marques Branding SMTP values, using the
+`SUPABASE_SMTP_*` keys. The prefix is not cosmetic: the Supabase CLI applies
+`supabase/.env`, then `supabase/.env.local`, then the ambient environment, so
+the application's own `SMTP_*` values exported by a shell would win and publish
+the local Mailpit catcher to production. `npm run supabase:config:push` reads
+the file itself, passes it to the CLI as the authoritative environment, prints
+the host, user, and sender it is about to publish, and refuses local hosts and
+`.test` senders.
 
 Sync:
 
 ```bash
-npm run smtp:check -- --to=<approved mailbox>
+npm run smtp:check:prd -- --to=<approved mailbox>
 npm run supabase:config:push
 ```
 
@@ -57,6 +63,11 @@ The CLI prints the remote/local diff and waits for confirmation. One push
 applies rate limits, Site URL, redirect allowlist, SMTP, and all five
 templates. Never edit those fields in the dashboard: the next push overwrites
 them, and the repository is the source of truth.
+
+`npm run smtp:check` targets the application SMTP from `.env.local` (Mailpit
+locally); `npm run smtp:check:prd` targets the hosted credentials in
+`supabase/.env`. A 500 from `/auth/v1/recover` is almost always this pair
+pointing at different servers.
 
 After a push:
 

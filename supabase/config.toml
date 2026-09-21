@@ -481,11 +481,13 @@ sms_sent = 30
 # Minimum wait before the same address can request another e-mail.
 max_frequency = "60s"
 
+# Deliberately prefixed: a shell that exported the application SMTP_* values
+# would otherwise override this file and publish the local catcher.
 [remotes.production.auth.email.smtp]
 enabled = true
-host = "env(SMTP_HOST)"
+host = "env(SUPABASE_SMTP_HOST)"
 port = 587
-user = "env(SMTP_USER)"
-pass = "env(SMTP_PASSWORD)"
-admin_email = "env(SMTP_FROM_EMAIL)"
+user = "env(SUPABASE_SMTP_USER)"
+pass = "env(SUPABASE_SMTP_PASSWORD)"
+admin_email = "env(SUPABASE_SMTP_SENDER_EMAIL)"
 sender_name = "Contente Creators"

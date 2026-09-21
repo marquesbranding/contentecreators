@@ -4,15 +4,40 @@
 //   npm run smtp:check                       # login only, sends nothing
 //   npm run smtp:check -- --to=me@example.com # login + real test message
 //
-// Reads SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD,
-// SMTP_FROM_EMAIL and SMTP_FROM_NAME from the environment (.env.local by
-// default). The password is never printed.
+// `npm run smtp:check:prd` runs the same check against supabase/.env, the file
+// the Supabase CLI reads when pushing the hosted SMTP settings.
+//
+// Reads SMTP_HOST, SMTP_USER, SMTP_PASSWORD and SMTP_FROM_EMAIL from the
+// environment (.env.local by default), or their SUPABASE_SMTP_* equivalents,
+// which win when both are set. SMTP_PORT, SMTP_SECURE and SMTP_FROM_NAME fall
+// back to the values the hosted config assumes. The password is never printed.
 import nodemailer from "nodemailer";
 
 const TIMEOUT_MS = 15_000;
+const DEFAULT_PORT = 587;
+const DEFAULT_SENDER_NAME = "Contente Creators";
+
+// The hosted credentials use the SUPABASE_ prefix so that an exported
+// application SMTP_* value cannot shadow them. Either set is accepted.
+const HOSTED_ALIASES: Record<string, string> = {
+  SMTP_FROM_EMAIL: "SUPABASE_SMTP_SENDER_EMAIL",
+  SMTP_HOST: "SUPABASE_SMTP_HOST",
+  SMTP_PASSWORD: "SUPABASE_SMTP_PASSWORD",
+  SMTP_USER: "SUPABASE_SMTP_USER",
+};
+
+function optionalEnvironment(name: string) {
+  const alias = HOSTED_ALIASES[name];
+
+  return (
+    (alias ? process.env[alias]?.trim() : undefined) ||
+    process.env[name]?.trim() ||
+    undefined
+  );
+}
 
 function requiredEnvironment(name: string) {
-  const value = process.env[name]?.trim();
+  const value = optionalEnvironment(name);
 
   if (!value) {
     throw new Error(`Missing environment variable: ${name}`);
@@ -68,11 +93,11 @@ const hints: Record<string, string> = {
 
 async function run() {
   const host = requiredEnvironment("SMTP_HOST");
-  const port = Number(requiredEnvironment("SMTP_PORT"));
-  const secure = requiredEnvironment("SMTP_SECURE") === "true";
+  const port = Number(optionalEnvironment("SMTP_PORT") ?? DEFAULT_PORT);
+  const secure = (optionalEnvironment("SMTP_SECURE") ?? "false") === "true";
   const user = requiredEnvironment("SMTP_USER");
   const fromEmail = requiredEnvironment("SMTP_FROM_EMAIL");
-  const fromName = requiredEnvironment("SMTP_FROM_NAME");
+  const fromName = optionalEnvironment("SMTP_FROM_NAME") ?? DEFAULT_SENDER_NAME;
   const to = recipientArgument();
 
   const transporter = nodemailer.createTransport({

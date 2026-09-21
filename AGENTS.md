@@ -16,6 +16,8 @@ npm run supabase:config:push
 ```
 
 Requer `npx supabase login` e `supabase/.env` (copie de `supabase/.env.example`)
-com as credenciais SMTP. Valide a conta SMTP antes com
-`npm run smtp:check -- --to=<mailbox>`. Detalhes em
+com as credenciais SMTP em chaves `SUPABASE_SMTP_*`. O prefixo é obrigatório:
+a CLI deixa variável de ambiente sobrescrever o arquivo, então reusar os nomes
+`SMTP_*` da aplicação publica o Mailpit local em produção. Valide a conta antes
+com `npm run smtp:check:prd -- --to=<mailbox>`. Detalhes em
 `docs/operations/email-delivery.md`.

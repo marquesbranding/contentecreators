@@ -192,8 +192,11 @@ cp supabase/.env.example supabase/.env
 ```
 
 Preencha `supabase/.env` com as credenciais SMTP da Marques Branding usadas em
-produção. O arquivo é ignorado pelo Git e só é lido pela CLI do Supabase para
-resolver os `env(...)` do bloco de produção.
+produção. O arquivo é ignorado pelo Git e resolve os `env(...)` do bloco de
+produção. As chaves usam o prefixo `SUPABASE_SMTP_`, diferente do `SMTP_` da
+aplicação: a CLI deixa variável já exportada no shell sobrescrever o arquivo, e
+sem o prefixo um terminal com o `.env.local` carregado publicaria o Mailpit
+local em produção.
 
 Antes de enviar, valide a conta SMTP:
 
@@ -207,10 +210,12 @@ Envie a configuração para o projeto hospedado:
 npm run supabase:config:push
 ```
 
-A CLI mostra o diff entre o projeto hospedado e o repositório e pede
-confirmação. Revise o diff: ele aplica rate limits, Site URL, allowlist de
-redirect, SMTP e os cinco templates de uma vez. Editar esses campos pelo
-dashboard cria divergência que o próximo push desfaz.
+O comando imprime host, usuário e remetente que vai publicar, recusa valores
+locais (`127.0.0.1`, remetente `.test`) e então chama a CLI, que mostra o diff
+entre o projeto hospedado e o repositório e pede confirmação. Revise o diff:
+ele aplica rate limits, Site URL, allowlist de redirect, SMTP e os cinco
+templates de uma vez. Editar esses campos pelo dashboard cria divergência que o
+próximo push desfaz.
 
 ## Documentação operacional
 
