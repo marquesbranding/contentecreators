@@ -6,6 +6,7 @@ import {
   count,
   desc,
   eq,
+  inArray,
   isNotNull,
   isNull,
   or,
@@ -47,6 +48,8 @@ function listPredicates(filters: AccountManagementFilters) {
     predicates.push(isNull(accounts.archivedAt));
   } else if (filters.archive === "ARCHIVED") {
     predicates.push(isNotNull(accounts.archivedAt));
+  } else if (filters.archive === "DELETION") {
+    predicates.push(inArray(accounts.deletionState, ["REQUESTED", "FAILED"]));
   }
 
   if (filters.search) {
@@ -120,7 +123,9 @@ export async function listManagedAccounts(
         archivedAt: accounts.archivedAt,
         completionPercentage: accounts.completionPercentage,
         createdAt: accounts.createdAt,
+        deletionState: accounts.deletionState,
         displayName: displayNameExpression(),
+        eliminationEligibleAt: accounts.eliminationEligibleAt,
         operationalEmail: accounts.operationalEmail,
         role: accounts.role,
         status: accounts.status,
@@ -150,7 +155,9 @@ export async function listManagedAccounts(
       archivedAt: toIso(item.archivedAt),
       completionPercentage: item.completionPercentage,
       createdAt: toIso(item.createdAt) as string,
+      deletionState: item.deletionState,
       displayName: item.displayName,
+      eliminationEligibleAt: toIso(item.eliminationEligibleAt),
       operationalEmail: item.operationalEmail,
       role: item.role as ManagedAccountRole | null,
       status: item.status as ManagedAccountStatus,

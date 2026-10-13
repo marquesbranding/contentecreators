@@ -583,9 +583,12 @@ function OperationalMetadata({
 }
 
 export function AccountDetail({
+  deletionPanel,
   detail,
   profileActions,
 }: {
+  /** Recovery panel for accounts with a pending self-service deletion. */
+  deletionPanel?: React.ReactNode;
   detail: BackofficeAccountDetailDto;
   /**
    * Extension point for task 17.3. Pass an authorized admin edit trigger/form
@@ -635,6 +638,7 @@ export function AccountDetail({
         </CardContent>
       </Card>
 
+      {deletionPanel}
       <ProfileCard detail={detail} profileActions={profileActions} />
       <EvidenceCards detail={detail} />
       <ModerationHistory detail={detail} />

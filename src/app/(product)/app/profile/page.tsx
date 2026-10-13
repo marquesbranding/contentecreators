@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { AccountDeletionSection } from "@/features/account-deletion/client";
+import { requestAccountDeletionAction } from "@/features/account-deletion/server";
 import { AuthenticatedProductShell } from "@/features/identity";
 import { signOutAction } from "@/features/identity/server";
 import {
@@ -78,6 +80,9 @@ export default function ProfilePage() {
                     mediaState={mediaState}
                     profile={profile}
                   />
+                  <AccountDeletionSection
+                    action={requestAccountDeletionAction}
+                  />
                 </div>
               </OnboardingFormShell>
             </AuthenticatedProductShell>
@@ -129,6 +134,7 @@ export default function ProfilePage() {
                   mediaState={mediaState}
                   profile={profile}
                 />
+                <AccountDeletionSection action={requestAccountDeletionAction} />
               </div>
             </OnboardingFormShell>
           </AuthenticatedProductShell>

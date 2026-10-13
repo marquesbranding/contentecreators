@@ -139,7 +139,8 @@ For each Vercel project:
       intended production branch; `contente-creators-prd` uses `main`.
 - [ ] Confirm the Vercel Build Command resolves to `npm run vercel:build` from
       `vercel.json` and has no conflicting dashboard override.
-- [ ] Confirm the `/api/cron/email-outbox` schedule from `vercel.json`.
+- [ ] Confirm the `/api/cron/email-outbox` and `/api/cron/account-elimination`
+      schedules from `vercel.json`.
 - [ ] Confirm Vercel sends `Authorization: Bearer <CRON_SECRET>` and the
       endpoint rejects a missing or wrong signature.
 - [ ] Confirm no scheduled development secret or endpoint exists in production,

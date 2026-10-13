@@ -22,6 +22,9 @@ export interface BackofficeAccountOperationalDto {
     version: number;
   };
   createdAt: string;
+  deletionDueAt: string | null;
+  deletionState: "ELIMINATED" | "FAILED" | "REQUESTED" | null;
+  eliminationEligibleAt: string | null;
   id: string;
   operationalEmail: string;
   role: ManagedAccountRole | null;

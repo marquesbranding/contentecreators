@@ -40,7 +40,9 @@ be delivered before launch:
       `NEXT_PUBLIC_GOOGLE_ADS_ID`, `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL`, and
       `NEXT_PUBLIC_META_PIXEL_ID` per environment and confirm the durations in
       `cookie-registry.ts` with legal before launch
-- [ ] In-platform account deletion and elimination within 120 days; refused
-      registrations eliminated within 90 days (chapter 8)
+- [x] In-platform account deletion and elimination within the legal deadline
+      (chapter 8): implemented, see
+      [account deletion](./operations/account-deletion.md). Refused
+      registrations eliminated within 90 days are **not** implemented yet.
 - [ ] Confirm whether the home-page showcase needs its own consent checkbox
       (chapters 4 and 5.2 name consent as its legal basis)

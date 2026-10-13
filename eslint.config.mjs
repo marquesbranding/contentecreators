@@ -152,6 +152,14 @@ const eslintConfig = defineConfig([
                   },
                   {
                     element: {
+                      type: "feature",
+                      captured: {
+                        featureName: "account-deletion",
+                      },
+                    },
+                  },
+                  {
+                    element: {
                       types: {
                         anyOf: ["shared", "db"],
                       },

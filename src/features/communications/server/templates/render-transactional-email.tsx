@@ -95,6 +95,29 @@ const templateCopy = {
     preview: "Seu acesso administrativo à Contente Creators está disponível.",
     subject: "Seu acesso administrativo está disponível",
   },
+  ACCOUNT_DELETION_REQUESTED: {
+    actionLabel: "Fale com a gente",
+    body: [
+      "Recebemos o pedido para excluir a sua conta na Contente Creators. Seu perfil já não aparece mais para outros usuários.",
+      "Se foi um engano, entre em contato com a gente antes da data abaixo e recuperamos a sua conta.",
+    ],
+    heading: "Recebemos o pedido de exclusão da sua conta",
+    path: "/",
+    preview:
+      "Seu pedido de exclusão foi recebido. Você ainda pode recuperar a conta por 30 dias.",
+    subject: "Recebemos o pedido de exclusão da sua conta",
+  },
+  ACCOUNT_RECOVERED: {
+    actionLabel: "Entrar na plataforma",
+    body: [
+      "Sua conta foi recuperada e o acesso está liberado novamente.",
+      "Por segurança, a autorização para empresas verem seus contatos continua desativada. Se quiser, autorize novamente no seu perfil.",
+    ],
+    heading: "Sua conta foi recuperada",
+    path: "/login",
+    preview: "Sua conta na Contente Creators foi recuperada.",
+    subject: "Sua conta foi recuperada",
+  },
 } satisfies Record<TransactionalEmailTemplate, EmailCopy>;
 
 export interface RenderedTransactionalEmail {
@@ -123,7 +146,7 @@ export async function renderTransactionalEmail(
     <TransactionalEmail
       actionLabel={copy.actionLabel}
       actionUrl={actionUrl}
-      body={copy.body}
+      body={[...copy.body, ...dynamicBodyLines(parsed)]}
       heading={copy.heading}
       logoUrl={logoUrl}
       preview={copy.preview}
@@ -185,4 +208,23 @@ function getRequestedFieldLabels(
       ? `${getCorrectableFieldLabel(item.field)}: ${item.note}`
       : getCorrectableFieldLabel(item.field),
   );
+}
+
+function dynamicBodyLines(input: ParsedTransactionalEmailInput): string[] {
+  if (input.template !== "ACCOUNT_DELETION_REQUESTED") {
+    return [];
+  }
+
+  return [
+    `Você pode pedir a recuperação da conta até ${formatPtBrDate(input.payload.recoverableUntil)}.`,
+    `Depois disso, eliminaremos seus dados pessoais, no máximo até ${formatPtBrDate(input.payload.eliminationBy)}, salvo o que a lei exige guardar (como os registros de acesso, por 6 meses).`,
+    "Para recuperar a conta, escreva para contato@marquesbranding.com.",
+  ];
+}
+
+function formatPtBrDate(isoDate: string): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "long",
+    timeZone: "America/Sao_Paulo",
+  }).format(new Date(isoDate));
 }

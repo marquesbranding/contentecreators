@@ -13,6 +13,8 @@ const response = {
       archivedAt: null,
       completionPercentage: 80,
       createdAt: "2026-07-25T12:00:00.000Z",
+      deletionState: null,
+      eliminationEligibleAt: null,
       displayName: "Empresa Dois",
       operationalEmail: "company-pending@contentecreators.test",
       role: "COMPANY",

@@ -59,3 +59,12 @@ A Política fixa: eliminação em até 120 dias; vitrine retirada após a exclus
 - Registro de acesso e logs de plataforma (Vercel/Supabase) fora do banco: confirmar retenção do provedor.
 
 Decididas: matriz de disposição aprovada; janela de recuperação de 30 dias com recuperação feita no backoffice; agendador é o Vercel Cron já em uso.
+
+## Notas da implementação
+
+- Visibilidade reaproveita `accounts.archived_at` e `creator/company_profiles.archived_at` com o **mesmo timestamp** do pedido; a recuperação restaura exatamente as linhas com esse timestamp. Por isso não existe a coluna `deletion_archived_profile` prevista antes.
+- O e-mail de confirmação/recuperação é gravado no outbox dentro das funções SQL (`app_request_account_deletion`, `app_admin_recover_account`); o app só dispara a entrega pós-commit.
+- `capture_audit_revision` passou a aceitar como ator verificável uma conta com `deletion_state = 'REQUESTED'`, senão a própria revisão do pedido (conta já arquivada) viraria `SYSTEM_UNKNOWN`.
+- A eliminação **preserva** a linha `accounts` como tombstone (e-mail `eliminated-<id>@eliminated.invalid`, nome nulo) porque FKs `RESTRICT` de consentimentos, auditoria e moderação a referenciam; o Auth usa soft delete pelo mesmo motivo.
+- Contas com `sponsorship_placements` (anunciante ou creator em destaque) não são eliminadas automaticamente: falham com código `SPONSORSHIP` até alguém tratar o placement.
+- A seção de exclusão só aparece em `/app/profile` (conta aprovada). Outros status pedem pelo canal de contato.

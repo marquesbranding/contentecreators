@@ -18,6 +18,9 @@ subject-facing source for the request channel, the response interval, and the
 retention intervals. Take those values from the published version in force;
 this runbook does not restate them.
 
+Owner-initiated deletion from the profile page has its own runbook:
+[account-deletion.md](./account-deletion.md).
+
 ## Non-negotiable controls
 
 - All subject-facing acknowledgements and decisions are written in polished Brazilian Portuguese.

@@ -8,7 +8,10 @@ export type ManagedAccountStatus =
   | "PENDING_REVIEW"
   | "SUSPENDED";
 
-export type ManagedAccountArchiveFilter = "ACTIVE" | "ALL" | "ARCHIVED";
+export type ManagedAccountArchiveFilter =
+  "ACTIVE" | "ALL" | "ARCHIVED" | "DELETION";
+
+export type ManagedAccountDeletionState = "ELIMINATED" | "FAILED" | "REQUESTED";
 
 export type ManagedAccountOrder =
   "COMPLETION_DESC" | "NAME_ASC" | "NEWEST" | "OLDEST";
@@ -28,7 +31,9 @@ export interface ManagedAccountSummaryDto {
   archivedAt: string | null;
   completionPercentage: number;
   createdAt: string;
+  deletionState: ManagedAccountDeletionState | null;
   displayName: string;
+  eliminationEligibleAt: string | null;
   operationalEmail: string;
   role: ManagedAccountRole | null;
   status: ManagedAccountStatus;

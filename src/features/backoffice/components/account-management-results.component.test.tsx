@@ -10,6 +10,8 @@ const response: AccountManagementResponseDto = {
       accountId: "c0000000-0000-4000-8000-000000000002",
       archivedAt: null,
       completionPercentage: 80,
+      deletionState: null,
+      eliminationEligibleAt: null,
       createdAt: "2026-07-25T12:00:00.000Z",
       displayName: "Empresa Dois",
       operationalEmail: "company-pending@contentecreators.test",

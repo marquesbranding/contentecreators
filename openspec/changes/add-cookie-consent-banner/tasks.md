@@ -27,5 +27,5 @@
 ## 5. Verificação e documentação
 
 - [ ] 5.1 e2e: sem escolha nada vai a Google/Meta; aceitar carrega; revogar para; 320/390/1440; a11y
-- [ ] 5.2 Atualizar `docs/launch-blockers.md` (item de cookies) e Open Questions pendentes com jurídico/marketing
+- [x] 5.2 Atualizar `docs/launch-blockers.md` (item de cookies) e Open Questions pendentes com jurídico/marketing
 - [x] 5.3 Rodar lint, typecheck, unit, component e e2e relevantes

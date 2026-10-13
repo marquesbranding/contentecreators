@@ -184,6 +184,7 @@ export function AccountManagementView({
                 items={{
                   ACTIVE: "Ativas",
                   ARCHIVED: "Arquivadas",
+                  DELETION: "Exclusão solicitada",
                   ALL: "Ativas e arquivadas",
                 }}
                 onValueChange={(value) =>

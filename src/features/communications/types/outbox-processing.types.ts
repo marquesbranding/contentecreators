@@ -14,7 +14,9 @@ export type OutboxEmailTemplate =
   | "APPROVED"
   | "SUSPENDED"
   | "RESTORED"
-  | "BANNED";
+  | "BANNED"
+  | "ACCOUNT_DELETION_REQUESTED"
+  | "ACCOUNT_RECOVERED";
 
 export interface ClaimedEmailOutboxItem {
   attemptNumber: number;

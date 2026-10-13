@@ -125,9 +125,7 @@ function DesktopAccounts({ items }: { items: ManagedAccountSummaryDto[] }) {
                   <Badge variant={statusBadgeVariant(item.status)}>
                     {getModerationStatusLabel(item.status)}
                   </Badge>
-                  {item.archivedAt ? (
-                    <Badge variant="outline">Arquivada</Badge>
-                  ) : null}
+                  <ArchiveBadge item={item} />
                 </div>
               </TableCell>
               <TableCell>{formatDate(item.createdAt)}</TableCell>
@@ -145,6 +143,18 @@ function DesktopAccounts({ items }: { items: ManagedAccountSummaryDto[] }) {
   );
 }
 
+function ArchiveBadge({ item }: { item: ManagedAccountSummaryDto }) {
+  if (item.deletionState === "REQUESTED" || item.deletionState === "FAILED") {
+    return <Badge variant="destructive">Exclusão solicitada</Badge>;
+  }
+
+  if (item.deletionState === "ELIMINATED") {
+    return <Badge variant="outline">Dados eliminados</Badge>;
+  }
+
+  return item.archivedAt ? <Badge variant="outline">Arquivada</Badge> : null;
+}
+
 function MobileAccounts({ items }: { items: ManagedAccountSummaryDto[] }) {
   return (
     <section
@@ -160,9 +170,7 @@ function MobileAccounts({ items }: { items: ManagedAccountSummaryDto[] }) {
               <Badge variant={statusBadgeVariant(item.status)}>
                 {getModerationStatusLabel(item.status)}
               </Badge>
-              {item.archivedAt ? (
-                <Badge variant="outline">Arquivada</Badge>
-              ) : null}
+              <ArchiveBadge item={item} />
             </div>
           </CardHeader>
           <CardContent className="grid gap-4">

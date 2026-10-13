@@ -8,6 +8,7 @@
  */
 
 export type ErrorOperation =
+  | "delete_account"
   | "moderation"
   | "reset_password"
   | "resend_email"
@@ -35,6 +36,7 @@ export interface UserFacingError {
 }
 
 const operationTitles: Record<ErrorOperation, string> = {
+  delete_account: "Não foi possível excluir sua conta",
   moderation: "Não foi possível concluir a ação de moderação",
   resend_email: "Não foi possível reenviar o e-mail",
   reset_password: "Não foi possível alterar sua senha",
@@ -47,6 +49,7 @@ const operationTitles: Record<ErrorOperation, string> = {
 };
 
 const operationVerbs: Record<ErrorOperation, string> = {
+  delete_account: "excluir sua conta",
   moderation: "concluir a ação",
   resend_email: "reenviar o e-mail",
   reset_password: "alterar sua senha",

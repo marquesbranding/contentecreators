@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/email-outbox",
       "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/account-elimination",
+      "schedule": "0 6 * * *"
     }
   ]
 }

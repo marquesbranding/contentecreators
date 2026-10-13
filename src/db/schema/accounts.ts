@@ -5,6 +5,7 @@ import {
   integer,
   pgTable,
   smallint,
+  text,
   timestamp,
   uniqueIndex,
   uuid,
@@ -48,6 +49,18 @@ export const accounts = pgTable(
       .notNull()
       .defaultNow(),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
+    deletionRequestedAt: timestamp("deletion_requested_at", {
+      withTimezone: true,
+    }),
+    eliminationEligibleAt: timestamp("elimination_eligible_at", {
+      withTimezone: true,
+    }),
+    deletionDueAt: timestamp("deletion_due_at", { withTimezone: true }),
+    deletionState: text("deletion_state").$type<
+      "REQUESTED" | "FAILED" | "ELIMINATED"
+    >(),
+    deletionFailureCode: text("deletion_failure_code"),
+    eliminatedAt: timestamp("eliminated_at", { withTimezone: true }),
   },
   (table) => [
     uniqueIndex("accounts_auth_user_id_role_uidx").on(

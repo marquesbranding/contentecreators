@@ -36,6 +36,7 @@ export interface SensitiveDataLeak {
 }
 
 export type OperationalEventName =
+  | "account_lifecycle"
   | "auth_result"
   | "authorization_denied"
   | "ban_transition"

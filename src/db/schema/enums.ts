@@ -87,6 +87,8 @@ export const emailTemplateEnum = pgEnum("email_template", [
   "SUSPENDED",
   "RESTORED",
   "BANNED",
+  "ACCOUNT_DELETION_REQUESTED",
+  "ACCOUNT_RECOVERED",
 ]);
 
 export const emailOutboxStatusEnum = pgEnum("email_outbox_status", [

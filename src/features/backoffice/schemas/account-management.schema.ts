@@ -22,6 +22,7 @@ export const managedAccountArchiveSchema = z.enum([
   "ACTIVE",
   "ARCHIVED",
   "ALL",
+  "DELETION",
 ]);
 export const managedAccountOrderSchema = z.enum([
   "NEWEST",
@@ -65,7 +66,9 @@ const managedAccountSummarySchema = z
     archivedAt: z.iso.datetime({ offset: true }).nullable(),
     completionPercentage: z.number().int().min(0).max(100),
     createdAt: z.iso.datetime({ offset: true }),
+    deletionState: z.enum(["REQUESTED", "FAILED", "ELIMINATED"]).nullable(),
     displayName: z.string().trim().min(1).max(320),
+    eliminationEligibleAt: z.iso.datetime({ offset: true }).nullable(),
     operationalEmail: z.email().max(320),
     role: managedAccountRoleSchema.nullable(),
     status: managedAccountStatusSchema,
