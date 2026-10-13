@@ -41,7 +41,7 @@ describe("security headers", () => {
     expect(directiveValue(policy, "form-action")).toBe(
       "form-action 'self' https://contente-creators-prd.supabase.co https://accounts.google.com",
     );
-    expect(directiveValue(policy, "frame-src")).toBe("frame-src 'none'");
+    expect(directiveValue(policy, "frame-src")).toBe("frame-src 'self'");
     expect(directiveValue(policy, "frame-ancestors")).toBe(
       "frame-ancestors 'none'",
     );

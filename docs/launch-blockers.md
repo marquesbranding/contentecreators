@@ -27,9 +27,9 @@ item as blocking.
 - [ ] Final favicon or square brand mark derived and approved by the brand owner
 
 The public legal routes `/terms` and `/privacy` publish the official v1.0
-documents from `src/features/legal/content`. Each published version is
-registered in `legal_documents` with a SHA-256 `content_hash`; a text change
-requires a new version, a new migration, and a new acceptance
+documents as the signed PDFs in `public/legal/`. Each published version is
+registered in `legal_documents` with the SHA-256 `content_hash` of the file; a
+change requires a new version, a new file, a new migration, and a new acceptance
 (`node --import tsx scripts/legal-hash.ts` prints the hashes).
 
 Open items the official Privacy Policy already promises and that are still to

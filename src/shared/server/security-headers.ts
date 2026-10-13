@@ -82,7 +82,8 @@ function contentSecurityPolicy({
       ...(supabaseOrigin ? [supabaseOrigin] : []),
       "https://accounts.google.com",
     ],
-    ["frame-src", "'none'"],
+    // Same-origin only: the legal pages embed the published PDFs.
+    ["frame-src", "'self'"],
     ["frame-ancestors", "'none'"],
     ...(isProductionDeployment ? [["upgrade-insecure-requests"]] : []),
   ];
@@ -139,4 +140,18 @@ export function createSecurityHeaders(
   }
 
   return headers;
+}
+
+/**
+ * Headers for the published legal PDFs under `/legal/`. They must be framable
+ * by our own pages, and a restrictive CSP on the PDF response itself would
+ * block the browser's PDF viewer, so only the framing and sniffing protections
+ * are kept.
+ */
+export function createEmbeddableDocumentHeaders(): SecurityHeader[] {
+  return [
+    { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+    { key: "X-Content-Type-Options", value: "nosniff" },
+    { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  ];
 }

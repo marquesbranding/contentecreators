@@ -1,151 +1,19 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
-import type {
-  LegalBlock,
-  LegalChapter,
-  LegalDocument,
-} from "@/features/legal/types/legal-document.types";
+import type { LegalPdfDocument } from "@/features/legal/types/legal-document.types";
 import { BrandLogo } from "@/shared/components/brand-logo";
 
 type LegalDocumentPageProps = {
-  document: LegalDocument;
+  document: LegalPdfDocument;
 };
 
-export function itemAnchor(number: string) {
-  return `item-${number.replaceAll(".", "-")}`;
-}
-
-function BulletList({ bullets }: { bullets?: readonly string[] }) {
-  if (!bullets?.length) {
-    return null;
-  }
-
-  return (
-    <ul className="mt-3 list-disc space-y-2 pl-6">
-      {bullets.map((bullet) => (
-        <li key={bullet}>{bullet}</li>
-      ))}
-    </ul>
-  );
-}
-
-function Block({ block }: { block: LegalBlock }) {
-  switch (block.kind) {
-    case "item":
-      return (
-        <div
-          className="scroll-mt-24 leading-7 text-[#333] target:rounded-md target:bg-[#fff5df] target:outline-2 target:outline-offset-4 target:outline-[#b86800] focus:outline-2 focus:outline-offset-4 focus:outline-[#0059db]"
-          id={itemAnchor(block.number)}
-          tabIndex={-1}
-        >
-          <p>
-            <span className="font-extrabold text-black">{block.number}.</span>{" "}
-            {block.text}
-          </p>
-          <BulletList bullets={block.bullets} />
-        </div>
-      );
-    case "paragraph":
-      return (
-        <div className="leading-7 text-[#333]">
-          <p>{block.text}</p>
-          <BulletList bullets={block.bullets} />
-        </div>
-      );
-    case "subheading":
-      return (
-        <h3
-          className="scroll-mt-24 pt-2 text-lg font-extrabold"
-          id={block.number ? itemAnchor(block.number) : undefined}
-        >
-          {block.number ? `${block.number}. ` : null}
-          {block.text}
-        </h3>
-      );
-    case "callout":
-      return (
-        <p
-          className="border-2 border-black bg-white p-4 leading-7 font-semibold"
-          role="note"
-        >
-          {block.text}
-        </p>
-      );
-    case "table":
-      return (
-        <div
-          aria-label={block.caption}
-          className="overflow-x-auto border-2 border-black bg-white"
-          role="region"
-          tabIndex={0}
-        >
-          <table className="w-full min-w-[34rem] border-collapse text-left text-sm leading-6">
-            <caption className="sr-only">{block.caption}</caption>
-            <thead className="bg-black text-white">
-              <tr>
-                {block.headers.map((header) => (
-                  <th className="p-3 font-extrabold" key={header} scope="col">
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {block.rows.map((row) => (
-                <tr className="border-t border-black/20" key={row[0]}>
-                  {row.map((cell, index) =>
-                    index === 0 ? (
-                      <th
-                        className="p-3 align-top font-bold"
-                        key={cell}
-                        scope="row"
-                      >
-                        {cell}
-                      </th>
-                    ) : (
-                      <td className="p-3 align-top" key={cell}>
-                        {cell}
-                      </td>
-                    ),
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      );
-  }
-}
-
-function Chapter({ chapter }: { chapter: LegalChapter }) {
-  return (
-    <section
-      aria-labelledby={`cap-${chapter.number}`}
-      className="scroll-mt-24 border-t-2 border-black pt-8"
-      id={`cap-${chapter.number}-section`}
-    >
-      <h2
-        className="text-2xl font-extrabold tracking-[-0.025em]"
-        id={`cap-${chapter.number}`}
-      >
-        {chapter.number}. {chapter.title}
-      </h2>
-      <div className="mt-5 space-y-4">
-        {chapter.blocks.map((block, index) => (
-          <Block
-            block={block}
-            key={`${chapter.number}-${index}-${"number" in block ? block.number : block.kind}`}
-          />
-        ))}
-      </div>
-    </section>
-  );
-}
+const actionClassName =
+  "inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-black px-4 font-semibold focus-visible:ring-3 focus-visible:ring-[#0059db]/50 focus-visible:outline-none";
 
 export function LegalDocumentPage({ document }: LegalDocumentPageProps) {
   return (
-    <div className="min-h-screen bg-[#f7f6f2] text-black">
+    <div className="flex min-h-screen flex-col bg-[#f7f6f2] text-black">
       <header className="border-b border-white/15 bg-black">
         <div className="mx-auto flex h-20 max-w-5xl items-center justify-between px-5 sm:px-8">
           <Link
@@ -165,82 +33,47 @@ export function LegalDocumentPage({ document }: LegalDocumentPageProps) {
         </div>
       </header>
       <main
-        className="mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16"
+        className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-5 py-8 sm:px-8 sm:py-10"
         id="main-content"
         tabIndex={-1}
       >
         <p className="text-sm font-extrabold tracking-[0.12em] text-[#0059db] uppercase">
           Documento legal
         </p>
-        <h1 className="mt-4 text-4xl font-extrabold tracking-[-0.045em] sm:text-5xl">
+        <h1 className="mt-3 text-3xl font-extrabold tracking-[-0.045em] sm:text-4xl">
           {document.title}
         </h1>
-        <p className="mt-4 font-semibold text-[#555]">
+        <p className="mt-2 font-semibold text-[#555]">
           Versão {document.versionLabel} · Atualizado em {document.updatedLabel}
         </p>
-        <div className="mt-8 space-y-4 leading-7 text-[#333]">
-          {document.intro.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
-          ))}
-        </div>
-
-        {document.summary ? (
-          <section
-            aria-labelledby="summary-heading"
-            className="mt-10 border-2 border-black bg-white p-5"
+        <div className="mt-5 flex flex-wrap gap-3">
+          <a
+            className={`${actionClassName} bg-black text-white`}
+            download={document.downloadName}
+            href={document.pdfUrl}
           >
-            <h2
-              className="text-2xl font-extrabold tracking-[-0.025em]"
-              id="summary-heading"
-            >
-              Em resumo
-            </h2>
-            <dl className="mt-4 divide-y divide-black/15">
-              {document.summary.map((row) => (
-                <div
-                  className="grid gap-1 py-3 sm:grid-cols-[12rem_1fr] sm:gap-4"
-                  key={row.question}
-                >
-                  <dt className="font-extrabold">{row.question}</dt>
-                  <dd className="leading-7 text-[#333]">{row.answer}</dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-        ) : null}
-
-        <nav
-          aria-labelledby="toc-heading"
-          className="mt-10 border-y-2 border-black py-6"
-        >
-          <h2 className="text-xl font-extrabold" id="toc-heading">
-            Índice
-          </h2>
-          <ol className="mt-4 columns-1 gap-8 sm:columns-2">
-            {document.chapters.map((chapter) => (
-              <li className="break-inside-avoid py-1" key={chapter.number}>
-                <a
-                  className="font-semibold text-[#0059db] underline underline-offset-2 focus-visible:ring-3 focus-visible:ring-[#0059db]/40 focus-visible:outline-none"
-                  href={`#cap-${chapter.number}`}
-                >
-                  {chapter.number}. {chapter.title}
-                </a>
-              </li>
-            ))}
-          </ol>
-        </nav>
-
-        <div className="mt-10 space-y-10">
-          {document.chapters.map((chapter) => (
-            <Chapter chapter={chapter} key={chapter.number} />
-          ))}
+            <Download aria-hidden="true" className="size-4" />
+            Baixar PDF
+          </a>
+          <a
+            className={`${actionClassName} bg-white`}
+            href={document.pdfUrl}
+            rel="noopener"
+            target="_blank"
+          >
+            <ExternalLink aria-hidden="true" className="size-4" />
+            Abrir em nova aba
+          </a>
         </div>
-
-        <footer className="mt-12 border-t-2 border-black pt-6 text-center text-sm leading-6 text-[#555]">
-          {document.closing.map((line) => (
-            <p key={line}>{line}</p>
-          ))}
-        </footer>
+        <iframe
+          className="mt-6 min-h-[70vh] w-full flex-1 border-2 border-black bg-white"
+          src={`${document.pdfUrl}#view=FitH`}
+          title={`${document.title} — versão ${document.versionLabel} (PDF)`}
+        />
+        <p className="mt-4 text-sm leading-6 text-[#555]">
+          Se o documento não aparecer acima, use “Baixar PDF” ou “Abrir em nova
+          aba”.
+        </p>
       </main>
     </div>
   );

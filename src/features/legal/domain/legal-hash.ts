@@ -20,3 +20,8 @@ export function hashLegalContent(content: unknown): string {
     .update(JSON.stringify(canonicalize(content)))
     .digest("hex");
 }
+
+/** SHA-256 (hex) of a published file's raw bytes. */
+export function hashLegalFile(bytes: Uint8Array): string {
+  return createHash("sha256").update(bytes).digest("hex");
+}

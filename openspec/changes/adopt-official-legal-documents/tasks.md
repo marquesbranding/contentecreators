@@ -1,22 +1,21 @@
-## 1. Conteúdo legal versionado
+## 1. Documentos publicados
 
-- [x] 1.1 Criar `src/features/legal/content/` com tipos (capítulo, item numerado, tabela, resumo) e `terms.v1_0.ts` transcrito fielmente do PDF oficial
-- [x] 1.2 Transcrever `privacy.v1_0.ts` (resumo, 13 capítulos, tabelas de dados, finalidades/bases legais, retenção)
-- [ ] 1.3 Revisão lado a lado dos dois textos contra os PDFs (Igor/jurídico) e corrigir divergências
-- [x] 1.4 Função de hash canônico SHA-256 + script `scripts/legal-hash.ts`
-- [x] 1.5 Constante do texto do consentimento de contato (usada na UI e no hash)
+- [x] 1.1 Copiar os PDFs oficiais para `public/legal/` (`termos-de-uso-v1.0.pdf`, `politica-de-privacidade-v1.0.pdf`) e registrar metadados em `src/features/legal/content/legal-pdfs.ts`
+- [x] 1.2 Hash SHA-256 dos bytes + `scripts/legal-hash.ts`
+- [x] 1.3 Constante do texto do consentimento de contato (UI e hash)
 
 ## 2. Páginas públicas
 
-- [x] 2.1 Criar `LegalDocumentPage` (header, versão/data, índice, capítulos, tabelas semânticas, assinatura, âncoras `item-N-M`)
-- [x] 2.2 Ligar `/terms` e `/privacy`; metadados com versão e `robots` indexável
-- [x] 2.3 Remover `LegalPlaceholderPage`, export em `features/marketing/index.ts` e `ptBR.legal.launchBlocker/pendingItems`
-- [ ] 2.4 Testes de componente (feito: conteúdo, âncoras, sem aviso preliminar); e2e 320/390/1440 sem scroll horizontal e checagem a11y (pendente)
+- [x] 2.1 `LegalDocumentPage` com PDF embutido, "Baixar PDF" e "Abrir em nova aba"
+- [x] 2.2 Ligar `/terms` e `/privacy`; metadados indexáveis
+- [x] 2.3 Remover `LegalPlaceholderPage` e `ptBR.legal`
+- [x] 2.4 Headers: `/legal/*` SAMEORIGIN sem CSP; `frame-src 'self'` nas demais; atualizar teste de headers
+- [ ] 2.5 e2e: PDF carrega em `/terms` e `/privacy`, download funciona, 320/390/1440 sem scroll horizontal, a11y
 
 ## 3. Registro de versões
 
 - [x] 3.1 Migration inserindo TERMS 1.0, PRIVACY 1.0, CONTACT_VISIBILITY 1.0 com hash e datas; aposentar `LOCAL-PLACEHOLDER-*`
-- [x] 3.2 Teste unitário: hash da migration == hash do conteúdo do repo; falha se texto publicado mudar
+- [x] 3.2 Teste unitário: hash nas migrations == hash dos PDFs/texto no repo (migration `20261013140000_legal_documents_pdf_hashes.sql` troca os hashes do primeiro rascunho)
 - [x] 3.3 Atualizar `supabase/seed.sql` e `e2e/support/local-acceptance.ts` para versões 1.0
 - [ ] 3.4 Rodar `check-migration-history` e testes de integração de schema
 

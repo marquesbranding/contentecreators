@@ -1,50 +1,55 @@
 ## ADDED Requirements
 
-### Requirement: Public pages publish the official legal documents
+### Requirement: Public pages show the official PDFs
 
-O sistema SHALL servir o texto integral dos Termos de Uso em `/terms` e da Política de Privacidade em `/privacy`, sem autenticação, com número de versão, data de atualização, identificação da Marques Branding Ltda (CNPJ 41.308.988/0001-38), elaboração jurídica e signatário conforme o documento oficial. As páginas MUST NOT exibir aviso de conteúdo preliminar ou de lançamento bloqueado.
+O sistema SHALL servir os PDFs oficiais assinados dos Termos de Uso em `/terms` e da Política de Privacidade em `/privacy`, sem autenticação, exibindo o PDF embutido na própria página, com versão e data de atualização, e oferecendo as ações "Baixar PDF" e "Abrir em nova aba". As páginas MUST NOT exibir aviso de conteúdo preliminar ou de lançamento bloqueado.
 
-#### Scenario: Visitante abre os Termos
+#### Scenario: Visitante lê os Termos
 
 - **WHEN** um visitante anônimo acessa `/terms`
-- **THEN** a página mostra "Termos de Uso da Contente Creators", versão 1.0, atualização em 01/10/2026 e os 13 capítulos oficiais
+- **THEN** a página mostra "Termos de Uso", versão 1.0, atualização em 01/10/2026 e o PDF oficial embutido
 
-#### Scenario: Visitante abre a Política
+#### Scenario: Visitante baixa a Política
 
-- **WHEN** um visitante anônimo acessa `/privacy`
-- **THEN** a página mostra a Política com versão 1.0, o resumo, os 13 capítulos e as tabelas de dados, finalidades/bases legais e retenção
+- **WHEN** o visitante aciona "Baixar PDF" em `/privacy`
+- **THEN** o navegador baixa o PDF oficial da Política v1.0
+
+#### Scenario: Navegador sem visualizador de PDF
+
+- **WHEN** o navegador não renderiza PDF embutido (ex.: alguns móveis)
+- **THEN** os botões "Baixar PDF" e "Abrir em nova aba" continuam visíveis acima do visualizador, com texto de apoio
 
 #### Scenario: Sem aviso de placeholder
 
 - **WHEN** qualquer das duas páginas é renderizada
 - **THEN** não existe o texto "Conteúdo preliminar" nem lista de pendências
 
-### Requirement: Legal pages are navigable and accessible
+### Requirement: PDFs are framable only by the application itself
 
-As páginas SHALL oferecer índice de capítulos com âncoras, âncoras estáveis por item numerado (ex.: item 4.3), tabelas semânticas com cabeçalhos associados, hierarquia de títulos válida, layout legível a partir de 320px e navegação por teclado. As páginas SHALL ser indexáveis por buscadores.
+Os PDFs em `/legal/` SHALL ser servidos com `X-Frame-Options: SAMEORIGIN` e `X-Content-Type-Options: nosniff`, sem CSP restritiva que bloqueie o visualizador; as demais rotas MUST manter `frame-ancestors 'none'` e `X-Frame-Options: DENY`, com `frame-src 'self'`.
 
-#### Scenario: Referência cruzada para item
+#### Scenario: Página legal embute o PDF
 
-- **WHEN** o usuário abre `/terms#item-4-3`
-- **THEN** a página rola até o item 4.3 e o item fica visível e focável
+- **WHEN** `/terms` é aberta
+- **THEN** o iframe do PDF carrega sem violação de CSP
 
-#### Scenario: Tabela em tela estreita
+#### Scenario: Terceiro tenta embutir
 
-- **WHEN** `/privacy` é aberta em viewport de 320px
-- **THEN** as tabelas permanecem legíveis sem rolagem horizontal da página
+- **WHEN** outro domínio tenta embutir `/terms` ou o PDF
+- **THEN** o navegador bloqueia o enquadramento
 
-### Requirement: Legal content is versioned and hash-verified
+### Requirement: Legal files are versioned and hash-verified
 
-Cada documento SHALL ter conteúdo versionado no repositório e um registro em `legal_documents` com `version_label`, `published_at`, `active_from` e `content_hash` igual ao SHA-256 do conteúdo canônico. Conteúdo de versão publicada MUST NOT ser editado; mudança de texto SHALL criar nova versão.
+Cada documento SHALL ter arquivo versionado no repositório (`public/legal/<nome>-v<versão>.pdf`) e um registro em `legal_documents` com `version_label`, `published_at`, `active_from` e `content_hash` igual ao SHA-256 dos bytes do arquivo (para CONTACT_VISIBILITY, do texto exibido). Arquivo de versão publicada MUST NOT ser substituído; mudança de texto SHALL criar nova versão e novo arquivo.
 
 #### Scenario: Hash confere
 
 - **WHEN** a suíte de testes roda
-- **THEN** o hash registrado para TERMS 1.0 e PRIVACY 1.0 é igual ao hash calculado do conteúdo do repositório
+- **THEN** o hash do PDF de TERMS 1.0 e PRIVACY 1.0 consta nas migrations
 
-#### Scenario: Edição de versão publicada
+#### Scenario: Arquivo publicado alterado
 
-- **WHEN** o texto de uma versão publicada é alterado sem nova versão
+- **WHEN** um PDF publicado é substituído sem nova versão
 - **THEN** o teste de hash falha
 
 ### Requirement: Active version resolution

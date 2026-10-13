@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
-import { createSecurityHeaders } from "./src/shared/server/security-headers";
+import {
+  createEmbeddableDocumentHeaders,
+  createSecurityHeaders,
+} from "./src/shared/server/security-headers";
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -18,7 +21,12 @@ const nextConfig: NextConfig = {
           nodeEnvironment: process.env.NODE_ENV,
           supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
         }),
-        source: "/:path*",
+        // Everything except the published legal PDFs.
+        source: "/((?!legal/).*)",
+      },
+      {
+        headers: createEmbeddableDocumentHeaders(),
+        source: "/legal/:path*",
       },
     ];
   },
