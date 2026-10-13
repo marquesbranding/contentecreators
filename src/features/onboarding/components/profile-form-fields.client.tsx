@@ -4,6 +4,7 @@ import { Info, MapPin, Plus, Search, Star, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { contactVisibilityV1_0 } from "@/features/legal/client";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -1742,6 +1743,10 @@ export function ProfileFormFields({
         {showLegalConsents ? (
           <FieldSet>
             <FieldLegend>Termos e privacidade</FieldLegend>
+            <FieldDescription>
+              A Contente Creators é só para maiores de 18 anos. Ao aceitar os
+              Termos de Uso, você confirma que tem 18 anos ou mais.
+            </FieldDescription>
             <FieldGroup>
               <Field
                 data-invalid={Boolean(
@@ -1838,9 +1843,7 @@ export function ProfileFormFields({
                       }
                     />
                     <span className="text-sm leading-6">
-                      Autorizo que empresas aprovadas visualizem meus canais de
-                      contato para falar comigo sobre oportunidades. Essa
-                      autorização é opcional e começa desmarcada.
+                      {contactVisibilityV1_0.text}
                     </span>
                   </label>
                 </Field>

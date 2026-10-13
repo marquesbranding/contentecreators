@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 
-import { LegalPlaceholderPage } from "@/features/marketing";
+import { LegalDocumentPage, currentPrivacyDocument } from "@/features/legal";
 
 export const metadata: Metadata = {
   title: "Política de Privacidade",
-  description: "Política de Privacidade da plataforma Contente Creators.",
+  description:
+    "Política de Privacidade e Proteção de Dados da plataforma Contente Creators, versão 1.0.",
   robots: {
-    follow: false,
-    index: false,
+    follow: true,
+    index: true,
   },
 };
 
 export default function PrivacyPage() {
-  return <LegalPlaceholderPage documentType="privacy" />;
+  return <LegalDocumentPage document={currentPrivacyDocument} />;
 }

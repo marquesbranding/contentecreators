@@ -26,7 +26,7 @@ const detail: BackofficeAccountDetailDto = {
       contentHash: "a".repeat(64),
       documentType: "TERMS",
       isCurrent: true,
-      versionLabel: "LOCAL-PLACEHOLDER-v1",
+      versionLabel: "1.0",
     },
   ],
   contactPreferences: null,

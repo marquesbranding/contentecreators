@@ -412,18 +412,8 @@ select
 from public.moderation_cases moderation_case
 join public.accounts account on account.id = moderation_case.account_id;
 
-insert into public.legal_documents (
-  id,
-  document_type,
-  version_label,
-  content_hash,
-  published_at,
-  active_from
-)
-values
-  ('f5000000-0000-4000-8000-000000000001', 'TERMS', 'LOCAL-PLACEHOLDER-v1', encode(extensions.digest('local terms placeholder', 'sha256'), 'hex'), now(), now()),
-  ('f5000000-0000-4000-8000-000000000002', 'PRIVACY', 'LOCAL-PLACEHOLDER-v1', encode(extensions.digest('local privacy placeholder', 'sha256'), 'hex'), now(), now()),
-  ('f5000000-0000-4000-8000-000000000003', 'CONTACT_VISIBILITY', 'LOCAL-PLACEHOLDER-v1', encode(extensions.digest('local contact visibility placeholder', 'sha256'), 'hex'), now(), now());
+-- Legal documents (TERMS/PRIVACY/CONTACT_VISIBILITY 1.0) come from migration
+-- 20261013120000_official_legal_documents.sql.
 
 insert into public.account_consents (
   id,
@@ -437,7 +427,7 @@ select
   account.id,
   document.id,
   'local-seed',
-  '{"fixture":true,"legalCopyApproved":false}'::jsonb
+  '{"fixture":true,"legalCopyApproved":true}'::jsonb
 from public.accounts account
 cross join public.legal_documents document
 where account.status <> 'ONBOARDING';

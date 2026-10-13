@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 
-import { LegalPlaceholderPage } from "@/features/marketing";
+import { LegalDocumentPage, currentTermsDocument } from "@/features/legal";
 
 export const metadata: Metadata = {
   title: "Termos de Uso",
-  description: "Termos de Uso da plataforma Contente Creators.",
+  description: "Termos de Uso da plataforma Contente Creators, versão 1.0.",
   robots: {
-    follow: false,
-    index: false,
+    follow: true,
+    index: true,
   },
 };
 
 export default function TermsPage() {
-  return <LegalPlaceholderPage documentType="terms" />;
+  return <LegalDocumentPage document={currentTermsDocument} />;
 }

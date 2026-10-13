@@ -23,6 +23,7 @@ import {
   moderationEvents,
   socialProfiles,
 } from "@/db/schema";
+import { isOfficialLegalVersion } from "@/features/legal";
 import {
   createAuditedTransactionRunner,
   withAuditedTransaction,
@@ -684,7 +685,10 @@ async function submitPreparedAccount(
   await transaction.insert(accountConsents).values(
     requiredDocuments.map((document) => ({
       accountId: account.id,
-      context: { flow: "onboarding", legalCopyApproved: false },
+      context: {
+        flow: "onboarding",
+        legalCopyApproved: isOfficialLegalVersion(document.versionLabel),
+      },
       legalDocumentId: document.id,
       requestId,
     })),
@@ -735,7 +739,9 @@ async function submitPreparedAccount(
           emailVisibleToApprovedCompanies:
             preference.emailVisibleToApprovedCompanies,
           flow: "onboarding",
-          legalCopyApproved: false,
+          legalCopyApproved: isOfficialLegalVersion(
+            contactDocument.versionLabel,
+          ),
           socialVisibleToApprovedCompanies:
             preference.socialVisibleToApprovedCompanies,
           whatsappVisibleToApprovedCompanies:

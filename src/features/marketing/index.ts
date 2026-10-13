@@ -1,5 +1,4 @@
 export { MarketingLanding } from "@/features/marketing/components/marketing-landing";
-export { LegalPlaceholderPage } from "@/features/marketing/components/legal-placeholder-page";
 export {
   buildRegistrationHref,
   isMarketingRegistrationIntent,

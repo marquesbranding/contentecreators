@@ -13,6 +13,11 @@ gates in [`docs/launch-blockers.md`](../launch-blockers.md). The client/legal
 owner must approve the final procedure, lawful constraints, subject-facing
 wording, support/privacy channel, and data-class decisions before production.
 
+The published Privacy Policy (`/privacy`, chapters 8, 9, and 13) is the
+subject-facing source for the request channel, the response interval, and the
+retention intervals. Take those values from the published version in force;
+this runbook does not restate them.
+
 ## Non-negotiable controls
 
 - All subject-facing acknowledgements and decisions are written in polished Brazilian Portuguese.

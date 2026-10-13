@@ -3,6 +3,7 @@ import "server-only";
 import { and, desc, eq, isNull, lte, sql } from "drizzle-orm";
 
 import type { ApplicationTransaction } from "@/db/client";
+import { isOfficialLegalVersion } from "@/features/legal";
 import {
   accountConsents,
   accountContactPreferences,
@@ -108,7 +109,10 @@ async function persistCurrentConsents(
     .values(
       requiredDocuments.map((document) => ({
         accountId,
-        context: { flow: "correction-resubmission", legalCopyApproved: false },
+        context: {
+          flow: "correction-resubmission",
+          legalCopyApproved: isOfficialLegalVersion(document.versionLabel),
+        },
         legalDocumentId: document.id,
         requestId,
       })),
@@ -149,7 +153,9 @@ async function persistCurrentConsents(
         context: {
           emailVisibleToApprovedCompanies: true,
           flow: "correction-resubmission",
-          legalCopyApproved: false,
+          legalCopyApproved: isOfficialLegalVersion(
+            contactDocument.versionLabel,
+          ),
           socialVisibleToApprovedCompanies: true,
           whatsappVisibleToApprovedCompanies: true,
         },

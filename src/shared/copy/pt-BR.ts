@@ -7,30 +7,6 @@ export const ptBR = {
     enter: "Entrar",
     learnMore: "Saiba mais",
   },
-  legal: {
-    launchBlocker:
-      "O texto final, o contato de privacidade e os procedimentos LGPD ainda precisam ser fornecidos e aprovados pelo cliente e pelo responsável jurídico.",
-    privacy: {
-      title: "Política de Privacidade",
-      pendingItems: [
-        "Identificação do controlador e canais de contato",
-        "Bases legais e finalidades de cada tratamento",
-        "Compartilhamentos, operadores e transferências aplicáveis",
-        "Prazos de retenção aprovados",
-        "Procedimento para exercício dos direitos do titular",
-      ],
-    },
-    terms: {
-      title: "Termos de Uso",
-      pendingItems: [
-        "Identificação e contato da responsável pela plataforma",
-        "Regras de cadastro, curadoria, suspensão e bloqueio",
-        "Responsabilidades de influencers e empresas",
-        "Limites do catálogo e do contato realizado fora da plataforma",
-        "Lei aplicável, foro e versionamento do documento",
-      ],
-    },
-  },
   marketing: {
     navigation: {
       faq: "FAQ",

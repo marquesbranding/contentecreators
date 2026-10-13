@@ -136,6 +136,14 @@ const eslintConfig = defineConfig([
                   },
                   {
                     element: {
+                      type: "feature",
+                      captured: {
+                        featureName: "legal",
+                      },
+                    },
+                  },
+                  {
+                    element: {
                       types: {
                         anyOf: ["shared", "db"],
                       },
