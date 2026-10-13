@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, useTransition } from "react";
 
+import { CookiePreferencesButton } from "@/features/cookie-consent/client";
 import { BrandLogo } from "@/shared/components/brand-logo";
 import { FormStatusSubmitButton } from "@/shared/components/form-status-submit-button";
 import { SocialLinksNav } from "@/shared/components/social-links-nav";
@@ -268,6 +269,15 @@ function AuthenticatedProductFooter() {
             >
               {ptBR.marketing.footer.privacy}
             </Link>
+            <Link
+              className="text-white/70 hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none"
+              href="/cookies"
+            >
+              {ptBR.marketing.footer.cookies}
+            </Link>
+            <CookiePreferencesButton className="text-white/70 hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none">
+              {ptBR.marketing.footer.cookiePreferences}
+            </CookiePreferencesButton>
           </nav>
           <SocialLinksNav />
         </div>

@@ -18,7 +18,7 @@ currently redirects it to the canonical origin
 ## Rules
 
 - Copy `.env.example` to `.env.local`; never commit `.env.local` or real credentials.
-- Browser code receives only `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- Browser code receives only `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and the optional public advertising IDs `NEXT_PUBLIC_GOOGLE_ADS_ID`, `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL`, and `NEXT_PUBLIC_META_PIXEL_ID` (tags load only after cookie consent; leave empty where no tag should run).
 - `DATABASE_URL`, `DIRECT_URL`, service-role, SMTP, and cron values are server-only.
 - Runtime Drizzle uses `DATABASE_URL` through Supavisor transaction pooling. Migrations use `DIRECT_URL`.
 - `APP_ENV` must be `local`, `development`, or `production`; it controls

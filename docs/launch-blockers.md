@@ -35,7 +35,11 @@ change requires a new version, a new file, a new migration, and a new acceptance
 Open items the official Privacy Policy already promises and that are still to
 be delivered before launch:
 
-- [ ] Cookie notice for Google Ads and Meta Pixel (Privacy Policy, chapter 11)
+- [x] Cookie notice for Google Ads and Meta Pixel (Privacy Policy, chapter 11):
+      banner, `/cookies`, and consent-gated tags are implemented; set
+      `NEXT_PUBLIC_GOOGLE_ADS_ID`, `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL`, and
+      `NEXT_PUBLIC_META_PIXEL_ID` per environment and confirm the durations in
+      `cookie-registry.ts` with legal before launch
 - [ ] In-platform account deletion and elimination within 120 days; refused
       registrations eliminated within 90 days (chapter 8)
 - [ ] Confirm whether the home-page showcase needs its own consent checkbox

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import {
+  AdMeasurementTags,
+  CookieBanner,
+} from "@/features/cookie-consent/client";
 import { SkipLink } from "@/shared/components/skip-link";
 import { AppToaster } from "@/shared/components/ui/sonner";
 
@@ -77,6 +81,8 @@ export default function RootLayout({
         <SkipLink />
         {children}
         <AppToaster />
+        <CookieBanner />
+        <AdMeasurementTags />
       </body>
     </html>
   );

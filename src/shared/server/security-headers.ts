@@ -6,6 +6,9 @@ export interface SecurityHeader {
 interface SecurityHeadersOptions {
   appEnvironment?: string;
   nodeEnvironment?: string;
+  /** Public Google Ads / Meta Pixel IDs; their origins are allowed only if set. */
+  googleAdsId?: string;
+  metaPixelId?: string;
   supabaseUrl?: string;
 }
 
@@ -32,6 +35,8 @@ function externalOrigins(supabaseUrl?: string) {
 
 function contentSecurityPolicy({
   appEnvironment,
+  googleAdsId,
+  metaPixelId,
   nodeEnvironment,
   supabaseUrl,
 }: SecurityHeadersOptions) {
@@ -39,9 +44,25 @@ function contentSecurityPolicy({
     externalOrigins(supabaseUrl);
   const isDevelopmentRuntime = nodeEnvironment === "development";
   const isProductionDeployment = appEnvironment === "production";
+  const googleOrigins = googleAdsId
+    ? [
+        "https://www.googletagmanager.com",
+        "https://www.google.com",
+        "https://googleads.g.doubleclick.net",
+        "https://www.googleadservices.com",
+      ]
+    : [];
+  const metaOrigins = metaPixelId
+    ? ["https://connect.facebook.net", "https://www.facebook.com"]
+    : [];
+  const thirdPartyOrigins = [...googleOrigins, ...metaOrigins];
   const scriptSources = [
     "'self'",
     "'unsafe-inline'",
+    ...thirdPartyOrigins.filter(
+      (origin) =>
+        !origin.includes("facebook.com") && !origin.includes("doubleclick"),
+    ),
     ...(isDevelopmentRuntime ? ["'unsafe-eval'"] : []),
   ];
 
@@ -57,6 +78,7 @@ function contentSecurityPolicy({
       "blob:",
       "data:",
       ...(supabaseOrigin ? [supabaseOrigin] : []),
+      ...thirdPartyOrigins,
     ],
     [
       "media-src",
@@ -69,6 +91,7 @@ function contentSecurityPolicy({
       "'self'",
       ...(supabaseOrigin ? [supabaseOrigin] : []),
       ...(supabaseWebsocketOrigin ? [supabaseWebsocketOrigin] : []),
+      ...thirdPartyOrigins,
     ],
     ["worker-src", "'self'", "blob:"],
     ["manifest-src", "'self'"],

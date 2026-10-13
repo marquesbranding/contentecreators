@@ -1,8 +1,7 @@
-import { ArrowLeft, Download, ExternalLink } from "lucide-react";
-import Link from "next/link";
+import { Download, ExternalLink } from "lucide-react";
 
 import type { LegalPdfDocument } from "@/features/legal/types/legal-document.types";
-import { BrandLogo } from "@/shared/components/brand-logo";
+import { LegalPageHeader } from "@/shared/components/legal-page-header";
 
 type LegalDocumentPageProps = {
   document: LegalPdfDocument;
@@ -14,24 +13,7 @@ const actionClassName =
 export function LegalDocumentPage({ document }: LegalDocumentPageProps) {
   return (
     <div className="flex min-h-screen flex-col bg-[#f7f6f2] text-black">
-      <header className="border-b border-white/15 bg-black">
-        <div className="mx-auto flex h-20 max-w-5xl items-center justify-between px-5 sm:px-8">
-          <Link
-            aria-label="Contente Creators — início"
-            className="rounded-md focus-visible:ring-3 focus-visible:ring-white/80 focus-visible:outline-none"
-            href="/"
-          >
-            <BrandLogo />
-          </Link>
-          <Link
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 font-semibold text-white focus-visible:ring-3 focus-visible:ring-white/80 focus-visible:outline-none"
-            href="/"
-          >
-            <ArrowLeft aria-hidden="true" className="size-4" />
-            Voltar
-          </Link>
-        </div>
-      </header>
+      <LegalPageHeader />
       <main
         className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-5 py-8 sm:px-8 sm:py-10"
         id="main-content"

@@ -23,6 +23,7 @@ import {
   type PartnerInfoFact,
 } from "@/features/marketing/components/partner-info-dialog";
 import { buildRegistrationHref } from "@/features/marketing/domain/registration-intent";
+import { CookiePreferencesButton } from "@/features/cookie-consent/client";
 import { AuroraText } from "@/registry/magicui/aurora-text";
 import {
   ScrollVelocityContainer,
@@ -544,6 +545,7 @@ function MarketingFooter({
     { href: "#faq", label: copy.footer.faq },
     { href: "/terms", label: copy.footer.terms },
     { href: "/privacy", label: copy.footer.privacy },
+    { href: "/cookies", label: copy.footer.cookies },
   ];
 
   return (
@@ -591,6 +593,9 @@ function MarketingFooter({
                   </a>
                 ),
               )}
+              <CookiePreferencesButton className="w-fit text-left text-sm font-semibold text-white/68 transition-colors hover:text-white focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-white/70 focus-visible:outline-none">
+                {copy.footer.cookiePreferences}
+              </CookiePreferencesButton>
             </div>
           </nav>
 

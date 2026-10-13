@@ -144,6 +144,14 @@ const eslintConfig = defineConfig([
                   },
                   {
                     element: {
+                      type: "feature",
+                      captured: {
+                        featureName: "cookie-consent",
+                      },
+                    },
+                  },
+                  {
+                    element: {
                       types: {
                         anyOf: ["shared", "db"],
                       },

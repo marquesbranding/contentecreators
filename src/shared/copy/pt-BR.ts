@@ -197,6 +197,8 @@ export const ptBR = {
       ],
       supportContact: "Contato de suporte e privacidade",
       terms: "Termos de Uso",
+      cookies: "Aviso de cookies",
+      cookiePreferences: "Preferências de cookies",
       copyright: "Contente Creators. Todos os direitos reservados.",
     },
   },

@@ -99,4 +99,52 @@ describe("security headers", () => {
     expect(policy).not.toContain("javascript:");
     expect(headers.has("Strict-Transport-Security")).toBe(false);
   });
+
+  it("keeps Google and Meta origins out of the policy unless their ids are configured", () => {
+    const withoutIds =
+      toHeaderMap(createSecurityHeaders({ appEnvironment: "production" })).get(
+        "Content-Security-Policy",
+      ) ?? "";
+
+    for (const directive of ["script-src", "connect-src", "img-src"]) {
+      expect(directiveValue(withoutIds, directive)).not.toMatch(
+        /google|facebook|doubleclick/u,
+      );
+    }
+
+    const withIds =
+      toHeaderMap(
+        createSecurityHeaders({
+          appEnvironment: "production",
+          googleAdsId: "AW-123456789",
+          metaPixelId: "1234567890123",
+        }),
+      ).get("Content-Security-Policy") ?? "";
+
+    expect(directiveValue(withIds, "script-src")).toContain(
+      "https://www.googletagmanager.com",
+    );
+    expect(directiveValue(withIds, "script-src")).toContain(
+      "https://connect.facebook.net",
+    );
+    expect(directiveValue(withIds, "connect-src")).toContain(
+      "https://www.facebook.com",
+    );
+    expect(directiveValue(withIds, "img-src")).toContain(
+      "https://www.facebook.com",
+    );
+    expect(directiveValue(withIds, "object-src")).toBe("object-src 'none'");
+  });
+
+  it("allows only Google origins when only the Google id is set", () => {
+    const policy =
+      toHeaderMap(createSecurityHeaders({ googleAdsId: "AW-123456789" })).get(
+        "Content-Security-Policy",
+      ) ?? "";
+
+    expect(directiveValue(policy, "script-src")).toContain(
+      "googletagmanager.com",
+    );
+    expect(policy).not.toContain("facebook");
+  });
 });

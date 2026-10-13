@@ -18,6 +18,8 @@ const nextConfig: NextConfig = {
       {
         headers: createSecurityHeaders({
           appEnvironment: process.env.APP_ENV,
+          googleAdsId: process.env.NEXT_PUBLIC_GOOGLE_ADS_ID,
+          metaPixelId: process.env.NEXT_PUBLIC_META_PIXEL_ID,
           nodeEnvironment: process.env.NODE_ENV,
           supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
         }),
