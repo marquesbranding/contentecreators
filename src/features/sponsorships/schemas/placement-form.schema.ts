@@ -16,6 +16,8 @@ export const placementFormSchema = z
     linkOnCreative: z.boolean(),
     showSponsoredBadge: z.boolean(),
     showAdvertiserLabel: z.boolean(),
+    showBody: z.boolean(),
+    showTitle: z.boolean(),
     textColor: z.union([z.literal(""), sponsorshipColorSchema]),
     buttonBackgroundColor: z.union([z.literal(""), sponsorshipColorSchema]),
     buttonTextColor: z.union([z.literal(""), sponsorshipColorSchema]),
@@ -45,6 +47,20 @@ export const placementFormSchema = z
     title: z.string().trim().max(160),
   })
   .superRefine((values, context) => {
+    if (values.showTitle && !values.title) {
+      context.addIssue({
+        code: "custom",
+        message: "Informe o título para exibi-lo na arte.",
+        path: ["showTitle"],
+      });
+    }
+    if (values.showBody && !values.body) {
+      context.addIssue({
+        code: "custom",
+        message: "Informe o texto para exibi-lo na arte.",
+        path: ["showBody"],
+      });
+    }
     for (const field of [
       "creativeAssetId",
       "creativeAssetTabletId",
@@ -130,6 +146,8 @@ export function formDefaults(
     linkOnCreative: placement?.linkOnCreative ?? false,
     showSponsoredBadge: placement?.showSponsoredBadge ?? true,
     showAdvertiserLabel: placement?.showAdvertiserLabel ?? false,
+    showBody: placement?.showBody ?? false,
+    showTitle: placement?.showTitle ?? false,
     textColor: placement?.textColor ?? "",
     buttonBackgroundColor: placement?.buttonBackgroundColor ?? "",
     buttonTextColor: placement?.buttonTextColor ?? "",

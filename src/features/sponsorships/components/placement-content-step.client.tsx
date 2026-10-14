@@ -9,13 +9,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { Checkbox } from "@/shared/components/ui/checkbox";
 import {
   contrastRatio,
   sponsorshipFontFamilies,
   SPONSORSHIP_FONT_KEYS,
 } from "../domain/sponsorship-appearance";
 import { sponsorshipFontVariables } from "../domain/sponsorship-fonts";
+import {
+  PlacementCheckbox,
+  PlacementContentToggle,
+} from "./placement-visibility-toggle.client";
 import { Button } from "@/shared/components/ui/button";
 import {
   Field,
@@ -279,7 +282,12 @@ export function PlacementContentStep({
         name="title"
         label="Título (opcional)"
         max={160}
-        hint="Deixe vazio para publicar apenas a imagem."
+        hint="Fica salvo para identificar o patrocínio na listagem. Só aparece na arte se marcar abaixo."
+      />
+      <PlacementContentToggle
+        contentName="title"
+        label="Exibir título na arte"
+        toggleName="showTitle"
       />
       <PlacementTextField
         name="body"
@@ -287,6 +295,11 @@ export function PlacementContentStep({
         max={500}
         multiline
         required={slot.bodyRequired}
+      />
+      <PlacementContentToggle
+        contentName="body"
+        label="Exibir texto na arte"
+        toggleName="showBody"
       />
       {slot.usesLink ? (
         <fieldset className="space-y-4 rounded-2xl border p-4">
@@ -430,30 +443,6 @@ export function PlacementContentStep({
         ) : null}
       </fieldset>
     </section>
-  );
-}
-function PlacementCheckbox({
-  name,
-  label,
-}: {
-  name: "linkOnCreative" | "showSponsoredBadge" | "showAdvertiserLabel";
-  label: React.ReactNode;
-}) {
-  const form = useFormContext<PlacementFormValues>();
-  const value = useWatch({ control: form.control, name });
-  return (
-    <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-medium">
-      <Checkbox
-        checked={value}
-        onCheckedChange={(checked) =>
-          form.setValue(name, checked === true, {
-            shouldDirty: true,
-            shouldValidate: true,
-          })
-        }
-      />
-      <span className="flex items-center gap-2">{label}</span>
-    </label>
   );
 }
 function PlacementColor({

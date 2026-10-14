@@ -51,6 +51,8 @@ export const sponsorshipPlacements = pgTable(
     showAdvertiserLabel: boolean("show_advertiser_label")
       .notNull()
       .default(false),
+    showTitle: boolean("show_title").notNull().default(false),
+    showBody: boolean("show_body").notNull().default(false),
     textColor: varchar("text_color", { length: 7 }),
     buttonBackgroundColor: varchar("button_background_color", { length: 7 }),
     buttonTextColor: varchar("button_text_color", { length: 7 }),
@@ -136,6 +138,14 @@ export const sponsorshipPlacements = pgTable(
     check(
       "sponsorship_placements_advertiser_label_visible_check",
       sql`not ${table.showAdvertiserLabel} or ${table.advertiserLabel} is not null`,
+    ),
+    check(
+      "sponsorship_placements_show_title_check",
+      sql`not ${table.showTitle} or ${table.title} is not null`,
+    ),
+    check(
+      "sponsorship_placements_show_body_check",
+      sql`not ${table.showBody} or ${table.body} is not null`,
     ),
     check("sponsorship_placements_version_check", sql`${table.version} > 0`),
   ],

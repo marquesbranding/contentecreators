@@ -39,6 +39,8 @@ function activationPayload(placement: SponsorshipPlacementCandidate) {
     linkOnCreative: placement.linkOnCreative,
     showSponsoredBadge: placement.showSponsoredBadge,
     showAdvertiserLabel: placement.showAdvertiserLabel,
+    showBody: placement.showBody,
+    showTitle: placement.showTitle,
     textColor: placement.textColor,
     buttonBackgroundColor: placement.buttonBackgroundColor,
     buttonTextColor: placement.buttonTextColor,

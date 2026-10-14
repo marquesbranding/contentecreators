@@ -37,6 +37,8 @@ export type SponsorshipPlacementCreateData = Pick<
   | "linkOnCreative"
   | "showSponsoredBadge"
   | "showAdvertiserLabel"
+  | "showBody"
+  | "showTitle"
   | "textColor"
   | "buttonBackgroundColor"
   | "buttonTextColor"

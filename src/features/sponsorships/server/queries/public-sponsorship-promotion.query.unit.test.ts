@@ -54,6 +54,8 @@ const genericPlacement: SponsorshipPlacementCandidate = {
   linkOnCreative: false,
   showSponsoredBadge: true,
   showAdvertiserLabel: true,
+  showBody: false,
+  showTitle: false,
   textColor: null,
   buttonBackgroundColor: null,
   buttonTextColor: null,

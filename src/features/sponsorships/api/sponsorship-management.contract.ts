@@ -59,6 +59,8 @@ export const sponsorshipAdminPlacementSchema = z
     archivedAt: z.iso.datetime().nullable(),
     audience: sponsorshipAudienceSchema,
     body: z.string().nullable(),
+    showBody: z.boolean().default(false),
+    showTitle: z.boolean().default(false),
     creative: sponsorshipAdminMediaSchema.nullable(),
     creativeAssetId: z.uuid().nullable(),
     creativeAssetMobileId: z.uuid().nullable(),
@@ -127,6 +129,8 @@ const sponsorshipPlacementWriteBaseSchema = z
       .trim()
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u)
       .max(100),
+    showBody: z.boolean().default(false),
+    showTitle: z.boolean().default(false),
     sortOrder: z.number().int().min(0),
     startsAt: z.iso.datetime().nullable(),
     title: z.string().trim().min(1).max(160).nullable(),

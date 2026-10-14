@@ -47,3 +47,9 @@ Visual QA ran with `npm run dev` and with the production server at 1440, 768 and
 ## Formatting baseline
 
 The repository-wide `format:check` includes three pre-existing untracked briefs: `patrocinios_melhorado.md`, `revisao_03.md` and `revisao_final_patrocinios.md`. Their formatting is left intact. Changed implementation files are checked separately.
+
+## Title and text visibility
+
+- `show_title` and `show_body` (default `false`) decide whether the saved title and text appear on the creative. They are enabled only when the matching field has content; clearing the field unchecks them.
+- Hidden copy is still stored and listed in the backoffice (with a "oculto na arte" notice) and is omitted from the public payload.
+- Manual check: create a placement with title and text, leave both toggles off, confirm the preview and the public page show neither; check each toggle and confirm the copy appears.

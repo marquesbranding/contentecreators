@@ -37,6 +37,8 @@ const genericCandidate: SponsorshipDeliveryCandidateRecord = {
     linkOnCreative: false,
     showSponsoredBadge: true,
     showAdvertiserLabel: true,
+    showBody: true,
+    showTitle: true,
     textColor: null,
     buttonBackgroundColor: null,
     buttonTextColor: null,
@@ -119,6 +121,31 @@ describe("sponsorship delivery service", () => {
     expect(JSON.stringify(result)).not.toMatch(
       /assetId|bucketName|objectPath|ownerAccount/iu,
     );
+  });
+
+  it("omits title and text from the public payload when their flags are off", async () => {
+    const service = createSponsorshipDeliveryService({
+      repository: repository([
+        {
+          ...genericCandidate,
+          placement: {
+            ...genericCandidate.placement,
+            showBody: false,
+            showTitle: false,
+          },
+        },
+      ]),
+      resolveSignedMedia: vi.fn(async () => ({
+        height: 600,
+        url: "https://storage.example.test/signed-creative",
+        width: 1200,
+      })),
+    });
+
+    const [item] = await service.load(query);
+
+    expect(item).toMatchObject({ body: null, title: null });
+    expect(JSON.stringify(item)).not.toMatch(/oportunidade para sua marca/u);
   });
 
   it("suppresses participant-derived public placements while social proof is disabled", async () => {

@@ -27,3 +27,6 @@ export const privacyPdfV1_0: LegalPdfDocument = {
   pdfFile: "public/legal/politica-de-privacidade-v1.0.pdf",
   downloadName: "Contente Creators - Política de Privacidade.pdf",
 };
+
+/** Every PDF-backed version that can be shown and accepted in the app. */
+export const publishedLegalPdfs = [termsPdfV1_0, privacyPdfV1_0] as const;

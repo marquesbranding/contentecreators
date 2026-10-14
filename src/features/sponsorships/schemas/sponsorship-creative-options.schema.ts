@@ -31,6 +31,10 @@ export function addCreativeLinkIssues(
     linkOnCreative?: boolean;
     showAdvertiserLabel?: boolean;
     advertiserLabel?: string | null;
+    showTitle?: boolean;
+    title?: string | null;
+    showBody?: boolean;
+    body?: string | null;
   },
   context: z.RefinementCtx,
 ) {
@@ -48,6 +52,20 @@ export function addCreativeLinkIssues(
       code: "custom",
       path: ["advertiserLabel"],
       message: "Informe o nome da empresa patrocinadora.",
+    });
+  }
+  if (value.showTitle && !value.title?.trim()) {
+    context.addIssue({
+      code: "custom",
+      path: ["showTitle"],
+      message: "Informe o título para exibi-lo na arte.",
+    });
+  }
+  if (value.showBody && !value.body?.trim()) {
+    context.addIssue({
+      code: "custom",
+      path: ["showBody"],
+      message: "Informe o texto para exibi-lo na arte.",
     });
   }
 }

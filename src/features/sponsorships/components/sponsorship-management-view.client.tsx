@@ -210,6 +210,33 @@ function PlacementPreviewDialog({
   );
 }
 
+/** Saved title/text that the creative does not display: stays visible here only. */
+function HiddenCopyNotice({
+  placement,
+}: {
+  placement: SponsorshipAdminPlacementDto;
+}) {
+  const hiddenTitle = Boolean(placement.title) && !placement.showTitle;
+  const hiddenBody = Boolean(placement.body) && !placement.showBody;
+
+  if (!hiddenTitle && !hiddenBody) {
+    return null;
+  }
+
+  const label =
+    hiddenTitle && hiddenBody
+      ? "Título e texto ocultos na arte"
+      : hiddenTitle
+        ? "Título oculto na arte"
+        : "Texto oculto na arte";
+
+  return (
+    <Badge className="mt-1" variant="outline">
+      {label}
+    </Badge>
+  );
+}
+
 function placementName(placement: SponsorshipAdminPlacementDto) {
   return placement.title ?? "Sem título";
 }
@@ -527,6 +554,7 @@ function SortablePlacementRow({
           {typeLabels[placement.placementType]} ·{" "}
           {getPlacementSlot(placement.slotKey)?.name ?? placement.slotKey}
         </p>
+        <HiddenCopyNotice placement={placement} />
       </TableCell>
       <TableCell>{audienceLabels[placement.audience]}</TableCell>
       <TableCell>
@@ -610,6 +638,7 @@ function SortablePlacementCard({
           {typeLabels[placement.placementType]} ·{" "}
           {audienceLabels[placement.audience]}
         </CardDescription>
+        <HiddenCopyNotice placement={placement} />
       </CardHeader>
       <CardContent className="space-y-4 pt-1">
         <p className="line-clamp-3 text-sm leading-6">

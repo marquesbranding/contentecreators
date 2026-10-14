@@ -1,5 +1,10 @@
 import { BackofficeAccessProvider } from "@/features/identity";
-import { getServerCurrentAccount } from "@/features/identity/server";
+import {
+  getServerCurrentAccount,
+  signOutAction,
+} from "@/features/identity/server";
+import { LegalAcceptanceModal } from "@/features/legal-acceptance";
+import { loadPendingLegalDocuments } from "@/features/legal-acceptance/server";
 
 /**
  * An administrator reaches onboarding when their identity has no product
@@ -12,11 +17,18 @@ export default async function OnboardingLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const adminAccount = await getServerCurrentAccount("ADMIN");
+  const [adminAccount, pendingLegalDocuments] = await Promise.all([
+    getServerCurrentAccount("ADMIN"),
+    loadPendingLegalDocuments(),
+  ]);
 
   return (
     <BackofficeAccessProvider hasBackofficeAccess={Boolean(adminAccount)}>
       {children}
+      <LegalAcceptanceModal
+        initialPending={pendingLegalDocuments}
+        signOut={signOutAction}
+      />
     </BackofficeAccessProvider>
   );
 }

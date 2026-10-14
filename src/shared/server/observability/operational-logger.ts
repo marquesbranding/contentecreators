@@ -44,6 +44,7 @@ export type OperationalEventName =
   | "company_registry_lookup"
   | "email_delivery_failure"
   | "health_check"
+  | "legal_pdf_missing_from_registry"
   | "migration_result"
   | "moderation_transition"
   | "onboarding_submission_failure"

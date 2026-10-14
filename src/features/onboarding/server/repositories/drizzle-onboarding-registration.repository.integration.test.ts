@@ -760,4 +760,71 @@ describeLocalStack("onboarding registration repository", () => {
     expect(result.account_id).toBe(roleSelection.account.id);
     expect(result.account_id).not.toBe(result.admin_account_id);
   });
+
+  it("submits the creator profile when the account already accepted the active legal documents", async () => {
+    const identityId = "91000000-0000-4000-8000-000000000003";
+    const email = "google-reaccepted@contentecreators.test";
+    await insertConfirmedIdentity(identityId, email);
+    const roleSelection = await roleRepository.selectInitialRole({
+      email,
+      identityId,
+      requestId: "google-reaccepted-role",
+      role: "INFLUENCER",
+    });
+    const accountId = roleSelection.account.id;
+    // Consent recorded earlier through the re-acceptance modal.
+    await sqlClient`
+      insert into public.account_consents (account_id, legal_document_id, request_id, context)
+      select ${accountId}::uuid, id, 'pre-accepted', '{"flow":"reacceptance","legalCopyApproved":true}'::jsonb
+      from public.legal_documents
+      where document_type in ('TERMS', 'PRIVACY')
+        and version_label = '1.0'
+        and retired_at is null
+    `;
+
+    await expect(
+      repository.submitGoogleProfile({
+        email,
+        identityId,
+        input: {
+          bio: "Crio conteúdo de tecnologia e produtividade para a internet.",
+          city: "Curitiba",
+          contactVisibilityAccepted: false,
+          creatorType: "INFLUENCER",
+          displayName: "Creator Reaceite",
+          isCdlMember: false,
+          isInfluencerJourneyParticipant: false,
+          legalName: "Creator de Teste",
+          nicheSlugs: ["tecnologia-games-e-inovacao"],
+          privacyAccepted: true,
+          role: "INFLUENCER",
+          socialChannels: [
+            {
+              followerCount: 12_000,
+              isPrimary: true,
+              platform: "INSTAGRAM",
+              url: "https://instagram.com/creator_reaceite",
+            },
+          ],
+          state: "PR",
+          termsAccepted: true,
+          whatsapp: "(41) 98888-7777",
+        } satisfies GoogleProfileInput,
+        requestId: "google-reaccepted-submit",
+      }),
+    ).resolves.toEqual({
+      kind: "submitted",
+      outboxId: expect.any(String),
+    });
+
+    const [{ count }] = await sqlClient<{ count: number }[]>`
+      select count(*)::int as count
+      from public.account_consents consent
+      join public.legal_documents document on document.id = consent.legal_document_id
+      where consent.account_id = ${accountId}::uuid
+        and document.document_type in ('TERMS', 'PRIVACY')
+        and document.version_label = '1.0'
+    `;
+    expect(count).toBe(2);
+  });
 });

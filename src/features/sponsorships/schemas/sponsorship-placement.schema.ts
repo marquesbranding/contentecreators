@@ -69,6 +69,8 @@ const sponsorshipPlacementDraftBaseSchema = z
       .max(100)
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u, "Use uma chave de posição válida."),
     sortOrder: z.number().int().min(0).max(1_000_000).default(0),
+    showBody: z.boolean().default(false),
+    showTitle: z.boolean().default(false),
     startsAt: nullableInstant.default(null),
     title: nullableText(160).default(null),
   })

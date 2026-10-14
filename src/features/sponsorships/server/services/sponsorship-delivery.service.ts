@@ -96,7 +96,7 @@ export function createSponsorshipDeliveryService({
 
           return {
             advertiserLabel: placement.advertiserLabel,
-            body: placement.body,
+            body: placement.showBody ? placement.body : null,
             eligible: true,
             featuredCreator: {
               avatar: avatar
@@ -121,7 +121,7 @@ export function createSponsorshipDeliveryService({
             imageAlt: placement.imageAlt,
             media: null,
             sortOrder: placement.sortOrder,
-            title: placement.title,
+            title: placement.showTitle ? placement.title : null,
             type: placement.placementType,
           } satisfies RendererPlacementDto;
         }
@@ -160,7 +160,7 @@ export function createSponsorshipDeliveryService({
 
         return {
           advertiserLabel: placement.advertiserLabel,
-          body: placement.body,
+          body: placement.showBody ? placement.body : null,
           eligible: true,
           featuredCreator: null,
           id: placement.id,
@@ -178,7 +178,7 @@ export function createSponsorshipDeliveryService({
           mediaMobile: mediaMobile ? { alt, url: mediaMobile.url } : null,
           mediaTablet: mediaTablet ? { alt, url: mediaTablet.url } : null,
           sortOrder: placement.sortOrder,
-          title: placement.title,
+          title: placement.showTitle ? placement.title : null,
           type: placement.placementType,
         } satisfies RendererPlacementDto;
       };

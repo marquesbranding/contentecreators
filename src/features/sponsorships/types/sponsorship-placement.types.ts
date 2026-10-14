@@ -49,6 +49,8 @@ export interface SponsorshipPlacementDraft extends SponsorshipCreativeOptions {
   linkLabel: string | null;
   linkUrl: string | null;
   placementType: PlacementType;
+  showBody: boolean;
+  showTitle: boolean;
   slotKey: string;
   sortOrder: number;
   startsAt: Date | null;

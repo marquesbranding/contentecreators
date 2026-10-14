@@ -682,17 +682,20 @@ async function submitPreparedAccount(
   }
   const requiredDocuments = [termsDocument, privacyDocument];
 
-  await transaction.insert(accountConsents).values(
-    requiredDocuments.map((document) => ({
-      accountId: account.id,
-      context: {
-        flow: "onboarding",
-        legalCopyApproved: isOfficialLegalVersion(document.versionLabel),
-      },
-      legalDocumentId: document.id,
-      requestId,
-    })),
-  );
+  await transaction
+    .insert(accountConsents)
+    .values(
+      requiredDocuments.map((document) => ({
+        accountId: account.id,
+        context: {
+          flow: "onboarding",
+          legalCopyApproved: isOfficialLegalVersion(document.versionLabel),
+        },
+        legalDocumentId: document.id,
+        requestId,
+      })),
+    )
+    .onConflictDoNothing();
 
   const contactDocument = documents.find(
     (document) => document.documentType === "CONTACT_VISIBILITY",

@@ -233,6 +233,8 @@ function PlacementForm({
     linkOnCreative: values.linkOnCreative,
     showSponsoredBadge: values.showSponsoredBadge,
     showAdvertiserLabel: values.showAdvertiserLabel,
+    showBody: values.showBody,
+    showTitle: values.showTitle,
     textColor: nullable(values.textColor),
     buttonBackgroundColor: nullable(values.buttonBackgroundColor),
     buttonTextColor: nullable(values.buttonTextColor),

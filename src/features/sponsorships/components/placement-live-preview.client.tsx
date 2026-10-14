@@ -79,7 +79,7 @@ export function PlacementLivePreview({
           url,
           alt:
             values.imageAlt ||
-            values.title ||
+            (values.showTitle ? values.title : "") ||
             (values.advertiserLabel
               ? `Patrocínio de ${values.advertiserLabel}`
               : "Patrocínio"),
@@ -94,8 +94,8 @@ export function PlacementLivePreview({
     eligible: true,
     routeMatches: true,
     previewMode: true,
-    title: values.title || null,
-    body: values.body || null,
+    title: values.showTitle && values.title ? values.title : null,
+    body: values.showBody && values.body ? values.body : null,
     media: media(images.desktop),
     mediaMobile: media(images.mobile),
     mediaTablet: media(images.tablet),
