@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -49,6 +49,21 @@ describe("AccountDeletionSection", () => {
     ).toBeGreaterThan(0);
     expect(container.textContent).not.toMatch(RECOVERY_WORDING);
     expect(document.body.textContent).not.toMatch(RECOVERY_WORDING);
+  });
+
+  it("closes the confirmation dialog from the Cancelar button without submitting", async () => {
+    const action = vi.fn().mockResolvedValue({ status: "idle" });
+    render(<AccountDeletionSection action={action} />);
+
+    await userEvent.click(
+      screen.getAllByRole("button", { name: "Excluir minha conta" })[0]!,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+
+    await waitFor(() =>
+      expect(screen.queryByLabelText("Senha")).not.toBeInTheDocument(),
+    );
+    expect(action).not.toHaveBeenCalled();
   });
 
   it("shows the server message and field errors", async () => {

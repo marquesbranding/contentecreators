@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { AlertTriangle, Trash2 } from "lucide-react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
@@ -8,6 +8,7 @@ import { ActionSubmitButton } from "@/shared/components/action-submit-button";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -38,6 +39,7 @@ function SubmitButton() {
 
   return (
     <ActionSubmitButton
+      className="w-full sm:w-auto"
       idleIcon={<Trash2 aria-hidden="true" />}
       pending={pending}
       pendingLabel="Excluindo..."
@@ -88,34 +90,47 @@ export function AccountDeletionSection({
             </Button>
           }
         />
-        <DialogContent className="sm:max-w-lg">
-          <form action={formAction} className="grid gap-4">
-            <DialogHeader>
-              <DialogTitle>Excluir minha conta</DialogTitle>
-              <DialogDescription>
-                A exclusão é imediata e não pode ser desfeita; se quiser voltar,
-                é só se cadastrar de novo. Para confirmar, informe sua senha e
-                digite {DELETION_CONFIRMATION_PHRASE}.
-              </DialogDescription>
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto p-5 sm:max-w-lg sm:p-6">
+          <form action={formAction} className="grid gap-5">
+            <DialogHeader className="flex-row items-start gap-3 pr-10">
+              <span className="bg-destructive/10 text-destructive flex size-10 shrink-0 items-center justify-center rounded-full">
+                <Trash2 aria-hidden="true" className="size-5" />
+              </span>
+              <div className="flex min-w-0 flex-col gap-1.5">
+                <DialogTitle className="text-lg leading-tight font-extrabold">
+                  Excluir minha conta
+                </DialogTitle>
+                <DialogDescription className="leading-6">
+                  A exclusão é imediata e não pode ser desfeita; se quiser
+                  voltar, é só se cadastrar de novo. Para confirmar, informe sua
+                  senha e digite {DELETION_CONFIRMATION_PHRASE}.
+                </DialogDescription>
+              </div>
             </DialogHeader>
 
             <div
-              className="border-destructive bg-destructive/10 text-destructive rounded-xl border-2 p-4 text-sm leading-6 font-semibold"
+              className="border-destructive/40 bg-destructive/5 text-destructive flex items-start gap-3 rounded-xl border-2 p-4"
               role="alert"
             >
-              <p>
-                Atenção: ao confirmar, os dados da sua conta serão excluídos de
-                fato, agora, e não há como recuperá-los.
-              </p>
-              <p className="mt-2">
-                Para usar o sistema novamente, você precisará fazer um novo
-                cadastro do zero.
-              </p>
+              <AlertTriangle
+                aria-hidden="true"
+                className="mt-0.5 size-5 shrink-0"
+              />
+              <div className="flex flex-col gap-2 text-sm leading-6">
+                <p className="font-bold">
+                  Atenção: ao confirmar, os dados da sua conta serão excluídos
+                  de fato, agora, e não há como recuperá-los.
+                </p>
+                <p className="font-medium">
+                  Para usar o sistema novamente, você precisará fazer um novo
+                  cadastro do zero.
+                </p>
+              </div>
             </div>
 
             {state.status === "error" && state.message ? (
               <p
-                className="border-destructive/40 bg-destructive/5 text-destructive rounded-xl border p-3 text-sm"
+                className="border-destructive/40 bg-destructive/5 text-destructive rounded-xl border p-3 text-sm font-medium"
                 role="alert"
               >
                 {state.message}
@@ -158,17 +173,18 @@ export function AccountDeletionSection({
 
             <Field data-invalid={Boolean(errors?.acknowledged?.length)}>
               <label
-                className="flex items-start gap-3 text-sm"
+                className="border-input hover:bg-muted/50 has-[[aria-invalid=true]]:border-destructive/40 has-[[aria-invalid=true]]:bg-destructive/5 has-[:focus-visible]:ring-ring/50 flex cursor-pointer items-start gap-3 rounded-xl border p-4 text-sm leading-6 transition-colors has-[:focus-visible]:ring-3"
                 htmlFor="deletion-ack"
               >
                 <input
-                  className="mt-1 size-4"
+                  aria-invalid={Boolean(errors?.acknowledged?.length)}
+                  className="accent-destructive mt-1 size-4 shrink-0 cursor-pointer"
                   id="deletion-ack"
                   name="acknowledged"
                   required
                   type="checkbox"
                 />
-                <span>
+                <span className="font-medium">
                   Entendo que meu perfil e meus dados serão apagados agora e que
                   não há como recuperá-los.
                 </span>
@@ -178,7 +194,18 @@ export function AccountDeletionSection({
               />
             </Field>
 
-            <DialogFooter>
+            <DialogFooter className="-mx-5 -mb-5 p-5 sm:-mx-6 sm:-mb-6 sm:p-6">
+              <DialogClose
+                render={
+                  <Button
+                    className="w-full sm:w-auto"
+                    type="button"
+                    variant="outline"
+                  />
+                }
+              >
+                Cancelar
+              </DialogClose>
               <SubmitButton />
             </DialogFooter>
           </form>

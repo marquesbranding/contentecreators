@@ -297,21 +297,23 @@ test.describe("client review R04", () => {
       const slides = rotator.locator('[aria-roledescription="slide"]');
       expect(await slides.count()).toBeGreaterThanOrEqual(2);
       await expect(
-        rotator.getByRole("button", { name: /Banner 1 de \d/u }),
+        rotator.getByRole("button", { name: /Ir para o banner 1 de \d/u }),
       ).toHaveAttribute("aria-current", "true");
 
       // 6 s autoplay: the second indicator becomes current without a click.
       await expect(
-        rotator.getByRole("button", { name: /Banner 2 de \d/u }),
+        rotator.getByRole("button", { name: /Ir para o banner 2 de \d/u }),
       ).toHaveAttribute("aria-current", "true", { timeout: 12_000 });
 
       await rotator
         .getByRole("button", { name: "Pausar rotação dos banners" })
         .click();
-      await rotator.getByRole("button", { name: /Banner 1 de \d/u }).click();
+      await rotator
+        .getByRole("button", { name: /Ir para o banner 1 de \d/u })
+        .click();
       await page.waitForTimeout(7_000);
       await expect(
-        rotator.getByRole("button", { name: /Banner 1 de \d/u }),
+        rotator.getByRole("button", { name: /Ir para o banner 1 de \d/u }),
       ).toHaveAttribute("aria-current", "true");
     } finally {
       await removeAcceptanceSponsorships();
