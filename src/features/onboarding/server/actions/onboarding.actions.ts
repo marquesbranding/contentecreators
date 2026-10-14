@@ -35,6 +35,9 @@ function formPayload(formData: FormData) {
     email: formData.get("email"),
     employeeRange: formData.get("employeeRange"),
     isCdlMember: formData.get("isCdlMember"),
+    isInfluencerJourneyParticipant: formData.get(
+      "isInfluencerJourneyParticipant",
+    ),
     legalName: formData.get("legalName"),
     logoAssetId: formData.get("logoAssetId") || undefined,
     neighborhood: formData.get("neighborhood"),

@@ -1,6 +1,7 @@
 import { Camera, MapPin, UsersRound } from "lucide-react";
 
 import { CdlMemberBadge } from "@/shared/components/cdl-member-badge";
+import { InfluencerJourneyBadge } from "@/shared/components/influencer-journey-badge";
 import { ProfileAvatarFrame } from "@/shared/components/profile-avatar-frame";
 import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
@@ -37,6 +38,7 @@ export function ProfileHeaderPreview({
   displayName,
   initials,
   isCdlMember = false,
+  isInfluencerJourneyParticipant = false,
   location,
   onAvatarClick,
   onCoverClick,
@@ -47,6 +49,7 @@ export function ProfileHeaderPreview({
   displayName: string;
   initials: string;
   isCdlMember?: boolean;
+  isInfluencerJourneyParticipant?: boolean;
   location: string;
   /** When provided, the cover becomes a clickable upload target (hover overlay + camera badge). */
   onAvatarClick?: () => void;
@@ -167,6 +170,9 @@ export function ProfileHeaderPreview({
         <CardTitle className="flex flex-wrap items-center gap-2 text-2xl font-extrabold tracking-[-0.03em] sm:text-3xl">
           {displayName}
           {isCdlMember ? <CdlMemberBadge size="md" /> : null}
+          {isInfluencerJourneyParticipant ? (
+            <InfluencerJourneyBadge size="md" />
+          ) : null}
         </CardTitle>
 
         <div className="flex flex-wrap gap-1.5">

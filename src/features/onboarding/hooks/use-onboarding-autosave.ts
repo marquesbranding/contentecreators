@@ -47,24 +47,28 @@ function readSafeUrl(formData: FormData, name: string) {
   }
 }
 
+/* An empty metric stays absent, so the draft reloads it as an empty field
+ * instead of a zero the creator never typed. */
+function readOptionalDraftMetric(value: string | undefined) {
+  if (value === undefined || !value.trim()) {
+    return undefined;
+  }
+
+  return Number(value) || 0;
+}
+
 function toDraftSocialChannels(
   channels: ReturnType<typeof readSocialChannels>,
 ): CreatorOnboardingDraftPayload["socialChannels"] {
   return channels.map((channel) => ({
     followerCount: Number(channel.followerCount) || 0,
-    interactions:
-      channel.interactions === undefined
-        ? undefined
-        : Number(channel.interactions) || 0,
+    interactions: readOptionalDraftMetric(channel.interactions),
     isPrimary: channel.isPrimary,
-    newFollowers:
-      channel.newFollowers === undefined
-        ? undefined
-        : Number(channel.newFollowers) || 0,
+    newFollowers: readOptionalDraftMetric(channel.newFollowers),
     platform: channel.platform,
-    sharedContent: channel.sharedContent,
+    sharedContent: readOptionalDraftMetric(channel.sharedContent),
     url: channel.url,
-    views: channel.views === undefined ? undefined : Number(channel.views) || 0,
+    views: readOptionalDraftMetric(channel.views),
   }));
 }
 
@@ -86,6 +90,10 @@ function collectCreatorPayload(formData: FormData) {
   }
   if (formData.has("isCdlMember")) {
     payload.isCdlMember = formData.get("isCdlMember") === "on";
+  }
+  if (formData.has("isInfluencerJourneyParticipant")) {
+    payload.isInfluencerJourneyParticipant =
+      formData.get("isInfluencerJourneyParticipant") === "on";
   }
   if (formData.has("legalName")) {
     payload.legalName = readText(formData, "legalName");
@@ -141,6 +149,10 @@ function collectCompanyPayload(formData: FormData) {
   }
   if (formData.has("isCdlMember")) {
     payload.isCdlMember = formData.get("isCdlMember") === "on";
+  }
+  if (formData.has("isInfluencerJourneyParticipant")) {
+    payload.isInfluencerJourneyParticipant =
+      formData.get("isInfluencerJourneyParticipant") === "on";
   }
   if (formData.has("legalName")) {
     payload.legalName = readText(formData, "legalName");

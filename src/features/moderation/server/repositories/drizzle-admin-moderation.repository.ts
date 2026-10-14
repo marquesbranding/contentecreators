@@ -19,7 +19,8 @@ interface AdminModerationFunctionRow extends Record<string, unknown> {
   action: AdminModerationTransition["action"];
   auth_effect_action: "BAN" | "UNBAN" | null;
   auth_effect_id: string | null;
-  auth_user_id: string;
+  /** Null on a tombstone: the erase unlinks the login (`auth_user_id = null`). */
+  auth_user_id: string | null;
   event_id: string;
   profile_version: number;
   result_kind: "ALREADY_APPLIED" | "APPLIED";

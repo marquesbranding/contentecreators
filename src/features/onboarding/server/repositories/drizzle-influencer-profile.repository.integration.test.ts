@@ -1,4 +1,4 @@
-import { and, asc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { createDatabaseClient } from "@/db/client";
@@ -60,6 +60,7 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
             creatorType: string;
             displayName: string;
             isCdlMember: boolean;
+            isInfluencerJourneyParticipant: boolean;
             version: number;
           };
           social: { normalizedUrl: string; platform: string };
@@ -197,6 +198,7 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
           displayName: "Diego em Movimento",
           expectedVersion: initial.version,
           isCdlMember: true,
+          isInfluencerJourneyParticipant: true,
           legalName: "Diego Exemplo",
           nicheSlugs: ["viagens-e-turismo", "outros"],
           otherNiche: "Artesanato sustentável",
@@ -243,6 +245,8 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
             creatorType: creatorProfiles.creatorType,
             displayName: creatorProfiles.displayName,
             isCdlMember: creatorProfiles.isCdlMember,
+            isInfluencerJourneyParticipant:
+              creatorProfiles.isInfluencerJourneyParticipant,
             version: creatorProfiles.version,
           })
           .from(creatorProfiles)
@@ -343,6 +347,7 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
         creatorType: "UGC",
         displayName: "Diego em Movimento",
         isCdlMember: true,
+        isInfluencerJourneyParticipant: true,
       },
       social: {
         normalizedUrl: "https://youtube.com/@diego-em-movimento",
@@ -366,6 +371,350 @@ describeLocalStack("Drizzle approved influencer profile repository", () => {
         { entityTable: "accounts", operation: "UPDATE" },
       ]),
     );
+  });
+
+  it("stores Instagram-only metrics from an owner edit and none for other networks", async () => {
+    const seededAccountId = "b0000000-0000-4000-8000-000000000004";
+    const metricsRequestId = "approved-influencer-instagram-metrics";
+    let proof:
+      | {
+          instagram: {
+            followerCount: number | null;
+            interactionCount: number | null;
+            newFollowerCount: number | null;
+            sharedContentCount: number | null;
+            sharedContentDescription: string | null;
+            viewCount: number | null;
+          };
+          youtube: {
+            followerCount: number | null;
+            interactionCount: number | null;
+            newFollowerCount: number | null;
+            sharedContentCount: number | null;
+            sharedContentDescription: string | null;
+            viewCount: number | null;
+          };
+          updateKind: string;
+        }
+      | undefined;
+
+    try {
+      await drizzleClient.database.transaction(async (transaction) => {
+        const [seededAccount] = await transaction
+          .select({ authUserId: accounts.authUserId })
+          .from(accounts)
+          .where(eq(accounts.id, seededAccountId));
+        const [seededProfile] = await transaction
+          .select({ id: creatorProfiles.id, version: creatorProfiles.version })
+          .from(creatorProfiles)
+          .where(eq(creatorProfiles.accountId, seededAccountId));
+
+        if (!seededAccount?.authUserId || !seededProfile) {
+          throw new Error("Expected the seeded approved influencer profile.");
+        }
+
+        const seededContext: VerifiedAccountContext = {
+          accountId: seededAccountId,
+          authUserId: seededAccount.authUserId,
+          role: "INFLUENCER",
+          status: "APPROVED",
+        };
+        const runVerifiedTransaction: VerifiedAccountTransactionRunner = async (
+          { requestId: verifiedRequestId },
+          work,
+        ) => {
+          await transaction.execute(sql`
+              select
+                set_config('app.jwt.auth_user_id', ${seededContext.authUserId}, true),
+                set_config('app.jwt.account_id', ${seededContext.accountId}, true),
+                set_config('app.jwt.account_role', ${seededContext.role}, true),
+                set_config('app.jwt.account_status', ${seededContext.status}, true),
+                set_config('app.jwt.request_id', ${verifiedRequestId}, true)
+            `);
+          await transaction.execute(
+            sql.raw("set local role contente_app_user"),
+          );
+
+          return work(transaction, seededContext);
+        };
+        const service = createInfluencerProfileService({
+          repository: createDrizzleInfluencerProfileRepository(),
+          runVerifiedTransaction,
+        });
+        const updateResult = await service.updateOwnerProfile({
+          input: {
+            bio: "Crio vídeos autorais de viagem e tecnologia para marcas.",
+            city: "Rio de Janeiro",
+            creatorType: "INFLUENCER",
+            displayName: "Diego Aprova",
+            expectedVersion: seededProfile.version,
+            isCdlMember: false,
+            isInfluencerJourneyParticipant: false,
+            legalName: "Diego Exemplo",
+            nicheSlugs: ["viagens-e-turismo", "tecnologia"],
+            socialChannels: [
+              {
+                followerCount: 15_000,
+                interactions: 3_200,
+                isPrimary: true,
+                newFollowers: 800,
+                platform: "INSTAGRAM",
+                sharedContent: 22,
+                url: "https://instagram.com/diego-aprova",
+                views: 50_000,
+              },
+              {
+                followerCount: 54_321,
+                isPrimary: false,
+                platform: "YOUTUBE",
+                url: "https://youtube.com/@diego-aprova",
+              },
+            ],
+            state: "RJ",
+            whatsapp: "(21) 99999-2222",
+          } satisfies InfluencerProfileEditInput,
+          requestId: metricsRequestId,
+        });
+
+        await transaction.execute(sql.raw("reset role"));
+
+        const snapshotRows = await transaction
+          .select({
+            followerCount: creatorMetricSnapshots.followerCount,
+            interactionCount: creatorMetricSnapshots.interactionCount,
+            newFollowerCount: creatorMetricSnapshots.newFollowerCount,
+            platform: creatorMetricSnapshots.platform,
+            sharedContentCount: creatorMetricSnapshots.sharedContentCount,
+            sharedContentDescription:
+              creatorMetricSnapshots.sharedContentDescription,
+            viewCount: creatorMetricSnapshots.viewCount,
+          })
+          .from(creatorMetricSnapshots)
+          .where(
+            and(
+              eq(creatorMetricSnapshots.creatorProfileId, seededProfile.id),
+              sql`${creatorMetricSnapshots.platform} in ('INSTAGRAM', 'YOUTUBE')`,
+            ),
+          )
+          .orderBy(
+            desc(creatorMetricSnapshots.observedOn),
+            desc(creatorMetricSnapshots.createdAt),
+          );
+        const instagram = snapshotRows.find(
+          (row) => row.platform === "INSTAGRAM",
+        );
+        const youtube = snapshotRows.find((row) => row.platform === "YOUTUBE");
+
+        if (!instagram || !youtube) {
+          throw new Error("Expected one metric snapshot per saved network.");
+        }
+
+        proof = {
+          instagram,
+          updateKind: updateResult.kind,
+          youtube,
+        };
+        throw rollback;
+      });
+    } catch (error) {
+      if (error !== rollback) {
+        throw error;
+      }
+    }
+
+    expect(proof?.updateKind).toBe("updated");
+    expect(proof?.instagram).toEqual({
+      followerCount: 15_000,
+      interactionCount: 3_200,
+      newFollowerCount: 800,
+      platform: "INSTAGRAM",
+      sharedContentCount: 22,
+      sharedContentDescription: null,
+      viewCount: 50_000,
+    });
+    expect(proof?.youtube).toEqual({
+      followerCount: 54_321,
+      interactionCount: null,
+      newFollowerCount: null,
+      platform: "YOUTUBE",
+      sharedContentCount: null,
+      sharedContentDescription: null,
+      viewCount: null,
+    });
+  });
+
+  it("clears a cleared Instagram metric on a same-day re-save", async () => {
+    const seededAccountId = "b0000000-0000-4000-8000-000000000004";
+    type MetricRow = {
+      interactionCount: number | null;
+      newFollowerCount: number | null;
+      sharedContentCount: number | null;
+      viewCount: number | null;
+    };
+    let proof:
+      | { afterClear: MetricRow; afterFill: MetricRow; rowCount: number }
+      | undefined;
+
+    try {
+      await drizzleClient.database.transaction(async (transaction) => {
+        const [seededAccount] = await transaction
+          .select({ authUserId: accounts.authUserId })
+          .from(accounts)
+          .where(eq(accounts.id, seededAccountId));
+        const [seededProfile] = await transaction
+          .select({ id: creatorProfiles.id })
+          .from(creatorProfiles)
+          .where(eq(creatorProfiles.accountId, seededAccountId));
+
+        if (!seededAccount?.authUserId || !seededProfile) {
+          throw new Error("Expected the seeded approved influencer profile.");
+        }
+
+        const seededContext: VerifiedAccountContext = {
+          accountId: seededAccountId,
+          authUserId: seededAccount.authUserId,
+          role: "INFLUENCER",
+          status: "APPROVED",
+        };
+        const runVerifiedTransaction: VerifiedAccountTransactionRunner = async (
+          { requestId: verifiedRequestId },
+          work,
+        ) => {
+          await transaction.execute(sql`
+              select
+                set_config('app.jwt.auth_user_id', ${seededContext.authUserId}, true),
+                set_config('app.jwt.account_id', ${seededContext.accountId}, true),
+                set_config('app.jwt.account_role', ${seededContext.role}, true),
+                set_config('app.jwt.account_status', ${seededContext.status}, true),
+                set_config('app.jwt.request_id', ${verifiedRequestId}, true)
+            `);
+          await transaction.execute(
+            sql.raw("set local role contente_app_user"),
+          );
+
+          try {
+            return await work(transaction, seededContext);
+          } finally {
+            await transaction.execute(sql.raw("reset role"));
+          }
+        };
+        const service = createInfluencerProfileService({
+          repository: createDrizzleInfluencerProfileRepository(),
+          runVerifiedTransaction,
+        });
+        const readInstagramRows = async () =>
+          transaction
+            .select({
+              interactionCount: creatorMetricSnapshots.interactionCount,
+              newFollowerCount: creatorMetricSnapshots.newFollowerCount,
+              observedOn: creatorMetricSnapshots.observedOn,
+              sharedContentCount: creatorMetricSnapshots.sharedContentCount,
+              viewCount: creatorMetricSnapshots.viewCount,
+            })
+            .from(creatorMetricSnapshots)
+            .where(
+              and(
+                eq(creatorMetricSnapshots.creatorProfileId, seededProfile.id),
+                eq(creatorMetricSnapshots.platform, "INSTAGRAM"),
+              ),
+            )
+            .orderBy(desc(creatorMetricSnapshots.observedOn));
+        const save = async (
+          metrics: {
+            interactions?: number;
+            newFollowers?: number;
+            sharedContent?: number;
+            views?: number;
+          },
+          label: string,
+        ) => {
+          const [current] = await transaction
+            .select({ version: creatorProfiles.version })
+            .from(creatorProfiles)
+            .where(eq(creatorProfiles.id, seededProfile.id));
+
+          if (!current) {
+            throw new Error("Expected the seeded profile version.");
+          }
+
+          const result = await service.updateOwnerProfile({
+            input: {
+              bio: "Crio vídeos autorais de viagem e tecnologia para marcas.",
+              city: "Rio de Janeiro",
+              creatorType: "INFLUENCER",
+              displayName: "Diego Aprova",
+              expectedVersion: current.version,
+              isCdlMember: false,
+              isInfluencerJourneyParticipant: false,
+              legalName: "Diego Exemplo",
+              nicheSlugs: ["viagens-e-turismo", "tecnologia"],
+              socialChannels: [
+                {
+                  followerCount: 15_000,
+                  isPrimary: true,
+                  platform: "INSTAGRAM",
+                  url: "https://instagram.com/diego-aprova",
+                  ...metrics,
+                },
+              ],
+              state: "RJ",
+              whatsapp: "(21) 99999-2222",
+            } satisfies InfluencerProfileEditInput,
+            requestId: `approved-influencer-metrics-clear-${label}`,
+          });
+
+          if (result.kind !== "updated") {
+            throw new Error(`Unexpected save result: ${result.kind}`);
+          }
+        };
+
+        await save(
+          {
+            interactions: 3_200,
+            newFollowers: 800,
+            sharedContent: 22,
+            views: 50_000,
+          },
+          "fill",
+        );
+        const filled = (await readInstagramRows())[0];
+
+        await save({}, "clear");
+        const afterClearRows = await readInstagramRows();
+        const cleared = afterClearRows[0];
+
+        if (!filled || !cleared) {
+          throw new Error("Expected an Instagram snapshot after each save.");
+        }
+
+        proof = {
+          afterClear: cleared,
+          afterFill: filled,
+          rowCount: afterClearRows.filter(
+            (row) => String(row.observedOn) === String(filled.observedOn),
+          ).length,
+        };
+        throw rollback;
+      });
+    } catch (error) {
+      if (error !== rollback) {
+        throw error;
+      }
+    }
+
+    expect(proof?.afterFill).toMatchObject({
+      interactionCount: 3_200,
+      newFollowerCount: 800,
+      sharedContentCount: 22,
+      viewCount: 50_000,
+    });
+    expect(proof?.afterClear).toMatchObject({
+      interactionCount: null,
+      newFollowerCount: null,
+      sharedContentCount: null,
+      viewCount: null,
+    });
+    expect(proof?.rowCount).toBe(1);
   });
 
   it("attributes a backoffice profile edit to the verified administrator", async () => {

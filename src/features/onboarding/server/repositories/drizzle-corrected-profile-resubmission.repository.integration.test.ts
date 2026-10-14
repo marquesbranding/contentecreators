@@ -86,6 +86,7 @@ describeLocalStack("Drizzle corrected profile resubmission repository", () => {
             creatorType: "INFLUENCER",
             displayName: "Carla em Cena",
             isCdlMember: false,
+            isInfluencerJourneyParticipant: false,
             legalName: "Carla Exemplo",
             nicheSlugs: ["beleza-maquiagem-e-cuidados-pessoais"],
             privacyAccepted: true,

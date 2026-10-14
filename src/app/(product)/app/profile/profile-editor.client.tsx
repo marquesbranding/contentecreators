@@ -98,6 +98,7 @@ function InfluencerProfileEditorContent({
         displayName={displayName}
         initials={initialsFromName(displayName)}
         isCdlMember={profile.isCdlMember}
+        isInfluencerJourneyParticipant={profile.isInfluencerJourneyParticipant}
         location={formatLocation(profile.city, profile.state)}
         onProfileVersionChange={setProfileVersion}
       />
@@ -177,6 +178,7 @@ function CompanyProfileEditorContent({
         displayName={profile.tradeName}
         initials={initialsFromName(profile.tradeName)}
         isCdlMember={profile.isCdlMember}
+        isInfluencerJourneyParticipant={profile.isInfluencerJourneyParticipant}
         location={formatLocation(profile.city, profile.state)}
         onProfileVersionChange={setProfileVersion}
       />

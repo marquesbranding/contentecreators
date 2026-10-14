@@ -36,7 +36,7 @@ function createDependencies(
     markAuthEffectSynced: vi.fn(async () => undefined),
     resolveRetryableAuthEffect: vi.fn(async () => ({
       action: "UNBAN" as const,
-      authUserId: transition.authUserId,
+      authUserId: "20000000-0000-4000-8000-000000000004",
       effectId: transition.authEffectId!,
     })),
     scheduleEmailRetry: vi.fn(),
@@ -45,6 +45,32 @@ function createDependencies(
 }
 
 describe("admin moderation service", () => {
+  it("skips the Auth synchronization when the tombstone has no login link", async () => {
+    const dependencies = createDependencies({
+      transition: { ...transition, authUserId: null },
+    });
+    const service = createAdminModerationService(dependencies);
+
+    await expect(
+      service.apply({
+        accountId: transition.accountId,
+        action: "BAN",
+        expectedAccountVersion: 3,
+        expectedProfileVersion: 2,
+        idempotencyKey: "moderation:ban:tombstone-without-login",
+        reason: "Violação confirmada dos termos da plataforma.",
+        requestId: "request-ban-tombstone",
+      }),
+    ).resolves.toMatchObject({
+      authEffectStatus: "not_required",
+      authUserId: null,
+    });
+
+    expect(dependencies.syncAuthIdentity).not.toHaveBeenCalled();
+    expect(dependencies.markAuthEffectSynced).not.toHaveBeenCalled();
+    expect(dependencies.markAuthEffectFailed).not.toHaveBeenCalled();
+  });
+
   it("invalidates eligibility after the committed transition and synchronizes the Auth ban", async () => {
     const dependencies = createDependencies();
     const service = createAdminModerationService(dependencies);

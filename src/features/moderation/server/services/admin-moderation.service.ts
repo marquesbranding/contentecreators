@@ -17,7 +17,8 @@ export interface AdminModerationTransition {
    * a ban still needs to run the UNBAN auth sync. */
   authEffectAction: "BAN" | "UNBAN" | null;
   authEffectId: string | null;
-  authUserId: string;
+  /** Null on a tombstone whose login link was unlinked by the erase. */
+  authUserId: string | null;
   eventId: string;
   kind: "already_applied" | "applied";
   outboxId: string | null;
@@ -123,7 +124,13 @@ export function createAdminModerationService(
         }
       }
 
-      if (!transition.authEffectId || !transition.authEffectAction) {
+      if (
+        !transition.authEffectId ||
+        !transition.authEffectAction ||
+        !transition.authUserId
+      ) {
+        // No Auth effect to run, or no login link left to act on (tombstone):
+        // skip the synchronization instead of calling Auth with a null id.
         return {
           ...transition,
           authEffectStatus: "not_required" as const,

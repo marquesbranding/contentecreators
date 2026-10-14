@@ -146,6 +146,7 @@ export function ProfileHeaderMediaEditor({
   helperText,
   initials,
   isCdlMember,
+  isInfluencerJourneyParticipant,
   location,
   onProfileVersionChange,
 }: {
@@ -161,6 +162,7 @@ export function ProfileHeaderMediaEditor({
   helperText?: string;
   initials: string;
   isCdlMember?: boolean;
+  isInfluencerJourneyParticipant?: boolean;
   location: string;
   onProfileVersionChange?: (version: number) => void;
 }) {
@@ -191,6 +193,7 @@ export function ProfileHeaderMediaEditor({
         displayName={displayName}
         initials={initials}
         isCdlMember={isCdlMember}
+        isInfluencerJourneyParticipant={isInfluencerJourneyParticipant}
         location={location}
         onAvatarClick={avatarState.openPicker}
         onCoverClick={coverState.openPicker}

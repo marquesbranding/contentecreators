@@ -1,10 +1,12 @@
 "use client";
 
 import { Info, MapPin, Plus, Search, Star, Trash2 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { contactVisibilityV1_0 } from "@/features/legal/client";
+import { InfluencerJourneyNote } from "@/shared/components/influencer-journey-note";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -160,22 +162,18 @@ function InfoTooltip({ label, text }: { label: string; text: string }) {
 function InstagramMetricField({
   id,
   label,
-  maxLength,
-  minLength,
+  name,
   onChange,
   placeholder,
   tooltip,
-  type = "number",
   value,
 }: {
   id: string;
   label: string;
-  maxLength?: number;
-  minLength?: number;
+  name: string;
   onChange: (value: string) => void;
   placeholder: string;
   tooltip?: string;
-  type?: "number" | "text";
   value: string;
 }) {
   return (
@@ -191,13 +189,12 @@ function InstagramMetricField({
       </label>
       <Input
         id={id}
-        inputMode={type === "number" ? "numeric" : undefined}
-        maxLength={maxLength}
-        min={type === "number" ? 0 : undefined}
-        minLength={minLength}
+        inputMode="numeric"
+        min={0}
+        name={name}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        type={type}
+        type="number"
         value={value}
       />
     </div>
@@ -468,6 +465,13 @@ export function ProfileFormFields({
       companyInitialValues?.isCdlMember ??
       false,
   );
+  const [isInfluencerJourneyParticipant, setIsInfluencerJourneyParticipant] =
+    useState(
+      () =>
+        creatorInitialValues?.isInfluencerJourneyParticipant ??
+        companyInitialValues?.isInfluencerJourneyParticipant ??
+        false,
+    );
   const [companyFields, setCompanyFields] = useState(() => ({
     city: companyInitialValues?.city ?? "",
     cnpj: companyInitialValues?.cnpj ?? "",
@@ -531,7 +535,10 @@ export function ProfileFormFields({
                 ? ""
                 : String(existing.newFollowers),
             primary: existing?.isPrimary ?? false,
-            sharedContent: existing?.sharedContent ?? "",
+            sharedContent:
+              existing?.sharedContent === undefined
+                ? ""
+                : String(existing.sharedContent),
             url: existing?.url ?? "",
             views: existing?.views === undefined ? "" : String(existing.views),
           } satisfies ChannelState,
@@ -910,6 +917,7 @@ export function ProfileFormFields({
                       <InstagramMetricField
                         id="creator-instagram-views"
                         label="Visualizações"
+                        name="socialChannels.INSTAGRAM.views"
                         onChange={(value) =>
                           updateChannelField("INSTAGRAM", "views", value)
                         }
@@ -919,6 +927,7 @@ export function ProfileFormFields({
                       <InstagramMetricField
                         id="creator-instagram-interactions"
                         label="Interações"
+                        name="socialChannels.INSTAGRAM.interactions"
                         onChange={(value) =>
                           updateChannelField("INSTAGRAM", "interactions", value)
                         }
@@ -928,6 +937,7 @@ export function ProfileFormFields({
                       <InstagramMetricField
                         id="creator-instagram-new-followers"
                         label="Novos seguidores"
+                        name="socialChannels.INSTAGRAM.newFollowers"
                         onChange={(value) =>
                           updateChannelField("INSTAGRAM", "newFollowers", value)
                         }
@@ -937,8 +947,7 @@ export function ProfileFormFields({
                       <InstagramMetricField
                         id="creator-instagram-shared-content"
                         label="Conteúdo que você compartilhou"
-                        maxLength={200}
-                        minLength={2}
+                        name="socialChannels.INSTAGRAM.sharedContent"
                         onChange={(value) =>
                           updateChannelField(
                             "INSTAGRAM",
@@ -946,9 +955,8 @@ export function ProfileFormFields({
                             value,
                           )
                         }
-                        placeholder="Ex.: Reels, vlogs, unboxings"
+                        placeholder="Ex.: 22"
                         tooltip="Essa informação você encontra no Painel Profissional, no seu perfil de Instagram"
-                        type="text"
                         value={entry.sharedContent}
                       />
                     </div>
@@ -1295,6 +1303,37 @@ export function ProfileFormFields({
                 É associado da CDL? (Câmara de Dirigentes Lojistas)
               </span>
             </label>
+          </Field>
+
+          <Field>
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4">
+              <Checkbox
+                checked={isInfluencerJourneyParticipant}
+                data-field-kind="checkbox"
+                data-field-name="isInfluencerJourneyParticipant"
+                onCheckedChange={(checked) => {
+                  setIsInfluencerJourneyParticipant(Boolean(checked));
+                  onFieldChange?.("isInfluencerJourneyParticipant");
+                }}
+              />
+              <input
+                name="isInfluencerJourneyParticipant"
+                type="hidden"
+                value={isInfluencerJourneyParticipant ? "on" : ""}
+              />
+              <span className="flex flex-wrap items-center gap-1.5 text-sm leading-6">
+                <Image
+                  alt=""
+                  aria-hidden="true"
+                  className="h-5 w-auto shrink-0"
+                  height={403}
+                  src="/brand/partners/jornada-do-influenciador.png"
+                  width={1685}
+                />
+                Eu fiz a Jornada do Influenciador
+              </span>
+            </label>
+            <InfluencerJourneyNote className="text-muted-foreground mt-2 text-xs leading-5" />
           </Field>
         </FieldSet>
       </div>

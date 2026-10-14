@@ -8,6 +8,7 @@ vi.mock("../hooks/use-cnpj-lookup", () => ({
   useCnpjLookup: useCnpjLookupMock,
 }));
 
+import { readSocialChannels } from "../domain/social-channels-form-data";
 import { ProfileFormFields } from "./profile-form-fields.client";
 
 describe("ProfileFormFields company CNPJ experience", () => {
@@ -500,6 +501,24 @@ describe("ProfileFormFields company CNPJ experience", () => {
     ).toBeVisible();
   });
 
+  it("renders shared content as a non-negative numeric field", async () => {
+    const user = userEvent.setup();
+    render(<ProfileFormFields role="INFLUENCER" />);
+
+    await user.click(screen.getByRole("checkbox", { name: "Instagram" }));
+
+    const field = screen.getByLabelText("Conteúdo que você compartilhou", {
+      selector: "input",
+    });
+
+    expect(field).toHaveAttribute("type", "number");
+    expect(field).toHaveAttribute("min", "0");
+    expect(field).toHaveAttribute("inputmode", "numeric");
+    expect(field).toHaveAttribute("placeholder", "Ex.: 22");
+    expect(field).not.toHaveAttribute("minlength");
+    expect(field).not.toHaveAttribute("maxlength");
+  });
+
   it("starts the CDL checkbox unchecked and toggles the hidden submit value", async () => {
     const user = userEvent.setup();
     const { container } = render(<ProfileFormFields role="INFLUENCER" />);
@@ -533,5 +552,167 @@ describe("ProfileFormFields company CNPJ experience", () => {
         name: "É associado da CDL? (Câmara de Dirigentes Lojistas)",
       }),
     ).toBeChecked();
+  });
+});
+
+describe("ProfileFormFields Influencer Journey checkbox", () => {
+  const journeyCheckboxName = "Eu fiz a Jornada do Influenciador";
+
+  it("starts unchecked and submits false when the box is left alone", () => {
+    const { container } = render(<ProfileFormFields role="INFLUENCER" />);
+
+    expect(
+      screen.getByRole("checkbox", { name: journeyCheckboxName }),
+    ).not.toBeChecked();
+    expect(
+      container.querySelector(
+        'input[type="hidden"][name="isInfluencerJourneyParticipant"]',
+      ),
+    ).toHaveValue("");
+  });
+
+  it("submits on when checked and off again when unchecked", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<ProfileFormFields role="COMPANY" />);
+
+    const checkbox = screen.getByRole("checkbox", {
+      name: journeyCheckboxName,
+    });
+    const hiddenInput = container.querySelector(
+      'input[type="hidden"][name="isInfluencerJourneyParticipant"]',
+    );
+
+    await user.click(checkbox);
+    expect(checkbox).toBeChecked();
+    expect(hiddenInput).toHaveValue("on");
+
+    await user.click(checkbox);
+    expect(checkbox).not.toBeChecked();
+    expect(hiddenInput).toHaveValue("");
+  });
+
+  it("restores a checked membership from initial values", () => {
+    render(
+      <ProfileFormFields
+        initialValues={{ isInfluencerJourneyParticipant: true }}
+        role="INFLUENCER"
+      />,
+    );
+
+    expect(
+      screen.getByRole("checkbox", { name: journeyCheckboxName }),
+    ).toBeChecked();
+  });
+
+  it("shows the logo and the Journey note with its external link", () => {
+    render(<ProfileFormFields role="COMPANY" />);
+
+    expect(
+      screen.getByRole("link", { name: "www.jornadadoinfluenciador.com.br" }),
+    ).toHaveAttribute("href", "https://www.jornadadoinfluenciador.com.br");
+  });
+});
+
+describe("ProfileFormFields Instagram metrics", () => {
+  beforeEach(() => {
+    useCnpjLookupMock.mockReturnValue({
+      data: undefined,
+      lookupStatus: "idle",
+      refetch: vi.fn(),
+    });
+  });
+
+  it("submits the Instagram metrics so readSocialChannels receives them", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <form>
+        <ProfileFormFields role="INFLUENCER" />
+      </form>,
+    );
+
+    await user.click(screen.getByRole("checkbox", { name: "Instagram" }));
+    await user.type(
+      screen.getByLabelText("Link do perfil no Instagram"),
+      "https://www.instagram.com/carla-em-cena",
+    );
+    await user.type(screen.getByLabelText("Seguidores no Instagram"), "15000");
+    await user.type(screen.getByLabelText("Visualizações"), "50000");
+    await user.type(screen.getByLabelText("Interações"), "3200");
+    await user.type(screen.getByLabelText("Novos seguidores"), "800");
+    await user.type(
+      screen.getByLabelText("Conteúdo que você compartilhou", {
+        selector: "input",
+      }),
+      "22",
+    );
+
+    const formData = new FormData(container.querySelector("form")!);
+    const instagram = readSocialChannels(formData).find(
+      (channel) => channel.platform === "INSTAGRAM",
+    );
+
+    expect(instagram).toMatchObject({
+      interactions: "3200",
+      newFollowers: "800",
+      sharedContent: "22",
+      views: "50000",
+    });
+  });
+
+  it("restores saved Instagram metrics into the editor", () => {
+    render(
+      <ProfileFormFields
+        initialValues={{
+          socialChannels: [
+            {
+              followerCount: 15_000,
+              interactions: 3_200,
+              isPrimary: true,
+              newFollowers: 800,
+              platform: "INSTAGRAM",
+              sharedContent: 22,
+              url: "https://instagram.com/carla-em-cena",
+              views: 50_000,
+            },
+          ],
+        }}
+        role="INFLUENCER"
+      />,
+    );
+
+    expect(screen.getByLabelText("Visualizações")).toHaveValue(50_000);
+    expect(screen.getByLabelText("Interações")).toHaveValue(3_200);
+    expect(screen.getByLabelText("Novos seguidores")).toHaveValue(800);
+    expect(
+      screen.getByLabelText("Conteúdo que você compartilhou", {
+        selector: "input",
+      }),
+    ).toHaveValue(22);
+  });
+
+  it("does not send Instagram metrics for other networks", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <form>
+        <ProfileFormFields role="INFLUENCER" />
+      </form>,
+    );
+
+    await user.click(screen.getByRole("checkbox", { name: "YouTube" }));
+    await user.type(
+      screen.getByLabelText("Link do perfil no YouTube"),
+      "https://www.youtube.com/@carla",
+    );
+
+    const formData = new FormData(container.querySelector("form")!);
+    const youtube = readSocialChannels(formData).find(
+      (channel) => channel.platform === "YOUTUBE",
+    );
+
+    expect(youtube).toBeDefined();
+    expect(youtube).not.toHaveProperty("views");
+    expect(youtube).not.toHaveProperty("interactions");
+    expect(youtube).not.toHaveProperty("newFollowers");
+    expect(youtube).not.toHaveProperty("sharedContent");
   });
 });

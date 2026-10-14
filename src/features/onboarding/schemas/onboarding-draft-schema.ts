@@ -19,6 +19,21 @@ const draftNonNegativeInt = z
   .int()
   .min(0)
   .max(Number.MAX_SAFE_INTEGER);
+/* Drafts saved before this field became a whole number may hold free text
+ * ("Reels, vlogs"). Dropping it keeps the rest of the draft loadable. */
+const draftSharedContent = z.preprocess((value) => {
+  if (typeof value === "number") {
+    return Number.isSafeInteger(value) && value >= 0 ? value : undefined;
+  }
+
+  if (typeof value === "string" && /^\d+$/u.test(value.trim())) {
+    const parsed = Number(value.trim());
+
+    return Number.isSafeInteger(parsed) ? parsed : undefined;
+  }
+
+  return undefined;
+}, draftNonNegativeInt.optional());
 const socialChannelDraftSchema = z
   .object({
     followerCount: draftNonNegativeInt,
@@ -26,7 +41,7 @@ const socialChannelDraftSchema = z
     isPrimary: z.boolean(),
     newFollowers: draftNonNegativeInt,
     platform: socialChannelPlatform,
-    sharedContent: draftText(200),
+    sharedContent: draftSharedContent,
     url: draftUrl,
     views: draftNonNegativeInt,
   })
@@ -61,6 +76,7 @@ export const creatorOnboardingDraftPayloadSchema = z
     creatorType: z.enum(["INFLUENCER", "UGC"]),
     displayName: draftText(120),
     isCdlMember: z.boolean(),
+    isInfluencerJourneyParticipant: z.boolean(),
     legalName: draftText(160),
     nicheSlugs: z.array(z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u)).max(5),
     otherNiche: draftText(120),
@@ -89,6 +105,7 @@ export const companyOnboardingDraftPayloadSchema = z
       "MORE_THAN_500",
     ]),
     isCdlMember: z.boolean(),
+    isInfluencerJourneyParticipant: z.boolean(),
     legalName: draftText(200),
     neighborhood: draftText(120),
     number: draftText(30),

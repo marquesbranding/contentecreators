@@ -60,6 +60,12 @@ const commonFields: readonly CorrectableFieldDefinition[] = [
     label: "Associado da CDL",
     section: "profile",
   },
+  {
+    dataFieldName: "isInfluencerJourneyParticipant",
+    key: "isInfluencerJourneyParticipant",
+    label: "Jornada do Influenciador",
+    section: "profile",
+  },
 ];
 
 const influencerFields: readonly CorrectableFieldDefinition[] = [

@@ -21,6 +21,7 @@ const updateInput = {
   displayName: "Joana Atualizada",
   expectedVersion: 3,
   isCdlMember: false,
+  isInfluencerJourneyParticipant: false,
   legalName: "Joana da Silva",
   nicheSlugs: ["tecnologia-games-e-inovacao"],
   socialChannels: [

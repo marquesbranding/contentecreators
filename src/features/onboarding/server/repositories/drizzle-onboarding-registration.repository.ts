@@ -351,6 +351,7 @@ async function insertRoleProfile(
         description: input.description,
         employeeRange: input.employeeRange,
         isCdlMember: input.isCdlMember,
+        isInfluencerJourneyParticipant: input.isInfluencerJourneyParticipant,
         legalName: input.legalName,
         logoAssetId: input.logoAssetId,
         coverAssetId: input.coverAssetId,
@@ -422,6 +423,7 @@ async function insertRoleProfile(
       creatorType: input.creatorType,
       displayName: input.displayName || input.legalName,
       isCdlMember: input.isCdlMember,
+      isInfluencerJourneyParticipant: input.isInfluencerJourneyParticipant,
       legalName: input.legalName,
       state: input.state,
       whatsappE164: normalizeWhatsapp(input.whatsapp),
@@ -464,9 +466,7 @@ async function insertRoleProfile(
         newFollowerCount: isInstagram ? channel?.newFollowers : undefined,
         observedOn,
         platform: socialProfile.platform,
-        sharedContentDescription: isInstagram
-          ? channel?.sharedContent
-          : undefined,
+        sharedContentCount: isInstagram ? channel?.sharedContent : undefined,
         socialProfileId: socialProfile.id,
         viewCount: isInstagram ? channel?.views : undefined,
       };

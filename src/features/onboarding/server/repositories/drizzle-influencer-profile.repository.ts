@@ -128,6 +128,7 @@ async function loadProfile(
     creatorType: profile.creatorType,
     displayName: profile.displayName,
     isCdlMember: profile.isCdlMember,
+    isInfluencerJourneyParticipant: profile.isInfluencerJourneyParticipant,
     legalName: profile.legalName,
     nicheSlugs: nicheSelection.nicheSlugs,
     otherNiche: nicheSelection.otherNiche,
@@ -148,7 +149,7 @@ async function loadProfile(
             : undefined,
           platform: socialProfile.platform,
           sharedContent: isInstagram
-            ? (metric?.sharedContentDescription ?? undefined)
+            ? (metric?.sharedContentCount ?? undefined)
             : undefined,
           url: socialProfile.normalizedUrl,
           views: isInstagram ? (metric?.viewCount ?? undefined) : undefined,
@@ -320,12 +321,12 @@ async function updateSocialAndMetric(
     const isInstagram = socialProfile.platform === "INSTAGRAM";
     const metricValues = {
       followerCount: channel?.followerCount ?? 0,
-      interactionCount: isInstagram ? channel?.interactions : undefined,
-      newFollowerCount: isInstagram ? channel?.newFollowers : undefined,
-      sharedContentDescription: isInstagram
-        ? channel?.sharedContent
-        : undefined,
-      viewCount: isInstagram ? channel?.views : undefined,
+      // null (not undefined) so a same-day update clears a cleared metric:
+      // Drizzle skips undefined keys in UPDATE ... SET.
+      interactionCount: isInstagram ? (channel?.interactions ?? null) : null,
+      newFollowerCount: isInstagram ? (channel?.newFollowers ?? null) : null,
+      sharedContentCount: isInstagram ? (channel?.sharedContent ?? null) : null,
+      viewCount: isInstagram ? (channel?.views ?? null) : null,
     };
 
     const [todayMetric] = await transaction
@@ -419,6 +420,7 @@ export function createDrizzleInfluencerProfileRepository(): InfluencerProfileRep
           creatorType: input.creatorType,
           displayName: input.displayName || input.legalName,
           isCdlMember: input.isCdlMember,
+          isInfluencerJourneyParticipant: input.isInfluencerJourneyParticipant,
           legalName: input.legalName,
           state: input.state,
           whatsappE164: normalizeWhatsapp(input.whatsapp),

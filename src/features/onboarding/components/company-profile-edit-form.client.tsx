@@ -11,14 +11,7 @@ import {
   AlertTitle,
 } from "@/shared/components/ui/alert";
 import { buttonVariants } from "@/shared/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-  RequiredFieldsNotice,
-} from "@/shared/components/ui/field";
-import { Textarea } from "@/shared/components/ui/textarea";
+import { RequiredFieldsNotice } from "@/shared/components/ui/field";
 import {
   emitActionFeedback,
   useActionFeedback,
@@ -39,7 +32,6 @@ export function CompanyProfileEditForm({
   action,
   backHref = "/app/catalog",
   backLabel = "Voltar",
-  changeReason,
   expectedVersion,
   formLabel = "Editar perfil da empresa",
   mediaFields,
@@ -50,11 +42,6 @@ export function CompanyProfileEditForm({
   action: CompanyProfileAction;
   backHref?: string;
   backLabel?: string;
-  changeReason?: {
-    description: string;
-    label: string;
-    placeholder: string;
-  };
   expectedVersion: number;
   formLabel?: string;
   mediaFields?: React.ReactNode;
@@ -146,37 +133,6 @@ export function CompanyProfileEditForm({
         role="COMPANY"
         showLegalConsents={false}
       />
-      {changeReason ? (
-        <Field
-          data-invalid={Boolean(
-            formValidation.getFieldErrors("reason", state.fieldErrors?.reason)
-              ?.length,
-          )}
-        >
-          <FieldLabel htmlFor="profile-change-reason" required>
-            {changeReason.label}
-          </FieldLabel>
-          <Textarea
-            aria-invalid={Boolean(
-              formValidation.getFieldErrors("reason", state.fieldErrors?.reason)
-                ?.length,
-            )}
-            id="profile-change-reason"
-            maxLength={1000}
-            minLength={10}
-            name="reason"
-            placeholder={changeReason.placeholder}
-            required
-            rows={4}
-          />
-          <FieldDescription>{changeReason.description}</FieldDescription>
-          <FieldError
-            errors={formValidation
-              .getFieldErrors("reason", state.fieldErrors?.reason)
-              ?.map((message) => ({ message }))}
-          />
-        </Field>
-      ) : null}
       {mediaFields}
       {savedAtLabel ? (
         <p

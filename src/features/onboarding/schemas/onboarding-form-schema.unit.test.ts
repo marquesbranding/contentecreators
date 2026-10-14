@@ -379,4 +379,74 @@ describe("onboarding form contracts", () => {
     expect(withCheckbox.success).toBe(true);
     expect(withCheckbox.data?.isCdlMember).toBe(true);
   });
+
+  it("defaults isInfluencerJourneyParticipant to false and keeps it when checked", () => {
+    const base = {
+      bio: "Crio conteúdo sobre projetos autorais e economia criativa.",
+      city: "São Paulo",
+      creatorType: "INFLUENCER",
+      displayName: "Joana Cria",
+      legalName: "Joana da Silva",
+      nicheSlugs: ["tecnologia-games-e-inovacao"],
+      socialChannels: [
+        {
+          followerCount: "12500",
+          isPrimary: true,
+          platform: "INSTAGRAM",
+          url: "https://instagram.com/joanacria",
+        },
+      ],
+      state: "SP",
+      whatsapp: "(11) 99999-9999",
+    };
+
+    const withoutCheckbox = influencerProfileFieldsSchema.safeParse(base);
+    const unchecked = influencerProfileFieldsSchema.safeParse({
+      ...base,
+      isInfluencerJourneyParticipant: "",
+    });
+    const checked = influencerProfileFieldsSchema.safeParse({
+      ...base,
+      isInfluencerJourneyParticipant: "on",
+    });
+
+    expect(withoutCheckbox.data?.isInfluencerJourneyParticipant).toBe(false);
+    expect(unchecked.data?.isInfluencerJourneyParticipant).toBe(false);
+    expect(checked.data?.isInfluencerJourneyParticipant).toBe(true);
+  });
+
+  it("accepts shared content only as a non-negative whole number", () => {
+    const profile = (sharedContent: string) => ({
+      ...commonProfile,
+      bio: "Crio conteúdo sobre projetos autorais e economia criativa.",
+      creatorType: "INFLUENCER",
+      displayName: "Joana Cria",
+      nicheSlugs: ["tecnologia-games-e-inovacao"],
+      role: "INFLUENCER",
+      socialChannels: [
+        {
+          followerCount: "12500",
+          isPrimary: true,
+          platform: "INSTAGRAM",
+          sharedContent,
+          url: "https://instagram.com/joana",
+        },
+      ],
+    });
+    const parse = (sharedContent: string) =>
+      influencerProfileFieldsSchema.safeParse(profile(sharedContent));
+
+    const valid = parse("22");
+    const empty = parse("");
+
+    expect(valid.success && valid.data.socialChannels?.[0]?.sharedContent).toBe(
+      22,
+    );
+    expect(
+      empty.success && empty.data.socialChannels?.[0]?.sharedContent,
+    ).toBeUndefined();
+    expect(parse("Reels").success).toBe(false);
+    expect(parse("-3").success).toBe(false);
+    expect(parse("2.5").success).toBe(false);
+  });
 });

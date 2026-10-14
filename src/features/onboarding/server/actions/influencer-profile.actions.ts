@@ -20,6 +20,9 @@ function profileFormPayload(formData: FormData) {
     displayName: formData.get("displayName"),
     expectedVersion: formData.get("expectedVersion"),
     isCdlMember: formData.get("isCdlMember"),
+    isInfluencerJourneyParticipant: formData.get(
+      "isInfluencerJourneyParticipant",
+    ),
     legalName: formData.get("legalName"),
     nicheSlugs: formData.getAll("nicheSlugs"),
     otherNiche: formData.get("otherNiche"),

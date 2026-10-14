@@ -119,6 +119,7 @@ describeLocalStack("onboarding registration repository", () => {
       email,
       employeeRange: "11_TO_50",
       isCdlMember: false,
+      isInfluencerJourneyParticipant: false,
       legalName: "Combined Company Ltda.",
       neighborhood: "Centro",
       number: "100",
@@ -234,6 +235,88 @@ describeLocalStack("onboarding registration repository", () => {
     });
   });
 
+  it("saves the Influencer Journey self-declaration as true at registration and false when unchecked on review", async () => {
+    // The 91000000-... prefix makes afterAll archive the account, so this
+    // pending company does not leak into moderation queue counts.
+    const identityId = `91000000-0000-4000-8000-${crypto
+      .randomUUID()
+      .slice(-12)}`;
+    const email = `journey-${identityId}@contentecreators.test`;
+    // Unique per run so the test can repeat against a shared local database.
+    const cnpj = Date.now().toString().padStart(14, "0");
+    await insertConfirmedIdentity(identityId, email);
+    const input = {
+      additionalLocations: [],
+      city: "São Paulo",
+      cnpj,
+      complement: "",
+      description:
+        "Empresa de tecnologia que busca creators para campanhas institucionais.",
+      email,
+      employeeRange: "11_TO_50",
+      isCdlMember: false,
+      isInfluencerJourneyParticipant: true,
+      legalName: "Journey Company Ltda.",
+      neighborhood: "Centro",
+      number: "100",
+      password: "LocalTest123!",
+      passwordConfirmation: "LocalTest123!",
+      postalCode: "01001000",
+      privacyAccepted: true,
+      role: "COMPANY",
+      segment: "Tecnologia",
+      socialChannels: [
+        {
+          followerCount: 0,
+          isPrimary: true,
+          platform: "LINKEDIN",
+          url: "https://linkedin.com/company/journey-company",
+        },
+      ],
+      state: "SP",
+      street: "Praça da Sé",
+      termsAccepted: true,
+      tradeName: "Journey Company",
+      websiteUrl: "https://example.com",
+      whatsapp: "(11) 99999-9999",
+    } satisfies EmailRegistrationInput;
+
+    await repository.prepareEmailRegistration({
+      identityId,
+      input,
+      requestId: "journey-email-prepare",
+    });
+
+    const readJourneyFlag = async () => {
+      const [row] = await sqlClient<
+        { is_influencer_journey_participant: boolean }[]
+      >`
+        select profile.is_influencer_journey_participant
+        from public.accounts account
+        join public.company_profiles profile on profile.account_id = account.id
+        where account.auth_user_id = ${identityId}
+      `;
+
+      return row?.is_influencer_journey_participant;
+    };
+
+    expect(await readJourneyFlag()).toBe(true);
+
+    await expect(
+      repository.submitGoogleProfile({
+        email,
+        identityId,
+        input: { ...input, isInfluencerJourneyParticipant: false },
+        requestId: "journey-email-uncheck",
+      }),
+    ).resolves.toEqual({
+      kind: "submitted",
+      outboxId: expect.any(String),
+    });
+
+    expect(await readJourneyFlag()).toBe(false);
+  });
+
   it("persists a role selected after Google before submitting the creator profile", async () => {
     const identityId = "91000000-0000-4000-8000-000000000002";
     const email = "google-creator@contentecreators.test";
@@ -288,6 +371,7 @@ describeLocalStack("onboarding registration repository", () => {
       creatorType: "INFLUENCER",
       displayName: "Creator Google",
       isCdlMember: false,
+      isInfluencerJourneyParticipant: false,
       legalName: "Creator de Teste",
       nicheSlugs: ["tecnologia-games-e-inovacao"],
       privacyAccepted: true,
@@ -436,6 +520,7 @@ describeLocalStack("onboarding registration repository", () => {
         "Empresa de tecnologia que busca creators para campanhas institucionais.",
       employeeRange: "11_TO_50",
       isCdlMember: false,
+      isInfluencerJourneyParticipant: false,
       legalName: "Google Company Media Ltda.",
       logoAssetId,
       neighborhood: "Centro",
@@ -540,6 +625,7 @@ describeLocalStack("onboarding registration repository", () => {
       creatorType: "INFLUENCER",
       displayName: "Creator sem acesso",
       isCdlMember: false,
+      isInfluencerJourneyParticipant: false,
       legalName: "Creator sem acesso",
       nicheSlugs: ["tecnologia-games-e-inovacao"],
       privacyAccepted: true,
@@ -624,6 +710,7 @@ describeLocalStack("onboarding registration repository", () => {
         "Empresa vinculada a um admin, usada para testar o roteamento por role.",
       employeeRange: "11_TO_50",
       isCdlMember: false,
+      isInfluencerJourneyParticipant: false,
       legalName: "Dual Role Company Ltda.",
       neighborhood: "Centro",
       number: "50",

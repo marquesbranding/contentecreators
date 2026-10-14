@@ -17,6 +17,9 @@ describe("correctable fields", () => {
   it("looks up a known field's pt-BR label", () => {
     expect(getCorrectableFieldLabel("cnpj")).toBe("CNPJ");
     expect(getCorrectableFieldLabel("bio")).toBe("Sobre o conteúdo");
+    expect(getCorrectableFieldLabel("isInfluencerJourneyParticipant")).toBe(
+      "Jornada do Influenciador",
+    );
   });
 
   it("falls back to the raw key for an unknown field", () => {

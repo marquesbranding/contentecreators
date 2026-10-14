@@ -29,6 +29,7 @@ const companyContext: VerifiedAccountContext = {
   status: "APPROVED",
 };
 const companyProfileId = "e0000000-0000-4000-8000-000000000004";
+const seededLogoAssetId = "72000000-0000-4000-8000-000000000004";
 const requestId = "approved-company-profile-edit";
 const rollback = new Error("rollback approved company profile edit");
 
@@ -48,7 +49,12 @@ describeLocalStack("Drizzle approved company profile repository", () => {
           auditRows: { entityTable: string; operation: string }[];
           locationCount: number;
           primaryCount: number;
-          profile: { isCdlMember: boolean; tradeName: string; version: number };
+          profile: {
+            isCdlMember: boolean;
+            isInfluencerJourneyParticipant: boolean;
+            tradeName: string;
+            version: number;
+          };
           social: { normalizedUrl: string; platform: string };
           staleResult: { currentVersion: number; kind: "conflict" };
         }
@@ -56,6 +62,13 @@ describeLocalStack("Drizzle approved company profile repository", () => {
 
     try {
       await drizzleClient.database.transaction(async (transaction) => {
+        // Other integration files commit changes to seeded company 4 (the
+        // carousel suite nulls its logo), so pin the seeded logo here to keep
+        // the completion percentage independent of file order. Rolled back.
+        await transaction
+          .update(companyProfiles)
+          .set({ logoAssetId: seededLogoAssetId })
+          .where(eq(companyProfiles.id, companyProfileId));
         const runVerifiedTransaction: VerifiedAccountTransactionRunner = async (
           { requestId: verifiedRequestId },
           work,
@@ -101,6 +114,7 @@ describeLocalStack("Drizzle approved company profile repository", () => {
           employeeRange: "51_TO_200",
           expectedVersion: initial.version,
           isCdlMember: true,
+          isInfluencerJourneyParticipant: true,
           legalName: "Empresa Quatro Exemplo Ltda.",
           neighborhood: "Centro",
           number: "400",
@@ -149,6 +163,8 @@ describeLocalStack("Drizzle approved company profile repository", () => {
         const [profile] = await transaction
           .select({
             isCdlMember: companyProfiles.isCdlMember,
+            isInfluencerJourneyParticipant:
+              companyProfiles.isInfluencerJourneyParticipant,
             tradeName: companyProfiles.tradeName,
             version: companyProfiles.version,
           })
@@ -205,13 +221,18 @@ describeLocalStack("Drizzle approved company profile repository", () => {
 
     expect(proof).toMatchObject({
       accountCompletion: {
-        percentage: 80,
+        // Seeded company 4 has an ACTIVE logo (10) but no cover (10).
+        percentage: 90,
         version: 2,
       },
       accountStatus: "APPROVED",
       locationCount: 2,
       primaryCount: 1,
-      profile: { isCdlMember: true, tradeName: "Empresa Quatro Atualizada" },
+      profile: {
+        isCdlMember: true,
+        isInfluencerJourneyParticipant: true,
+        tradeName: "Empresa Quatro Atualizada",
+      },
       social: {
         normalizedUrl: "https://linkedin.com/company/empresa-quatro",
         platform: "LINKEDIN",

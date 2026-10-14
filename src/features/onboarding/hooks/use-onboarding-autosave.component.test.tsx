@@ -2,6 +2,9 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { useRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { createQueryTestClient, QueryTestProvider } from "@/test/query-harness";
+
+import { ProfileFormFields } from "../components/profile-form-fields.client";
 import type { OnboardingDraftAction } from "../types/onboarding-draft.types";
 import { useOnboardingAutosave } from "./use-onboarding-autosave";
 
@@ -31,6 +34,22 @@ function AutosaveHarness({ action }: { action: OnboardingDraftAction }) {
       <output>{autosave.status.message}</output>
       <span>{autosave.hasUnsavedChanges ? "pendente" : "sincronizado"}</span>
     </>
+  );
+}
+
+function ProfileAutosaveHarness({ action }: { action: OnboardingDraftAction }) {
+  const autosave = useOnboardingAutosave({
+    action,
+    initialDraft: null,
+    role: "INFLUENCER",
+  });
+
+  return (
+    <QueryTestProvider client={createQueryTestClient()}>
+      <form onInput={autosave.onFormInput}>
+        <ProfileFormFields role="INFLUENCER" />
+      </form>
+    </QueryTestProvider>
   );
 }
 
@@ -140,5 +159,96 @@ describe("useOnboardingAutosave", () => {
 
     expect(screen.getByText("Atualizado em outra aba")).toBeInTheDocument();
     expect(screen.getByText("pendente")).toBeInTheDocument();
+  });
+  it("autosaves the Instagram metrics typed in the real profile form", async () => {
+    vi.useFakeTimers();
+    const action = vi.fn<OnboardingDraftAction>().mockResolvedValue({
+      draft: {
+        payload: {},
+        role: "INFLUENCER",
+        updatedAt: "2026-07-24T14:00:00.000Z",
+        version: 1,
+      },
+      kind: "saved",
+    });
+    render(<ProfileAutosaveHarness action={action} />);
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "Instagram" }));
+    fireEvent.input(screen.getByLabelText("Link do perfil no Instagram"), {
+      target: { value: "https://www.instagram.com/carla-em-cena" },
+    });
+    fireEvent.input(screen.getByLabelText("Visualizações"), {
+      target: { value: "50000" },
+    });
+    fireEvent.input(screen.getByLabelText("Interações"), {
+      target: { value: "3200" },
+    });
+    fireEvent.input(screen.getByLabelText("Novos seguidores"), {
+      target: { value: "800" },
+    });
+    fireEvent.input(
+      screen.getByLabelText("Conteúdo que você compartilhou", {
+        selector: "input",
+      }),
+      { target: { value: "22" } },
+    );
+
+    await act(() => vi.advanceTimersByTimeAsync(900));
+
+    expect(action).toHaveBeenCalledOnce();
+    expect(action).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payload: expect.objectContaining({
+          socialChannels: [
+            {
+              followerCount: 0,
+              interactions: 3200,
+              isPrimary: true,
+              newFollowers: 800,
+              platform: "INSTAGRAM",
+              sharedContent: 22,
+              url: "https://www.instagram.com/carla-em-cena",
+              views: 50000,
+            },
+          ],
+        }),
+      }),
+    );
+  });
+
+  it("omits Instagram metrics left empty instead of saving them as zero", async () => {
+    vi.useFakeTimers();
+    const action = vi.fn<OnboardingDraftAction>().mockResolvedValue({
+      draft: {
+        payload: {},
+        role: "INFLUENCER",
+        updatedAt: "2026-07-24T14:00:00.000Z",
+        version: 1,
+      },
+      kind: "saved",
+    });
+    render(<ProfileAutosaveHarness action={action} />);
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "Instagram" }));
+    fireEvent.input(screen.getByLabelText("Link do perfil no Instagram"), {
+      target: { value: "https://www.instagram.com/carla-em-cena" },
+    });
+
+    await act(() => vi.advanceTimersByTimeAsync(900));
+
+    const input = action.mock.calls[0]?.[0] as {
+      payload: {
+        socialChannels?: {
+          interactions?: number;
+          newFollowers?: number;
+          views?: number;
+        }[];
+      };
+    };
+    const instagram = input.payload.socialChannels?.[0];
+    expect(instagram).toBeDefined();
+    expect(instagram?.views).toBeUndefined();
+    expect(instagram?.interactions).toBeUndefined();
+    expect(instagram?.newFollowers).toBeUndefined();
   });
 });

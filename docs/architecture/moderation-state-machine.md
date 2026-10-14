@@ -20,22 +20,34 @@ eligible for product presentation even if its stored status is `APPROVED`.
 
 ## Allowed transitions
 
+Owner commands follow one path; admin commands are available from any status
+except their own destination, so a moderator can change their mind at any
+point. `ONBOARDING` is the exception: an account still mid-signup can only be
+banned or archived. Source of truth: `STANDARD_TRANSITIONS` in
+`src/features/moderation/domain/moderation-policy.ts`.
+
 ```text
-ONBOARDING       --SUBMIT----------> PENDING_REVIEW
-PENDING_REVIEW   --REQUEST_CHANGES-> CHANGES_REQUESTED
-CHANGES_REQUESTED--RESUBMIT--------> PENDING_REVIEW
-PENDING_REVIEW   --APPROVE---------> APPROVED
-APPROVED         --SUSPEND---------> SUSPENDED
-SUSPENDED        --RESTORE---------> APPROVED
-APPROVED         --BAN-------------> BANNED
-SUSPENDED        --BAN-------------> BANNED
-BANNED           --UNBAN-----------> SUSPENDED
-any non-archived --ARCHIVE---------> archived record
+ONBOARDING        --SUBMIT----------> PENDING_REVIEW      (owner)
+CHANGES_REQUESTED --RESUBMIT--------> PENDING_REVIEW      (owner)
+
+PENDING_REVIEW | CHANGES_REQUESTED | SUSPENDED | BANNED   --APPROVE---------> APPROVED
+PENDING_REVIEW | APPROVED          | SUSPENDED | BANNED   --REQUEST_CHANGES-> CHANGES_REQUESTED
+PENDING_REVIEW | CHANGES_REQUESTED | APPROVED  | BANNED   --SUSPEND---------> SUSPENDED
+ONBOARDING | PENDING_REVIEW | CHANGES_REQUESTED | APPROVED | SUSPENDED --BAN-> BANNED
+any non-archived                                          --ARCHIVE---------> archived record
 ```
 
-`UNBAN` is an exceptional administrator command. It removes the matching
-blocked-identity restriction through an audited side effect but intentionally
-returns the account to `SUSPENDED`; a separate reviewed restore is required.
+"Solicitar alterações" (`REQUEST_CHANGES`) is the only way to correct an
+account's declared data: the backoffice cannot edit profiles, so the admin
+points at the fields to fix and the owner edits and resubmits. It can be
+requested at any time, including on an approved profile. An approved profile
+that receives a change request leaves the catalog until it is resubmitted and
+approved again (the `CHANGES_REQUESTED` row above).
+
+`RESTORE` (`SUSPENDED → APPROVED`) and `UNBAN` remain only so old events still
+validate; the admin UI no longer offers them. Leaving `BANNED` through any
+other action performs the same unban side effects (the matching
+blocked-identity restriction is removed through an audited side effect).
 
 ## Command requirements
 

@@ -45,9 +45,9 @@ const optionalNonNegativeInt = z.preprocess(
   (value) => (value === null || value === "" ? undefined : value),
   z.coerce
     .number("Informe uma quantidade válida.")
-    .int()
-    .min(0)
-    .max(Number.MAX_SAFE_INTEGER)
+    .int("Informe um número inteiro.")
+    .min(0, "Informe um número maior ou igual a 0.")
+    .max(Number.MAX_SAFE_INTEGER, "Informe uma quantidade válida.")
     .optional(),
 );
 const password = z
@@ -109,15 +109,7 @@ const socialChannelEntry = z.object({
   isPrimary: isPrimaryFlag,
   newFollowers: optionalNonNegativeInt,
   platform: socialChannelPlatform,
-  sharedContent: z.preprocess(
-    (value) => (value === null || value === "" ? undefined : value),
-    z
-      .string()
-      .trim()
-      .min(2, "Use pelo menos 2 caracteres.")
-      .max(200)
-      .optional(),
-  ),
+  sharedContent: optionalNonNegativeInt,
   url,
   views: optionalNonNegativeInt,
 });
@@ -234,6 +226,7 @@ export const influencerProfileFieldsSchema = z
         .optional(),
     ),
     isCdlMember: checkboxBoolean,
+    isInfluencerJourneyParticipant: checkboxBoolean,
     legalName,
     nicheSlugs: z
       .array(z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u))
@@ -291,6 +284,7 @@ export const companyProfileFieldsSchema = z.object({
     { error: "Escolha o tamanho da empresa." },
   ),
   isCdlMember: checkboxBoolean,
+  isInfluencerJourneyParticipant: checkboxBoolean,
   legalName,
   logoAssetId: z.uuid("O logo enviado não é válido.").optional(),
   neighborhood: z
