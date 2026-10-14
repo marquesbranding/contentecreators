@@ -16,12 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/shared/components/ui/dialog";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/shared/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 
 import { DELETION_CONFIRMATION_PHRASE } from "../domain/deletion-policy";
@@ -70,11 +65,8 @@ export function AccountDeletionSection({
         Excluir conta
       </h2>
       <p className="text-muted-foreground mt-2 text-sm leading-6">
-        A exclusão é imediata e não pode ser desfeita: seu perfil sai do
-        catálogo e da página inicial na hora, e apagamos seus dados, fotos e
-        rascunhos. Guardamos apenas o que a lei exige (por exemplo, registros de
-        acesso por 6 meses e a comprovação dos seus aceites), sem seu nome nem
-        seu e-mail. Se quiser voltar depois, é só se cadastrar de novo. Veja a{" "}
+        Exclui seu perfil, fotos e dados agora. Não dá para desfazer. Para usar
+        a plataforma de novo, faça um novo cadastro. Veja a{" "}
         <a className="text-brand-blue font-semibold underline" href="/privacy">
           Política de Privacidade
         </a>
@@ -101,9 +93,7 @@ export function AccountDeletionSection({
                   Excluir minha conta
                 </DialogTitle>
                 <DialogDescription className="leading-6">
-                  A exclusão é imediata e não pode ser desfeita; se quiser
-                  voltar, é só se cadastrar de novo. Para confirmar, informe sua
-                  senha e digite {DELETION_CONFIRMATION_PHRASE}.
+                  Digite {DELETION_CONFIRMATION_PHRASE} para confirmar.
                 </DialogDescription>
               </div>
             </DialogHeader>
@@ -118,12 +108,11 @@ export function AccountDeletionSection({
               />
               <div className="flex flex-col gap-2 text-sm leading-6">
                 <p className="font-bold">
-                  Atenção: ao confirmar, os dados da sua conta serão excluídos
-                  de fato, agora, e não há como recuperá-los.
+                  Atenção: seus dados serão excluídos de fato, agora.
                 </p>
                 <p className="font-medium">
-                  Para usar o sistema novamente, você precisará fazer um novo
-                  cadastro do zero.
+                  Para usar o sistema de novo, será preciso se cadastrar do
+                  zero.
                 </p>
               </div>
             </div>
@@ -136,24 +125,6 @@ export function AccountDeletionSection({
                 {state.message}
               </p>
             ) : null}
-
-            <Field data-invalid={Boolean(errors?.password?.length)}>
-              <FieldLabel htmlFor="deletion-password">Senha</FieldLabel>
-              <Input
-                aria-invalid={Boolean(errors?.password?.length)}
-                autoComplete="current-password"
-                id="deletion-password"
-                name="password"
-                type="password"
-              />
-              <FieldDescription>
-                Se você entra com o Google, deixe em branco (é preciso ter
-                entrado há no máximo 5 minutos).
-              </FieldDescription>
-              <FieldError
-                errors={errors?.password?.map((message) => ({ message }))}
-              />
-            </Field>
 
             <Field data-invalid={Boolean(errors?.confirmation?.length)}>
               <FieldLabel htmlFor="deletion-confirmation">
@@ -185,8 +156,8 @@ export function AccountDeletionSection({
                   type="checkbox"
                 />
                 <span className="font-medium">
-                  Entendo que meu perfil e meus dados serão apagados agora e que
-                  não há como recuperá-los.
+                  Entendo que os dados serão apagados e não podem ser
+                  recuperados.
                 </span>
               </label>
               <FieldError

@@ -2,8 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 
 import { createAccountDeletionService } from "./account-deletion.service";
 
-const now = new Date("2026-10-14T12:00:00Z");
-
 function setup(
   overrides: {
     reauth?: {
@@ -15,7 +13,6 @@ function setup(
     repositoryError?: Error;
     role?: "ADMIN" | "COMPANY" | "INFLUENCER";
     signOut?: boolean | Error;
-    verifyPassword?: boolean;
   } = {},
 ) {
   const transaction = {} as never;
@@ -37,7 +34,6 @@ function setup(
 
       return overrides.signOut ?? true;
     }),
-    verifyPassword: vi.fn().mockResolvedValue(overrides.verifyPassword ?? true),
   };
   const repository = {
     deleteOwnAccount: vi.fn().mockImplementation(async () => {
@@ -82,7 +78,6 @@ function setup(
     deliverEmail,
     identity,
     log,
-    now: () => now,
     repository,
     runVerifiedTransaction: runVerifiedTransaction as never,
     storage,
@@ -101,19 +96,12 @@ function setup(
 }
 
 describe("account deletion service", () => {
-  it("deletes immediately, removes Storage, sends the e-mail and ends sessions without banning", async () => {
+  it("deletes a logged-in verified account with no password, removes Storage, sends the e-mail and ends sessions without banning", async () => {
     const context = setup();
 
-    const result = await context.service.deleteAccount({
-      password: "secret",
-      requestId: "req-1",
-    });
+    const result = await context.service.deleteAccount({ requestId: "req-1" });
 
     expect(result).toEqual({ kind: "deleted" });
-    expect(context.identity.verifyPassword).toHaveBeenCalledWith(
-      "creator@example.test",
-      "secret",
-    );
     expect(context.runVerifiedTransaction).toHaveBeenCalledWith(
       { preferredRole: "NON_ADMIN", requestId: "req-1" },
       expect.any(Function),
@@ -136,46 +124,35 @@ describe("account deletion service", () => {
     expect(context.identity.signOutEverywhere).toHaveBeenCalledTimes(1);
   });
 
-  it("rejects a wrong password before touching the database", async () => {
-    const context = setup({ verifyPassword: false });
-
-    const result = await context.service.deleteAccount({
-      password: "wrong",
-      requestId: "req-1",
-    });
-
-    expect(result).toEqual({ kind: "invalid_password" });
-    expect(context.repository.deleteOwnAccount).not.toHaveBeenCalled();
-  });
-
-  it("requires a recent login for Google-only accounts", async () => {
+  it("does not ask for a recent login, even for accounts without a password", async () => {
     const stale = setup({
       reauth: {
         email: "creator@example.test",
         hasPassword: false,
-        lastSignInAt: "2026-10-14T11:00:00Z",
+        lastSignInAt: "2026-10-14T08:00:00Z",
       },
     });
 
     expect(await stale.service.deleteAccount({ requestId: "req-1" })).toEqual({
-      kind: "reauthentication_required",
-    });
-    expect(stale.repository.deleteOwnAccount).not.toHaveBeenCalled();
-
-    const fresh = setup({
-      reauth: {
-        email: "creator@example.test",
-        hasPassword: false,
-        lastSignInAt: "2026-10-14T11:58:00Z",
-      },
-    });
-
-    expect(await fresh.service.deleteAccount({ requestId: "req-1" })).toEqual({
       kind: "deleted",
     });
+    expect(stale.repository.deleteOwnAccount).toHaveBeenCalledTimes(1);
   });
 
-  it("maps banned, admin and missing accounts to not available", async () => {
+  it("refuses without a signed-in session before touching the database", async () => {
+    const context = setup({ reauth: null });
+
+    expect(await context.service.deleteAccount({ requestId: "req-1" })).toEqual(
+      { kind: "not_available" },
+    );
+    expect(context.runVerifiedTransaction).not.toHaveBeenCalled();
+    expect(context.repository.deleteOwnAccount).not.toHaveBeenCalled();
+    expect(context.identity.signOutEverywhere).not.toHaveBeenCalled();
+  });
+
+  it("maps banned, already deleted and admin accounts to not available", async () => {
+    // "account_deletion_not_available" is what the repository raises when the
+    // account is already deleted (no row returned by app_delete_own_account).
     for (const marker of [
       "account_deletion_banned",
       "account_deletion_role_forbidden",
@@ -186,10 +163,7 @@ describe("account deletion service", () => {
       const context = setup({ repositoryError: new Error(marker) });
 
       expect(
-        await context.service.deleteAccount({
-          password: "secret",
-          requestId: "req-1",
-        }),
+        await context.service.deleteAccount({ requestId: "req-1" }),
       ).toEqual({ kind: "not_available" });
       expect(context.identity.signOutEverywhere).not.toHaveBeenCalled();
       expect(context.storage.remove).not.toHaveBeenCalled();
@@ -197,20 +171,18 @@ describe("account deletion service", () => {
 
     const admin = setup({ role: "ADMIN" });
 
-    expect(
-      await admin.service.deleteAccount({
-        password: "secret",
-        requestId: "req-1",
-      }),
-    ).toEqual({ kind: "not_available" });
+    expect(await admin.service.deleteAccount({ requestId: "req-1" })).toEqual({
+      kind: "not_available",
+    });
     expect(admin.repository.deleteOwnAccount).not.toHaveBeenCalled();
+    expect(admin.storage.remove).not.toHaveBeenCalled();
   });
 
   it("propagates unexpected database errors without side effects", async () => {
     const context = setup({ repositoryError: new Error("connection reset") });
 
     await expect(
-      context.service.deleteAccount({ password: "secret", requestId: "req-1" }),
+      context.service.deleteAccount({ requestId: "req-1" }),
     ).rejects.toThrow("connection reset");
     expect(context.identity.signOutEverywhere).not.toHaveBeenCalled();
     expect(context.deliverEmail).not.toHaveBeenCalled();
@@ -223,10 +195,7 @@ describe("account deletion service", () => {
     });
     context.deliverEmail.mockRejectedValueOnce(new Error("smtp down"));
 
-    const result = await context.service.deleteAccount({
-      password: "secret",
-      requestId: "req-1",
-    });
+    const result = await context.service.deleteAccount({ requestId: "req-1" });
 
     expect(result).toEqual({ kind: "deleted" });
     expect(context.log).toHaveBeenCalledWith(
@@ -243,10 +212,7 @@ describe("account deletion service", () => {
   it("logs objects left in the cleanup queue", async () => {
     const context = setup({ removal: { failed: 2, removed: 0 } });
 
-    await context.service.deleteAccount({
-      password: "secret",
-      requestId: "req-1",
-    });
+    await context.service.deleteAccount({ requestId: "req-1" });
 
     expect(context.log).toHaveBeenCalledWith(
       expect.objectContaining({

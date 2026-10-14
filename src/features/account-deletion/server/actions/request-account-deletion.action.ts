@@ -19,7 +19,6 @@ export async function requestAccountDeletionAction(
   const parsed = deleteAccountSchema.safeParse({
     acknowledged: formData.get("acknowledged") ?? undefined,
     confirmation: String(formData.get("confirmation") ?? ""),
-    password: formData.get("password") ?? undefined,
   });
 
   if (!parsed.success) {
@@ -30,7 +29,6 @@ export async function requestAccountDeletionAction(
       fieldErrors: {
         acknowledged: flattened.acknowledged,
         confirmation: flattened.confirmation,
-        password: flattened.password,
       },
       message: "Revise os campos destacados.",
       status: "error",
@@ -53,28 +51,7 @@ export async function requestAccountDeletionAction(
 
   try {
     const service = await createServerAccountDeletionService();
-    const result = await service.deleteAccount({
-      password: parsed.data.password,
-      requestId,
-    });
-
-    if (result.kind === "invalid_password") {
-      return {
-        code: "INVALID_PASSWORD",
-        fieldErrors: { password: ["Senha incorreta."] },
-        message: "Confirme sua senha para excluir a conta.",
-        status: "error",
-      };
-    }
-
-    if (result.kind === "reauthentication_required") {
-      return {
-        code: "REAUTH_REQUIRED",
-        message:
-          "Por segurança, saia e entre novamente com o Google e tente excluir em até 5 minutos.",
-        status: "error",
-      };
-    }
+    const result = await service.deleteAccount({ requestId });
 
     if (result.kind === "not_available") {
       return {

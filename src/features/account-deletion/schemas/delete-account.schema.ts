@@ -9,11 +9,6 @@ export const deleteAccountSchema = z.object({
   confirmation: z
     .string()
     .refine(isDeletionPhrase, { error: "Digite EXCLUIR para confirmar." }),
-  password: z
-    .string()
-    .max(200, { error: "A senha é muito longa." })
-    .optional()
-    .transform((value) => (value ? value : undefined)),
 });
 
 export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;

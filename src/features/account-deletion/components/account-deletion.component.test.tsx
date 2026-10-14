@@ -23,30 +23,34 @@ describe("AccountDeletionSection", () => {
       screen.getByRole("heading", { name: "Excluir conta" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/A exclusão é imediata e não pode ser desfeita/u),
+      screen.getByText(/Exclui seu perfil, fotos e dados agora/u),
     ).toBeInTheDocument();
-    expect(screen.getByText(/é só se cadastrar de novo/u)).toBeInTheDocument();
+    expect(screen.getByText(/Não dá para desfazer/u)).toBeInTheDocument();
+    expect(screen.getByText(/faça um novo cadastro/u)).toBeInTheDocument();
 
     await userEvent.click(
       screen.getByRole("button", { name: "Excluir minha conta" }),
     );
 
-    expect(screen.getByLabelText("Senha")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Senha")).not.toBeInTheDocument();
+    expect(
+      screen.getByText("Digite EXCLUIR para confirmar."),
+    ).toBeInTheDocument();
     expect(
       screen.getByLabelText(/Digite EXCLUIR para confirmar/u),
     ).toBeRequired();
     expect(
-      screen.getByRole("checkbox", { name: /não há como recuperá-los/u }),
+      screen.getByRole("checkbox", {
+        name: "Entendo que os dados serão apagados e não podem ser recuperados.",
+      }),
     ).toBeRequired();
     const warning = screen.getByRole("alert");
     expect(warning).toHaveTextContent(
-      /os dados da sua conta serão excluídos de fato/u,
+      "Atenção: seus dados serão excluídos de fato, agora.",
     );
-    expect(warning).toHaveTextContent(/novo cadastro do zero/u);
-    expect(
-      screen.getAllByText(/se quiser voltar, é só se cadastrar de novo/iu)
-        .length,
-    ).toBeGreaterThan(0);
+    expect(warning).toHaveTextContent(
+      "Para usar o sistema de novo, será preciso se cadastrar do zero.",
+    );
     expect(container.textContent).not.toMatch(RECOVERY_WORDING);
     expect(document.body.textContent).not.toMatch(RECOVERY_WORDING);
   });
@@ -61,16 +65,18 @@ describe("AccountDeletionSection", () => {
     await userEvent.click(screen.getByRole("button", { name: "Cancelar" }));
 
     await waitFor(() =>
-      expect(screen.queryByLabelText("Senha")).not.toBeInTheDocument(),
+      expect(
+        screen.queryByLabelText(/Digite EXCLUIR para confirmar/u),
+      ).not.toBeInTheDocument(),
     );
     expect(action).not.toHaveBeenCalled();
   });
 
-  it("shows the server message and field errors", async () => {
+  it("submits with only the EXCLUIR phrase and the acknowledgement, and shows the server errors", async () => {
     const action = vi.fn().mockResolvedValue({
-      code: "INVALID_PASSWORD",
-      fieldErrors: { password: ["Senha incorreta."] },
-      message: "Confirme sua senha para excluir a conta.",
+      code: "VALIDATION_ERROR",
+      fieldErrors: { confirmation: ["Digite EXCLUIR para confirmar."] },
+      message: "Revise os campos destacados.",
       status: "error",
     });
     render(<AccountDeletionSection action={action} />);
@@ -78,23 +84,29 @@ describe("AccountDeletionSection", () => {
     await userEvent.click(
       screen.getAllByRole("button", { name: "Excluir minha conta" })[0]!,
     );
-    await userEvent.type(screen.getByLabelText("Senha"), "errada");
     await userEvent.type(
       screen.getByLabelText(/Digite EXCLUIR para confirmar/u),
       "EXCLUIR",
     );
     await userEvent.click(
-      screen.getByRole("checkbox", { name: /Entendo que meu perfil/u }),
+      screen.getByRole("checkbox", { name: /Entendo que os dados/u }),
     );
     await userEvent.click(
       screen.getAllByRole("button", { name: "Excluir minha conta" }).at(-1)!,
     );
 
     expect(
-      await screen.findByText("Confirme sua senha para excluir a conta."),
+      await screen.findByText("Revise os campos destacados."),
     ).toBeInTheDocument();
-    expect(screen.getByText("Senha incorreta.")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/Digite EXCLUIR para confirmar/u),
+    ).toHaveAttribute("aria-invalid", "true");
     expect(action).toHaveBeenCalledTimes(1);
+
+    const formData = action.mock.calls[0]![1] as FormData;
+    expect(formData.get("confirmation")).toBe("EXCLUIR");
+    expect(formData.get("acknowledged")).toBe("on");
+    expect(formData.has("password")).toBe(false);
   });
 });
 

@@ -11,8 +11,6 @@ import {
   signInAcceptanceUser,
 } from "../support/local-acceptance";
 
-const LOCAL_PASSWORD = "LocalTest123!";
-
 /** The consent banner covers the bottom of the page; decline it (privacy-preserving). */
 async function declineCookies(page: Page) {
   const decline = page.getByRole("button", { name: "Recusar", exact: true });
@@ -46,7 +44,7 @@ test.describe("immediate account deletion", () => {
       await signInAcceptanceUser(page, { email, nextPath: "/app/profile" });
       await declineCookies(page);
       await expect(
-        page.getByText(/A exclusão é imediata e não pode ser desfeita/u),
+        page.getByText(/Exclui seu perfil, fotos e dados agora/u),
       ).toBeVisible();
       await expect(page.locator("body")).not.toContainText(/30 dias/u);
 
@@ -59,10 +57,9 @@ test.describe("immediate account deletion", () => {
           .click();
         await expect(dialog).toBeVisible({ timeout: 2_000 });
       }).toPass({ timeout: 60_000 });
-      await dialog.getByLabel("Senha").fill(LOCAL_PASSWORD);
       await dialog.getByLabel(/Digite EXCLUIR para confirmar/u).fill("EXCLUIR");
       await dialog
-        .getByRole("checkbox", { name: /não há como recuperá-los/u })
+        .getByRole("checkbox", { name: /não podem ser recuperados/u })
         .check();
       await dialog.getByRole("button", { name: "Excluir minha conta" }).click();
 

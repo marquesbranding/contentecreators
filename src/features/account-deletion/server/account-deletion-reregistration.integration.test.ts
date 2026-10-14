@@ -98,7 +98,6 @@ async function deleteThroughService(
         lastSignInAt: null,
       }),
       signOutEverywhere,
-      verifyPassword: async () => true,
     },
     repository: createDrizzleAccountDeletionRepository(asDatabase(outer)),
     runVerifiedTransaction: verifiedRunner(outer, authUserId),
@@ -108,7 +107,6 @@ async function deleteThroughService(
   });
 
   const result = await service.deleteAccount({
-    password: "LocalTest123!",
     requestId: "deletion-reregistration-test",
   });
   await resetSession(outer);

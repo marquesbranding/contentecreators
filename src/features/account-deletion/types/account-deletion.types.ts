@@ -1,16 +1,9 @@
 export type AccountDeletionActionCode =
-  | "INVALID_PASSWORD"
-  | "NOT_AVAILABLE"
-  | "RATE_LIMITED"
-  | "REAUTH_REQUIRED"
-  | "UNKNOWN"
-  | "VALIDATION_ERROR";
+  "NOT_AVAILABLE" | "RATE_LIMITED" | "UNKNOWN" | "VALIDATION_ERROR";
 
 export interface AccountDeletionActionState {
   code?: AccountDeletionActionCode;
-  fieldErrors?: Partial<
-    Record<"acknowledged" | "confirmation" | "password", string[]>
-  >;
+  fieldErrors?: Partial<Record<"acknowledged" | "confirmation", string[]>>;
   message?: string;
   status: "error" | "idle";
 }

@@ -5,27 +5,9 @@
  */
 export const ELIMINATION_DEADLINE_DAYS = 120;
 export const DEADLINE_ALERT_DAYS = 15;
-export const RECENT_LOGIN_WINDOW_MS = 5 * 60 * 1000;
 export const DELETION_CONFIRMATION_PHRASE = "EXCLUIR";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-export function isRecentLogin(
-  lastSignInAt: string | null | undefined,
-  now: Date,
-): boolean {
-  if (!lastSignInAt) {
-    return false;
-  }
-
-  const signedInAt = Date.parse(lastSignInAt);
-
-  return (
-    !Number.isNaN(signedInAt) &&
-    signedInAt <= now.getTime() &&
-    now.getTime() - signedInAt <= RECENT_LOGIN_WINDOW_MS
-  );
-}
 
 /** True when the legal deadline is within the alert window (or already past). */
 export function isDeadlineNear(dueAt: Date | string, now: Date): boolean {

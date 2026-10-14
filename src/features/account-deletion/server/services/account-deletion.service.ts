@@ -8,17 +8,13 @@ import {
   type VerifiedAccountTransactionRunner,
 } from "@/features/identity/server";
 
-import { isRecentLogin } from "../../domain/deletion-policy";
 import type { DeletedAccount } from "../../types/account-deletion.types";
 import type { AccountDeletionIdentityGateway } from "../gateways/supabase-account-deletion-identity.gateway";
 import { collectErrorMessages } from "./account-deletion-errors";
 import type { StorageCleanup } from "./storage-cleanup.service";
 
 export type DeleteAccountResult =
-  | { kind: "deleted" }
-  | { kind: "invalid_password" }
-  | { kind: "not_available" }
-  | { kind: "reauthentication_required" };
+  { kind: "deleted" } | { kind: "not_available" };
 
 interface Repository {
   deleteOwnAccount(
@@ -47,10 +43,9 @@ interface Dependencies {
   }): Promise<void>;
   identity: Pick<
     AccountDeletionIdentityGateway,
-    "getReauthenticationContext" | "signOutEverywhere" | "verifyPassword"
+    "getReauthenticationContext" | "signOutEverywhere"
   >;
   log?: (event: AccountDeletionLogEvent) => void;
-  now?: () => Date;
   repository: Repository;
   runVerifiedTransaction: VerifiedAccountTransactionRunner;
   storage: Pick<StorageCleanup, "remove">;
@@ -67,6 +62,7 @@ const NOT_AVAILABLE_MARKERS = [
 
 /**
  * Immediate, permanent deletion of the caller's own creator/company account.
+ * The signed-in session is the protection: no password is asked again.
  * The database step is one audited transaction; everything after the commit
  * (Storage, e-mail, sessions) is best effort and never undoes the deletion.
  */
@@ -75,35 +71,21 @@ export function createAccountDeletionService({
   deliverEmail,
   identity,
   log = () => undefined,
-  now = () => new Date(),
   repository,
   runVerifiedTransaction,
   storage,
 }: Dependencies) {
   return {
     async deleteAccount({
-      password,
       requestId,
     }: {
-      password?: string;
       requestId: string;
     }): Promise<DeleteAccountResult> {
-      const reauthentication = await identity.getReauthenticationContext();
+      // No signed-in user means there is nothing to delete for this request.
+      const session = await identity.getReauthenticationContext();
 
-      if (!reauthentication) {
+      if (!session) {
         return { kind: "not_available" };
-      }
-
-      if (reauthentication.hasPassword) {
-        if (
-          !password ||
-          !reauthentication.email ||
-          !(await identity.verifyPassword(reauthentication.email, password))
-        ) {
-          return { kind: "invalid_password" };
-        }
-      } else if (!isRecentLogin(reauthentication.lastSignInAt, now())) {
-        return { kind: "reauthentication_required" };
       }
 
       let deleted: DeletedAccount;
