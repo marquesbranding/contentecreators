@@ -18,6 +18,7 @@ const company: DirectoryCompanyBrowserEntryDto = {
   description: "Marca de moda sustentável que conecta creators e lojas.",
   displayName: "Marca Exemplo",
   isCdlMember: false,
+  isInfluencerJourneyParticipant: false,
   isOwnProfile: false,
   kind: "COMPANY",
   logo: {
@@ -74,6 +75,28 @@ describe("CatalogCompanyCard", () => {
 
     expect(
       screen.getByTitle("Associado da CDL (Câmara de Dirigentes Lojistas)"),
+    ).toBeVisible();
+  });
+
+  it("shows the Journey badge after the CDL badge only when declared", () => {
+    const { rerender } = render(<CatalogCompanyCard company={company} />);
+
+    expect(
+      screen.queryByRole("img", { name: "Jornada do Influenciador" }),
+    ).not.toBeInTheDocument();
+
+    rerender(
+      <CatalogCompanyCard
+        company={{
+          ...company,
+          isCdlMember: true,
+          isInfluencerJourneyParticipant: true,
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByRole("img", { name: "Jornada do Influenciador" }),
     ).toBeVisible();
   });
 

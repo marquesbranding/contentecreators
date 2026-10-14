@@ -74,6 +74,7 @@ export const catalogCreatorDetailViewSchema = z
     creatorType: catalogCreatorTypeSchema,
     displayName: z.string().trim().min(1).max(160),
     isCdlMember: z.boolean(),
+    isInfluencerJourneyParticipant: z.boolean(),
     location: z
       .object({
         city: z.string().trim().min(1).max(120),
@@ -96,6 +97,7 @@ export const catalogCreatorDetailViewSchema = z
           newFollowerCount: z.number().int().nonnegative().nullable(),
           observedOn: z.iso.date(),
           platform: catalogSocialPlatformSchema,
+          sharedContentCount: z.number().int().nonnegative().nullable(),
           sharedContentDescription: z.string().trim().max(500).nullable(),
           source: z.literal("SELF_REPORTED"),
           viewCount: z.number().int().nonnegative().nullable(),

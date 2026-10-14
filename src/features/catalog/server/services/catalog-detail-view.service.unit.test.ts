@@ -13,6 +13,7 @@ const detail: CatalogCreatorDetailDto = {
   creatorType: "UGC",
   displayName: "Creator Teste",
   isCdlMember: false,
+  isInfluencerJourneyParticipant: false,
   location: { city: "Recife", state: "PE" },
   media: {
     avatar: { assetId: avatarAssetId, kind: "AVATAR" },

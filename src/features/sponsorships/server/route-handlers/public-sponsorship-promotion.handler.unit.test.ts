@@ -28,16 +28,28 @@ const promotion: RendererPlacementDto = {
 };
 
 describe("public sponsorship promotion Route Handler", () => {
-  it("returns a short-lived cacheable generic promotion", async () => {
+  it("returns a short-lived cacheable list of generic promotions", async () => {
+    const other = { ...promotion, id: "50000000-0000-4000-8000-000000000002" };
     const handler = createPublicSponsorshipPromotionRouteHandler({
-      load: vi.fn(async () => promotion),
+      load: vi.fn(async () => [promotion, other]),
     });
 
     const response = await handler();
 
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toContain("s-maxage=60");
-    await expect(response.json()).resolves.toEqual(promotion);
+    await expect(response.json()).resolves.toEqual([promotion, other]);
+  });
+
+  it("answers an empty list, not null, when no banner is active", async () => {
+    const handler = createPublicSponsorshipPromotionRouteHandler({
+      load: vi.fn(async () => []),
+    });
+
+    const response = await handler();
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual([]);
   });
 
   it("isolates an unavailable dependency behind an empty no-store response", async () => {
@@ -49,6 +61,6 @@ describe("public sponsorship promotion Route Handler", () => {
 
     expect(response.status).toBe(503);
     expect(response.headers.get("cache-control")).toBe("no-store");
-    await expect(response.json()).resolves.toBeNull();
+    await expect(response.json()).resolves.toEqual([]);
   });
 });

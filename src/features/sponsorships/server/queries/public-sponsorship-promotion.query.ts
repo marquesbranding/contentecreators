@@ -17,13 +17,18 @@ function isGenericPublicPromotion(placement: RendererPlacementDto) {
   );
 }
 
-export async function loadPublicSponsorshipPromotion({
+/**
+ * Every generic public banner for the landing, in delivery order
+ * (`sortOrder`), up to the `landing-top` slot limit. Empty when none is
+ * active or delivery is unavailable.
+ */
+export async function loadPublicSponsorshipPromotions({
   delivery,
   now,
 }: {
   delivery: PublicSponsorshipDelivery;
   now: Date;
-}): Promise<RendererPlacementDto | null> {
+}): Promise<RendererPlacementDto[]> {
   try {
     const placements = await delivery.load({
       allowedPlacementTypes: [getPlacementSlot("landing-top")!.placementType],
@@ -34,8 +39,8 @@ export async function loadPublicSponsorshipPromotion({
       viewer: "PUBLIC",
     });
 
-    return placements.find(isGenericPublicPromotion) ?? null;
+    return placements.filter(isGenericPublicPromotion);
   } catch {
-    return null;
+    return [];
   }
 }

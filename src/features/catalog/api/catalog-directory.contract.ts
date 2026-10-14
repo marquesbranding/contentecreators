@@ -33,6 +33,7 @@ export const directoryCompanyBrowserEntrySchema = z
     description: z.string().trim().max(220).nullable(),
     displayName: z.string().trim().min(1).max(160),
     isCdlMember: z.boolean(),
+    isInfluencerJourneyParticipant: z.boolean(),
     isOwnProfile: z.boolean(),
     kind: z.literal("COMPANY"),
     logo: catalogSignedImageSchema.nullable(),
@@ -57,6 +58,7 @@ export const directoryCreatorBrowserEntrySchema = z
     creatorType: catalogCreatorTypeSchema,
     displayName: z.string().trim().min(2).max(120),
     isCdlMember: z.boolean(),
+    isInfluencerJourneyParticipant: z.boolean(),
     isOwnProfile: z.boolean(),
     kind: z.literal("CREATOR"),
     metrics: z

@@ -133,6 +133,32 @@ function FilterFields({
         </div>
       </fieldset>
 
+      <fieldset className="space-y-2">
+        <legend className="mb-1 text-sm font-medium">Selos</legend>
+        <div className="flex flex-wrap gap-4">
+          <label className="flex items-center gap-2 text-sm">
+            <Checkbox
+              checked={Boolean(filters.cdl)}
+              disabled={isPending}
+              onCheckedChange={(checked) =>
+                update({ cdl: checked ? true : undefined })
+              }
+            />
+            Associado da CDL
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <Checkbox
+              checked={Boolean(filters.jornada)}
+              disabled={isPending}
+              onCheckedChange={(checked) =>
+                update({ jornada: checked ? true : undefined })
+              }
+            />
+            Fez a Jornada do Influenciador
+          </label>
+        </div>
+      </fieldset>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
           <FieldLabel htmlFor="directory-filter-city">Cidade</FieldLabel>

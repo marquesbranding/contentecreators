@@ -19,6 +19,7 @@ const detail = {
   creatorType: "INFLUENCER",
   displayName: "Creator",
   isCdlMember: false,
+  isInfluencerJourneyParticipant: false,
   location: { city: "Recife", state: "PE" },
   media: { avatar: signedMedia, cover: null },
   metrics: [],

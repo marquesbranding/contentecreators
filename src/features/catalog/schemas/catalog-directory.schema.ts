@@ -20,6 +20,13 @@ const optionalNonNegativeInt = z.preprocess(
   z.coerce.number().int().nonnegative().optional(),
 );
 
+/** Selo filters: `cdl=1` / `jornada=1` (also `true`). Anything else is ignored. */
+const badgeFlagFilter = z.preprocess(
+  (value) =>
+    value === "1" || value === "true" || value === true ? true : undefined,
+  z.boolean().optional(),
+);
+
 const pageSizeFromUrl = z
   .preprocess(
     (value) =>
@@ -36,7 +43,24 @@ export const directoryTypeFilterSchema = z.enum([
   "UGC",
 ]);
 
+/** Shuffle day token carried by the cursor: `YYYY-MM-DD` in America/Sao_Paulo. */
+export const directoryShuffleDaySchema = z
+  .string()
+  .regex(/^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/u);
+
+/** Cursor v2: keyset on the daily shuffle key. */
 export const directoryCursorPayloadSchema = z
+  .object({
+    id: z.uuid(),
+    kind: z.enum(["COMPANY", "CREATOR"]),
+    seed: directoryShuffleDaySchema,
+    sortKey: z.string().regex(/^[0-9a-f]{32}$/u),
+    v: z.literal(2),
+  })
+  .strict();
+
+/** Pre-shuffle cursor (creation-date keyset). Recognised only to be discarded. */
+export const legacyDirectoryCursorPayloadSchema = z
   .object({
     createdAt: z.iso.datetime({ offset: true }),
     id: z.uuid(),
@@ -46,6 +70,7 @@ export const directoryCursorPayloadSchema = z
 
 export const directoryFiltersSchema = z
   .object({
+    cdl: badgeFlagFilter,
     city: trimmedOptionalText(120),
     cursor: z.preprocess(
       emptyToUndefined,
@@ -60,6 +85,7 @@ export const directoryFiltersSchema = z
     followersMin: optionalNonNegativeInt,
     interactionsMax: optionalNonNegativeInt,
     interactionsMin: optionalNonNegativeInt,
+    jornada: badgeFlagFilter,
     newFollowersMax: optionalNonNegativeInt,
     newFollowersMin: optionalNonNegativeInt,
     niche: z.preprocess(
@@ -110,6 +136,8 @@ export function parseDirectorySearchParams(searchParams: URLSearchParams) {
   return directoryFiltersSchema.parse(entries);
 }
 
+const badgeFilterKeys = ["cdl", "jornada"] as const;
+
 const singleValueFilterKeys = [
   "search",
   "niche",
@@ -139,6 +167,12 @@ export function serializeDirectoryFilters(
 
     if (value !== undefined && value !== "") {
       searchParams.set(key, String(value));
+    }
+  }
+
+  for (const key of badgeFilterKeys) {
+    if (filters[key]) {
+      searchParams.set(key, "1");
     }
   }
 

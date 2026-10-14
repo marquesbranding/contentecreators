@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { fetchPublicSponsorshipPromotion } from "./public-sponsorship-promotion.api";
+import { fetchPublicSponsorshipPromotions } from "./public-sponsorship-promotion.api";
 
 const promotion = {
   linkOnCreative: false,
@@ -27,6 +27,13 @@ const promotion = {
   type: "TOP_BANNER",
 };
 
+const second = {
+  ...promotion,
+  id: "50000000-0000-4000-8000-000000000002",
+  sortOrder: 20,
+  title: "Segundo banner",
+};
+
 describe("public sponsorship promotion API", () => {
   it("accepts a generic public promotion without credentials", async () => {
     const request = vi.fn(async () => ({
@@ -36,8 +43,8 @@ describe("public sponsorship promotion API", () => {
     const controller = new AbortController();
 
     await expect(
-      fetchPublicSponsorshipPromotion(controller.signal, request),
-    ).resolves.toEqual(promotion);
+      fetchPublicSponsorshipPromotions(controller.signal, request),
+    ).resolves.toEqual([promotion]);
     expect(request).toHaveBeenCalledWith(
       "/api/public/sponsorships/landing",
       expect.objectContaining({
@@ -65,12 +72,56 @@ describe("public sponsorship promotion API", () => {
     ],
     [
       "non-success response",
-      vi.fn(async () => ({ json: async () => null, ok: false })),
+      vi.fn(async () => ({ json: async () => [], ok: false })),
     ],
   ])("fails closed for %s", async (_case, request) => {
     await expect(
-      fetchPublicSponsorshipPromotion(new AbortController().signal, request),
-    ).resolves.toBeNull();
+      fetchPublicSponsorshipPromotions(new AbortController().signal, request),
+    ).resolves.toEqual([]);
+  });
+
+  it.each([
+    ["a list", [promotion, second], [promotion, second]],
+    ["a single legacy object", promotion, [promotion]],
+    ["a legacy null", null, []],
+    ["an empty list", [], []],
+  ])("normalizes %s into a list", async (_case, payload, expected) => {
+    const request = vi.fn(async () => ({
+      json: async () => payload,
+      ok: true,
+    }));
+
+    await expect(
+      fetchPublicSponsorshipPromotions(new AbortController().signal, request),
+    ).resolves.toEqual(expected);
+  });
+
+  it("drops only the invalid items of a list and keeps the order", async () => {
+    const unsafe = { ...promotion, media: { alt: "x", url: "javascript:1" } };
+    const request = vi.fn(async () => ({
+      json: async () => [promotion, unsafe, second],
+      ok: true,
+    }));
+
+    await expect(
+      fetchPublicSponsorshipPromotions(new AbortController().signal, request),
+    ).resolves.toEqual([promotion, second]);
+  });
+
+  it("never returns more banners than the landing slot accepts", async () => {
+    const many = Array.from({ length: 8 }, (_, index) => ({
+      ...promotion,
+      id: `50000000-0000-4000-8000-00000000010${index}`,
+      sortOrder: index,
+    }));
+    const request = vi.fn(async () => ({
+      json: async () => many,
+      ok: true,
+    }));
+
+    await expect(
+      fetchPublicSponsorshipPromotions(new AbortController().signal, request),
+    ).resolves.toHaveLength(5);
   });
 });
 
@@ -83,15 +134,15 @@ describe("public sponsorship advertiser and responsive variants", () => {
       mediaTablet: null,
     };
     await expect(
-      fetchPublicSponsorshipPromotion(
+      fetchPublicSponsorshipPromotions(
         new AbortController().signal,
         async () => ({ ok: true, json: async () => value }),
       ),
-    ).resolves.toEqual(value);
+    ).resolves.toEqual([value]);
   });
   it("rejects an unsafe responsive media URL", async () => {
     await expect(
-      fetchPublicSponsorshipPromotion(
+      fetchPublicSponsorshipPromotions(
         new AbortController().signal,
         async () => ({
           ok: true,
@@ -101,7 +152,7 @@ describe("public sponsorship advertiser and responsive variants", () => {
           }),
         }),
       ),
-    ).resolves.toBeNull();
+    ).resolves.toEqual([]);
   });
 });
 
@@ -118,16 +169,19 @@ it("accepts image-only options and fails closed for injected appearance", async 
     imageAlt: "Oferta na imagem",
   };
   const fetchValue = (data: unknown) =>
-    fetchPublicSponsorshipPromotion(new AbortController().signal, async () => ({
-      ok: true,
-      json: async () => data,
-    }));
-  await expect(fetchValue(value)).resolves.toMatchObject(value);
-  await expect(fetchValue({ ...value, textColor: "red" })).resolves.toBeNull();
+    fetchPublicSponsorshipPromotions(
+      new AbortController().signal,
+      async () => ({
+        ok: true,
+        json: async () => data,
+      }),
+    );
+  await expect(fetchValue(value)).resolves.toMatchObject([value]);
+  await expect(fetchValue({ ...value, textColor: "red" })).resolves.toEqual([]);
   await expect(
     fetchValue({ ...value, showSponsoredBadge: "false" }),
-  ).resolves.toBeNull();
+  ).resolves.toEqual([]);
   await expect(
     fetchValue({ ...value, fontFamily: "url(evil)" }),
-  ).resolves.toBeNull();
+  ).resolves.toEqual([]);
 });

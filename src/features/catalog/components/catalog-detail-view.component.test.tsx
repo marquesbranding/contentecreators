@@ -24,6 +24,7 @@ const detail: CatalogCreatorDetailViewDto = {
   creatorType: "INFLUENCER",
   displayName: "Creator Exemplo",
   isCdlMember: false,
+  isInfluencerJourneyParticipant: false,
   location: { city: "São Paulo", state: "SP" },
   media: {
     avatar: {
@@ -45,6 +46,7 @@ const detail: CatalogCreatorDetailViewDto = {
       newFollowerCount: 300,
       observedOn: "2026-07-20",
       platform: "INSTAGRAM",
+      sharedContentCount: 22,
       sharedContentDescription: "Reels e stories de skincare.",
       source: "SELF_REPORTED",
       viewCount: 84000,
@@ -57,6 +59,7 @@ const detail: CatalogCreatorDetailViewDto = {
       newFollowerCount: null,
       observedOn: "2026-07-18",
       platform: "TIKTOK",
+      sharedContentCount: null,
       sharedContentDescription: null,
       source: "SELF_REPORTED",
       viewCount: null,
@@ -115,13 +118,32 @@ describe("CatalogDetailView", () => {
     expect(screen.getByText("Visualizações")).toBeVisible();
     expect(screen.getByText("84.000")).toBeVisible();
     expect(screen.getByText("300")).toBeVisible();
-    expect(screen.getByText(/Reels e stories de skincare\./iu)).toBeVisible();
+    expect(screen.getByText("Conteúdo compartilhado")).toBeVisible();
+    expect(screen.getByText("22")).toBeVisible();
+    expect(screen.queryByText(/Reels e stories de skincare\./iu)).toBeNull();
 
     await user.tab();
     expect(screen.getByRole("link", { name: /^voltar$/iu })).toHaveFocus();
     expect(
       await getBlockingComponentAccessibilityViolations(container),
     ).toEqual([]);
+  });
+
+  it("keeps the legacy shared-content text only when there is no count", () => {
+    const [instagram, ...others] = detail.metrics;
+
+    render(
+      <CatalogDetailView
+        detail={{
+          ...detail,
+          metrics: [{ ...instagram!, sharedContentCount: null }, ...others],
+        }}
+        status="success"
+      />,
+    );
+
+    expect(screen.getByText(/Reels e stories de skincare\./iu)).toBeVisible();
+    expect(screen.queryByText("Conteúdo compartilhado")).toBeNull();
   });
 
   it("does not invent private contacts for an influencer viewer", () => {
@@ -165,6 +187,35 @@ describe("CatalogDetailView", () => {
     expect(
       screen.getByTitle("Associado da CDL (Câmara de Dirigentes Lojistas)"),
     ).toBeVisible();
+  });
+
+  it("shows the Journey badge and explanatory note only when declared", () => {
+    const { rerender } = render(
+      <CatalogDetailView detail={detail} status="success" />,
+    );
+
+    expect(
+      screen.queryByRole("img", { name: "Jornada do Influenciador" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", {
+        name: "www.jornadadoinfluenciador.com.br",
+      }),
+    ).not.toBeInTheDocument();
+
+    rerender(
+      <CatalogDetailView
+        detail={{ ...detail, isInfluencerJourneyParticipant: true }}
+        status="success"
+      />,
+    );
+
+    expect(
+      screen.getByRole("img", { name: "Jornada do Influenciador" }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "www.jornadadoinfluenciador.com.br" }),
+    ).toHaveAttribute("target", "_blank");
   });
 
   it("replaces stale details with a safe unavailable state", () => {

@@ -88,7 +88,11 @@ export async function loadCatalogSponsorshipSlots(
       placement,
       routeMatches: true,
     })),
-    featured: toSlot(featured[0]),
+    featured: featured.map((placement) => ({
+      audienceMatches: true,
+      placement,
+      routeMatches: true,
+    })),
     midlist: midlist.map((placement) => ({
       audienceMatches: true,
       placement,

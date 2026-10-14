@@ -10,7 +10,7 @@ Implemented from `revisao_final_patrocinios.md` on 2026-09-18.
 - Public and catalog hero banners share the same responsive image layout with no gradient overlay.
 - Appearance accepts only six-digit hex colors and five font keys. Extra Google fonts are self-hosted by Next, scoped to sponsorship wrappers and not preloaded.
 - Sponsored disclosure defaults on; advertiser disclosure defaults off and requires a name when enabled.
-- Sponsored cards occupy the catalog’s existing list at positions 9, 18, 27… and cycle through up to three creatives. App composition preserves feature boundaries. Carousel cards use the same shell and column widths.
+- Sponsored cards occupy the catalog’s existing list at positions 9, 18, 27… (after every 8 profiles) and cycle through up to eight creatives in a random order per visit; see `docs/design/sponsorship-carousels-and-journey-badge.md`. App composition preserves feature boundaries. Carousel cards use the same shell and column widths.
 - Mobile grid rows share a height so the single-column sponsored card matches adjacent profiles. Desktop/tablet retain the existing staggered layout.
 
 ## Database

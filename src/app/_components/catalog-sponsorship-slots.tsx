@@ -1,10 +1,16 @@
+import "server-only";
+
+import { randomInt as defaultRandomInt } from "node:crypto";
 import type { ReactNode } from "react";
 
 import {
+  getPlacementSlot,
   type RendererPlacementDto,
   SponsorshipCarousel,
   type SponsorshipCreativeViewModel,
   SponsorshipFeaturedCreator,
+  type SponsorshipFeaturedCreatorItem,
+  SponsorshipFeaturedCreatorsRow,
   SponsorshipCatalogCard,
   getSafeSponsorshipExternalHref,
   SponsorshipHeroBanner,
@@ -19,7 +25,7 @@ export interface CatalogSponsorshipSlotDto {
 
 export interface CatalogSponsorshipSlotsDto {
   carousel?: readonly CatalogSponsorshipSlotDto[];
-  featured?: CatalogSponsorshipSlotDto | null;
+  featured?: readonly CatalogSponsorshipSlotDto[];
   midlist?: readonly CatalogSponsorshipSlotDto[];
   side?: CatalogSponsorshipSlotDto | null;
   top?: CatalogSponsorshipSlotDto | null;
@@ -71,9 +77,33 @@ function toCreativeViewModel(
   };
 }
 
-/** The app composes opaque sponsored cards; catalog owns their insertion positions. */
+/**
+ * Fisher–Yates over a copy of `items`. The RNG is injectable so tests can pin
+ * the order; `randomInt(max)` must return an integer in `[0, max)`.
+ */
+export function shuffle<T>(
+  items: readonly T[],
+  randomInt: (max: number) => number = defaultRandomInt,
+): T[] {
+  const result = [...items];
+
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const swapIndex = randomInt(index + 1);
+
+    [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+  }
+
+  return result;
+}
+
+/**
+ * The app composes opaque sponsored cards; catalog owns their insertion positions.
+ * Order is reshuffled on every catalog request (Server Component, never cached),
+ * then capped at the `catalog-midlist` slot limit.
+ */
 export function buildCatalogSponsoredCards(
   slots?: CatalogSponsorshipSlotsDto,
+  randomInt: (max: number) => number = defaultRandomInt,
 ): { key: string; node: ReactNode }[] {
   const midlist =
     slots?.midlist?.flatMap((slot) => {
@@ -81,11 +111,16 @@ export function buildCatalogSponsoredCards(
 
       return placement ? [placement] : [];
     }) ?? [];
+  const limit = getPlacementSlot("catalog-midlist")!.limit;
 
-  return midlist.slice(0, 3).map((placement) => ({
-    key: placement.id,
-    node: <SponsorshipCatalogCard creative={toCreativeViewModel(placement)} />,
-  }));
+  return shuffle(midlist, randomInt)
+    .slice(0, limit)
+    .map((placement) => ({
+      key: placement.id,
+      node: (
+        <SponsorshipCatalogCard creative={toCreativeViewModel(placement)} />
+      ),
+    }));
 }
 
 export function CatalogSponsorshipSlots({
@@ -103,10 +138,28 @@ export function CatalogSponsorshipSlots({
 
       return placement ? [placement] : [];
     }) ?? [];
-  const featured = placementForSlot(slots?.featured, "FEATURED_CREATOR");
-  const featuredCreator = featured?.featuredCreator ?? null;
+  const featured: SponsorshipFeaturedCreatorItem[] =
+    slots?.featured?.flatMap((slot) => {
+      const placement = placementForSlot(slot, "FEATURED_CREATOR");
+      const creator = placement?.featuredCreator;
 
-  if (!top && !side && carousel.length === 0 && !featuredCreator) {
+      return placement && creator
+        ? [
+            {
+              creative: toCreativeViewModel(placement),
+              creator: {
+                creatorTypeLabel: "Creator",
+                detailHref: `/app/creators/${creator.creatorId}`,
+                displayName: creator.displayName,
+                eligible: placement.eligible,
+                media: creator.avatar,
+              },
+            },
+          ]
+        : [];
+    }) ?? [];
+
+  if (!top && !side && carousel.length === 0 && featured.length === 0) {
     return children;
   }
 
@@ -119,17 +172,10 @@ export function CatalogSponsorshipSlots({
         />
       ) : null}
 
-      {featured && featuredCreator ? (
-        <SponsorshipFeaturedCreator
-          creative={toCreativeViewModel(featured)}
-          creator={{
-            creatorTypeLabel: "Creator",
-            detailHref: `/app/creators/${featuredCreator.creatorId}`,
-            displayName: featuredCreator.displayName,
-            eligible: featured.eligible,
-            media: featuredCreator.avatar,
-          }}
-        />
+      {featured.length === 1 ? (
+        <SponsorshipFeaturedCreator {...featured[0]} />
+      ) : featured.length > 1 ? (
+        <SponsorshipFeaturedCreatorsRow items={featured} />
       ) : null}
 
       {children}

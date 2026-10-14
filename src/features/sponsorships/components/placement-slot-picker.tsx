@@ -1,6 +1,9 @@
 import { Check, ImageIcon, UsersRound } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
-import { placementSlotCatalog } from "../domain/placement-slot-catalog";
+import {
+  placementSlotCapacityLabel,
+  placementSlotCatalog,
+} from "../domain/placement-slot-catalog";
 
 export function PlacementWireframe({ slotKey }: { slotKey: string }) {
   const highlight = "fill-brand-blue stroke-brand-blue";
@@ -164,7 +167,7 @@ export function PlacementSlotPicker({
                 {slot.usesImage ? "Precisa de imagem" : "Sem imagem"}
               </span>
               <span className="bg-background rounded-md border px-2 py-1">
-                {slot.limit === 1 ? "1 por vez" : `Até ${slot.limit}`}
+                {placementSlotCapacityLabel(slot)}
               </span>
             </span>
           </label>

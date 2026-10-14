@@ -27,6 +27,7 @@ export interface CatalogCreatorDetailRecord {
   creatorType: CatalogCreatorType;
   displayName: string;
   isCdlMember: boolean;
+  isInfluencerJourneyParticipant: boolean;
   media: {
     id: string;
     kind: "AVATAR" | "COVER";
@@ -39,6 +40,7 @@ export interface CatalogCreatorDetailRecord {
     newFollowerCount: number | null;
     observedOn: Date;
     platform: CatalogSocialPlatform;
+    sharedContentCount: number | null;
     sharedContentDescription: string | null;
     source: "SELF_REPORTED";
     viewCount: number | null;

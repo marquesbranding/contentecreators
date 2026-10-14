@@ -48,7 +48,7 @@ describe("public sponsorship promotion server slot", () => {
     ).toBeVisible();
     expect(load).toHaveBeenCalledExactlyOnceWith({
       allowedPlacementTypes: ["TOP_BANNER"],
-      limit: 1,
+      limit: 5,
       now,
       route: "PUBLIC_LANDING",
       slotKey: "landing-top",

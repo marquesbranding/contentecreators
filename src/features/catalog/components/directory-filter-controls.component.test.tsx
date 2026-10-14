@@ -108,4 +108,64 @@ describe("DirectoryFilterControls", () => {
 
     expect(onRemoveFilter).toHaveBeenCalledWith("type", "COMPANY");
   });
+
+  it("offers the Selos checkboxes and reports them as seal filters", async () => {
+    const user = userEvent.setup();
+    const onFiltersChange = vi.fn();
+
+    render(
+      <DirectoryFilterControls
+        activeFilters={[]}
+        filters={{ pageSize: 20 }}
+        onClearFilters={vi.fn()}
+        onFiltersChange={onFiltersChange}
+        onRemoveFilter={vi.fn()}
+        options={emptyOptions}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Abrir filtros do catálogo" }),
+    );
+
+    expect(screen.getByRole("group", { name: "Selos" })).toBeVisible();
+
+    await user.click(
+      screen.getByRole("checkbox", { name: "Associado da CDL" }),
+    );
+    expect(onFiltersChange).toHaveBeenLastCalledWith({ cdl: true });
+
+    await user.click(
+      screen.getByRole("checkbox", { name: "Fez a Jornada do Influenciador" }),
+    );
+    expect(onFiltersChange).toHaveBeenLastCalledWith({ jornada: true });
+  });
+
+  it("reflects active seal filters and clears them when unchecked", async () => {
+    const user = userEvent.setup();
+    const onFiltersChange = vi.fn();
+
+    render(
+      <DirectoryFilterControls
+        activeFilters={[{ key: "cdl", label: "Associado da CDL" }]}
+        filters={{ cdl: true, pageSize: 20 }}
+        onClearFilters={vi.fn()}
+        onFiltersChange={onFiltersChange}
+        onRemoveFilter={vi.fn()}
+        options={emptyOptions}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Abrir filtros do catálogo" }),
+    );
+
+    const cdlCheckbox = screen.getByRole("checkbox", {
+      name: "Associado da CDL",
+    });
+    expect(cdlCheckbox).toBeChecked();
+
+    await user.click(cdlCheckbox);
+    expect(onFiltersChange).toHaveBeenLastCalledWith({ cdl: undefined });
+  });
 });

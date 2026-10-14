@@ -3,7 +3,7 @@ import "server-only";
 import type { RendererPlacementDto } from "../../types/sponsorship-placement.types";
 
 interface PublicSponsorshipPromotionRouteDependencies {
-  load(): Promise<RendererPlacementDto | null>;
+  load(): Promise<RendererPlacementDto[]>;
 }
 
 const publicCacheHeaders = {
@@ -24,7 +24,7 @@ export function createPublicSponsorshipPromotionRouteHandler({
         status: 200,
       });
     } catch {
-      return Response.json(null, {
+      return Response.json([], {
         headers: unavailableHeaders,
         status: 503,
       });

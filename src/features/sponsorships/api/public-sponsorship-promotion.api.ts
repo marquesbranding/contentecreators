@@ -1,3 +1,4 @@
+import { getPlacementSlot } from "../domain/placement-slot-catalog";
 import { sponsorshipCreativeOptionsSchema } from "../schemas/sponsorship-creative-options.schema";
 import type { RendererPlacementDto } from "../types/sponsorship-placement.types";
 
@@ -146,15 +147,34 @@ function parsePublicSponsorshipPromotion(
   };
 }
 
+/**
+ * The endpoint returns a list, but the CDN may keep serving the previous
+ * `null | object` shape for a few minutes after a deploy, so all three are
+ * accepted. Items that fail validation are dropped individually.
+ */
+function parsePublicSponsorshipPromotions(
+  value: unknown,
+): RendererPlacementDto[] {
+  const items = Array.isArray(value) ? value : value ? [value] : [];
+
+  return items
+    .flatMap((item) => {
+      const promotion = parsePublicSponsorshipPromotion(item);
+
+      return promotion ? [promotion] : [];
+    })
+    .slice(0, getPlacementSlot("landing-top")!.limit);
+}
+
 type PublicRequest = (
   input: string,
   init: RequestInit,
 ) => Promise<Pick<Response, "json" | "ok">>;
 
-export async function fetchPublicSponsorshipPromotion(
+export async function fetchPublicSponsorshipPromotions(
   signal: AbortSignal,
   request: PublicRequest = fetch,
-): Promise<RendererPlacementDto | null> {
+): Promise<RendererPlacementDto[]> {
   try {
     const response = await request("/api/public/sponsorships/landing", {
       credentials: "omit",
@@ -162,11 +182,11 @@ export async function fetchPublicSponsorshipPromotion(
     });
 
     if (!response.ok) {
-      return null;
+      return [];
     }
 
-    return parsePublicSponsorshipPromotion(await response.json());
+    return parsePublicSponsorshipPromotions(await response.json());
   } catch {
-    return null;
+    return [];
   }
 }

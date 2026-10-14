@@ -23,8 +23,11 @@ const heroAspectClassName =
 /** Full-width creative shared by the public landing and catalog. */
 export function SponsorshipHeroBanner({
   creative,
+  deferImage = false,
 }: {
   creative: SponsorshipCreativeViewModel;
+  /** Lazy-load the image; for banners that are not the first thing on screen. */
+  deferImage?: boolean;
 }) {
   if (!isSponsorshipCreativeVisible(creative)) {
     return null;
@@ -43,9 +46,9 @@ export function SponsorshipHeroBanner({
         <SignedImage
           alt={creative.media.alt}
           className="object-cover"
-          fetchPriority="high"
+          fetchPriority={deferImage ? "auto" : "high"}
           height={creative.media.height}
-          loading="eager"
+          loading={deferImage ? "lazy" : "eager"}
           sources={[
             creative.mediaMobile && {
               media: "(max-width: 639px)",

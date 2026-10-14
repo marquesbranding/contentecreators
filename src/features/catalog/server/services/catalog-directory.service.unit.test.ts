@@ -37,9 +37,11 @@ describe("catalog directory service", () => {
       runVerifiedAccountTransaction: createRunner(approvedInfluencer),
     });
     const cursor = encodeDirectoryCursor({
-      createdAt: "2026-08-01T12:00:00.000Z",
       id: "00000000-0000-4000-8000-000000000003",
       kind: "COMPANY",
+      seed: "2026-10-13",
+      sortKey: "0123456789abcdef0123456789abcdef",
+      v: 2,
     });
 
     await service.list(
@@ -56,18 +58,66 @@ describe("catalog directory service", () => {
       expect.anything(),
       expect.objectContaining({
         cursor: {
-          createdAt: "2026-08-01T12:00:00.000Z",
           id: "00000000-0000-4000-8000-000000000003",
           kind: "COMPANY",
+          seed: "2026-10-13",
+          sortKey: "0123456789abcdef0123456789abcdef",
+          v: 2,
         },
         followersMin: 1_000,
         pageSize: 10,
+        // The cursor pins its own day, whatever the clock says now.
+        seed: "2026-10-13",
         type: ["COMPANY", "UGC"],
       }),
       {
         accountId: approvedInfluencer.accountId,
         role: "INFLUENCER",
       },
+    );
+  });
+
+  it("uses today's Sao Paulo day when there is no cursor", async () => {
+    const list = vi.fn().mockResolvedValue({});
+    const service = createCatalogDirectoryService({
+      list,
+      now: () => new Date("2026-10-14T02:30:00.000Z"),
+      runVerifiedAccountTransaction: createRunner(approvedInfluencer),
+    });
+
+    await service.list({}, "request-id");
+
+    expect(list).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ cursor: null, seed: "2026-10-13" }),
+      expect.anything(),
+    );
+  });
+
+  it("serves the first page of the current order for a legacy v1 cursor", async () => {
+    const list = vi.fn().mockResolvedValue({});
+    const service = createCatalogDirectoryService({
+      list,
+      now: () => new Date("2026-10-14T12:00:00.000Z"),
+      runVerifiedAccountTransaction: createRunner(approvedInfluencer),
+    });
+    const legacyCursor = btoa(
+      JSON.stringify({
+        createdAt: "2026-08-01T12:00:00.000Z",
+        id: "00000000-0000-4000-8000-000000000003",
+        kind: "COMPANY",
+      }),
+    )
+      .replaceAll("+", "-")
+      .replaceAll("/", "_")
+      .replace(/=+$/u, "");
+
+    await service.list({ cursor: legacyCursor }, "request-id");
+
+    expect(list).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ cursor: null, seed: "2026-10-14" }),
+      expect.anything(),
     );
   });
 

@@ -28,6 +28,10 @@ import type {
   CatalogViewer,
 } from "../../types/creator-catalog.types";
 import { encodeDirectoryCursor } from "./catalog-directory-cursor";
+import {
+  directoryShuffleDay,
+  directoryShuffleSeedForDay,
+} from "./catalog-directory-shuffle";
 import { listCompanySegmentFacets } from "./company-carousel.repository";
 
 const BIO_EXCERPT_LENGTH = 180;
@@ -57,13 +61,13 @@ function hasMetricRangeFilter(filters: DirectoryQuery) {
   );
 }
 
-function cursorPredicate(
-  createdAtColumn: SQL,
-  idColumn: SQL,
-  cursor: DirectoryCursor,
-) {
-  return sql`(${createdAtColumn} > ${cursor.createdAt}::timestamptz
-    or (${createdAtColumn} = ${cursor.createdAt}::timestamptz and ${idColumn} > ${cursor.id}))`;
+/**
+ * Keyset boundary on the daily shuffle key. Applied OUTSIDE the `union all`
+ * (over the combined `"sortKey"`), so the comparison is global across creators
+ * and companies instead of per branch.
+ */
+function cursorPredicate(cursor: DirectoryCursor) {
+  return sql`("sortKey", id) > (${cursor.sortKey}::text, ${cursor.id}::uuid)`;
 }
 
 function metricRangeExists(filters: DirectoryQuery) {
@@ -202,7 +206,11 @@ function creatorSocialPlatformsProjection() {
   `;
 }
 
-function buildCreatorBranch(filters: DirectoryQuery, viewer: CatalogViewer) {
+function buildCreatorBranch(
+  filters: DirectoryQuery,
+  viewer: CatalogViewer,
+  seed: string,
+) {
   const predicates: SQL[] = [
     sql`${accounts.role} = 'INFLUENCER'`,
     sql`${accounts.status} = 'APPROVED'`,
@@ -258,25 +266,26 @@ function buildCreatorBranch(filters: DirectoryQuery, viewer: CatalogViewer) {
     predicates.push(sql`${creatorProfiles.state} = ${filters.state}`);
   }
 
+  if (filters.cdl) {
+    predicates.push(sql`${creatorProfiles.isCdlMember} = true`);
+  }
+
+  if (filters.jornada) {
+    predicates.push(
+      sql`${creatorProfiles.isInfluencerJourneyParticipant} = true`,
+    );
+  }
+
   const metricRange = metricRangeExists(filters);
   if (metricRange) {
     predicates.push(metricRange);
-  }
-
-  if (filters.cursor) {
-    predicates.push(
-      cursorPredicate(
-        sql`${creatorProfiles.createdAt}`,
-        sql`${creatorProfiles.id}`,
-        filters.cursor,
-      ),
-    );
   }
 
   return sql`
     select
       'CREATOR'::text as kind,
       ${creatorProfiles.id} as id,
+      md5(${creatorProfiles.id}::text || ${seed}::text) as "sortKey",
       to_jsonb(${creatorProfiles.createdAt}) #>> '{}' as "createdAt",
       ${creatorProfiles.displayName} as "displayName",
       ${creatorProfiles.city} as city,
@@ -289,6 +298,7 @@ function buildCreatorBranch(filters: DirectoryQuery, viewer: CatalogViewer) {
       ${creatorProfiles.coverAssetId} as "coverAssetId",
       ${creatorProfiles.accountId} = ${viewer.accountId} as "isOwnProfile",
       ${creatorProfiles.isCdlMember} as "isCdlMember",
+      ${creatorProfiles.isInfluencerJourneyParticipant} as "isInfluencerJourneyParticipant",
       ${creatorProfiles.creatorType}::text as "creatorType",
       null::varchar(120) as segment,
       null::text as "websiteUrl",
@@ -302,7 +312,11 @@ function buildCreatorBranch(filters: DirectoryQuery, viewer: CatalogViewer) {
   `;
 }
 
-function buildCompanyBranch(filters: DirectoryQuery, viewer: CatalogViewer) {
+function buildCompanyBranch(
+  filters: DirectoryQuery,
+  viewer: CatalogViewer,
+  seed: string,
+) {
   const predicates: SQL[] = [
     sql`${accounts.role} = 'COMPANY'`,
     sql`${accounts.status} = 'APPROVED'`,
@@ -344,13 +358,13 @@ function buildCompanyBranch(filters: DirectoryQuery, viewer: CatalogViewer) {
     `);
   }
 
-  if (filters.cursor) {
+  if (filters.cdl) {
+    predicates.push(sql`${companyProfiles.isCdlMember} = true`);
+  }
+
+  if (filters.jornada) {
     predicates.push(
-      cursorPredicate(
-        sql`${companyProfiles.createdAt}`,
-        sql`${companyProfiles.id}`,
-        filters.cursor,
-      ),
+      sql`${companyProfiles.isInfluencerJourneyParticipant} = true`,
     );
   }
 
@@ -358,6 +372,7 @@ function buildCompanyBranch(filters: DirectoryQuery, viewer: CatalogViewer) {
     select
       'COMPANY'::text as kind,
       ${companyProfiles.id} as id,
+      md5(${companyProfiles.id}::text || ${seed}::text) as "sortKey",
       to_jsonb(${companyProfiles.createdAt}) #>> '{}' as "createdAt",
       ${companyProfiles.tradeName} as "displayName",
       (
@@ -384,6 +399,7 @@ function buildCompanyBranch(filters: DirectoryQuery, viewer: CatalogViewer) {
       ${companyProfiles.coverAssetId} as "coverAssetId",
       ${companyProfiles.accountId} = ${viewer.accountId} as "isOwnProfile",
       ${companyProfiles.isCdlMember} as "isCdlMember",
+      ${companyProfiles.isInfluencerJourneyParticipant} as "isInfluencerJourneyParticipant",
       null::text as "creatorType",
       ${companyProfiles.segment} as segment,
       ${companyProfiles.websiteUrl} as "websiteUrl",
@@ -406,6 +422,7 @@ interface DirectoryRow {
   displayName: string;
   id: string;
   isCdlMember: boolean;
+  isInfluencerJourneyParticipant: boolean;
   isOwnProfile: boolean;
   kind: "COMPANY" | "CREATOR";
   metrics: CatalogCardMetricDto[];
@@ -413,6 +430,7 @@ interface DirectoryRow {
   primaryAssetId: string | null;
   segment: string | null;
   socialPlatforms: CatalogSocialPlatform[];
+  sortKey: string;
   state: string | null;
   websiteUrl: string | null;
   whatsappContactCount: number;
@@ -434,6 +452,7 @@ function toDirectoryEntry(row: DirectoryRow): DirectoryEntryDto {
       description: row.description,
       displayName: row.displayName,
       isCdlMember: row.isCdlMember,
+      isInfluencerJourneyParticipant: row.isInfluencerJourneyParticipant,
       isOwnProfile: row.isOwnProfile,
       kind: "COMPANY",
       logoAssetId: row.primaryAssetId,
@@ -453,6 +472,7 @@ function toDirectoryEntry(row: DirectoryRow): DirectoryEntryDto {
     creatorType: row.creatorType ?? "INFLUENCER",
     displayName: row.displayName,
     isCdlMember: row.isCdlMember,
+    isInfluencerJourneyParticipant: row.isInfluencerJourneyParticipant,
     isOwnProfile: row.isOwnProfile,
     kind: "CREATOR",
     metrics: row.metrics,
@@ -478,12 +498,17 @@ export async function listDirectoryPage(
     filters.type.includes("INFLUENCER") ||
     filters.type.includes("UGC");
 
+  // The cursor pins the shuffle day it was issued for; without one, today's.
+  const day =
+    filters.cursor?.seed ?? filters.seed ?? directoryShuffleDay(new Date());
+  const seed = directoryShuffleSeedForDay(day);
+
   const branches: SQL[] = [];
   if (includeCreators) {
-    branches.push(buildCreatorBranch(filters, viewer));
+    branches.push(buildCreatorBranch(filters, viewer, seed));
   }
   if (includeCompany) {
-    branches.push(buildCompanyBranch(filters, viewer));
+    branches.push(buildCompanyBranch(filters, viewer, seed));
   }
 
   const [rows, facets] = await Promise.all([
@@ -493,7 +518,8 @@ export async function listDirectoryPage(
           select * from (
             ${sql.join(branches, sql` union all `)}
           ) combined
-          order by "createdAt" asc, id asc
+          ${filters.cursor ? sql`where ${cursorPredicate(filters.cursor)}` : sql``}
+          order by "sortKey" asc, id asc
           limit ${filters.pageSize + 1}
         `) as unknown as Promise<DirectoryRow[]>),
     listDirectoryFacets(transaction),
@@ -509,9 +535,11 @@ export async function listDirectoryPage(
     nextCursor:
       hasNextPage && lastItem
         ? encodeDirectoryCursor({
-            createdAt: toIsoString(lastItem.createdAt),
             id: lastItem.id,
             kind: lastItem.kind,
+            seed: day,
+            sortKey: lastItem.sortKey,
+            v: 2,
           })
         : null,
     pageSize: filters.pageSize,

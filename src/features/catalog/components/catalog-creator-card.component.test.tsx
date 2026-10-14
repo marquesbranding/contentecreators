@@ -121,6 +121,24 @@ describe("CatalogCreatorCard", () => {
     ).toHaveClass("text-xs");
   });
 
+  it("shows the Journey badge only when the creator took the Journey", () => {
+    const { rerender } = render(<CatalogCreatorCard creator={creator} />);
+
+    expect(
+      screen.queryByRole("img", { name: "Jornada do Influenciador" }),
+    ).not.toBeInTheDocument();
+
+    rerender(
+      <CatalogCreatorCard
+        creator={{ ...creator, isInfluencerJourneyParticipant: true }}
+      />,
+    );
+
+    expect(
+      screen.getByRole("img", { name: "Jornada do Influenciador" }),
+    ).toBeVisible();
+  });
+
   it("has no blocking accessibility violations", async () => {
     const { container } = render(<CatalogCreatorCard creator={creator} />);
 

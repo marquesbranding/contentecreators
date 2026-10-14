@@ -13,6 +13,8 @@ import {
   AlertTitle,
 } from "@/shared/components/ui/alert";
 import { CdlMemberBadge } from "@/shared/components/cdl-member-badge";
+import { InfluencerJourneyBadge } from "@/shared/components/influencer-journey-badge";
+import { InfluencerJourneyNote } from "@/shared/components/influencer-journey-note";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button, buttonVariants } from "@/shared/components/ui/button";
 import {
@@ -297,7 +299,13 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
               <CardTitle className="flex flex-wrap items-center gap-2 text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
                 <h1>{detail.displayName}</h1>
                 {detail.isCdlMember ? <CdlMemberBadge size="md" /> : null}
+                {detail.isInfluencerJourneyParticipant ? (
+                  <InfluencerJourneyBadge size="md" />
+                ) : null}
               </CardTitle>
+              {detail.isInfluencerJourneyParticipant ? (
+                <InfluencerJourneyNote className="text-muted-foreground text-xs leading-5" />
+              ) : null}
               <div className="flex flex-wrap gap-2">
                 <Badge className="bg-brand-night border-transparent text-white">
                   {accountTypeLabels[detail.creatorType]}
@@ -423,7 +431,7 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
                 <CardDescription>Métricas autodeclaradas.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
                   {[
                     {
                       label: "Seguidores",
@@ -441,6 +449,10 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
                       label: "Novos seguidores",
                       value: instagramMetric.newFollowerCount,
                     },
+                    {
+                      label: "Conteúdo compartilhado",
+                      value: instagramMetric.sharedContentCount,
+                    },
                   ]
                     .filter(({ value }) => value !== null)
                     .map(({ label, value }) => (
@@ -454,7 +466,8 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
                       </div>
                     ))}
                 </dl>
-                {instagramMetric.sharedContentDescription ? (
+                {instagramMetric.sharedContentCount === null &&
+                instagramMetric.sharedContentDescription ? (
                   <p className="text-muted-foreground text-sm leading-6">
                     <span className="text-foreground font-semibold">
                       Conteúdo que compartilha:

@@ -26,6 +26,7 @@ export interface CatalogCreatorMetricDto {
   newFollowerCount: number | null;
   observedOn: string;
   platform: CatalogSocialPlatform;
+  sharedContentCount: number | null;
   sharedContentDescription: string | null;
   source: "SELF_REPORTED";
   viewCount: number | null;
@@ -61,6 +62,7 @@ export interface CatalogCreatorDetailDto {
   creatorType: CatalogCreatorType;
   displayName: string;
   isCdlMember: boolean;
+  isInfluencerJourneyParticipant: boolean;
   location: CatalogCreatorLocationDto;
   media: {
     avatar: CatalogMediaReferenceDto | null;

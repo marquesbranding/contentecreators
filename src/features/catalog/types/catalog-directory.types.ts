@@ -23,8 +23,11 @@ export interface DirectoryMetricRangeFilters {
 }
 
 export interface DirectoryFilters extends DirectoryMetricRangeFilters {
+  /** "Associado da CDL" seal filter (`cdl=1` in the URL). */
+  cdl?: boolean;
   city?: string;
   cursor?: string;
+  jornada?: boolean;
   niche?: string;
   pageSize: number;
   platform?: CatalogSocialPlatform;
@@ -34,14 +37,28 @@ export interface DirectoryFilters extends DirectoryMetricRangeFilters {
   type?: DirectoryTypeFilter[];
 }
 
+/**
+ * Keyset boundary of the daily-shuffled directory (cursor v2). `seed` is the
+ * shuffle day (`YYYY-MM-DD`, America/Sao_Paulo) the page chain started on — the
+ * server-side salt never leaves the server — and `sortKey` is the last item's
+ * `md5(id || seed)` key.
+ */
 export interface DirectoryCursor {
-  createdAt: string;
   id: string;
   kind: "COMPANY" | "CREATOR";
+  seed: string;
+  sortKey: string;
+  v: 2;
 }
 
 export interface DirectoryQuery extends Omit<DirectoryFilters, "cursor"> {
   cursor: DirectoryCursor | null;
+  /**
+   * Shuffle day (`YYYY-MM-DD`) for a first page. Ignored when `cursor` is set,
+   * since a cursor always pins the day it was issued for. Defaults to today in
+   * America/Sao_Paulo.
+   */
+  seed?: string;
 }
 
 /**
@@ -57,6 +74,7 @@ export interface DirectoryCompanyEntryDto {
   description: string | null;
   displayName: string;
   isCdlMember: boolean;
+  isInfluencerJourneyParticipant: boolean;
   /** True when this row is the viewer's own profile — never their account ID. */
   isOwnProfile: boolean;
   kind: "COMPANY";
@@ -76,6 +94,7 @@ export interface DirectoryCreatorEntryDto {
   creatorType: CatalogCreatorType;
   displayName: string;
   isCdlMember: boolean;
+  isInfluencerJourneyParticipant: boolean;
   /** True when this row is the viewer's own profile — never their account ID. */
   isOwnProfile: boolean;
   kind: "CREATOR";

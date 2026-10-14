@@ -6,6 +6,7 @@ import type { RendererPlacementDto } from "@/features/sponsorships";
 import { getBlockingComponentAccessibilityViolations } from "@/test/component-accessibility";
 
 import {
+  buildCatalogSponsoredCards,
   type CatalogSponsorshipSlotDto,
   CatalogSponsorshipSlots,
 } from "./catalog-sponsorship-slots";
@@ -65,6 +66,24 @@ function slot(
   };
 }
 
+function featuredSlot(
+  index: number,
+  overrides: Partial<CatalogSponsorshipSlotDto> = {},
+): CatalogSponsorshipSlotDto {
+  return slot("FEATURED_CREATOR", {
+    placement: placement("FEATURED_CREATOR", {
+      featuredCreator: {
+        avatar: null,
+        creatorId: `10000000-0000-4000-8000-0000000001${String(index).padStart(2, "0")}`,
+        displayName: `Creator ${index}`,
+      },
+      id: `10000000-0000-4000-8000-0000000002${String(index).padStart(2, "0")}`,
+      title: `Destaque ${index}`,
+    }),
+    ...overrides,
+  });
+}
+
 describe("CatalogSponsorshipSlots", () => {
   it("returns catalog content without an empty promotional layout when every slot is absent", () => {
     const { container } = render(
@@ -93,7 +112,7 @@ describe("CatalogSponsorshipSlots", () => {
               }),
             }),
           ],
-          featured: slot("FEATURED_CREATOR"),
+          featured: [slot("FEATURED_CREATOR")],
           side: slot("INLINE_BANNER"),
           top: slot("TOP_BANNER"),
         }}
@@ -149,6 +168,99 @@ describe("CatalogSponsorshipSlots", () => {
     ).toEqual([]);
   });
 
+  it("renders a single featured creator with the existing full-width layout", () => {
+    const { container } = render(
+      <CatalogSponsorshipSlots slots={{ featured: [featuredSlot(1)] }}>
+        <div data-testid="catalog-content">Catálogo privado</div>
+      </CatalogSponsorshipSlots>,
+    );
+
+    expect(
+      screen.getByRole("article", { name: "Creator em destaque: Creator 1" }),
+    ).toBeVisible();
+    expect(
+      container.querySelector(
+        '[data-slot="sponsorship-featured-creators-row"]',
+      ),
+    ).toBeNull();
+  });
+
+  it("lays several featured creators side by side in a row, in delivery order", () => {
+    const { container } = render(
+      <CatalogSponsorshipSlots
+        slots={{
+          featured: [featuredSlot(1), featuredSlot(2), featuredSlot(3)],
+        }}
+      >
+        <div data-testid="catalog-content">Catálogo privado</div>
+      </CatalogSponsorshipSlots>,
+    );
+
+    const row = container.querySelector(
+      '[data-slot="sponsorship-featured-creators-row"]',
+    );
+
+    expect(row).not.toBeNull();
+    expect(
+      within(row as HTMLElement)
+        .getAllByRole("article")
+        .map((card) => card.getAttribute("aria-label")),
+    ).toEqual([
+      "Creator em destaque: Creator 1",
+      "Creator em destaque: Creator 2",
+      "Creator em destaque: Creator 3",
+    ]);
+    expect(
+      within(row as HTMLElement).getAllByRole("link", {
+        name: /Ver perfil de/,
+      })[1],
+    ).toHaveAttribute(
+      "href",
+      "/app/creators/10000000-0000-4000-8000-000000000102",
+    );
+    expect(screen.getByTestId("catalog-content")).toBeVisible();
+  });
+
+  it("only counts eligible featured creators when deciding whether to render the layout", () => {
+    const { container } = render(
+      <CatalogSponsorshipSlots
+        slots={{
+          featured: [
+            featuredSlot(1, { audienceMatches: false }),
+            featuredSlot(2, { routeMatches: false }),
+          ],
+        }}
+      >
+        <div data-testid="catalog-content">Catálogo privado</div>
+      </CatalogSponsorshipSlots>,
+    );
+
+    expect(
+      container.querySelector('[data-slot="catalog-sponsorship-layout"]'),
+    ).toBeNull();
+    expect(screen.getByTestId("catalog-content")).toBeVisible();
+  });
+
+  it("falls back to the single layout when only one featured creator remains eligible", () => {
+    render(
+      <CatalogSponsorshipSlots
+        slots={{
+          featured: [
+            featuredSlot(1),
+            featuredSlot(2, { audienceMatches: false }),
+          ],
+        }}
+      >
+        <div data-testid="catalog-content">Catálogo privado</div>
+      </CatalogSponsorshipSlots>,
+    );
+
+    expect(
+      screen.getByRole("article", { name: "Creator em destaque: Creator 1" }),
+    ).toBeVisible();
+    expect(screen.queryByText("Creator 2")).not.toBeInTheDocument();
+  });
+
   it.each([320, 390, 768, 1_440])(
     "keeps the catalog and inline placement responsive at %d px",
     async (width) => {
@@ -192,7 +304,7 @@ describe("CatalogSponsorshipSlots", () => {
             slot("CAROUSEL", { audienceMatches: false }),
             slot("CAROUSEL", { routeMatches: false }),
           ],
-          featured: slot("TOP_BANNER"),
+          featured: [slot("TOP_BANNER")],
           side: slot("INLINE_BANNER", { routeMatches: false }),
           top: slot("TOP_BANNER", { audienceMatches: false }),
         }}
@@ -206,5 +318,77 @@ describe("CatalogSponsorshipSlots", () => {
       container.querySelector('[data-slot="catalog-sponsorship-layout"]'),
     ).toBeNull();
     expect(screen.queryByText("Conteúdo patrocinado")).not.toBeInTheDocument();
+  });
+});
+
+describe("buildCatalogSponsoredCards", () => {
+  function midlistSlot(
+    index: number,
+    overrides: Partial<CatalogSponsorshipSlotDto> = {},
+  ): CatalogSponsorshipSlotDto {
+    return slot("CAROUSEL", {
+      placement: placement("CAROUSEL", {
+        id: `20000000-0000-4000-8000-${String(index).padStart(12, "0")}`,
+        title: `Midlist ${index}`,
+      }),
+      ...overrides,
+    });
+  }
+
+  it("keeps every eligible card when there are fewer than the slot limit", () => {
+    const cards = buildCatalogSponsoredCards({
+      midlist: [midlistSlot(1), midlistSlot(2), midlistSlot(3)],
+    });
+
+    expect(cards).toHaveLength(3);
+  });
+
+  it("caps the listing at the catalog-midlist limit of 8 cards", () => {
+    const midlist = Array.from({ length: 10 }, (_, index) =>
+      midlistSlot(index + 1),
+    );
+
+    const cards = buildCatalogSponsoredCards({ midlist });
+    const keys = cards.map((card) => card.key);
+    const eligibleIds = midlist.map((item) => item.placement.id);
+
+    expect(cards).toHaveLength(8);
+    expect(new Set(keys).size).toBe(8);
+    keys.forEach((key) => {
+      expect(eligibleIds).toContain(key);
+    });
+  });
+
+  it("drops audience, route and type mismatches before applying the limit", () => {
+    const midlist = [
+      midlistSlot(1, { audienceMatches: false }),
+      midlistSlot(2, { routeMatches: false }),
+      midlistSlot(4, {
+        placement: placement("INLINE_BANNER", {
+          id: "20000000-0000-4000-8000-000000000004",
+        }),
+      }),
+      midlistSlot(5),
+    ];
+
+    const cards = buildCatalogSponsoredCards({ midlist });
+
+    expect(cards.map((card) => card.key)).toEqual([
+      "20000000-0000-4000-8000-000000000005",
+    ]);
+  });
+
+  it("uses the injected RNG for the shuffle and keeps the first eight of that order", () => {
+    const midlist = Array.from({ length: 10 }, (_, index) =>
+      midlistSlot(index + 1),
+    );
+    // Picking the last index each time leaves the input order untouched.
+    const keepOrderRng = (max: number) => max - 1;
+
+    const cards = buildCatalogSponsoredCards({ midlist }, keepOrderRng);
+
+    expect(cards.map((card) => card.key)).toEqual(
+      midlist.slice(0, 8).map((item) => item.placement.id),
+    );
   });
 });

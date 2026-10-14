@@ -20,6 +20,7 @@ const record: CatalogCreatorDetailRecord = {
   creatorType: "UGC",
   displayName: "Creator UGC",
   isCdlMember: false,
+  isInfluencerJourneyParticipant: false,
   media: [],
   metrics: [],
   niches: [],

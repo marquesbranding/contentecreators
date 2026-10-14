@@ -10,6 +10,7 @@ export interface CompanyDetailRecord {
   displayName: string;
   email: string;
   isCdlMember: boolean;
+  isInfluencerJourneyParticipant: boolean;
   logoAssetId: string | null;
   media: {
     id: string;

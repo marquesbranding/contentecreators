@@ -36,7 +36,7 @@ export interface SponsorshipFeaturedCreatorViewModel {
   media?: SponsorshipMediaViewModel | null;
 }
 
-function CreatorDetailLink({
+export function CreatorDetailLink({
   creator,
 }: {
   creator: SponsorshipFeaturedCreatorViewModel;

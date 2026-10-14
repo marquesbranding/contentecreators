@@ -60,6 +60,7 @@ function toCreatorCardViewModel(
     detailHref: `/app/creators/${creator.creatorId}`,
     displayName: creator.displayName,
     isCdlMember: creator.isCdlMember,
+    isInfluencerJourneyParticipant: creator.isInfluencerJourneyParticipant,
     isOwnProfile: creator.isOwnProfile,
     media: creator.avatar
       ? {

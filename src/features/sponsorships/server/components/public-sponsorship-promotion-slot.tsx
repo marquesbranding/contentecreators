@@ -4,7 +4,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 
 import { PublicSponsorshipPromotion } from "../../components/public-sponsorship-promotion";
-import { loadPublicSponsorshipPromotion } from "../queries/public-sponsorship-promotion.query";
+import { loadPublicSponsorshipPromotions } from "../queries/public-sponsorship-promotion.query";
 import { createServerSponsorshipDeliveryService } from "../services/server-sponsorship-delivery.service";
 
 interface PublicSponsorshipPromotionSlotDependencies {
@@ -20,13 +20,13 @@ export function createPublicSponsorshipPromotionSlot({
 }: PublicSponsorshipPromotionSlotDependencies) {
   return async function PublicSponsorshipPromotionSlotBoundary() {
     await waitForRequest();
-    const promotion = await loadPublicSponsorshipPromotion({
+    const promotions = await loadPublicSponsorshipPromotions({
       delivery: createDelivery(),
       now: now(),
     });
 
-    return promotion ? (
-      <PublicSponsorshipPromotion promotion={promotion} />
+    return promotions.length > 0 ? (
+      <PublicSponsorshipPromotion promotions={promotions} />
     ) : null;
   };
 }

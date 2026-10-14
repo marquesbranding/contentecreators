@@ -33,6 +33,11 @@ export {
   type SponsorshipFeaturedCreatorViewModel,
 } from "./components/sponsorship-featured-creator";
 export {
+  SponsorshipFeaturedCreatorCard,
+  type SponsorshipFeaturedCreatorItem,
+} from "./components/sponsorship-featured-creator-card";
+export { SponsorshipFeaturedCreatorsRow } from "./components/sponsorship-featured-creators-row.client";
+export {
   createUseSponsorshipManagement,
   createUseSponsorshipPlacementMutations,
   useSponsorshipManagement,

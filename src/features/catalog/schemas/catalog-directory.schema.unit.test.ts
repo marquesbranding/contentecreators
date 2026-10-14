@@ -72,4 +72,21 @@ describe("catalog directory schemas", () => {
       directoryFiltersSchema.parse({ type: ["COMPANY", "ADMIN"] }),
     ).toThrow();
   });
+
+  it("parses the cdl and jornada seal flags from 1 or true, ignoring other values", () => {
+    const enabled = parseDirectorySearchParams(
+      new URLSearchParams("cdl=1&jornada=true"),
+    );
+    const ignored = parseDirectorySearchParams(
+      new URLSearchParams("cdl=0&jornada=no"),
+    );
+    const absent = directoryFiltersSchema.parse({});
+
+    expect(enabled.cdl).toBe(true);
+    expect(enabled.jornada).toBe(true);
+    expect(ignored.cdl).toBeUndefined();
+    expect(ignored.jornada).toBeUndefined();
+    expect(absent.cdl).toBeUndefined();
+    expect(absent.jornada).toBeUndefined();
+  });
 });

@@ -13,6 +13,8 @@ export interface PlacementSlotMetadata {
   path: string;
   audience: string;
   limit: number;
+  /** Overrides the default "1 por vez" / "Até N" capacity chip. */
+  capacityLabel?: string;
   usesImage: boolean;
   usesLink: boolean;
   bodyRequired: boolean;
@@ -53,11 +55,14 @@ export const placementSlotCatalog = [
     slotKey: "landing-top",
     placementType: "TOP_BANNER",
     name: "Banner na página inicial pública",
-    description: "Banner em largura total na página inicial, antes do login.",
-    bestFor: "Alcançar visitantes sem login",
+    description:
+      "Banner em largura total na página inicial, antes do login. Com mais de um, os banners se revezam a cada 6 segundos.",
+    bestFor: "Alcançar visitantes sem login · até 5, em rotação",
     route: "PUBLIC_LANDING",
     path: "/",
     audience: "Público",
+    limit: 5,
+    capacityLabel: "Até 5, em rotação",
     image: { width: 1600, height: 500, aspectClassName: "aspect-[16/5]" },
     tabletImage: { width: 1024, height: 384, aspectClassName: "aspect-[8/3]" },
     mobileImage: mobile,
@@ -77,9 +82,9 @@ export const placementSlotCatalog = [
     placementType: "CAROUSEL",
     name: "Card patrocinado no catálogo",
     description:
-      "Aparece como um card do catálogo, misturado aos perfis (a cada 8).",
-    bestFor: "Anúncio nativo entre criadores",
-    limit: 3,
+      "Aparece como um card do catálogo, misturado aos perfis (a cada 8). Até 8 anúncios, em ordem aleatória a cada acesso.",
+    bestFor: "Anúncio nativo entre criadores · até 8, em ordem aleatória",
+    limit: 8,
     supportsVariants: false,
     // Browser QA: 308×416 px at 1440px; a 3:4 creative closely fits the desktop card.
     image: { width: 900, height: 1200, aspectClassName: "aspect-[3/4]" },
@@ -99,8 +104,11 @@ export const placementSlotCatalog = [
     slotKey: "catalog-featured",
     placementType: "FEATURED_CREATOR",
     name: "Criador em destaque",
-    description: "Foto e nome do criador com acesso direto ao perfil.",
-    bestFor: "Promover um criador aprovado",
+    description:
+      "Foto e nome do criador com acesso direto ao perfil. Vários criadores aparecem lado a lado.",
+    bestFor: "Promover criadores aprovados · até 10",
+    limit: 10,
+    capacityLabel: "Até 10",
     usesImage: false,
     usesLink: false,
     supportsVariants: false,
@@ -111,6 +119,11 @@ export function getPlacementSlot(
   slotKey: string,
 ): PlacementSlotMetadata | undefined {
   return placementSlotCatalog.find((slot) => slot.slotKey === slotKey);
+}
+export function placementSlotCapacityLabel(slot: PlacementSlotMetadata) {
+  return (
+    slot.capacityLabel ?? (slot.limit === 1 ? "1 por vez" : `Até ${slot.limit}`)
+  );
 }
 export const placementTypeLabels: Record<PlacementType, string> = {
   TOP_BANNER: "Banner de topo",

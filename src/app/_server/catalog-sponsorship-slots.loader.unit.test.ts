@@ -39,6 +39,8 @@ describe("catalog sponsorship slots loader", () => {
       ],
       "catalog-featured": [
         placement("40000000-0000-4000-8000-000000000001", "FEATURED_CREATOR"),
+        placement("40000000-0000-4000-8000-000000000002", "FEATURED_CREATOR"),
+        placement("40000000-0000-4000-8000-000000000003", "FEATURED_CREATOR"),
       ],
       "catalog-inline": [
         placement("20000000-0000-4000-8000-000000000001", "INLINE_BANNER"),
@@ -77,6 +79,14 @@ describe("catalog sponsorship slots loader", () => {
       "10000000-0000-4000-8000-000000000001",
     );
     expect(slots.carousel).toHaveLength(2);
+    expect(load).toHaveBeenCalledWith(
+      expect.objectContaining({ limit: 10, slotKey: "catalog-featured" }),
+    );
+    expect(slots.featured?.map((slot) => slot.placement.id)).toEqual([
+      "40000000-0000-4000-8000-000000000001",
+      "40000000-0000-4000-8000-000000000002",
+      "40000000-0000-4000-8000-000000000003",
+    ]);
     expect(slots.midlist?.[0]?.placement.id).toBe(
       "50000000-0000-4000-8000-000000000001",
     );
@@ -95,7 +105,7 @@ describe("catalog sponsorship slots loader", () => {
     );
     expect(slots).toEqual({
       carousel: [],
-      featured: null,
+      featured: [],
       midlist: [],
       side: null,
       top: null,

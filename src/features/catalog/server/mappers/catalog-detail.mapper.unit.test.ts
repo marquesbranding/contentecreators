@@ -23,6 +23,7 @@ const baseRecord: CatalogCreatorDetailRecord = {
   creatorType: "INFLUENCER",
   displayName: "Creator Sintética",
   isCdlMember: false,
+  isInfluencerJourneyParticipant: false,
   media: [
     {
       id: "30000000-0000-4000-8000-000000000003",
@@ -42,6 +43,7 @@ const baseRecord: CatalogCreatorDetailRecord = {
       newFollowerCount: 500,
       observedOn: new Date("2026-07-20T00:00:00.000Z"),
       platform: "INSTAGRAM",
+      sharedContentCount: 22,
       sharedContentDescription: "Reels e stories de bastidores.",
       source: "SELF_REPORTED",
       viewCount: 98000,
@@ -54,6 +56,7 @@ const baseRecord: CatalogCreatorDetailRecord = {
       newFollowerCount: 200,
       observedOn: new Date("2026-06-20T00:00:00.000Z"),
       platform: "INSTAGRAM",
+      sharedContentCount: null,
       sharedContentDescription: null,
       source: "SELF_REPORTED",
       viewCount: 40000,
@@ -93,6 +96,7 @@ describe("catalog detail mapper", () => {
       creatorType: "INFLUENCER",
       displayName: "Creator Sintética",
       isCdlMember: false,
+      isInfluencerJourneyParticipant: false,
       location: { city: "São Paulo", state: "SP" },
       media: {
         avatar: {
@@ -113,6 +117,7 @@ describe("catalog detail mapper", () => {
           newFollowerCount: 500,
           observedOn: "2026-07-20",
           platform: "INSTAGRAM",
+          sharedContentCount: 22,
           sharedContentDescription: "Reels e stories de bastidores.",
           source: "SELF_REPORTED",
           viewCount: 98000,

@@ -18,6 +18,7 @@ const record: CompanyDetailRecord = {
   displayName: "Empresa Aprovada",
   email: "empresa@example.com",
   isCdlMember: false,
+  isInfluencerJourneyParticipant: false,
   logoAssetId: null,
   media: [],
   segment: "Tecnologia",

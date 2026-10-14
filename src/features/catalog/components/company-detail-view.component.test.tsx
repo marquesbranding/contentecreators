@@ -17,6 +17,7 @@ const detail: CompanyDetailViewDto = {
   description: "Marca aberta a parcerias com creators locais.",
   displayName: "Marca Segura",
   isCdlMember: false,
+  isInfluencerJourneyParticipant: false,
   location: { city: "Joaçaba", state: "SC" },
   media: {
     cover: null,
@@ -73,6 +74,32 @@ describe("CompanyDetailView", () => {
     expect(
       screen.getByTitle("Associado da CDL (Câmara de Dirigentes Lojistas)"),
     ).toBeVisible();
+  });
+
+  it("shows the Journey badge and explanatory note only when declared", () => {
+    const { rerender } = render(<CompanyDetailView detail={detail} />);
+
+    expect(
+      screen.queryByRole("img", { name: "Jornada do Influenciador" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", {
+        name: "www.jornadadoinfluenciador.com.br",
+      }),
+    ).not.toBeInTheDocument();
+
+    rerender(
+      <CompanyDetailView
+        detail={{ ...detail, isInfluencerJourneyParticipant: true }}
+      />,
+    );
+
+    expect(
+      screen.getByRole("img", { name: "Jornada do Influenciador" }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "www.jornadadoinfluenciador.com.br" }),
+    ).toHaveAttribute("rel", "noopener noreferrer");
   });
 
   it("shows a safe unavailable state", () => {

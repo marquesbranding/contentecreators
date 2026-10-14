@@ -42,6 +42,7 @@ function mapCompanyDetail(record: CompanyDetailRecord): CompanyDetailDto {
     description: record.description,
     displayName: record.displayName,
     isCdlMember: record.isCdlMember,
+    isInfluencerJourneyParticipant: record.isInfluencerJourneyParticipant,
     location:
       record.city && record.state
         ? {

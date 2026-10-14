@@ -81,6 +81,12 @@ function mapMetrics(
           : null,
       observedOn: record.observedOn.toISOString().slice(0, 10),
       platform: record.platform,
+      sharedContentCount:
+        record.sharedContentCount !== null &&
+        Number.isSafeInteger(record.sharedContentCount) &&
+        record.sharedContentCount >= 0
+          ? record.sharedContentCount
+          : null,
       sharedContentDescription: record.sharedContentDescription?.trim()
         ? record.sharedContentDescription.trim()
         : null,
@@ -170,6 +176,7 @@ export function mapCatalogCreatorDetail(
     creatorType: record.creatorType,
     displayName: record.displayName,
     isCdlMember: record.isCdlMember,
+    isInfluencerJourneyParticipant: record.isInfluencerJourneyParticipant,
     location: {
       city: record.city,
       state: record.state,

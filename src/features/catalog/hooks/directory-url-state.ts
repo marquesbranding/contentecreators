@@ -12,6 +12,8 @@ import {
 import type { DirectoryFilters } from "../types/catalog-directory.types";
 
 const singleValueKeys = [
+  "cdl",
+  "jornada",
   "search",
   "niche",
   "segment",

@@ -9,7 +9,7 @@ import type {
   SponsorshipDeliveryRepository,
 } from "../repositories/sponsorship-delivery.repository";
 import { createSponsorshipDeliveryService } from "../services/sponsorship-delivery.service";
-import { loadPublicSponsorshipPromotion } from "./public-sponsorship-promotion.query";
+import { loadPublicSponsorshipPromotions } from "./public-sponsorship-promotion.query";
 
 const now = new Date("2026-08-01T12:00:00.000Z");
 const assetId = "40000000-0000-4000-8000-000000000001";
@@ -97,16 +97,35 @@ describe("public sponsorship promotion query", () => {
     const load = vi.fn(async () => [promotion]);
 
     await expect(
-      loadPublicSponsorshipPromotion({ delivery: { load }, now }),
-    ).resolves.toEqual(promotion);
+      loadPublicSponsorshipPromotions({ delivery: { load }, now }),
+    ).resolves.toEqual([promotion]);
     expect(load).toHaveBeenCalledExactlyOnceWith({
       allowedPlacementTypes: ["TOP_BANNER"],
-      limit: 1,
+      limit: 5,
       now,
       route: "PUBLIC_LANDING",
       slotKey: "landing-top",
       viewer: "PUBLIC",
     });
+  });
+
+  it("keeps every generic banner in delivery order and drops unsafe ones", async () => {
+    const second = { ...promotion, id: "50000000-0000-4000-8000-000000000002" };
+    const withoutMedia = {
+      ...promotion,
+      id: "50000000-0000-4000-8000-000000000003",
+      media: null,
+    };
+    const third = { ...promotion, id: "50000000-0000-4000-8000-000000000004" };
+
+    await expect(
+      loadPublicSponsorshipPromotions({
+        delivery: {
+          load: vi.fn(async () => [promotion, withoutMedia, second, third]),
+        },
+        now,
+      }),
+    ).resolves.toEqual([promotion, second, third]);
   });
 
   it.each([
@@ -139,11 +158,11 @@ describe("public sponsorship promotion query", () => {
     },
   ])("fails closed for a mocked $name DTO", async ({ unsafe }) => {
     await expect(
-      loadPublicSponsorshipPromotion({
+      loadPublicSponsorshipPromotions({
         delivery: { load: vi.fn(async () => [unsafe]) },
         now,
       }),
-    ).resolves.toBeNull();
+    ).resolves.toEqual([]);
   });
 
   it.each([
@@ -175,21 +194,21 @@ describe("public sponsorship promotion query", () => {
       });
 
       await expect(
-        loadPublicSponsorshipPromotion({ delivery, now }),
-      ).resolves.toBeNull();
+        loadPublicSponsorshipPromotions({ delivery, now }),
+      ).resolves.toEqual([]);
       expect(resolveSignedMedia).not.toHaveBeenCalled();
     },
   );
 
   it("renders no state when delivery is absent or unavailable", async () => {
     await expect(
-      loadPublicSponsorshipPromotion({
+      loadPublicSponsorshipPromotions({
         delivery: { load: vi.fn(async () => []) },
         now,
       }),
-    ).resolves.toBeNull();
+    ).resolves.toEqual([]);
     await expect(
-      loadPublicSponsorshipPromotion({
+      loadPublicSponsorshipPromotions({
         delivery: {
           load: vi.fn(async () => {
             throw new Error("private infrastructure detail");
@@ -197,6 +216,6 @@ describe("public sponsorship promotion query", () => {
         },
         now,
       }),
-    ).resolves.toBeNull();
+    ).resolves.toEqual([]);
   });
 });

@@ -79,6 +79,7 @@ async function loadPresentationCollections(
       newFollowerCount: creatorMetricSnapshots.newFollowerCount,
       observedOn: creatorMetricSnapshots.observedOn,
       platform: creatorMetricSnapshots.platform,
+      sharedContentCount: creatorMetricSnapshots.sharedContentCount,
       sharedContentDescription: creatorMetricSnapshots.sharedContentDescription,
       source: creatorMetricSnapshots.source,
       viewCount: creatorMetricSnapshots.viewCount,
@@ -212,6 +213,8 @@ export const findEligibleCatalogCreator: FindEligibleCatalogCreator = async (
       creatorType: creatorProfiles.creatorType,
       displayName: creatorProfiles.displayName,
       isCdlMember: creatorProfiles.isCdlMember,
+      isInfluencerJourneyParticipant:
+        creatorProfiles.isInfluencerJourneyParticipant,
       state: creatorProfiles.state,
       whatsappContactCount: creatorProfiles.whatsappContactCount,
     })

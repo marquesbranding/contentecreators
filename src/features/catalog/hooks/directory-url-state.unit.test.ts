@@ -63,4 +63,45 @@ describe("directory URL state", () => {
     );
     expect(hasDirectoryActiveFilters({ pageSize: 20 })).toBe(false);
   });
+
+  it("serializes the seal filters as cdl=1 and jornada=1 and reads them back", () => {
+    const params = createDirectoryUrlSearchParams(new URLSearchParams(), {
+      cdl: true,
+      jornada: true,
+    });
+
+    expect(params.get("cdl")).toBe("1");
+    expect(params.get("jornada")).toBe("1");
+
+    const filters = readDirectoryUrlState(params);
+    expect(filters.cdl).toBe(true);
+    expect(filters.jornada).toBe(true);
+    expect(hasDirectoryActiveFilters(filters)).toBe(true);
+  });
+
+  it("removes a seal filter from the URL when it is unchecked and resets the cursor", () => {
+    const withSeal = createDirectoryUrlSearchParams(new URLSearchParams(), {
+      jornada: true,
+    });
+    withSeal.set("cursor", "abc123");
+
+    const next = createDirectoryUrlSearchParams(withSeal, {
+      jornada: undefined,
+    });
+
+    expect(next.get("jornada")).toBeNull();
+    expect(next.get("cursor")).toBeNull();
+  });
+
+  it("clears both seal filters on clear", () => {
+    const withSeals = createDirectoryUrlSearchParams(new URLSearchParams(), {
+      cdl: true,
+      jornada: true,
+    });
+
+    const cleared = createDirectoryUrlSearchParams(withSeals, "clear");
+
+    expect(cleared.get("cdl")).toBeNull();
+    expect(cleared.get("jornada")).toBeNull();
+  });
 });

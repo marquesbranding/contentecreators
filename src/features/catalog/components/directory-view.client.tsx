@@ -117,6 +117,7 @@ function activeFilterList(
   const singleValueLabels: Partial<
     Record<DirectoryActiveFilterKey, string | undefined>
   > = {
+    cdl: filters.cdl ? "Associado da CDL" : undefined,
     city: filters.city ? `Cidade: ${filters.city}` : undefined,
     followersMax:
       filters.followersMax !== undefined
@@ -135,6 +136,7 @@ function activeFilterList(
     platform: filters.platform
       ? `Rede: ${platformLabels[filters.platform]}`
       : undefined,
+    jornada: filters.jornada ? "Jornada do Influenciador" : undefined,
     search: filters.search ? `Busca: ${filters.search}` : undefined,
     segment: filters.segment ? `Segmento: ${filters.segment}` : undefined,
     state: filters.state ? `UF: ${filters.state}` : undefined,

@@ -1,14 +1,14 @@
 import {
   createPublicSponsorshipPromotionRouteHandler,
   createServerSponsorshipDeliveryService,
-  loadPublicSponsorshipPromotion,
+  loadPublicSponsorshipPromotions,
 } from "@/features/sponsorships/server";
 
 export const runtime = "nodejs";
 
 export const GET = createPublicSponsorshipPromotionRouteHandler({
   load: () =>
-    loadPublicSponsorshipPromotion({
+    loadPublicSponsorshipPromotions({
       delivery: createServerSponsorshipDeliveryService(),
       now: new Date(),
     }),

@@ -35,7 +35,7 @@ describe("PublicSponsorshipPromotion", () => {
   it("renders a safe, keyboard-accessible and screen-reader-labelled promotion", async () => {
     const user = userEvent.setup();
     const { container } = render(
-      <PublicSponsorshipPromotion promotion={promotion} />,
+      <PublicSponsorshipPromotion promotions={[promotion]} />,
     );
 
     expect(
@@ -69,7 +69,7 @@ describe("PublicSponsorshipPromotion", () => {
         value: width,
       });
       const { container } = render(
-        <PublicSponsorshipPromotion promotion={promotion} />,
+        <PublicSponsorshipPromotion promotions={[promotion]} />,
       );
       const slot = container.querySelector(
         '[data-slot="public-sponsorship-promotion"]',
@@ -86,10 +86,12 @@ describe("PublicSponsorshipPromotion", () => {
   it("omits unsafe links without hiding an otherwise valid promotion", () => {
     render(
       <PublicSponsorshipPromotion
-        promotion={{
-          ...promotion,
-          linkUrl: "https://usuario:segredo@example.test/credenciais",
-        }}
+        promotions={[
+          {
+            ...promotion,
+            linkUrl: "https://usuario:segredo@example.test/credenciais",
+          },
+        ]}
       />,
     );
 
@@ -103,39 +105,81 @@ describe("PublicSponsorshipPromotion", () => {
     ).not.toBeInTheDocument();
   });
 
-  it.each([
+  it.each<[string, readonly RendererPlacementDto[] | null]>([
     ["absent", null],
-    ["without media", { ...promotion, media: null }],
+    ["empty list", []],
+    ["without media", [{ ...promotion, media: null }]],
     [
       "featured participant",
-      {
-        ...promotion,
-        featuredCreator: {
-          avatar: null,
-          creatorId: "70000000-0000-4000-8000-000000000001",
-          displayName: "Participante protegida",
+      [
+        {
+          ...promotion,
+          featuredCreator: {
+            avatar: null,
+            creatorId: "70000000-0000-4000-8000-000000000001",
+            displayName: "Participante protegida",
+          },
         },
-      },
+      ],
     ],
     [
       "wrong placement type",
-      { ...promotion, type: "FEATURED_CREATOR" as const },
+      [{ ...promotion, type: "FEATURED_CREATOR" as const }],
     ],
     [
       "unsafe media URL",
-      {
-        ...promotion,
-        media: {
-          ...promotion.media!,
-          url: "data:image/svg+xml,private-profile",
+      [
+        {
+          ...promotion,
+          media: {
+            ...promotion.media!,
+            url: "data:image/svg+xml,private-profile",
+          },
         },
-      },
+      ],
     ],
-  ] as const)("renders nothing for an %s state", (_name, value) => {
+  ])("renders nothing for an %s state", (_name, value) => {
     const { container } = render(
-      <PublicSponsorshipPromotion promotion={value} />,
+      <PublicSponsorshipPromotion promotions={value} />,
     );
 
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it("renders a single banner exactly like the static hero, without rotation controls", () => {
+    render(<PublicSponsorshipPromotion promotions={[promotion]} />);
+
+    expect(
+      screen.queryByRole("region", { name: "Banners patrocinados" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Banner \d de \d/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /rotação/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("rotates two or more banners and skips unrenderable ones", () => {
+    render(
+      <PublicSponsorshipPromotion
+        promotions={[
+          promotion,
+          { ...promotion, id: "50000000-0000-4000-8000-000000000002" },
+          {
+            ...promotion,
+            id: "50000000-0000-4000-8000-000000000003",
+            media: null,
+          },
+        ]}
+      />,
+    );
+
+    expect(
+      screen.getByRole("region", { name: "Banners patrocinados" }),
+    ).toHaveAttribute("aria-roledescription", "carrossel");
+    expect(
+      screen.getAllByRole("button", { name: /Banner \d de 2/ }),
+    ).toHaveLength(2);
   });
 });

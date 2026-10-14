@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   getPlacementSlot,
+  placementSlotCapacityLabel,
   placementSlotCatalog,
 } from "./placement-slot-catalog";
 import {
@@ -20,7 +21,7 @@ describe("placement slot catalog", () => {
     });
     expect(getPlacementSlot("catalog-midlist")).toMatchObject({
       supportsVariants: false,
-      limit: 3,
+      limit: 8,
       image: { width: 900, height: 1200 },
     });
     expect(getPlacementSlot("catalog-featured")).toMatchObject({
@@ -29,6 +30,25 @@ describe("placement slot catalog", () => {
     });
     expect(getPlacementSlot("catalog-inline")?.bodyRequired).toBe(false);
     expect(getPlacementSlot("unknown")).toBeUndefined();
+  });
+  it("describes the capacity of each slot, including the rotating landing banner", () => {
+    expect(getPlacementSlot("landing-top")?.limit).toBe(5);
+    expect(getPlacementSlot("catalog-featured")?.limit).toBe(10);
+    expect(
+      Object.fromEntries(
+        placementSlotCatalog.map((slot) => [
+          slot.slotKey,
+          placementSlotCapacityLabel(slot),
+        ]),
+      ),
+    ).toEqual({
+      "catalog-top": "1 por vez",
+      "landing-top": "Até 5, em rotação",
+      "catalog-carousel": "Até 10",
+      "catalog-midlist": "Até 8",
+      "catalog-inline": "1 por vez",
+      "catalog-featured": "Até 10",
+    });
   });
   it("accepts incomplete drafts while preventing mismatched type/slot and half a CTA", () => {
     const draft = formDefaults();
