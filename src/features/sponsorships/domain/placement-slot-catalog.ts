@@ -3,6 +3,14 @@ import type {
   PlacementRoute,
 } from "../types/sponsorship-placement.types";
 
+/**
+ * How a slot presents active placements:
+ * - SINGLE: one placement at a time (activating another must deactivate the current one).
+ * - CAROUSEL: several active placements rotate/scroll in the same place.
+ * - LIST: several active placements interleaved in a listing, without rotation.
+ */
+export type PlacementDisplayMode = "SINGLE" | "CAROUSEL" | "LIST";
+
 export interface PlacementSlotMetadata {
   slotKey: string;
   placementType: PlacementType;
@@ -13,6 +21,7 @@ export interface PlacementSlotMetadata {
   path: string;
   audience: string;
   limit: number;
+  displayMode: PlacementDisplayMode;
   /** Overrides the default "1 por vez" / "Até N" capacity chip. */
   capacityLabel?: string;
   usesImage: boolean;
@@ -30,6 +39,7 @@ const base = {
   path: "/app/catalog",
   audience: "Só logados",
   limit: 1,
+  displayMode: "SINGLE" as PlacementDisplayMode,
   usesImage: true,
   usesLink: true,
   bodyRequired: false,
@@ -42,6 +52,7 @@ export const placementSlotCatalog = [
   {
     ...base,
     slotKey: "catalog-top",
+    displayMode: "SINGLE",
     placementType: "TOP_BANNER",
     name: "Banner no topo do catálogo",
     description: "Acima de todos os criadores, com imagem e texto sobreposto.",
@@ -53,6 +64,7 @@ export const placementSlotCatalog = [
   {
     ...base,
     slotKey: "landing-top",
+    displayMode: "CAROUSEL",
     placementType: "TOP_BANNER",
     name: "Banner na página inicial pública",
     description:
@@ -70,6 +82,7 @@ export const placementSlotCatalog = [
   {
     ...base,
     slotKey: "catalog-carousel",
+    displayMode: "CAROUSEL",
     placementType: "CAROUSEL",
     name: "Carrossel do catálogo",
     description: "Cards com rolagem horizontal abaixo do banner principal.",
@@ -79,6 +92,7 @@ export const placementSlotCatalog = [
   {
     ...base,
     slotKey: "catalog-midlist",
+    displayMode: "LIST",
     placementType: "CAROUSEL",
     name: "Card patrocinado no catálogo",
     description:
@@ -92,6 +106,7 @@ export const placementSlotCatalog = [
   {
     ...base,
     slotKey: "catalog-inline",
+    displayMode: "SINGLE",
     placementType: "INLINE_BANNER",
     name: "Barra lateral do catálogo",
     description: "Fixa na lateral no desktop; acima da listagem no celular.",
@@ -102,6 +117,7 @@ export const placementSlotCatalog = [
   {
     ...base,
     slotKey: "catalog-featured",
+    displayMode: "CAROUSEL",
     placementType: "FEATURED_CREATOR",
     name: "Criador em destaque",
     description:
@@ -125,6 +141,22 @@ export function placementSlotCapacityLabel(slot: PlacementSlotMetadata) {
     slot.capacityLabel ?? (slot.limit === 1 ? "1 por vez" : `Até ${slot.limit}`)
   );
 }
+export const placementDisplayModeLabels: Record<PlacementDisplayMode, string> =
+  {
+    SINGLE: "Um por vez",
+    CAROUSEL: "Vários em rotação (carrossel)",
+    LIST: "Vários na listagem",
+  };
+
+/**
+ * Whether several placements may be active at once in the slot. Unknown slots
+ * (legacy data) are treated as multi-allowed so nothing is ever blocked.
+ */
+export function allowsMultipleActive(slotKey: string) {
+  const slot = getPlacementSlot(slotKey);
+  return !slot || slot.displayMode !== "SINGLE";
+}
+
 export const placementTypeLabels: Record<PlacementType, string> = {
   TOP_BANNER: "Banner de topo",
   INLINE_BANNER: "Banner lateral / inline",

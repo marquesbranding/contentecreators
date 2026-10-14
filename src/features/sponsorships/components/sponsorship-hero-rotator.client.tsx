@@ -1,26 +1,31 @@
 "use client";
 
-import { useAutoAdvance } from "@/shared/hooks/use-auto-advance";
+import {
+  CAROUSEL_AUTO_ADVANCE_MS,
+  useAutoAdvance,
+} from "@/shared/hooks/use-auto-advance";
 import { cn } from "@/shared/lib/cn";
 
 import { SponsorshipCarouselControls } from "./sponsorship-carousel-controls";
 import { SponsorshipHeroBanner } from "./sponsorship-hero-banner";
 import type { SponsorshipCreativeViewModel } from "./sponsorship-presentation";
 
-/** Long enough to read the overlaid copy; the client suggested 2–3 s. */
-export const HERO_ROTATION_INTERVAL_MS = 6_000;
+/** Same 5 s rhythm as every other public carousel. */
+export const HERO_ROTATION_INTERVAL_MS = CAROUSEL_AUTO_ADVANCE_MS;
 
 /**
  * Two or more full-width banners shown one at a time with a 300 ms
  * crossfade. A single banner never reaches this component (callers render
  * `SponsorshipHeroBanner` directly), so there is nothing to rotate here.
+ * The banners themselves are untouched; the control bar (arrows, indicator
+ * dots, discreet pause button) sits below them, centered.
  *
  * The banners are stacked in one grid cell so the region keeps the height of
  * the (identical-ratio) banners; only the active one is exposed to assistive
  * technology and the tab order. Timer and pause rules (hover, keyboard
  * focus, hidden tab, manual pause, reduced motion) live in
  * `useAutoAdvance`; with reduced motion there is no autoplay and no
- * transition, and the indicators are the only way to change banner.
+ * transition, and the arrows and indicators are the way to change banner.
  */
 export function SponsorshipHeroRotator({
   creatives,
@@ -36,11 +41,19 @@ export function SponsorshipHeroRotator({
     interactionProps,
     isPlaying,
     manuallyPaused,
+    next,
+    previous,
     togglePaused,
   } = useAutoAdvance({
     count: creatives.length,
     intervalMs: HERO_ROTATION_INTERVAL_MS,
   });
+
+  if (creatives.length === 1) {
+    // Defensive: callers already render one banner directly, and a single
+    // banner never gets dots, arrows or autoplay.
+    return <SponsorshipHeroBanner creative={creatives[0]} />;
+  }
 
   return (
     <section
@@ -87,11 +100,17 @@ export function SponsorshipHeroRotator({
         className="mt-4"
         count={creatives.length}
         groupLabel="Escolher banner"
-        indicatorLabel={(index, count) => `Banner ${index + 1} de ${count}`}
+        indicatorLabel={(index, count) =>
+          `Ir para o banner ${index + 1} de ${count}`
+        }
         manuallyPaused={manuallyPaused}
+        nextLabel="Próximo banner"
+        onNext={next}
+        onPrevious={previous}
         onSelect={goTo}
         onTogglePaused={togglePaused}
         pauseLabel="Pausar rotação dos banners"
+        previousLabel="Banner anterior"
         resumeLabel="Retomar rotação dos banners"
       />
     </section>

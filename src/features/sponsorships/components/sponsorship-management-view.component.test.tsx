@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import axe from "axe-core";
 import { describe, expect, it, vi } from "vitest";
@@ -9,7 +9,10 @@ import type {
   SponsorshipManagementFilters,
   SponsorshipManagementResponseDto,
 } from "../api/sponsorship-management.contract";
-import { SponsorshipManagementView } from "./sponsorship-management-view.client";
+import {
+  SponsorshipManagementView,
+  type SponsorshipMutationCallbacks,
+} from "./sponsorship-management-view.client";
 
 const mediaActions: MediaUploadActions = {
   activate: vi.fn(),
@@ -297,5 +300,197 @@ describe("SponsorshipManagementView", () => {
     // jsdom does not expose real iframe windows; the browser suite checks the preview.
     const results = await axe.run(document.body, { iframes: false });
     expect(results.violations).toEqual([]);
+  });
+
+  describe("single-item slot activation", () => {
+    const draft = data.items[0];
+    const active = {
+      ...draft,
+      id: "f6000000-0000-4000-8000-000000000001",
+      isActive: true,
+      state: "ACTIVE" as const,
+      title: "Banner no ar",
+      version: 3,
+    };
+
+    function renderWith(
+      items: SponsorshipManagementResponseDto["items"],
+      mutations: Pick<SponsorshipMutationCallbacks, "command" | "refresh">,
+    ) {
+      render(
+        <SponsorshipManagementView
+          filters={filters}
+          mediaActions={mediaActions}
+          mutations={{
+            command: mutations.command,
+            create: vi.fn(),
+            refresh: mutations.refresh,
+            update: vi.fn(),
+          }}
+          onFiltersChange={vi.fn()}
+          query={{
+            data: {
+              ...data,
+              items,
+              pagination: { ...data.pagination, totalItems: items.length },
+            },
+            status: "success",
+          }}
+        />,
+      );
+    }
+
+    it("deactivates the current placement, then activates, after confirmation", async () => {
+      const user = userEvent.setup();
+      const command = vi
+        .fn<SponsorshipMutationCallbacks["command"]>()
+        .mockResolvedValue({});
+      renderWith([active, draft], { command });
+
+      await user.click(screen.getAllByRole("button", { name: "Ativar" })[0]);
+      expect(
+        screen.getByRole("heading", {
+          name: "Este local mostra um patrocínio por vez",
+        }),
+      ).toBeVisible();
+      expect(
+        screen.getByText(
+          /Ao ativar “Banner em rascunho”, “Banner no ar” será desativado\./,
+        ),
+      ).toBeVisible();
+      expect(screen.getByText(/use um carrossel/)).toBeVisible();
+
+      await user.type(
+        screen.getByLabelText(/Motivo da operação/),
+        "Nova campanha principal",
+      );
+      await user.click(
+        screen.getByRole("button", {
+          name: "Ativar e desativar “Banner no ar”",
+        }),
+      );
+
+      await waitFor(() => expect(command).toHaveBeenCalledTimes(2));
+      expect(command.mock.calls[0]).toEqual([
+        active.id,
+        expect.objectContaining({ action: "DEACTIVATE", expectedVersion: 3 }),
+      ]);
+      expect(command.mock.calls[1]).toEqual([
+        draft.id,
+        {
+          action: "ACTIVATE",
+          expectedVersion: 1,
+          reason: "Nova campanha principal",
+        },
+      ]);
+    });
+
+    it("calls nothing when the owner cancels", async () => {
+      const user = userEvent.setup();
+      const command = vi
+        .fn<SponsorshipMutationCallbacks["command"]>()
+        .mockResolvedValue({});
+      renderWith([active, draft], { command });
+
+      await user.click(screen.getAllByRole("button", { name: "Ativar" })[0]);
+      await user.click(screen.getByRole("button", { name: "Cancelar" }));
+
+      expect(command).not.toHaveBeenCalled();
+      expect(
+        screen.queryByRole("heading", {
+          name: "Este local mostra um patrocínio por vez",
+        }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("stops, refreshes and reports when a deactivation fails", async () => {
+      const user = userEvent.setup();
+      const command = vi
+        .fn<SponsorshipMutationCallbacks["command"]>()
+        .mockRejectedValue(new Error("boom"));
+      const refresh = vi
+        .fn<() => Promise<unknown>>()
+        .mockResolvedValue(undefined);
+      renderWith([active, draft], { command, refresh });
+
+      await user.click(screen.getAllByRole("button", { name: "Ativar" })[0]);
+      await user.type(
+        screen.getByLabelText(/Motivo da operação/),
+        "Nova campanha principal",
+      );
+      await user.click(
+        screen.getByRole("button", {
+          name: "Ativar e desativar “Banner no ar”",
+        }),
+      );
+
+      expect(
+        await screen.findByText(/Nenhum patrocínio foi alterado/),
+      ).toBeVisible();
+      expect(command).toHaveBeenCalledTimes(1);
+      expect(refresh).toHaveBeenCalledTimes(1);
+    });
+
+    it("reports a half-applied replacement when the activation fails", async () => {
+      const user = userEvent.setup();
+      const command = vi
+        .fn<SponsorshipMutationCallbacks["command"]>()
+        .mockResolvedValueOnce({})
+        .mockRejectedValueOnce(new Error("boom"));
+      const refresh = vi
+        .fn<() => Promise<unknown>>()
+        .mockResolvedValue(undefined);
+      renderWith([active, draft], { command, refresh });
+
+      await user.click(screen.getAllByRole("button", { name: "Ativar" })[0]);
+      await user.type(
+        screen.getByLabelText(/Motivo da operação/),
+        "Nova campanha principal",
+      );
+      await user.click(
+        screen.getByRole("button", {
+          name: "Ativar e desativar “Banner no ar”",
+        }),
+      );
+
+      expect(
+        await screen.findByText(
+          /“Banner no ar” foi desativado, mas “Banner em rascunho” não foi ativado/,
+        ),
+      ).toBeVisible();
+      expect(refresh).toHaveBeenCalledTimes(1);
+    });
+
+    it("activates directly, without the single-slot warning, in carousel slots", async () => {
+      const user = userEvent.setup();
+      const command = vi
+        .fn<SponsorshipMutationCallbacks["command"]>()
+        .mockResolvedValue({});
+      renderWith(
+        [
+          { ...active, slotKey: "landing-top" },
+          { ...draft, slotKey: "landing-top" },
+        ],
+        { command },
+      );
+
+      await user.click(screen.getAllByRole("button", { name: "Ativar" })[0]);
+      expect(
+        screen.queryByText("Este local mostra um patrocínio por vez"),
+      ).not.toBeInTheDocument();
+      await user.type(
+        screen.getByLabelText(/Motivo da operação/),
+        "Mais um no carrossel",
+      );
+      await user.click(
+        screen.getByRole("button", { name: "Confirmar: ativar" }),
+      );
+
+      await waitFor(() => expect(command).toHaveBeenCalledTimes(1));
+      expect(command).toHaveBeenCalledWith(
+        draft.id,
+        expect.objectContaining({ action: "ACTIVATE" }),
+      );
+    });
   });
 });

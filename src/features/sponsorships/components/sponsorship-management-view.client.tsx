@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { type MediaUploadActions } from "@/features/media";
@@ -88,6 +89,8 @@ import {
   type SponsorshipPlacementWriteInput,
 } from "../api/sponsorship-management.contract";
 import { serializeSponsorshipManagementFilters } from "../api/sponsorship-management.contract";
+import { sponsorshipManagementKeys } from "../api/sponsorship-management.api";
+import { placementsToDeactivateOnActivate } from "../domain/placement-activation-conflicts";
 import {
   useSponsorshipManagement,
   useSponsorshipPlacementMutations,
@@ -118,6 +121,8 @@ interface SponsorshipMutationCallbacks {
     input: SponsorshipPlacementCommand,
   ): Promise<unknown>;
   create(input: SponsorshipPlacementWriteInput): Promise<unknown>;
+  /** Reloads the list; used to reconcile after a partially applied replacement. */
+  refresh?(): Promise<unknown>;
   update(
     placementId: string,
     input: SponsorshipPlacementWriteInput,
@@ -205,16 +210,31 @@ function PlacementPreviewDialog({
   );
 }
 
+function placementName(placement: SponsorshipAdminPlacementDto) {
+  return placement.title ?? "Sem título";
+}
+
+function quotedNames(placements: SponsorshipAdminPlacementDto[]) {
+  const names = placements.map((item) => `“${placementName(item)}”`);
+  if (names.length <= 1) return names.join("");
+  return `${names.slice(0, -1).join(", ")} e ${names[names.length - 1]}`;
+}
+
 function PlacementCommandDialog({
   action,
+  conflicts = [],
   label,
   placement,
+  refresh,
   run,
   variant = "outline",
 }: {
   action: "ACTIVATE" | "ARCHIVE" | "DEACTIVATE";
+  /** Other active placements that this activation replaces (single-item slots). */
+  conflicts?: SponsorshipAdminPlacementDto[];
   label: string;
   placement: SponsorshipAdminPlacementDto;
+  refresh?: SponsorshipMutationCallbacks["refresh"];
   run: SponsorshipMutationCallbacks["command"];
   variant?: "destructive" | "outline";
 }) {
@@ -222,6 +242,12 @@ function PlacementCommandDialog({
   const [pending, setPending] = useState(false);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // The list refreshes after each deactivation; keep the plan stable meanwhile.
+  const [frozenPlan, setFrozenPlan] = useState<
+    SponsorshipAdminPlacementDto[] | null
+  >(null);
+  const replaced = action === "ACTIVATE" ? (frozenPlan ?? conflicts) : [];
+  const replacing = replaced.length > 0;
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -230,26 +256,53 @@ function PlacementCommandDialog({
       return;
     }
 
+    const plan = replaced;
+    const deactivated: SponsorshipAdminPlacementDto[] = [];
+
     try {
       setPending(true);
       setError(null);
+      setFrozenPlan(plan.length ? plan : null);
+      for (const other of plan) {
+        await run(other.id, {
+          action: "DEACTIVATE",
+          expectedVersion: other.version,
+          reason:
+            `Desativado ao ativar “${placementName(placement)}” neste local, que mostra um patrocínio por vez.`.slice(
+              0,
+              500,
+            ),
+        });
+        deactivated.push(other);
+      }
       await run(placement.id, {
         action,
         expectedVersion: placement.version,
         reason: reason.trim(),
       });
       toast.success(`${label} concluído`, {
-        description:
-          "A operação foi aplicada e registrada no histórico de auditoria.",
+        description: plan.length
+          ? `${quotedNames(plan)} ${plan.length === 1 ? "foi desativado" : "foram desativados"}. A operação foi registrada no histórico de auditoria.`
+          : "A operação foi aplicada e registrada no histórico de auditoria.",
       });
       setOpen(false);
       setReason("");
     } catch {
-      setError(
-        "A operação não foi concluída. O patrocínio pode ter sido alterado; atualize e tente novamente.",
-      );
+      if (plan.length) {
+        await refresh?.().catch(() => undefined);
+        setError(
+          deactivated.length
+            ? `${quotedNames(deactivated)} ${deactivated.length === 1 ? "foi desativado" : "foram desativados"}, mas “${placementName(placement)}” não foi ativado. A lista foi atualizada; confira o estado e tente novamente.`
+            : "Nenhum patrocínio foi alterado. A lista foi atualizada; confira o estado e tente novamente.",
+        );
+      } else {
+        setError(
+          "A operação não foi concluída. O patrocínio pode ter sido alterado; atualize e tente novamente.",
+        );
+      }
     } finally {
       setPending(false);
+      setFrozenPlan(null);
     }
   }
 
@@ -261,7 +314,12 @@ function PlacementCommandDialog({
         : Archive;
 
   return (
-    <Dialog onOpenChange={setOpen} open={open}>
+    <Dialog
+      onOpenChange={(next) => {
+        if (!pending) setOpen(next);
+      }}
+      open={open}
+    >
       <DialogTrigger
         render={
           <Button
@@ -277,10 +335,13 @@ function PlacementCommandDialog({
       />
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{label}</DialogTitle>
+          <DialogTitle>
+            {replacing ? "Este local mostra um patrocínio por vez" : label}
+          </DialogTitle>
           <DialogDescription>
-            Esta operação valida a versão atual e registra o motivo na
-            auditoria.
+            {replacing
+              ? `Ao ativar “${placementName(placement)}”, ${quotedNames(replaced)} ${replaced.length === 1 ? "será desativado" : "serão desativados"}. Para mostrar vários patrocínios ao mesmo tempo neste local, use um carrossel.`
+              : "Esta operação valida a versão atual e registra o motivo na auditoria."}
           </DialogDescription>
         </DialogHeader>
         <form className="space-y-5" onSubmit={submit}>
@@ -308,7 +369,17 @@ function PlacementCommandDialog({
               </AlertDescription>
             </Alert>
           ) : null}
-          <DialogFooter showCloseButton>
+          <DialogFooter showCloseButton={!replacing}>
+            {replacing ? (
+              <Button
+                disabled={pending}
+                onClick={() => setOpen(false)}
+                type="button"
+                variant="outline"
+              >
+                Cancelar
+              </Button>
+            ) : null}
             <ActionSubmitButton
               disabled={
                 action === "ACTIVATE" && placement.activationIssues.length > 0
@@ -317,7 +388,13 @@ function PlacementCommandDialog({
               pendingLabel="Aplicando operação..."
               variant={variant}
             >
-              {`Confirmar: ${label.toLowerCase()}`}
+              {replacing
+                ? `Ativar e desativar ${
+                    replaced.length === 1
+                      ? `“${placementName(replaced[0])}”`
+                      : `${replaced.length} patrocínios`
+                  }`
+                : `Confirmar: ${label.toLowerCase()}`}
             </ActionSubmitButton>
           </DialogFooter>
         </form>
@@ -327,10 +404,12 @@ function PlacementCommandDialog({
 }
 
 function PlacementActions({
+  activePlacements,
   mediaActions,
   mutations,
   placement,
 }: {
+  activePlacements: SponsorshipAdminPlacementDto[];
   mediaActions: MediaUploadActions;
   mutations: SponsorshipMutationCallbacks;
   placement: SponsorshipAdminPlacementDto;
@@ -338,6 +417,17 @@ function PlacementActions({
   if (placement.archivedAt) {
     return null;
   }
+
+  const idsToDeactivate = placement.isActive
+    ? []
+    : placementsToDeactivateOnActivate({
+        activePlacements,
+        slotKey: placement.slotKey,
+        targetId: placement.id,
+      });
+  const conflicts = activePlacements.filter((item) =>
+    idsToDeactivate.includes(item.id),
+  );
 
   return (
     <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap [&_[data-slot=button]]:min-h-10 [&_[data-slot=button]]:w-full [&_[data-slot=button]]:px-2 [&_[data-slot=button]]:text-xs sm:[&_[data-slot=button]]:min-h-11 sm:[&_[data-slot=button]]:w-auto sm:[&_[data-slot=button]]:px-3 sm:[&_[data-slot=button]]:text-[0.8rem]">
@@ -349,8 +439,10 @@ function PlacementActions({
       />
       <PlacementCommandDialog
         action={placement.isActive ? "DEACTIVATE" : "ACTIVATE"}
+        conflicts={conflicts}
         label={placement.isActive ? "Desativar" : "Ativar"}
         placement={placement}
+        refresh={mutations.refresh}
         run={mutations.command}
       />
       <PlacementCommandDialog
@@ -391,10 +483,12 @@ function DragHandle({
 }
 
 function SortablePlacementRow({
+  activePlacements,
   mediaActions,
   mutations,
   placement,
 }: {
+  activePlacements: SponsorshipAdminPlacementDto[];
   mediaActions: MediaUploadActions;
   mutations: SponsorshipMutationCallbacks;
   placement: SponsorshipAdminPlacementDto;
@@ -450,6 +544,7 @@ function SortablePlacementRow({
       <TableCell>
         <div className="flex justify-end">
           <PlacementActions
+            activePlacements={activePlacements}
             mediaActions={mediaActions}
             mutations={mutations}
             placement={placement}
@@ -461,10 +556,12 @@ function SortablePlacementRow({
 }
 
 function SortablePlacementCard({
+  activePlacements,
   mediaActions,
   mutations,
   placement,
 }: {
+  activePlacements: SponsorshipAdminPlacementDto[];
   mediaActions: MediaUploadActions;
   mutations: SponsorshipMutationCallbacks;
   placement: SponsorshipAdminPlacementDto;
@@ -519,6 +616,7 @@ function SortablePlacementCard({
           {placement.body ?? "Sem texto de apoio."}
         </p>
         <PlacementActions
+          activePlacements={activePlacements}
           mediaActions={mediaActions}
           mutations={mutations}
           placement={placement}
@@ -552,6 +650,10 @@ function PlacementList({
     }),
   );
   const canReorder = data.pagination.totalPages <= 1;
+  const activePlacements = useMemo(
+    () => items.filter((item) => item.state === "ACTIVE" && !item.archivedAt),
+    [items],
+  );
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -647,6 +749,7 @@ function PlacementList({
             >
               {items.map((placement) => (
                 <SortablePlacementRow
+                  activePlacements={activePlacements}
                   key={placement.id}
                   mediaActions={mediaActions}
                   mutations={mutations}
@@ -665,6 +768,7 @@ function PlacementList({
         >
           {items.map((placement) => (
             <SortablePlacementCard
+              activePlacements={activePlacements}
               key={placement.id}
               mediaActions={mediaActions}
               mutations={mutations}
@@ -923,6 +1027,7 @@ export function SponsorshipManagementScreen({
   mediaActions: MediaUploadActions;
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const query = useSponsorshipManagement(filters);
   const mutations = useSponsorshipPlacementMutations();
   const mutationCallbacks = useMemo<SponsorshipMutationCallbacks>(
@@ -930,10 +1035,14 @@ export function SponsorshipManagementScreen({
       command: (placementId, input) =>
         mutations.command.mutateAsync({ input, placementId }),
       create: (input) => mutations.create.mutateAsync(input),
+      refresh: () =>
+        queryClient.invalidateQueries({
+          queryKey: sponsorshipManagementKeys.lists(),
+        }),
       update: (placementId, input) =>
         mutations.update.mutateAsync({ input, placementId }),
     }),
-    [mutations.command, mutations.create, mutations.update],
+    [mutations.command, mutations.create, mutations.update, queryClient],
   );
 
   return (

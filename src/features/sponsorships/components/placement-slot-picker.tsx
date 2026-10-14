@@ -1,6 +1,7 @@
 import { Check, ImageIcon, UsersRound } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
 import {
+  placementDisplayModeLabels,
   placementSlotCapacityLabel,
   placementSlotCatalog,
 } from "../domain/placement-slot-catalog";
@@ -167,8 +168,13 @@ export function PlacementSlotPicker({
                 {slot.usesImage ? "Precisa de imagem" : "Sem imagem"}
               </span>
               <span className="bg-background rounded-md border px-2 py-1">
-                {placementSlotCapacityLabel(slot)}
+                {placementDisplayModeLabels[slot.displayMode]}
               </span>
+              {slot.displayMode === "SINGLE" ? null : (
+                <span className="bg-background rounded-md border px-2 py-1">
+                  {placementSlotCapacityLabel(slot)}
+                </span>
+              )}
             </span>
           </label>
         ))}

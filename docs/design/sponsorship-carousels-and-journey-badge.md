@@ -2,23 +2,36 @@
 
 Implemented from client review R04 (`openspec/changes/apply-client-review-r04`) and validated in Chromium on 2026-10-13 at 375, 768 and 1440 px. The product ships a light theme only: there is no `.dark` toggle and no `prefers-color-scheme` rule, so there is no dark variant to check.
 
+## Shared carousel pattern (landing banners, featured creators, catalog carousel)
+
+All three public carousels behave and look the same around their content:
+
+- **Rhythm:** every carousel moves to the next slide every 5 s (`CAROUSEL_AUTO_ADVANCE_MS` in `src/shared/hooks/use-auto-advance.ts`) and wraps from the last slide to the first. A manual change (arrow, dot, scroll) restarts the full 5 s.
+- **Control bar below the content, centered** (`SponsorshipCarouselControls`): `[‹]  ● ● ━━ ●  [›]  [⏸]`. Previous/next outline arrow buttons flank the indicator dots, and a small muted ghost pause/resume button closes the row. Nothing is overlaid on the slides. Arrows are 44 px touch targets below `lg` and 32 px from `lg` up; the pause button is 44 px / 28 px (the responsive route audit fails touch targets under 44 px on phones and tablets).
+- **Dots:** 10 px dots with a 24 px hit area; the active one is a 24 px pill with `aria-current="true"`. Banner dots are named "Ir para o banner N de M"; the card carousels use "Ir para a posição N de M dos criadores em destaque / dos patrocínios". Arrows wrap at both ends.
+- **Keyboard:** ArrowLeft/ArrowRight move one slide while focus is anywhere inside the carousel (not inside inputs, not with modifier keys). Dots and buttons are ordinary focusable buttons.
+- **Pause rules** (`useAutoAdvance`): pointer hovering the carousel, keyboard focus inside it (mouse-click focus does not count), a hidden tab, and the pause button (WCAG 2.2.2). Touch contact is not hover. Everything resumes when the pointer or focus leaves.
+- **Reduced motion:** with `prefers-reduced-motion: reduce` there is no autoplay, no crossfade, no smooth scroll and no pause button; arrows and dots still work.
+- **One slide:** renders as before, with no dots, no arrows, no autoplay and no `aria-roledescription` on the card rows.
+- **Hydration:** nothing random or time-based in render. Timers, listeners and the `ResizeObserver` are cleaned up on unmount.
+
 ## Landing banner rotator (`landing-top`)
 
 - `SponsorshipHeroRotator` (`src/features/sponsorships/components/sponsorship-hero-rotator.client.tsx`) renders up to five full-width banners in one grid cell, so the region keeps the banners' height. Only the active slide is exposed to assistive technology (`aria-hidden`, `inert`) and to the tab order.
+- The banner itself (`SponsorshipHeroBanner`: image, copy, size) is untouched; only the control bar below it and the 5 s rhythm are carousel concerns. 300 ms crossfade (`motion-safe:` only). Images after the first are `loading="lazy"`.
 - A single banner never reaches the rotator: callers render `SponsorshipHeroBanner` directly, so the page looks exactly as before.
-- Timing: 6 s per banner, 300 ms crossfade (`motion-safe:` only). Images after the first are `loading="lazy"`.
 - Region: `role="region"`, `aria-label="Banners patrocinados"`, `aria-roledescription="carrossel"`; each slide is a `group` with `aria-roledescription="slide"` and a label such as "Banner 2 de 5".
-- Controls (`SponsorshipCarouselControls`): a pause/resume button plus one indicator per banner. Indicators are 10 px dots with a 24 px hit area; the active one is a 24 px pill with `aria-current="true"`.
-- The pause button is 44 px below the `lg` breakpoint and 28 px from `lg` up. The responsive route audit fails touch targets under 44 px on phones and tablets, and a 28 px button did fail it.
-- Autoplay pauses on hover, keyboard focus, hidden tab and manual pause. With `prefers-reduced-motion` there is no autoplay, no crossfade and no pause button, and the indicators are the only way to change banner. All of this lives in `useAutoAdvance` (`src/shared/hooks/use-auto-advance.ts`), shared with the featured row.
 - Data: `GET /api/public/sponsorships/landing` returns a list. The client still accepts the old `null | object` shape during the CDN cache window.
 
-## Featured creators row (`catalog-featured`)
+## Card carousels: featured creators row (`catalog-featured`) and catalog carousel (`catalog-carousel`)
 
-- `SponsorshipFeaturedCreatorsRow` shows up to ten creators side by side: 1, 2, 3 or 4 per row by breakpoint (`basis-full`, `sm`, `lg`, `xl`). One creator keeps the previous single card.
-- While every card fits, the row is static: no motion, no indicators, no `aria-roledescription`. Overflow is measured on the client with a `ResizeObserver`; the server render and the first client render are always the static layout.
-- Once it overflows, it advances one card every 5 s and wraps to the start, with the same pause rules and indicators as the banner rotator. Under reduced motion it never advances by itself but stays scrollable by touch, wheel and keyboard.
+Both are a horizontal scroll-snap row driven by `useCardRowCarousel` (`use-card-row-carousel.ts`) and use the same card look (`rounded-2xl`, 1 px border, `shadow-sm`, `gap-4`, equal heights because the row is a flex container).
+
+- 1, 2, 3 or 4 cards per row by breakpoint (`basis-full`, `sm`, `lg`, `xl`). Switching slides only scrolls the row, so nothing moves in the page layout; on phones the row bleeds to the screen edge (`-mx-4 px-4`) with `scroll-pl-4`, so the snapped card keeps the page margin.
+- While every card fits, the row is static: no motion, no controls, no `aria-roledescription` on the featured row. Overflow is measured on the client with a `ResizeObserver` in a layout effect (before the first paint, so the control bar does not pop in later); the server render and the first client render are always the static layout. One card per row at 390 px means every card is a stop.
+- Stop positions use the real distance between two cards, falling back to an average when it cannot be measured.
 - The scroller `ul` is `relative`. Without it, absolutely positioned content inside the cards (sr-only text, stretched links) escapes the `overflow-x-auto` clip and widens the whole page; at 390 px the catalog scrolled sideways to about 1460 px. `e2e/acceptance/client-review-r04.spec.ts` keeps a regression check for this.
+- Live region: the list is `aria-live="off"` while autoplay runs and `polite` when it is paused or reduced-motion.
 
 ## Sponsored cards in the listing (`catalog-midlist`)
 

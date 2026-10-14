@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -73,10 +73,10 @@ describe("SponsorshipHeroRotator", () => {
 
     expect(region).toHaveAttribute("aria-roledescription", "carrossel");
     expect(
-      screen.getByRole("button", { name: "Banner 1 de 2" }),
+      screen.getByRole("button", { name: "Ir para o banner 1 de 2" }),
     ).toHaveAttribute("aria-current", "true");
     expect(
-      screen.getByRole("button", { name: "Banner 2 de 2" }),
+      screen.getByRole("button", { name: "Ir para o banner 2 de 2" }),
     ).not.toHaveAttribute("aria-current");
     expect(
       screen.getByRole("button", { name: "Pausar rotação dos banners" }),
@@ -96,20 +96,20 @@ describe("SponsorshipHeroRotator", () => {
     expect(slides[1]).toHaveAttribute("aria-hidden", "true");
   });
 
-  it("advances every 6 seconds and wraps from the last banner to the first", () => {
+  it("advances every 5 seconds and wraps from the last banner to the first", () => {
     render(<SponsorshipHeroRotator creatives={banners(3)} />);
 
-    expect(HERO_ROTATION_INTERVAL_MS).toBe(6_000);
-    tick(5_999);
+    expect(HERO_ROTATION_INTERVAL_MS).toBe(5_000);
+    tick(4_999);
     expect(visibleTitle()).toEqual(["Campanha 1"]);
     tick(1);
     expect(visibleTitle()).toEqual(["Campanha 2"]);
-    tick(6_000);
+    tick(5_000);
     expect(visibleTitle()).toEqual(["Campanha 3"]);
-    tick(6_000);
+    tick(5_000);
     expect(visibleTitle()).toEqual(["Campanha 1"]);
     expect(
-      screen.getByRole("button", { name: "Banner 1 de 3" }),
+      screen.getByRole("button", { name: "Ir para o banner 1 de 3" }),
     ).toHaveAttribute("aria-current", "true");
   });
 
@@ -129,10 +129,12 @@ describe("SponsorshipHeroRotator", () => {
   it("jumps to a banner from its indicator and restarts the interval", () => {
     render(<SponsorshipHeroRotator creatives={banners(5)} />);
 
-    tick(5_000);
-    fireEvent.click(screen.getByRole("button", { name: "Banner 4 de 5" }));
+    tick(4_000);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ir para o banner 4 de 5" }),
+    );
     expect(visibleTitle()).toEqual(["Campanha 4"]);
-    tick(5_999);
+    tick(4_999);
     expect(visibleTitle()).toEqual(["Campanha 4"]);
     tick(1);
     expect(visibleTitle()).toEqual(["Campanha 5"]);
@@ -147,13 +149,15 @@ describe("SponsorshipHeroRotator", () => {
     expect(visibleTitle()).toEqual(["Campanha 1"]);
 
     fireEvent.pointerLeave(region);
-    tick(6_000);
+    tick(5_000);
     expect(visibleTitle()).toEqual(["Campanha 2"]);
   });
 
   it("pauses while an element inside has focus", () => {
     render(<SponsorshipHeroRotator creatives={banners(3)} />);
-    const indicator = screen.getByRole("button", { name: "Banner 3 de 3" });
+    const indicator = screen.getByRole("button", {
+      name: "Ir para o banner 3 de 3",
+    });
     const matches = Element.prototype.matches;
 
     vi.spyOn(Element.prototype, "matches").mockImplementation(function (
@@ -167,7 +171,7 @@ describe("SponsorshipHeroRotator", () => {
     expect(visibleTitle()).toEqual(["Campanha 1"]);
 
     fireEvent.focusOut(indicator, { relatedTarget: document.body });
-    tick(6_000);
+    tick(5_000);
     expect(visibleTitle()).toEqual(["Campanha 2"]);
   });
 
@@ -183,7 +187,7 @@ describe("SponsorshipHeroRotator", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Retomar rotação dos banners" }),
     );
-    tick(6_000);
+    tick(5_000);
     expect(visibleTitle()).toEqual(["Campanha 2"]);
   });
 
@@ -208,10 +212,86 @@ describe("SponsorshipHeroRotator", () => {
       screen.queryByRole("button", { name: /rotação dos banners/ }),
     ).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Banner 2 de 3" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ir para o banner 2 de 3" }),
+    );
     expect(visibleTitle()).toEqual(["Campanha 2"]);
     tick(60_000);
     expect(visibleTitle()).toEqual(["Campanha 2"]);
+  });
+
+  it("places the controls after the slides, with arrows around the dots", () => {
+    render(<SponsorshipHeroRotator creatives={banners(3)} />);
+
+    const slides = screen.getByTestId("hero-rotator-slides");
+    const controls = screen
+      .getByRole("group", { name: "Escolher banner" })
+      .closest("[data-slot='sponsorship-carousel-controls']");
+
+    expect(controls).not.toBeNull();
+    expect(slides.compareDocumentPosition(controls!)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(slides).not.toContainElement(controls as HTMLElement);
+
+    const names = within(controls as HTMLElement)
+      .getAllByRole("button")
+      .map((button) => button.getAttribute("aria-label"));
+
+    expect(names).toEqual([
+      "Banner anterior",
+      "Ir para o banner 1 de 3",
+      "Ir para o banner 2 de 3",
+      "Ir para o banner 3 de 3",
+      "Próximo banner",
+      "Pausar rotação dos banners",
+    ]);
+  });
+
+  it("moves one banner at a time with the arrow buttons, wrapping at both ends", () => {
+    render(<SponsorshipHeroRotator creatives={banners(3)} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Banner anterior" }));
+    expect(visibleTitle()).toEqual(["Campanha 3"]);
+    fireEvent.click(screen.getByRole("button", { name: "Próximo banner" }));
+    expect(visibleTitle()).toEqual(["Campanha 1"]);
+    fireEvent.click(screen.getByRole("button", { name: "Próximo banner" }));
+    expect(visibleTitle()).toEqual(["Campanha 2"]);
+  });
+
+  it("moves with the keyboard arrows while focus is inside the carousel", () => {
+    render(<SponsorshipHeroRotator creatives={banners(3)} />);
+    const indicator = screen.getByRole("button", {
+      name: "Ir para o banner 1 de 3",
+    });
+
+    fireEvent.keyDown(indicator, { key: "ArrowRight" });
+    expect(visibleTitle()).toEqual(["Campanha 2"]);
+    fireEvent.keyDown(indicator, { key: "ArrowLeft" });
+    expect(visibleTitle()).toEqual(["Campanha 1"]);
+  });
+
+  it("keeps the pause button discreet and keeps arrows and dots with reduced motion", () => {
+    stubReducedMotion(true);
+    render(<SponsorshipHeroRotator creatives={banners(3)} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Próximo banner" }));
+    expect(visibleTitle()).toEqual(["Campanha 2"]);
+    tick(60_000);
+    expect(visibleTitle()).toEqual(["Campanha 2"]);
+  });
+
+  it("renders a single banner without dots, arrows or autoplay", () => {
+    render(<SponsorshipHeroRotator creatives={banners(1)} />);
+
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "Banners patrocinados" }),
+    ).not.toBeInTheDocument();
+    expect(visibleTitle()).toEqual(["Campanha 1"]);
+    tick(60_000);
+    expect(visibleTitle()).toEqual(["Campanha 1"]);
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it("clears its timer when unmounted", () => {

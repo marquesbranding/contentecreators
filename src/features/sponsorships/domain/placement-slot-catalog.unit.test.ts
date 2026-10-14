@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  allowsMultipleActive,
   getPlacementSlot,
   placementSlotCapacityLabel,
   placementSlotCatalog,
@@ -50,6 +51,19 @@ describe("placement slot catalog", () => {
       "catalog-featured": "Até 10",
     });
   });
+  it("only single-item slots forbid several active placements", () => {
+    expect(allowsMultipleActive("catalog-top")).toBe(false);
+    expect(allowsMultipleActive("catalog-inline")).toBe(false);
+    for (const slotKey of [
+      "landing-top",
+      "catalog-featured",
+      "catalog-carousel",
+      "catalog-midlist",
+    ]) {
+      expect(allowsMultipleActive(slotKey)).toBe(true);
+    }
+  });
+
   it("accepts incomplete drafts while preventing mismatched type/slot and half a CTA", () => {
     const draft = formDefaults();
     expect(placementFormSchema.safeParse(draft).success).toBe(true);

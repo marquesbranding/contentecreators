@@ -1,11 +1,9 @@
-import { render, screen, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { getBlockingComponentAccessibilityViolations } from "@/test/component-accessibility";
 
 import { SponsorshipHeroBanner } from "./sponsorship-hero-banner";
-import { SponsorshipCarousel } from "./sponsorship-carousel.client";
 import { SponsorshipFeaturedCreator } from "./sponsorship-featured-creator";
 import { type SponsorshipCreativeViewModel } from "./sponsorship-presentation";
 import { SponsorshipSidePlacement } from "./sponsorship-side-placement";
@@ -142,64 +140,6 @@ describe("sponsorship placement presentation", () => {
       ).toEqual([]);
     },
   );
-
-  it("supports keyboard and screen-reader navigation in the carousel", async () => {
-    const user = userEvent.setup();
-    const { container } = render(
-      <SponsorshipCarousel
-        creatives={[
-          baseCreative,
-          {
-            ...baseCreative,
-            id: "10000000-0000-4000-8000-000000000002",
-            link: {
-              href: "https://example.test/segunda",
-              onCreative: false,
-              buttonLabel: "Conhecer segunda oportunidade",
-            },
-            title: "Segunda oportunidade",
-          },
-          {
-            ...baseCreative,
-            eligible: false,
-            id: "10000000-0000-4000-8000-000000000003",
-            title: "Não deve aparecer",
-          },
-        ]}
-        label="Oportunidades em destaque"
-      />,
-    );
-
-    const carousel = screen.getByRole("region", {
-      name: "Oportunidades em destaque",
-    });
-    expect(carousel).toHaveAttribute("aria-roledescription", "carrossel");
-    expect(screen.queryByText("Não deve aparecer")).not.toBeInTheDocument();
-    expect(screen.getByRole("list")).toHaveClass("overflow-x-auto");
-
-    await user.click(
-      within(carousel).getByRole("button", { name: "Próximo patrocínio" }),
-    );
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Patrocínio 2 de 2: Segunda oportunidade",
-    );
-    expect(
-      screen
-        .getByRole("link", {
-          name: "Conhecer segunda oportunidade",
-        })
-        .closest("li"),
-    ).toHaveFocus();
-
-    carousel.focus();
-    await user.keyboard("{ArrowLeft}");
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Patrocínio 1 de 2: Conteúdo que combina com você",
-    );
-    expect(
-      await getBlockingComponentAccessibilityViolations(container),
-    ).toEqual([]);
-  });
 
   it("renders an eligible featured creator and suppresses an ineligible reference", async () => {
     const { container, rerender } = render(

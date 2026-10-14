@@ -99,6 +99,12 @@ describe("CatalogSponsorshipSlots", () => {
   });
 
   it("composes every safe slot around the catalog without becoming its data owner", async () => {
+    // jsdom has no layout: report the card row as overflowing so the
+    // carousel shows its controls, as it does in a real narrow viewport.
+    Object.defineProperties(HTMLElement.prototype, {
+      clientWidth: { configurable: true, get: () => 448 },
+      scrollWidth: { configurable: true, get: () => 900 },
+    });
     const user = userEvent.setup();
     const { container } = render(
       <CatalogSponsorshipSlots
@@ -160,12 +166,16 @@ describe("CatalogSponsorshipSlots", () => {
     await user.click(
       within(carousel).getByRole("button", { name: "Próximo patrocínio" }),
     );
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Patrocínio 2 de 2: Segundo patrocínio",
-    );
+    expect(
+      within(carousel).getByRole("button", {
+        name: /posição 2 de 2 dos patrocínios/u,
+      }),
+    ).toHaveAttribute("aria-current", "true");
     expect(
       await getBlockingComponentAccessibilityViolations(container),
     ).toEqual([]);
+    Reflect.deleteProperty(HTMLElement.prototype, "clientWidth");
+    Reflect.deleteProperty(HTMLElement.prototype, "scrollWidth");
   });
 
   it("renders a single featured creator with the existing full-width layout", () => {

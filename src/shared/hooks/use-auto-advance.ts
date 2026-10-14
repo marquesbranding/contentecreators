@@ -2,6 +2,7 @@
 
 import {
   type FocusEvent,
+  type KeyboardEvent,
   type PointerEvent,
   useCallback,
   useEffect,
@@ -9,6 +10,9 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+
+/** Every public carousel moves to the next slide this often. */
+export const CAROUSEL_AUTO_ADVANCE_MS = 5_000;
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
@@ -47,6 +51,15 @@ function isKeyboardFocus(target: EventTarget) {
   }
 }
 
+/** Arrow keys must not hijack typing or native widgets inside the region. */
+function isArrowKeyTarget(target: EventTarget) {
+  return !(
+    target instanceof HTMLElement &&
+    (target.isContentEditable ||
+      ["INPUT", "SELECT", "TEXTAREA"].includes(target.tagName))
+  );
+}
+
 export interface UseAutoAdvanceOptions {
   /** Number of slides/stops. Autoplay needs at least two. */
   count: number;
@@ -67,7 +80,8 @@ export interface UseAutoAdvanceOptions {
  * is false), and navigate with `goTo`/`next`/`previous` only.
  *
  * Spread `interactionProps` on the region that holds the slides and its
- * controls. The timer restarts after every slide change, so a manual jump
+ * controls; it also wires ArrowLeft/ArrowRight (focus inside the region) to
+ * `previous`/`next`. The timer restarts after every slide change, so a manual jump
  * always gets a full interval before the next automatic one.
  */
 export function useAutoAdvance({
@@ -154,6 +168,26 @@ export function useAutoAdvance({
           setFocused(true);
         }
       },
+      onKeyDown(event: KeyboardEvent<HTMLElement>) {
+        if (
+          event.altKey ||
+          event.ctrlKey ||
+          event.metaKey ||
+          event.shiftKey ||
+          event.defaultPrevented ||
+          !isArrowKeyTarget(event.target)
+        ) {
+          return;
+        }
+
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          previous();
+        } else if (event.key === "ArrowRight") {
+          event.preventDefault();
+          next();
+        }
+      },
       onPointerEnter(event: PointerEvent<HTMLElement>) {
         if (event.pointerType !== "touch") {
           setHovering(true);
@@ -163,7 +197,7 @@ export function useAutoAdvance({
         setHovering(false);
       },
     }),
-    [],
+    [next, previous],
   );
 
   return {

@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useAutoAdvance } from "./use-auto-advance";
+import { CAROUSEL_AUTO_ADVANCE_MS, useAutoAdvance } from "./use-auto-advance";
 
 const originalMatchMedia = window.matchMedia;
 const originalResizeObserver = globalThis.ResizeObserver;
@@ -65,6 +65,7 @@ function Harness({
       <button onClick={advance.previous} type="button">
         previous
       </button>
+      <input aria-label="field" />
     </div>
   );
 }
@@ -219,6 +220,35 @@ describe("useAutoAdvance", () => {
     fireEvent.click(toggle);
     tick(1_000);
     expect(index()).toBe("1");
+  });
+
+  it("uses the same 5 second rhythm for every carousel", () => {
+    expect(CAROUSEL_AUTO_ADVANCE_MS).toBe(5_000);
+  });
+
+  it("moves with ArrowRight and ArrowLeft from inside the region, wrapping", () => {
+    render(<Harness />);
+    const toggle = screen.getByRole("button", { name: "toggle" });
+
+    fireEvent.keyDown(toggle, { key: "ArrowLeft" });
+    expect(index()).toBe("2");
+    fireEvent.keyDown(toggle, { key: "ArrowRight" });
+    expect(index()).toBe("0");
+    fireEvent.keyDown(toggle, { key: "ArrowRight" });
+    expect(index()).toBe("1");
+  });
+
+  it("ignores arrow keys typed in a field or combined with a modifier", () => {
+    render(<Harness />);
+
+    fireEvent.keyDown(screen.getByRole("textbox", { name: "field" }), {
+      key: "ArrowRight",
+    });
+    fireEvent.keyDown(screen.getByRole("button", { name: "toggle" }), {
+      altKey: true,
+      key: "ArrowRight",
+    });
+    expect(index()).toBe("0");
   });
 
   it("never autoplays with prefers-reduced-motion, but still navigates manually", () => {

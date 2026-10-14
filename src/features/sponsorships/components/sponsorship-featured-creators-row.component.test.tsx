@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getBlockingComponentAccessibilityViolations } from "@/test/component-accessibility";
@@ -157,11 +157,11 @@ describe("SponsorshipFeaturedCreatorsRow", () => {
     ).toHaveAttribute("aria-roledescription", "carrossel");
     // Five cards with four in view: three resting positions.
     expect(
-      screen.getAllByRole("button", { name: /Criadores em destaque, posição/ }),
+      screen.getAllByRole("button", { name: /Ir para a posição/ }),
     ).toHaveLength(3);
     expect(
       screen.getByRole("button", {
-        name: "Criadores em destaque, posição 1 de 3",
+        name: "Ir para a posição 1 de 3 dos criadores em destaque",
       }),
     ).toHaveAttribute("aria-current", "true");
 
@@ -174,7 +174,7 @@ describe("SponsorshipFeaturedCreatorsRow", () => {
     expect(lastScrollLeft()).toBe(132);
     expect(
       screen.getByRole("button", {
-        name: "Criadores em destaque, posição 3 de 3",
+        name: "Ir para a posição 3 de 3 dos criadores em destaque",
       }),
     ).toHaveAttribute("aria-current", "true");
     tick(5_000);
@@ -264,7 +264,7 @@ describe("SponsorshipFeaturedCreatorsRow", () => {
 
     fireEvent.click(
       screen.getByRole("button", {
-        name: "Criadores em destaque, posição 2 de 3",
+        name: "Ir para a posição 2 de 3 dos criadores em destaque",
       }),
     );
     expect(lastScrollLeft()).toBe(116);
@@ -280,13 +280,13 @@ describe("SponsorshipFeaturedCreatorsRow", () => {
     tick(149);
     expect(
       screen.getByRole("button", {
-        name: "Criadores em destaque, posição 1 de 3",
+        name: "Ir para a posição 1 de 3 dos criadores em destaque",
       }),
     ).toHaveAttribute("aria-current", "true");
     tick(1);
     expect(
       screen.getByRole("button", {
-        name: "Criadores em destaque, posição 2 de 3",
+        name: "Ir para a posição 2 de 3 dos criadores em destaque",
       }),
     ).toHaveAttribute("aria-current", "true");
     // Already where the visitor left it: no corrective scrolling.
@@ -308,10 +308,87 @@ describe("SponsorshipFeaturedCreatorsRow", () => {
 
     fireEvent.click(
       screen.getByRole("button", {
-        name: "Criadores em destaque, posição 2 de 3",
+        name: "Ir para a posição 2 de 3 dos criadores em destaque",
       }),
     );
     expect(scrollTo).toHaveBeenLastCalledWith({ behavior: "auto", left: 116 });
+  });
+
+  it("places the controls after the cards, with arrows around the dots", () => {
+    overflowingLayout();
+    render(<SponsorshipFeaturedCreatorsRow items={items(5)} />);
+
+    const list = screen.getByRole("list");
+    const controls = screen
+      .getByRole("group", { name: "Escolher criador em destaque" })
+      .closest("[data-slot='sponsorship-carousel-controls']") as HTMLElement;
+
+    expect(list.compareDocumentPosition(controls)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(list).not.toContainElement(controls);
+    expect(
+      within(controls)
+        .getAllByRole("button")
+        .map((button) => button.getAttribute("aria-label")),
+    ).toEqual([
+      "Criador em destaque anterior",
+      "Ir para a posição 1 de 3 dos criadores em destaque",
+      "Ir para a posição 2 de 3 dos criadores em destaque",
+      "Ir para a posição 3 de 3 dos criadores em destaque",
+      "Próximo criador em destaque",
+      "Pausar rotação dos criadores em destaque",
+    ]);
+  });
+
+  it("moves one position at a time with the arrow buttons and the keyboard arrows", () => {
+    overflowingLayout();
+    render(<SponsorshipFeaturedCreatorsRow items={items(5)} />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Próximo criador em destaque" }),
+    );
+    expect(lastScrollLeft()).toBe(116);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Criador em destaque anterior" }),
+    );
+    expect(lastScrollLeft()).toBe(0);
+    // Previous from the first position wraps to the last one.
+    fireEvent.click(
+      screen.getByRole("button", { name: "Criador em destaque anterior" }),
+    );
+    expect(lastScrollLeft()).toBe(132);
+
+    fireEvent.keyDown(screen.getAllByRole("link")[0], { key: "ArrowRight" });
+    expect(lastScrollLeft()).toBe(0);
+    fireEvent.keyDown(screen.getAllByRole("link")[0], { key: "ArrowLeft" });
+    expect(lastScrollLeft()).toBe(132);
+  });
+
+  it("keeps arrows and dots but no pause button with reduced motion", () => {
+    stubReducedMotion(true);
+    overflowingLayout();
+    render(<SponsorshipFeaturedCreatorsRow items={items(5)} />);
+
+    expect(
+      screen.getByRole("button", { name: "Próximo criador em destaque" }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: /Pausar rotação/ }),
+    ).not.toBeInTheDocument();
+    tick(60_000);
+    expect(scrollTo).not.toHaveBeenCalled();
+  });
+
+  it("renders a single creator without dots, arrows or autoplay", () => {
+    overflowingLayout();
+    render(<SponsorshipFeaturedCreatorsRow items={items(1)} />);
+
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    expect(screen.queryByRole("group")).not.toBeInTheDocument();
+    tick(60_000);
+    expect(scrollTo).not.toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it("renders nothing when no creator is eligible", () => {

@@ -153,7 +153,7 @@ describe("PublicSponsorshipPromotion", () => {
       screen.queryByRole("region", { name: "Banners patrocinados" }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /Banner \d de \d/ }),
+      screen.queryByRole("button", { name: /Ir para o banner \d de \d/ }),
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /rotação/ }),
@@ -179,7 +179,7 @@ describe("PublicSponsorshipPromotion", () => {
       screen.getByRole("region", { name: "Banners patrocinados" }),
     ).toHaveAttribute("aria-roledescription", "carrossel");
     expect(
-      screen.getAllByRole("button", { name: /Banner \d de 2/ }),
+      screen.getAllByRole("button", { name: /Ir para o banner \d de 2/ }),
     ).toHaveLength(2);
   });
 });

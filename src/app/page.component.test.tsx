@@ -95,7 +95,9 @@ describe("Home", () => {
     expect(
       await screen.findByRole("region", { name: "Banners patrocinados" }),
     ).toHaveAttribute("aria-roledescription", "carrossel");
-    expect(screen.getByRole("button", { name: "Banner 3 de 3" })).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Ir para o banner 3 de 3" }),
+    ).toBeVisible();
   });
 
   it("still renders a single legacy cached banner object without rotation", async () => {
