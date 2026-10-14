@@ -41,8 +41,14 @@ be delivered before launch:
       `NEXT_PUBLIC_META_PIXEL_ID` per environment and confirm the durations in
       `cookie-registry.ts` with legal before launch
 - [x] In-platform account deletion and elimination within the legal deadline
-      (chapter 8): implemented, see
-      [account deletion](./operations/account-deletion.md). Refused
-      registrations eliminated within 90 days are **not** implemented yet.
+      (chapter 8): implemented as immediate, permanent deletion (client
+      review 04; no recovery window, login kept so the person can register
+      again), see [account deletion](./operations/account-deletion.md).
+      Refused registrations eliminated within 90 days are **not** implemented
+      yet.
+- [ ] Before deploying review 04 to production: list legacy accounts in
+      `REQUESTED`/`FAILED` (`npm run accounts:eliminate-legacy`, read-only),
+      confirm with the client, then run it with the execute and client
+      confirmation flags (see the account deletion runbook)
 - [ ] Confirm whether the home-page showcase needs its own consent checkbox
       (chapters 4 and 5.2 name consent as its legal basis)

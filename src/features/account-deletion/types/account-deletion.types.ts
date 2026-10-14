@@ -15,21 +15,14 @@ export interface AccountDeletionActionState {
   status: "error" | "idle";
 }
 
-export interface RecoverAccountActionState {
-  fieldErrors?: Partial<Record<"accountId" | "reason", string[]>>;
-  message?: string;
-  status: "error" | "idle" | "success";
+/** A Storage object left by a deleted account (bucket and path only). */
+export interface StorageObjectRef {
+  bucket: string;
+  path: string;
 }
 
-export interface RequestedAccountDeletion {
+export interface DeletedAccount {
   accountId: string;
-  authUserId: string;
-  eliminationEligibleAt: Date;
   outboxId: string;
-}
-
-export interface RecoveredAccount {
-  accountId: string;
-  authUserId: string;
-  outboxId: string;
+  storageObjects: StorageObjectRef[];
 }

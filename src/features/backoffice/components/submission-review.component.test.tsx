@@ -77,6 +77,7 @@ const influencerReview: BackofficeSubmissionReviewDto = {
     creatorType: "INFLUENCER",
     displayName: "Criadora Teste",
     isCdlMember: true,
+    isInfluencerJourneyParticipant: false,
     legalName: "Criadora da Silva",
     niches: [{ name: "Moda", slug: "moda" }],
     selfReportedMetrics: [
@@ -85,6 +86,7 @@ const influencerReview: BackofficeSubmissionReviewDto = {
         followerCount: 12000,
         observedOn: "2026-07-20",
         platform: "INSTAGRAM",
+        sharedContentCount: 22,
       },
     ],
     state: "SP",
@@ -110,6 +112,7 @@ const companyReview: BackofficeSubmissionReviewDto = {
     description: "Marca nacional de vestuário.",
     employeeRange: "11_TO_50",
     isCdlMember: false,
+    isInfluencerJourneyParticipant: false,
     legalName: "Empresa Teste Ltda.",
     locations: [
       {
@@ -148,6 +151,7 @@ describe("SubmissionReview", () => {
     expect(screen.getByText("Associado da CDL")).toBeVisible();
     expect(screen.getByText("Sim")).toBeVisible();
     expect(screen.getByText("12.000 seguidores")).toBeVisible();
+    expect(screen.getByText(/22 conteúdos compartilhados/u)).toBeVisible();
     expect(screen.getByText("Métrica autodeclarada")).toBeVisible();
     expect(screen.getByText("contato@example.com")).toBeVisible();
     expect(screen.getByRole("link", { name: /@criadora/iu })).toBeVisible();

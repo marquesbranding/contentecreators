@@ -54,6 +54,7 @@
     "smtp:check": "node --env-file-if-exists=.env.local --import tsx scripts/check-smtp.ts",
     "smtp:check:prd": "node --env-file=supabase/.env --import tsx scripts/check-smtp.ts",
     "supabase:config:push": "node --import tsx scripts/push-supabase-config.ts",
+    "accounts:eliminate-legacy": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/eliminate-legacy-account-deletions.ts",
     "local:admins": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/sync-local-admins.ts",
     "local:env": "node --import tsx scripts/sync-local-env.ts",
     "local:showcase": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/seed-local-landing-showcase.ts",

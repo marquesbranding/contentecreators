@@ -23,11 +23,7 @@ import {
 } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 
-import {
-  DELETION_CONFIRMATION_PHRASE,
-  ELIMINATION_DEADLINE_DAYS,
-  RECOVERY_WINDOW_DAYS,
-} from "../domain/deletion-policy";
+import { DELETION_CONFIRMATION_PHRASE } from "../domain/deletion-policy";
 import type { AccountDeletionActionState } from "../types/account-deletion.types";
 
 export type AccountDeletionServerAction = (
@@ -72,13 +68,11 @@ export function AccountDeletionSection({
         Excluir conta
       </h2>
       <p className="text-muted-foreground mt-2 text-sm leading-6">
-        Ao excluir, seu perfil deixa de aparecer para outros usuários e na
-        página inicial, e sua autorização de contato é revogada. Você pode pedir
-        a recuperação da conta ao suporte em até {RECOVERY_WINDOW_DAYS} dias.
-        Depois disso, eliminamos seus dados pessoais em até{" "}
-        {ELIMINATION_DEADLINE_DAYS} dias, guardando apenas o que a lei exige
-        (por exemplo, registros de acesso por 6 meses e a comprovação dos seus
-        aceites). Veja a{" "}
+        A exclusão é imediata e não pode ser desfeita: seu perfil sai do
+        catálogo e da página inicial na hora, e apagamos seus dados, fotos e
+        rascunhos. Guardamos apenas o que a lei exige (por exemplo, registros de
+        acesso por 6 meses e a comprovação dos seus aceites), sem seu nome nem
+        seu e-mail. Se quiser voltar depois, é só se cadastrar de novo. Veja a{" "}
         <a className="text-brand-blue font-semibold underline" href="/privacy">
           Política de Privacidade
         </a>
@@ -99,8 +93,9 @@ export function AccountDeletionSection({
             <DialogHeader>
               <DialogTitle>Excluir minha conta</DialogTitle>
               <DialogDescription>
-                Esta ação não pode ser desfeita por você. Para confirmar,
-                informe sua senha e digite {DELETION_CONFIRMATION_PHRASE}.
+                A exclusão é imediata e não pode ser desfeita; se quiser voltar,
+                é só se cadastrar de novo. Para confirmar, informe sua senha e
+                digite {DELETION_CONFIRMATION_PHRASE}.
               </DialogDescription>
             </DialogHeader>
 
@@ -160,8 +155,8 @@ export function AccountDeletionSection({
                   type="checkbox"
                 />
                 <span>
-                  Entendo que meu perfil será removido e que meus dados serão
-                  eliminados após {RECOVERY_WINDOW_DAYS} dias.
+                  Entendo que meu perfil e meus dados serão apagados agora e que
+                  não há como recuperá-los.
                 </span>
               </label>
               <FieldError

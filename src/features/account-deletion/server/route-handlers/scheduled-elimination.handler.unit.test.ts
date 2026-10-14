@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createScheduledEliminationHandler } from "./scheduled-elimination.handler";
+import {
+  createScheduledEliminationHandler,
+  errorCategoryOf,
+} from "./scheduled-elimination.handler";
 
 const secret = "s".repeat(40);
 const summary = {
@@ -10,20 +13,26 @@ const summary = {
   eliminated: 0,
   failed: 0,
   fingerprint: "f",
-  identitiesRetried: 0,
+  storageFailed: 0,
+  storageQueued: 0,
+  storageRemoved: 0,
 };
 
 function handler(
   appEnvironment: "development" | "local" | "production",
   run = vi.fn().mockResolvedValue(summary),
 ) {
+  const logError = vi.fn();
+
   return {
     handle: createScheduledEliminationHandler({
       appEnvironment,
       createRequestId: () => "req-1",
       cronSecret: secret,
+      logError,
       run,
     }),
+    logError,
     run,
   };
 }
@@ -79,6 +88,46 @@ describe("scheduled account elimination handler", () => {
     const response = await handle(request());
 
     expect(response.status).toBe(500);
-    expect(await response.text()).not.toContain("secret detail");
+    expect(await response.text()).toBe('{"success":false}');
+  });
+
+  it("logs a redacted error event before answering 500", async () => {
+    const failure = Object.assign(
+      new Error("insert failed for ana@example.com at /x/y.png"),
+      { code: "23514" },
+    );
+    const { handle, logError } = handler(
+      "production",
+      vi.fn().mockRejectedValue(failure),
+    );
+
+    const response = await handle(request());
+
+    expect(response.status).toBe(500);
+    expect(logError).toHaveBeenCalledTimes(1);
+    expect(logError).toHaveBeenCalledWith({
+      errorCategory: "23514",
+      requestId: "req-1",
+    });
+    expect(JSON.stringify(logError.mock.calls)).not.toMatch(
+      /ana@example|\/x\/y|insert failed/,
+    );
+  });
+
+  it("does not log on success or on an unauthorized call", async () => {
+    const { handle, logError } = handler("production");
+
+    await handle(request());
+    await handle(request(undefined, "wrong"));
+
+    expect(logError).not.toHaveBeenCalled();
+  });
+
+  it("reduces unknown or unsafe error shapes to UNEXPECTED", () => {
+    expect(errorCategoryOf(new Error("plain"))).toBe("UNEXPECTED");
+    expect(errorCategoryOf({ code: "x@y.com" })).toBe("UNEXPECTED");
+    expect(errorCategoryOf({ code: "a".repeat(41) })).toBe("UNEXPECTED");
+    expect(errorCategoryOf("boom")).toBe("UNEXPECTED");
+    expect(errorCategoryOf({ code: "PGRST116" })).toBe("PGRST116");
   });
 });

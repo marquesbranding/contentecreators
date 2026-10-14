@@ -121,6 +121,39 @@ describe("rendered SMTP outbox delivery", () => {
     });
   });
 
+  it("sends the deletion confirmation with an empty payload, even for legacy rows", async () => {
+    const renderEmail = vi.fn(async () => ({
+      ...rendered,
+      subject: "Sua conta foi excluída",
+      template: "ACCOUNT_DELETION_REQUESTED" as const,
+    }));
+    const sendSmtp = vi.fn(async (): Promise<SmtpDeliveryReceipt> => ({
+      kind: "sent",
+      responseCode: "250",
+    }));
+    const delivery = createRenderedSmtpOutboxDelivery({
+      appUrl: "https://app.contentecreators.test",
+      environment: "production",
+      renderEmail,
+      sendSmtp,
+    });
+
+    await delivery.deliver({
+      ...baseMessage,
+      payload: {
+        eliminationBy: "2027-02-10T12:00:00Z",
+        recoverableUntil: "2026-11-12T12:00:00Z",
+      },
+      template: "ACCOUNT_DELETION_REQUESTED",
+    });
+
+    expect(renderEmail).toHaveBeenCalledWith({
+      appUrl: "https://app.contentecreators.test",
+      payload: {},
+      template: "ACCOUNT_DELETION_REQUESTED",
+    });
+  });
+
   it("treats an invalid template payload as terminal without contacting SMTP", async () => {
     const sendSmtp = vi.fn();
     const delivery = createRenderedSmtpOutboxDelivery({

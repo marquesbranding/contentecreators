@@ -52,6 +52,7 @@ const detail: BackofficeAccountDetailDto = {
       description: "Empresa sintética aguardando análise.",
       employeeRange: "11_TO_50",
       isCdlMember: false,
+      isInfluencerJourneyParticipant: false,
       legalName: "Empresa Dois Exemplo Ltda",
       logoAssetId: null,
       neighborhood: "Centro",
@@ -82,11 +83,59 @@ describe("AccountDetail", () => {
     expect(screen.getByText("Metadados operacionais")).toBeVisible();
   });
 
-  it("shows the CDL self-declaration for the moderator", () => {
-    render(<AccountDetail detail={detail} />);
+  it("shows the CDL and Journey self-declarations for the moderator", () => {
+    const sealed = structuredClone(detail);
+
+    const editableProfile = sealed.profile?.editableProfile;
+
+    if (!editableProfile) {
+      throw new Error("Expected the account fixture to carry a profile.");
+    }
+
+    Object.assign(editableProfile, {
+      isCdlMember: true,
+      isInfluencerJourneyParticipant: false,
+    });
+
+    render(<AccountDetail detail={sealed} />);
 
     expect(screen.getByText("Associado da CDL")).toBeVisible();
+    expect(screen.getByText("Jornada do Influenciador")).toBeVisible();
+    expect(screen.getByText("Sim")).toBeVisible();
     expect(screen.getByText("Não")).toBeVisible();
+  });
+
+  it("does not offer a profile edit action and points corrections to moderation", () => {
+    const { container } = render(<AccountDetail detail={detail} />);
+
+    expect(
+      screen.queryByRole("link", { name: "Editar perfil" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Editar perfil" }),
+    ).not.toBeInTheDocument();
+    expect(container.textContent).toContain(
+      "Para corrigir dados, use Solicitar alterações na moderação.",
+    );
+    expect(
+      screen.getByRole("link", { name: "Solicitar alterações na moderação" }),
+    ).toHaveAttribute(
+      "href",
+      "/backoffice/moderation/c0000000-0000-4000-8000-000000000002",
+    );
+  });
+
+  it("shows the moderation guidance without a link when no submission exists", () => {
+    const { container } = render(
+      <AccountDetail detail={{ ...detail, moderation: null }} />,
+    );
+
+    expect(
+      screen.queryByRole("link", { name: "Solicitar alterações na moderação" }),
+    ).not.toBeInTheDocument();
+    expect(container.textContent).toContain(
+      "Para corrigir dados, use Solicitar alterações na moderação.",
+    );
   });
 
   it("does not render private infrastructure metadata", () => {
@@ -95,5 +144,31 @@ describe("AccountDetail", () => {
     expect(container.textContent).not.toMatch(
       /authUserId|objectPath|bucketName|networkKeyHash|userAgentHash|signedUrl/i,
     );
+  });
+  it("shows a deleted account as a read-only tombstone without personal data", () => {
+    render(
+      <AccountDetail
+        detail={{
+          ...detail,
+          account: {
+            ...detail.account,
+            archivedAt: "2026-10-14T12:00:00.000Z",
+            deletionState: "ELIMINATED",
+            operationalEmail: `eliminated-${detail.account.id}@eliminated.invalid`,
+          },
+          contactPreferences: null,
+          profile: null,
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Conta excluída" }),
+    ).toBeVisible();
+    expect(screen.getByText("Excluída")).toBeVisible();
+    expect(screen.queryByText(/eliminated\.invalid/u)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Recuperar conta/u }),
+    ).not.toBeInTheDocument();
   });
 });

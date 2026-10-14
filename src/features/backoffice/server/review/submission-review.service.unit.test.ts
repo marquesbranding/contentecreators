@@ -29,6 +29,7 @@ const review = {
     creatorType: "INFLUENCER",
     displayName: "Creator Teste",
     isCdlMember: false,
+    isInfluencerJourneyParticipant: false,
     legalName: "Creator Teste",
     niches: [],
     selfReportedMetrics: [],

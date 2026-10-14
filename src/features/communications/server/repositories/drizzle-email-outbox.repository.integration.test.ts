@@ -43,6 +43,7 @@ async function insertOutbox(input: {
   lockedAt?: Date;
   lockedBy?: string;
   maxAttempts?: number;
+  retainUntilSent?: boolean;
   status?: "FAILED" | "PENDING" | "PROCESSING";
 }) {
   const item = await runWithTestAuditContext(
@@ -58,6 +59,7 @@ async function insertOutbox(input: {
           maxAttempts: input.maxAttempts ?? 3,
           payload: { role: "INFLUENCER" },
           recipientEmail: "outbox-integration@example.test",
+          retainUntilSent: input.retainUntilSent ?? false,
           status: input.status ?? "PENDING",
           template: "APPROVED",
         })
@@ -149,6 +151,61 @@ describeLocalStack("Drizzle email outbox repository", () => {
     });
     expect(persisted?.sentAt).toEqual(now);
     expect(attempts).toEqual([{ status: "SENT" }]);
+  });
+
+  it("delivers a retained message to its recipient and scrubs it right after", async () => {
+    const now = new Date("2026-07-25T12:30:00.000Z");
+    const sentId = await insertOutbox({ dueAt: now, retainUntilSent: true });
+    const deadId = await insertOutbox({ dueAt: now, retainUntilSent: true });
+    const deliver = vi.fn(async (message: { outboxId: string }) =>
+      message.outboxId === sentId
+        ? { kind: "sent" as const, responseCode: "250" }
+        : {
+            errorCategory: "TEMPLATE",
+            errorCode: "INVALID_PAYLOAD",
+            kind: "failed" as const,
+            retryable: false,
+          },
+    );
+    const processor = createEmailOutboxProcessor({
+      deliveryPort: { deliver },
+      now: () => now,
+      repository,
+    });
+
+    await processor.processOne({ outboxId: sentId, workerId: "worker-retain" });
+    await processor.processOne({ outboxId: deadId, workerId: "worker-retain" });
+
+    expect(deliver).toHaveBeenCalledWith(
+      expect.objectContaining({
+        outboxId: sentId,
+        recipientEmail: "outbox-integration@example.test",
+      }),
+    );
+
+    const rows = await databaseClient.database
+      .select({
+        id: emailOutbox.id,
+        payload: emailOutbox.payload,
+        recipientEmail: emailOutbox.recipientEmail,
+        retainUntilSent: emailOutbox.retainUntilSent,
+        status: emailOutbox.status,
+      })
+      .from(emailOutbox)
+      .where(inArray(emailOutbox.id, [sentId, deadId]));
+
+    expect(rows.find((row) => row.id === sentId)).toMatchObject({
+      payload: {},
+      recipientEmail: "eliminated@eliminated.invalid",
+      retainUntilSent: false,
+      status: "SENT",
+    });
+    expect(rows.find((row) => row.id === deadId)).toMatchObject({
+      payload: {},
+      recipientEmail: "eliminated@eliminated.invalid",
+      retainUntilSent: false,
+      status: "DEAD_LETTER",
+    });
   });
 
   it("schedules bounded retries and reaches dead letter at the attempt limit", async () => {

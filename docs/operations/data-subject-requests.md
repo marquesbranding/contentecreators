@@ -19,7 +19,14 @@ retention intervals. Take those values from the published version in force;
 this runbook does not restate them.
 
 Owner-initiated deletion from the profile page has its own runbook:
-[account-deletion.md](./account-deletion.md).
+[account-deletion.md](./account-deletion.md). It is immediate and permanent
+(no recovery window): the data is removed or anonymized in the same request,
+the Auth login is kept but unlinked, and the person may register again. When a
+subject asks support to delete an approved account, prefer pointing them to
+that in-product action; this runbook covers the remaining cases (accounts that
+cannot reach the profile page, partial requests, other data classes). The
+approved per-class matrix in that runbook is the reference disposition for an
+assisted deletion too.
 
 ## Non-negotiable controls
 
@@ -149,7 +156,7 @@ against the same environment and request identifier before approval.
 
 1. Identify the authoritative field and every derived presentation or cache.
 2. Validate the new value through the same typed profile/account rules used by
-   normal owner or authorized admin edits.
+   normal owner edits. The backoffice has no direct profile edit path.
 3. Plan the correction through an existing audited service or a reviewed,
    narrowly scoped migration. Never edit production tables through an ad hoc
    dashboard or rewrite a prior revision.

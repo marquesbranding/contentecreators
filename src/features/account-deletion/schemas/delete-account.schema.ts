@@ -17,14 +17,3 @@ export const deleteAccountSchema = z.object({
 });
 
 export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
-
-export const recoverAccountSchema = z.object({
-  accountId: z.uuid({ error: "Selecione uma conta válida." }),
-  reason: z
-    .string()
-    .trim()
-    .min(3, { error: "Informe o motivo da recuperação." })
-    .max(1_000, { error: "O motivo é muito longo." }),
-});
-
-export type RecoverAccountInput = z.infer<typeof recoverAccountSchema>;

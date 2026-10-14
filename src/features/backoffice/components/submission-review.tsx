@@ -143,6 +143,12 @@ function ProfileCard({ review }: { review: BackofficeSubmissionReviewDto }) {
               label="Associado da CDL"
               value={review.profile.isCdlMember ? "Sim" : "Não"}
             />
+            <ReviewField
+              label="Jornada do Influenciador"
+              value={
+                review.profile.isInfluencerJourneyParticipant ? "Sim" : "Não"
+              }
+            />
           </dl>
           <dl>
             <ReviewField label="Biografia" value={review.profile.bio} />
@@ -171,6 +177,12 @@ function ProfileCard({ review }: { review: BackofficeSubmissionReviewDto }) {
                       ? `${metric.engagementRate}% de engajamento`
                       : "Engajamento não informado"}
                   </p>
+                  {metric.sharedContentCount === null ? null : (
+                    <p className="text-muted-foreground text-sm">
+                      {formatNumber(metric.sharedContentCount)} conteúdos
+                      compartilhados
+                    </p>
+                  )}
                   <Badge className="mt-3" variant="outline">
                     Métrica autodeclarada
                   </Badge>
@@ -201,6 +213,12 @@ function ProfileCard({ review }: { review: BackofficeSubmissionReviewDto }) {
           <ReviewField
             label="Associado da CDL"
             value={review.profile.isCdlMember ? "Sim" : "Não"}
+          />
+          <ReviewField
+            label="Jornada do Influenciador"
+            value={
+              review.profile.isInfluencerJourneyParticipant ? "Sim" : "Não"
+            }
           />
           <ReviewField
             label="Faixa de colaboradores"

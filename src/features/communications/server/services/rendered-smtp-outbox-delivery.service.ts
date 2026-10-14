@@ -34,13 +34,6 @@ function subjectPrefix(environment: ApplicationEnvironment) {
 }
 
 function minimumTemplatePayload(message: OutboxDeliveryMessage) {
-  if (message.template === "ACCOUNT_DELETION_REQUESTED") {
-    return {
-      eliminationBy: message.payload.eliminationBy,
-      recoverableUntil: message.payload.recoverableUntil,
-    };
-  }
-
   if (!reasonTemplates.has(message.template)) {
     return {};
   }

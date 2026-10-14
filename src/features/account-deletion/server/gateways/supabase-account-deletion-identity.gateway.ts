@@ -2,8 +2,6 @@ import "server-only";
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const TERMINAL_BAN_DURATION = "876000h";
-
 export interface ReauthenticationContext {
   authUserId: string;
   email: string | null;
@@ -11,6 +9,11 @@ export interface ReauthenticationContext {
   lastSignInAt: string | null;
 }
 
+/**
+ * Deletion keeps the Supabase Auth user (client decision): it is never banned
+ * nor deleted, only its sessions end. `liftDeletionBan` exists solely to undo
+ * the ban that the previous 30-day flow applied to legacy accounts.
+ */
 export function createSupabaseAccountDeletionIdentityGateway({
   adminClient,
   publishableClient,
@@ -22,26 +25,6 @@ export function createSupabaseAccountDeletionIdentityGateway({
   sessionClient: SupabaseClient;
 }) {
   return {
-    async banIdentity(identityId: string) {
-      const { error } = await adminClient.auth.admin.updateUserById(
-        identityId,
-        { ban_duration: TERMINAL_BAN_DURATION },
-      );
-
-      return !error;
-    },
-
-    async deleteIdentity(identityId: string) {
-      // Soft delete keeps the Auth row (the application FK stays valid) while
-      // Supabase removes the e-mail, phone, metadata and linked identities.
-      const { error } = await adminClient.auth.admin.deleteUser(
-        identityId,
-        true,
-      );
-
-      return !error;
-    },
-
     async getReauthenticationContext(): Promise<ReauthenticationContext | null> {
       const { data, error } = await sessionClient.auth.getUser();
 
@@ -61,24 +44,33 @@ export function createSupabaseAccountDeletionIdentityGateway({
       };
     },
 
+    /** Ends every session of the signed-in user, then clears the local cookies. */
     async signOutEverywhere() {
       const { data } = await sessionClient.auth.getSession();
       const accessToken = data.session?.access_token;
+      let revoked = !accessToken;
 
       if (accessToken) {
-        await adminClient.auth.admin.signOut(accessToken, "global");
+        const { error } = await adminClient.auth.admin.signOut(
+          accessToken,
+          "global",
+        );
+        revoked = !error;
       }
 
       await sessionClient.auth.signOut({ scope: "local" });
+
+      return revoked;
     },
 
-    async unbanIdentity(identityId: string) {
+    /** Legacy only: lifts the ban the 30-day flow applied. A missing user counts as done. */
+    async liftDeletionBan(identityId: string) {
       const { error } = await adminClient.auth.admin.updateUserById(
         identityId,
         { ban_duration: "none" },
       );
 
-      return !error;
+      return !error || error.status === 404;
     },
 
     async verifyPassword(email: string, password: string) {

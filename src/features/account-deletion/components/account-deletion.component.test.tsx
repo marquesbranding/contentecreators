@@ -6,12 +6,14 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),
 }));
 
+import { AccountDeletedPage } from "./account-deleted-page";
 import { AccountDeletionSection } from "./account-deletion-section.client";
-import { RecoverAccountPanel } from "./recover-account-panel.client";
+
+const RECOVERY_WORDING = /30 dias|120 dias|recupera(r|ção) (a|da|sua) conta/iu;
 
 describe("AccountDeletionSection", () => {
-  it("explains consequences and windows before asking for confirmation", async () => {
-    render(
+  it("explains that the deletion is immediate and permanent before asking for confirmation", async () => {
+    const { container } = render(
       <AccountDeletionSection
         action={vi.fn().mockResolvedValue({ status: "idle" })}
       />,
@@ -20,8 +22,10 @@ describe("AccountDeletionSection", () => {
     expect(
       screen.getByRole("heading", { name: "Excluir conta" }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/em até 30 dias/u)).toBeInTheDocument();
-    expect(screen.getByText(/em até 120 dias/u)).toBeInTheDocument();
+    expect(
+      screen.getByText(/A exclusão é imediata e não pode ser desfeita/u),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/é só se cadastrar de novo/u)).toBeInTheDocument();
 
     await userEvent.click(
       screen.getByRole("button", { name: "Excluir minha conta" }),
@@ -32,8 +36,14 @@ describe("AccountDeletionSection", () => {
       screen.getByLabelText(/Digite EXCLUIR para confirmar/u),
     ).toBeRequired();
     expect(
-      screen.getByRole("checkbox", { name: /Entendo que meu perfil/u }),
+      screen.getByRole("checkbox", { name: /não há como recuperá-los/u }),
     ).toBeRequired();
+    expect(
+      screen.getAllByText(/se quiser voltar, é só se cadastrar de novo/iu)
+        .length,
+    ).toBeGreaterThan(0);
+    expect(container.textContent).not.toMatch(RECOVERY_WORDING);
+    expect(document.body.textContent).not.toMatch(RECOVERY_WORDING);
   });
 
   it("shows the server message and field errors", async () => {
@@ -68,35 +78,16 @@ describe("AccountDeletionSection", () => {
   });
 });
 
-describe("RecoverAccountPanel", () => {
-  const base = {
-    accountId: "c0000000-0000-4000-8000-000000000002",
-    action: vi.fn().mockResolvedValue({ status: "idle" }),
-    deletionDueAt: "2027-02-10T12:00:00.000Z",
-    deletionState: "REQUESTED" as const,
-    eliminationEligibleAt: "2026-11-14T12:00:00.000Z",
-  };
+describe("AccountDeletedPage", () => {
+  it("confirms the permanent deletion and invites a new registration", () => {
+    const { container } = render(<AccountDeletedPage />);
 
-  it("offers recovery with a required reason while the window is open", () => {
-    render(<RecoverAccountPanel {...base} recoverable />);
-
-    expect(screen.getByLabelText("Motivo da recuperação")).toBeRequired();
     expect(
-      screen.getByRole("button", { name: "Recuperar conta" }),
+      screen.getByRole("heading", { name: "Sua conta foi excluída" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/autorização de contato continua/iu),
-    ).toBeInTheDocument();
-  });
-
-  it("hides the form once the window has closed", () => {
-    render(<RecoverAccountPanel {...base} recoverable={false} />);
-
-    expect(
-      screen.queryByRole("button", { name: "Recuperar conta" }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.getByText(/janela de recuperação terminou/u),
-    ).toBeInTheDocument();
+      screen.getByRole("link", { name: "Entrar e cadastrar de novo" }),
+    ).toHaveAttribute("href", "/login");
+    expect(container.textContent).not.toMatch(RECOVERY_WORDING);
   });
 });

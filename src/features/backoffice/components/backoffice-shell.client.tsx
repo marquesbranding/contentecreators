@@ -174,14 +174,7 @@ function BackofficeBreadcrumb() {
       label: "Contas",
     });
     if (pathname !== "/backoffice/accounts") {
-      const editing = pathname.endsWith("/edit");
-      segments.push({
-        href: editing ? pathname.replace(/\/edit$/u, "") : undefined,
-        label: "Detalhes da conta",
-      });
-      if (editing) {
-        segments.push({ label: "Editar perfil" });
-      }
+      segments.push({ label: "Detalhes da conta" });
     }
   } else if (pathname.startsWith("/backoffice/audit")) {
     segments.push({ label: "Auditoria" });

@@ -50,6 +50,33 @@ const cases = [
 ] as const;
 
 describe("renderTransactionalEmail", () => {
+  it("confirms a permanent deletion without any recovery window", async () => {
+    const email = await renderTransactionalEmail({
+      appUrl,
+      payload: {},
+      template: "ACCOUNT_DELETION_REQUESTED",
+    });
+
+    expect(email.subject).toBe("Sua conta foi excluída");
+    expect(email.text).toContain("não podem ser restaurados");
+    expect(email.text).toContain("é só se cadastrar de novo");
+    expect(email.text).not.toMatch(/30 dias|120 dias|recupera/iu);
+    expect(email.html).not.toMatch(/30 dias|120 dias|recupera/iu);
+  });
+
+  it("drops the payload of a deletion e-mail queued by the retired 30-day flow", async () => {
+    await expect(
+      renderTransactionalEmail({
+        appUrl,
+        payload: {
+          eliminationBy: "2027-02-10T12:00:00Z",
+          recoverableUntil: "2026-11-12T12:00:00Z",
+        },
+        template: "ACCOUNT_DELETION_REQUESTED",
+      }),
+    ).rejects.toThrow("Invalid transactional email contract.");
+  });
+
   it.each(cases)(
     "renders the $template contract in pt-BR with one allowlisted absolute action",
     async ({ callToAction, expectedPath, subject, template }) => {

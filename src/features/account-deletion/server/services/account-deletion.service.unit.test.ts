@@ -6,20 +6,20 @@ const now = new Date("2026-10-14T12:00:00Z");
 
 function setup(
   overrides: {
-    banResult?: boolean;
     reauth?: {
       email: string | null;
       hasPassword: boolean;
       lastSignInAt: string | null;
     } | null;
+    removal?: { failed: number; removed: number } | Error;
     repositoryError?: Error;
-    unbanResult?: boolean;
+    role?: "ADMIN" | "COMPANY" | "INFLUENCER";
+    signOut?: boolean | Error;
     verifyPassword?: boolean;
   } = {},
 ) {
   const transaction = {} as never;
   const identity = {
-    banIdentity: vi.fn().mockResolvedValue(overrides.banResult ?? true),
     getReauthenticationContext: vi.fn().mockResolvedValue(
       overrides.reauth === undefined
         ? {
@@ -28,115 +28,141 @@ function setup(
             hasPassword: true,
             lastSignInAt: null,
           }
-        : overrides.reauth && { authUserId: "auth-1", ...overrides.reauth },
+        : overrides.reauth,
     ),
-    signOutEverywhere: vi.fn().mockResolvedValue(undefined),
-    unbanIdentity: vi.fn().mockResolvedValue(overrides.unbanResult ?? true),
+    signOutEverywhere: vi.fn().mockImplementation(async () => {
+      if (overrides.signOut instanceof Error) {
+        throw overrides.signOut;
+      }
+
+      return overrides.signOut ?? true;
+    }),
     verifyPassword: vi.fn().mockResolvedValue(overrides.verifyPassword ?? true),
   };
   const repository = {
-    recoverAccount: vi.fn().mockImplementation(async () => {
-      if (overrides.repositoryError) {
-        throw overrides.repositoryError;
-      }
-
-      return { accountId: "acc-1", authUserId: "auth-1", outboxId: "out-2" };
-    }),
-    requestOwnDeletion: vi.fn().mockImplementation(async () => {
+    deleteOwnAccount: vi.fn().mockImplementation(async () => {
       if (overrides.repositoryError) {
         throw overrides.repositoryError;
       }
 
       return {
         accountId: "acc-1",
-        authUserId: "auth-1",
-        eliminationEligibleAt: new Date("2026-11-13T12:00:00Z"),
-        outboxId: "out-1",
+        outboxId: "outbox-1",
+        storageObjects: [{ bucket: "profile-media", path: "acc-1/a.png" }],
       };
+    }),
+  };
+  const storage = {
+    remove: vi.fn().mockImplementation(async () => {
+      if (overrides.removal instanceof Error) {
+        throw overrides.removal;
+      }
+
+      return overrides.removal ?? { failed: 0, removed: 1 };
     }),
   };
   const applyAuditContext = vi.fn().mockResolvedValue(undefined);
   const deliverEmail = vi.fn().mockResolvedValue(undefined);
+  const log = vi.fn();
   const runVerifiedTransaction = vi.fn(
     async (
       _options: unknown,
-      work: (tx: never, context: unknown) => Promise<unknown>,
+      work: (transaction: never, context: never) => Promise<unknown>,
     ) =>
       work(transaction, {
         accountId: "acc-1",
         authUserId: "auth-1",
-        role: "INFLUENCER",
+        role: overrides.role ?? "INFLUENCER",
         status: "APPROVED",
-      }),
+      } as never),
   );
-  const adminTransaction = vi.fn(
-    async (
-      _options: unknown,
-      work: (tx: never, context: unknown) => Promise<unknown>,
-    ) =>
-      work(transaction, {
-        accountId: "admin-1",
-        authUserId: "auth-admin",
-        role: "ADMIN",
-        status: "APPROVED",
-      }),
-  );
-  const service = (runner: typeof runVerifiedTransaction) =>
-    createAccountDeletionService({
-      applyAuditContext,
-      deliverEmail,
-      identity,
-      now: () => now,
-      repository,
-      runVerifiedTransaction: runner as never,
-    });
 
-  return {
-    adminService: service(adminTransaction),
+  const service = createAccountDeletionService({
     applyAuditContext,
     deliverEmail,
     identity,
+    log,
+    now: () => now,
     repository,
-    service: service(runVerifiedTransaction),
+    runVerifiedTransaction: runVerifiedTransaction as never,
+    storage,
+  });
+
+  return {
+    applyAuditContext,
+    deliverEmail,
+    identity,
+    log,
+    repository,
+    runVerifiedTransaction,
+    service,
+    storage,
   };
 }
 
 describe("account deletion service", () => {
-  it("requires a correct password for password accounts", async () => {
-    const { identity, repository, service } = setup({ verifyPassword: false });
+  it("deletes immediately, removes Storage, sends the e-mail and ends sessions without banning", async () => {
+    const context = setup();
 
-    await expect(
-      service.requestDeletion({ password: "wrong", requestId: "r1" }),
-    ).resolves.toEqual({ kind: "invalid_password" });
-    expect(repository.requestOwnDeletion).not.toHaveBeenCalled();
-    expect(identity.banIdentity).not.toHaveBeenCalled();
-  });
+    const result = await context.service.deleteAccount({
+      password: "secret",
+      requestId: "req-1",
+    });
 
-  it("requires a password when the account has one", async () => {
-    const { service } = setup();
-
-    await expect(service.requestDeletion({ requestId: "r1" })).resolves.toEqual(
-      { kind: "invalid_password" },
+    expect(result).toEqual({ kind: "deleted" });
+    expect(context.identity.verifyPassword).toHaveBeenCalledWith(
+      "creator@example.test",
+      "secret",
     );
+    expect(context.runVerifiedTransaction).toHaveBeenCalledWith(
+      { preferredRole: "NON_ADMIN", requestId: "req-1" },
+      expect.any(Function),
+    );
+    expect(context.applyAuditContext).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        actorAccountId: "acc-1",
+        actorRole: "INFLUENCER",
+        actorType: "USER",
+        source: "APPLICATION",
+      }),
+    );
+    expect(context.storage.remove).toHaveBeenCalledWith([
+      { bucket: "profile-media", path: "acc-1/a.png" },
+    ]);
+    expect(context.deliverEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ outboxId: "outbox-1" }),
+    );
+    expect(context.identity.signOutEverywhere).toHaveBeenCalledTimes(1);
   });
 
-  it("asks Google accounts to sign in again when the login is old", async () => {
-    const { repository, service } = setup({
+  it("rejects a wrong password before touching the database", async () => {
+    const context = setup({ verifyPassword: false });
+
+    const result = await context.service.deleteAccount({
+      password: "wrong",
+      requestId: "req-1",
+    });
+
+    expect(result).toEqual({ kind: "invalid_password" });
+    expect(context.repository.deleteOwnAccount).not.toHaveBeenCalled();
+  });
+
+  it("requires a recent login for Google-only accounts", async () => {
+    const stale = setup({
       reauth: {
         email: "creator@example.test",
         hasPassword: false,
-        lastSignInAt: "2026-10-14T10:00:00Z",
+        lastSignInAt: "2026-10-14T11:00:00Z",
       },
     });
 
-    await expect(service.requestDeletion({ requestId: "r1" })).resolves.toEqual(
-      { kind: "reauthentication_required" },
-    );
-    expect(repository.requestOwnDeletion).not.toHaveBeenCalled();
-  });
+    expect(await stale.service.deleteAccount({ requestId: "req-1" })).toEqual({
+      kind: "reauthentication_required",
+    });
+    expect(stale.repository.deleteOwnAccount).not.toHaveBeenCalled();
 
-  it("accepts a Google account with a recent login", async () => {
-    const { service } = setup({
+    const fresh = setup({
       reauth: {
         email: "creator@example.test",
         hasPassword: false,
@@ -144,117 +170,89 @@ describe("account deletion service", () => {
       },
     });
 
-    await expect(
-      service.requestDeletion({ requestId: "r1" }),
-    ).resolves.toMatchObject({ kind: "requested" });
+    expect(await fresh.service.deleteAccount({ requestId: "req-1" })).toEqual({
+      kind: "deleted",
+    });
   });
 
-  it("records an audited request, sends the e-mail, locks the identity and signs out", async () => {
-    const { applyAuditContext, deliverEmail, identity, repository, service } =
-      setup();
+  it("maps banned, admin and missing accounts to not available", async () => {
+    for (const marker of [
+      "account_deletion_banned",
+      "account_deletion_role_forbidden",
+      "account_deletion_not_available",
+      "account_deletion_context_required",
+      "ACCOUNT_NOT_READY",
+    ]) {
+      const context = setup({ repositoryError: new Error(marker) });
 
-    const result = await service.requestDeletion({
-      password: "right",
-      requestId: "r1",
+      expect(
+        await context.service.deleteAccount({
+          password: "secret",
+          requestId: "req-1",
+        }),
+      ).toEqual({ kind: "not_available" });
+      expect(context.identity.signOutEverywhere).not.toHaveBeenCalled();
+      expect(context.storage.remove).not.toHaveBeenCalled();
+    }
+
+    const admin = setup({ role: "ADMIN" });
+
+    expect(
+      await admin.service.deleteAccount({
+        password: "secret",
+        requestId: "req-1",
+      }),
+    ).toEqual({ kind: "not_available" });
+    expect(admin.repository.deleteOwnAccount).not.toHaveBeenCalled();
+  });
+
+  it("propagates unexpected database errors without side effects", async () => {
+    const context = setup({ repositoryError: new Error("connection reset") });
+
+    await expect(
+      context.service.deleteAccount({ password: "secret", requestId: "req-1" }),
+    ).rejects.toThrow("connection reset");
+    expect(context.identity.signOutEverywhere).not.toHaveBeenCalled();
+    expect(context.deliverEmail).not.toHaveBeenCalled();
+  });
+
+  it("still completes when Storage, e-mail or session revocation fail after the commit", async () => {
+    const context = setup({
+      removal: new Error("storage down"),
+      signOut: new Error("auth down"),
+    });
+    context.deliverEmail.mockRejectedValueOnce(new Error("smtp down"));
+
+    const result = await context.service.deleteAccount({
+      password: "secret",
+      requestId: "req-1",
     });
 
-    expect(result).toEqual({
-      eliminationEligibleAt: new Date("2026-11-13T12:00:00Z"),
-      kind: "requested",
-    });
-    expect(applyAuditContext).toHaveBeenCalledWith(
-      expect.anything(),
+    expect(result).toEqual({ kind: "deleted" });
+    expect(context.log).toHaveBeenCalledWith(
+      expect.objectContaining({ event: "account_deletion_storage_deferred" }),
+    );
+    expect(context.log).toHaveBeenCalledWith(
       expect.objectContaining({
-        actorAccountId: "acc-1",
-        actorType: "USER",
-        source: "APPLICATION",
+        event: "account_deletion_session_revoke_failed",
+        level: "error",
       }),
     );
-    expect(repository.requestOwnDeletion).toHaveBeenCalledTimes(1);
-    expect(deliverEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ outboxId: "out-1" }),
-    );
-    expect(identity.banIdentity).toHaveBeenCalledWith("auth-1");
-    expect(identity.signOutEverywhere).toHaveBeenCalledTimes(1);
   });
 
-  it("still succeeds when immediate e-mail delivery fails", async () => {
-    const { deliverEmail, service } = setup();
-    deliverEmail.mockRejectedValue(new Error("smtp down"));
+  it("logs objects left in the cleanup queue", async () => {
+    const context = setup({ removal: { failed: 2, removed: 0 } });
 
-    await expect(
-      service.requestDeletion({ password: "right", requestId: "r1" }),
-    ).resolves.toMatchObject({ kind: "requested" });
-  });
-
-  it("fails loudly when the identity cannot be locked", async () => {
-    const { identity, service } = setup({ banResult: false });
-
-    await expect(
-      service.requestDeletion({ password: "right", requestId: "r1" }),
-    ).rejects.toThrow("account_deletion_identity_lock_failed");
-    expect(identity.signOutEverywhere).toHaveBeenCalled();
-  });
-
-  it("maps database refusals to not available", async () => {
-    const { service } = setup({
-      repositoryError: new Error("account_deletion_banned"),
+    await context.service.deleteAccount({
+      password: "secret",
+      requestId: "req-1",
     });
 
-    await expect(
-      service.requestDeletion({ password: "right", requestId: "r1" }),
-    ).resolves.toEqual({ kind: "not_available" });
-  });
-
-  it("recovers as an administrator, unlocks the identity and queues the e-mail", async () => {
-    const { adminService, applyAuditContext, deliverEmail, identity } = setup();
-
-    await expect(
-      adminService.recoverAccount({
-        accountId: "acc-1",
-        reason: "Pedido do titular",
-        requestId: "r2",
-      }),
-    ).resolves.toEqual({ accountId: "acc-1", kind: "recovered" });
-    expect(applyAuditContext).toHaveBeenCalledWith(
-      expect.anything(),
+    expect(context.log).toHaveBeenCalledWith(
       expect.objectContaining({
-        actorType: "ADMIN",
-        reason: "Pedido do titular",
-        source: "BACKOFFICE",
+        count: 2,
+        event: "account_deletion_storage_deferred",
       }),
     );
-    expect(identity.unbanIdentity).toHaveBeenCalledWith("auth-1");
-    expect(deliverEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ outboxId: "out-2" }),
-    );
-  });
-
-  it("does not let non-administrators recover accounts", async () => {
-    const { repository, service } = setup();
-
-    await expect(
-      service.recoverAccount({
-        accountId: "acc-1",
-        reason: "Pedido do titular",
-        requestId: "r2",
-      }),
-    ).rejects.toThrow();
-    expect(repository.recoverAccount).not.toHaveBeenCalled();
-  });
-
-  it("reports closed windows as not recoverable", async () => {
-    const { adminService, identity } = setup({
-      repositoryError: new Error("account_recovery_window_closed"),
-    });
-
-    await expect(
-      adminService.recoverAccount({
-        accountId: "acc-1",
-        reason: "Tarde demais",
-        requestId: "r2",
-      }),
-    ).resolves.toEqual({ kind: "not_recoverable" });
-    expect(identity.unbanIdentity).not.toHaveBeenCalled();
   });
 });

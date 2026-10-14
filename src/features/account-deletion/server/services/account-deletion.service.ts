@@ -4,36 +4,36 @@ import type { ApplicationTransaction } from "@/db/client";
 import type { VerifiedAuditContext } from "@/features/audit/server";
 import {
   AccountAccessError,
-  requireAdmin,
   type VerifiedAccountContext,
   type VerifiedAccountTransactionRunner,
 } from "@/features/identity/server";
 
 import { isRecentLogin } from "../../domain/deletion-policy";
-import type {
-  RecoveredAccount,
-  RequestedAccountDeletion,
-} from "../../types/account-deletion.types";
+import type { DeletedAccount } from "../../types/account-deletion.types";
 import type { AccountDeletionIdentityGateway } from "../gateways/supabase-account-deletion-identity.gateway";
 import { collectErrorMessages } from "./account-deletion-errors";
+import type { StorageCleanup } from "./storage-cleanup.service";
 
-export type RequestDeletionResult =
+export type DeleteAccountResult =
+  | { kind: "deleted" }
   | { kind: "invalid_password" }
   | { kind: "not_available" }
-  | { kind: "reauthentication_required" }
-  | { eliminationEligibleAt: Date; kind: "requested" };
-
-export type RecoverAccountResult =
-  { kind: "not_recoverable" } | { kind: "recovered"; accountId: string };
+  | { kind: "reauthentication_required" };
 
 interface Repository {
-  recoverAccount(
+  deleteOwnAccount(
     transaction: ApplicationTransaction,
-    input: { accountId: string; reason: string },
-  ): Promise<RecoveredAccount>;
-  requestOwnDeletion(
-    transaction: ApplicationTransaction,
-  ): Promise<RequestedAccountDeletion>;
+  ): Promise<DeletedAccount>;
+}
+
+export interface AccountDeletionLogEvent {
+  count?: number;
+  event:
+    | "account_deletion_completed"
+    | "account_deletion_session_revoke_failed"
+    | "account_deletion_storage_deferred";
+  level: "error" | "info" | "warn";
+  requestId: string;
 }
 
 interface Dependencies {
@@ -47,15 +47,13 @@ interface Dependencies {
   }): Promise<void>;
   identity: Pick<
     AccountDeletionIdentityGateway,
-    | "banIdentity"
-    | "getReauthenticationContext"
-    | "signOutEverywhere"
-    | "unbanIdentity"
-    | "verifyPassword"
+    "getReauthenticationContext" | "signOutEverywhere" | "verifyPassword"
   >;
+  log?: (event: AccountDeletionLogEvent) => void;
   now?: () => Date;
   repository: Repository;
   runVerifiedTransaction: VerifiedAccountTransactionRunner;
+  storage: Pick<StorageCleanup, "remove">;
 }
 
 const NOT_AVAILABLE_MARKERS = [
@@ -63,40 +61,33 @@ const NOT_AVAILABLE_MARKERS = [
   "account_deletion_context_required",
   "account_deletion_not_available",
   "account_deletion_role_forbidden",
+  "ACCOUNT_NOT_READY",
+  "ROLE_FORBIDDEN",
 ];
 
-const NOT_RECOVERABLE_MARKERS = [
-  "account_recovery_not_pending",
-  "account_recovery_window_closed",
-];
-
+/**
+ * Immediate, permanent deletion of the caller's own creator/company account.
+ * The database step is one audited transaction; everything after the commit
+ * (Storage, e-mail, sessions) is best effort and never undoes the deletion.
+ */
 export function createAccountDeletionService({
   applyAuditContext,
   deliverEmail,
   identity,
+  log = () => undefined,
   now = () => new Date(),
   repository,
   runVerifiedTransaction,
+  storage,
 }: Dependencies) {
-  async function deliverQuietly(outboxId: string, source: string) {
-    try {
-      await deliverEmail?.({
-        outboxId,
-        workerId: `${source}:${crypto.randomUUID()}`,
-      });
-    } catch {
-      // The outbox row is committed; the scheduled fallback retries delivery.
-    }
-  }
-
   return {
-    async requestDeletion({
+    async deleteAccount({
       password,
       requestId,
     }: {
       password?: string;
       requestId: string;
-    }): Promise<RequestDeletionResult> {
+    }): Promise<DeleteAccountResult> {
       const reauthentication = await identity.getReauthenticationContext();
 
       if (!reauthentication) {
@@ -115,12 +106,14 @@ export function createAccountDeletionService({
         return { kind: "reauthentication_required" };
       }
 
-      let requested: RequestedAccountDeletion;
+      let deleted: DeletedAccount;
 
       try {
-        requested = await runVerifiedTransaction(
+        deleted = await runVerifiedTransaction(
           { preferredRole: "NON_ADMIN", requestId },
           async (transaction, context: VerifiedAccountContext) => {
+            // Only the linked creator/company row is ever deleted; an ADMIN row
+            // of the same login stays untouched.
             if (context.role === "ADMIN") {
               throw new AccountAccessError("ROLE_FORBIDDEN");
             }
@@ -129,100 +122,76 @@ export function createAccountDeletionService({
               actorAccountId: context.accountId,
               actorRole: context.role,
               actorType: "USER",
-              reason: "Exclusão de conta solicitada pelo titular",
+              reason: "Exclusão de conta pelo titular",
               requestId,
               source: "APPLICATION",
             });
 
-            return repository.requestOwnDeletion(transaction);
+            return repository.deleteOwnAccount(transaction);
           },
         );
       } catch (error) {
         const message = collectErrorMessages(error);
 
-        if (
-          NOT_AVAILABLE_MARKERS.some((marker) => message.includes(marker)) ||
-          message.includes("ACCOUNT_NOT_READY") ||
-          message.includes("ROLE_FORBIDDEN")
-        ) {
+        if (NOT_AVAILABLE_MARKERS.some((marker) => message.includes(marker))) {
           return { kind: "not_available" };
         }
 
         throw error;
       }
 
-      await deliverQuietly(requested.outboxId, "account-deletion");
+      // The data is gone from the database. Objects that cannot be removed now
+      // stay in the cleanup queue (orphaned objects are unreachable: their
+      // media rows no longer exist and URLs are signed).
+      try {
+        const removal = await storage.remove(deleted.storageObjects);
 
-      // The account is already hidden and archived. Locking the identity and
-      // revoking sessions keeps the owner out; a failure here is retried by the
-      // scheduled routine only after elimination, so it must not be silent.
-      const locked = await identity.banIdentity(requested.authUserId);
-      await identity.signOutEverywhere();
-
-      if (!locked) {
-        throw new Error("account_deletion_identity_lock_failed");
+        if (removal.failed > 0) {
+          log({
+            count: removal.failed,
+            event: "account_deletion_storage_deferred",
+            level: "warn",
+            requestId,
+          });
+        }
+      } catch {
+        log({
+          count: deleted.storageObjects.length,
+          event: "account_deletion_storage_deferred",
+          level: "warn",
+          requestId,
+        });
       }
-
-      return {
-        eliminationEligibleAt: requested.eliminationEligibleAt,
-        kind: "requested",
-      };
-    },
-
-    async recoverAccount({
-      accountId,
-      reason,
-      requestId,
-    }: {
-      accountId: string;
-      reason: string;
-      requestId: string;
-    }): Promise<RecoverAccountResult> {
-      let recovered: RecoveredAccount;
 
       try {
-        recovered = await runVerifiedTransaction(
-          { preferredRole: "ADMIN", requestId },
-          async (transaction, context) => {
-            requireAdmin({
-              id: context.accountId,
-              role: context.role,
-              status: context.status,
-            });
-            await applyAuditContext(transaction, {
-              actorAccountId: context.accountId,
-              actorRole: "ADMIN",
-              actorType: "ADMIN",
-              reason,
-              requestId,
-              source: "BACKOFFICE",
-            });
-
-            return repository.recoverAccount(transaction, {
-              accountId,
-              reason,
-            });
-          },
-        );
-      } catch (error) {
-        const message = collectErrorMessages(error);
-
-        if (
-          NOT_RECOVERABLE_MARKERS.some((marker) => message.includes(marker))
-        ) {
-          return { kind: "not_recoverable" };
-        }
-
-        throw error;
+        await deliverEmail?.({
+          outboxId: deleted.outboxId,
+          workerId: `account-deletion:${crypto.randomUUID()}`,
+        });
+      } catch {
+        // The outbox row is committed; the scheduled fallback retries delivery.
       }
 
-      if (!(await identity.unbanIdentity(recovered.authUserId))) {
-        throw new Error("account_recovery_identity_unlock_failed");
+      // The login is kept and never banned: only its sessions end.
+      let revoked = false;
+
+      try {
+        revoked = await identity.signOutEverywhere();
+      } catch {
+        revoked = false;
       }
 
-      await deliverQuietly(recovered.outboxId, "account-recovery");
+      if (!revoked) {
+        log({
+          event: "account_deletion_session_revoke_failed",
+          level: "error",
+          requestId,
+        });
+      }
 
-      return { accountId: recovered.accountId, kind: "recovered" };
+      log({ event: "account_deletion_completed", level: "info", requestId });
+
+      return { kind: "deleted" };
     },
   };
 }

@@ -48,6 +48,8 @@ async function loadInfluencerProfile(
       displayName: creatorProfiles.displayName,
       id: creatorProfiles.id,
       isCdlMember: creatorProfiles.isCdlMember,
+      isInfluencerJourneyParticipant:
+        creatorProfiles.isInfluencerJourneyParticipant,
       legalName: creatorProfiles.legalName,
       state: creatorProfiles.state,
       version: creatorProfiles.version,
@@ -88,6 +90,7 @@ async function loadInfluencerProfile(
         followerCount: creatorMetricSnapshots.followerCount,
         observedOn: creatorMetricSnapshots.observedOn,
         platform: creatorMetricSnapshots.platform,
+        sharedContentCount: creatorMetricSnapshots.sharedContentCount,
         socialProfileId: creatorMetricSnapshots.socialProfileId,
       })
       .from(creatorMetricSnapshots)
@@ -106,6 +109,7 @@ async function loadInfluencerProfile(
     followerCount: metric.followerCount,
     observedOn: metric.observedOn.toISOString().slice(0, 10),
     platform: metric.platform,
+    sharedContentCount: metric.sharedContentCount,
   }));
 
   if (!social) {
@@ -142,6 +146,7 @@ async function loadInfluencerProfile(
       engagementRate: Number(metric.engagementRate ?? 0),
       followers: metric.followerCount ?? 0,
       isCdlMember: profile.isCdlMember,
+      isInfluencerJourneyParticipant: profile.isInfluencerJourneyParticipant,
       legalName: profile.legalName,
       nicheSlugs: selectedNiches.map((niche) => niche.slug),
       socialPlatform: social.platform,
@@ -168,6 +173,8 @@ async function loadCompanyProfile(
       employeeRange: companyProfiles.employeeRange,
       id: companyProfiles.id,
       isCdlMember: companyProfiles.isCdlMember,
+      isInfluencerJourneyParticipant:
+        companyProfiles.isInfluencerJourneyParticipant,
       legalName: companyProfiles.legalName,
       logoAssetId: companyProfiles.logoAssetId,
       segment: companyProfiles.segment,
@@ -248,6 +255,7 @@ async function loadCompanyProfile(
       employeeRange:
         profile.employeeRange as BackofficeCompanyEditableProfileDto["employeeRange"],
       isCdlMember: profile.isCdlMember,
+      isInfluencerJourneyParticipant: profile.isInfluencerJourneyParticipant,
       legalName: profile.legalName,
       logoAssetId: profile.logoAssetId,
       neighborhood: primaryLocation.neighborhood ?? "",

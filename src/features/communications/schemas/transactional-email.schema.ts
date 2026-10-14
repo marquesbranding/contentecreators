@@ -59,13 +59,6 @@ const changesRequestedPayloadSchema = z
 
 const emptyPayloadSchema = z.object({}).strict();
 
-const accountDeletionRequestedPayloadSchema = z
-  .object({
-    eliminationBy: z.iso.datetime(),
-    recoverableUntil: z.iso.datetime(),
-  })
-  .strict();
-
 const transactionalEmailInputSchema = z.discriminatedUnion("template", [
   z.object({
     appUrl: appUrlSchema,
@@ -104,7 +97,7 @@ const transactionalEmailInputSchema = z.discriminatedUnion("template", [
   }),
   z.object({
     appUrl: appUrlSchema,
-    payload: accountDeletionRequestedPayloadSchema,
+    payload: emptyPayloadSchema,
     template: z.literal("ACCOUNT_DELETION_REQUESTED"),
   }),
   z.object({

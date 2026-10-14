@@ -6,7 +6,6 @@ import {
   count,
   desc,
   eq,
-  inArray,
   isNotNull,
   isNull,
   or,
@@ -49,7 +48,9 @@ function listPredicates(filters: AccountManagementFilters) {
   } else if (filters.archive === "ARCHIVED") {
     predicates.push(isNotNull(accounts.archivedAt));
   } else if (filters.archive === "DELETION") {
-    predicates.push(inArray(accounts.deletionState, ["REQUESTED", "FAILED"]));
+    // Deleted accounts (tombstones), plus legacy ones the previous 30-day flow
+    // left pending until the operator script eliminates them.
+    predicates.push(isNotNull(accounts.deletionState));
   }
 
   if (filters.search) {

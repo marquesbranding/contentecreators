@@ -107,6 +107,7 @@ export interface BackofficeInfluencerSubmissionReviewDto extends BackofficeSubmi
     creatorType: CreatorType;
     displayName: string;
     isCdlMember: boolean;
+    isInfluencerJourneyParticipant: boolean;
     legalName: string;
     niches: Array<{ name: string; slug: string }>;
     selfReportedMetrics: Array<{
@@ -114,6 +115,7 @@ export interface BackofficeInfluencerSubmissionReviewDto extends BackofficeSubmi
       followerCount: number | null;
       observedOn: string;
       platform: SocialPlatform;
+      sharedContentCount: number | null;
     }>;
     state: string | null;
     version: number;
@@ -132,6 +134,7 @@ export interface BackofficeCompanySubmissionReviewDto extends BackofficeSubmissi
     description: string | null;
     employeeRange: string | null;
     isCdlMember: boolean;
+    isInfluencerJourneyParticipant: boolean;
     legalName: string;
     locations: Array<{
       city: string;

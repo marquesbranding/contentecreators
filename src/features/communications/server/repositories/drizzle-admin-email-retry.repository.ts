@@ -79,6 +79,8 @@ export function createDrizzleAdminEmailRetryRepository({
                   and outbox.status = 'DEAD_LETTER'::public.email_outbox_status
                   and outbox.sent_at is null
                   and outbox.max_attempts < 20
+                  -- Rows of a deleted account have no recipient anymore.
+                  and outbox.recipient_email not like '%@eliminated.invalid'
                 returning outbox.id
               )
               select

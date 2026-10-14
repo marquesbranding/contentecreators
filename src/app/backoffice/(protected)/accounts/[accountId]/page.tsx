@@ -1,16 +1,8 @@
-import { Pencil } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import {
-  RecoverAccountPanel,
-  isRecoverable,
-} from "@/features/account-deletion/client";
-import { recoverAccountAction } from "@/features/account-deletion/server";
 import { AccountDetail } from "@/features/backoffice";
 import { loadBackofficeAccountDetail } from "@/features/backoffice/server";
-import { buttonVariants } from "@/shared/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Detalhes da conta",
@@ -37,46 +29,5 @@ export default async function BackofficeAccountDetailPage({
     notFound();
   }
 
-  const editableProfile = detail.profile?.editableProfile;
-  const canEditProfile =
-    editableProfile &&
-    !detail.account.archivedAt &&
-    detail.account.status !== "BANNED";
-
-  return (
-    <AccountDetail
-      deletionPanel={
-        detail.account.deletionState &&
-        detail.account.eliminationEligibleAt &&
-        detail.account.deletionDueAt ? (
-          <RecoverAccountPanel
-            accountId={accountId}
-            action={recoverAccountAction}
-            deletionDueAt={detail.account.deletionDueAt}
-            deletionState={detail.account.deletionState}
-            eliminationEligibleAt={detail.account.eliminationEligibleAt}
-            recoverable={isRecoverable(
-              {
-                deletionState: detail.account.deletionState,
-                eliminationEligibleAt: detail.account.eliminationEligibleAt,
-              },
-              new Date(),
-            )}
-          />
-        ) : null
-      }
-      detail={detail}
-      profileActions={
-        canEditProfile ? (
-          <Link
-            className={buttonVariants({ variant: "outline" })}
-            href={`/backoffice/accounts/${accountId}/edit`}
-          >
-            <Pencil aria-hidden="true" />
-            Editar perfil
-          </Link>
-        ) : null
-      }
-    />
-  );
+  return <AccountDetail detail={detail} />;
 }

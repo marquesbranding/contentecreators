@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   UserRound,
 } from "lucide-react";
+import Link from "next/link";
 
 import {
   Alert,
@@ -107,6 +108,10 @@ function accountRoleLabel(role: BackofficeAccountDetailDto["account"]["role"]) {
 }
 
 function displayName(detail: BackofficeAccountDetailDto) {
+  if (detail.account.deletionState === "ELIMINATED") {
+    return "Conta excluída";
+  }
+
   return detail.profile?.editableProfile
     ? detail.profile.kind === "COMPANY"
       ? detail.profile.editableProfile.tradeName
@@ -114,13 +119,32 @@ function displayName(detail: BackofficeAccountDetailDto) {
     : detail.account.operationalEmail.split("@")[0];
 }
 
-function ProfileCard({
-  detail,
-  profileActions,
-}: {
-  detail: BackofficeAccountDetailDto;
-  profileActions?: React.ReactNode;
-}) {
+/**
+ * Replaces the former "Editar perfil" action: corrections are requested from
+ * moderation and made by the account owner, never edited by the backoffice.
+ */
+function CorrectionHint({ detail }: { detail: BackofficeAccountDetailDto }) {
+  const hasSubmission = Boolean(detail.moderation?.submittedAt);
+
+  return (
+    <p className="text-muted-foreground max-w-sm text-sm">
+      Para corrigir dados, use{" "}
+      {hasSubmission ? (
+        <Link
+          className="text-brand-blue font-semibold underline underline-offset-4"
+          href={`/backoffice/moderation/${detail.account.id}`}
+        >
+          Solicitar alterações na moderação
+        </Link>
+      ) : (
+        "Solicitar alterações na moderação"
+      )}
+      .
+    </p>
+  );
+}
+
+function ProfileCard({ detail }: { detail: BackofficeAccountDetailDto }) {
   if (!detail.profile?.editableProfile) {
     return (
       <Card>
@@ -161,7 +185,7 @@ function ProfileCard({
                 Dados da versão {profile.version}.
               </CardDescription>
             </div>
-            {profileActions}
+            <CorrectionHint detail={detail} />
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -186,6 +210,10 @@ function ProfileCard({
             <Field
               label="Associado da CDL"
               value={profile.isCdlMember ? "Sim" : "Não"}
+            />
+            <Field
+              label="Jornada do Influenciador"
+              value={profile.isInfluencerJourneyParticipant ? "Sim" : "Não"}
             />
             <Field label="Rede principal" value={profile.socialPlatform} />
             <Field
@@ -234,6 +262,12 @@ function ProfileCard({
                         ? "Engajamento não informado"
                         : `${metric.engagementRate}% de engajamento`}
                     </p>
+                    {metric.sharedContentCount === null ? null : (
+                      <p className="text-muted-foreground text-sm">
+                        {formatNumber(metric.sharedContentCount)} conteúdos
+                        compartilhados
+                      </p>
+                    )}
                     <p className="text-muted-foreground mt-2 text-xs">
                       Referência: {formatDate(metric.observedOn)}
                     </p>
@@ -267,7 +301,7 @@ function ProfileCard({
               Dados da versão {profile.version}.
             </CardDescription>
           </div>
-          {profileActions}
+          <CorrectionHint detail={detail} />
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -279,6 +313,10 @@ function ProfileCard({
           <Field
             label="Associado da CDL"
             value={profile.isCdlMember ? "Sim" : "Não"}
+          />
+          <Field
+            label="Jornada do Influenciador"
+            value={profile.isInfluencerJourneyParticipant ? "Sim" : "Não"}
           />
           <Field
             label="Faixa de colaboradores"
@@ -583,20 +621,14 @@ function OperationalMetadata({
 }
 
 export function AccountDetail({
-  deletionPanel,
   detail,
-  profileActions,
 }: {
-  /** Recovery panel for accounts with a pending self-service deletion. */
-  deletionPanel?: React.ReactNode;
   detail: BackofficeAccountDetailDto;
-  /**
-   * Extension point for task 17.3. Pass an authorized admin edit trigger/form
-   * here; `detail.profile.editableProfile` already carries the profile version.
-   */
-  profileActions?: React.ReactNode;
 }) {
   const name = displayName(detail);
+  // Deletion is immediate and permanent: a deleted account is a read-only
+  // tombstone without personal data and nothing to recover.
+  const deleted = detail.account.deletionState === "ELIMINATED";
 
   return (
     <div className="space-y-6">
@@ -608,17 +640,25 @@ export function AccountDetail({
           <h1 className="text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
             {name}
           </h1>
-          <p className="text-muted-foreground flex items-center gap-2 break-all">
-            <Mail aria-hidden="true" className="size-4 shrink-0" />
-            {detail.account.operationalEmail}
-          </p>
+          {deleted ? (
+            <p className="text-muted-foreground">
+              Excluída pelo titular. Não há dados pessoais nem recuperação.
+            </p>
+          ) : (
+            <p className="text-muted-foreground flex items-center gap-2 break-all">
+              <Mail aria-hidden="true" className="size-4 shrink-0" />
+              {detail.account.operationalEmail}
+            </p>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           <Badge>{getModerationStatusLabel(detail.account.status)}</Badge>
           <Badge variant="outline">
             {accountRoleLabel(detail.account.role)}
           </Badge>
-          {detail.account.archivedAt ? (
+          {deleted ? (
+            <Badge variant="destructive">Excluída</Badge>
+          ) : detail.account.archivedAt ? (
             <Badge variant="destructive">Arquivada</Badge>
           ) : null}
         </div>
@@ -638,8 +678,7 @@ export function AccountDetail({
         </CardContent>
       </Card>
 
-      {deletionPanel}
-      <ProfileCard detail={detail} profileActions={profileActions} />
+      <ProfileCard detail={detail} />
       <EvidenceCards detail={detail} />
       <ModerationHistory detail={detail} />
       <OperationalMetadata detail={detail} />

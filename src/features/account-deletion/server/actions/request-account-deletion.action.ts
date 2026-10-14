@@ -53,7 +53,7 @@ export async function requestAccountDeletionAction(
 
   try {
     const service = await createServerAccountDeletionService();
-    const result = await service.requestDeletion({
+    const result = await service.deleteAccount({
       password: parsed.data.password,
       requestId,
     });
@@ -91,7 +91,8 @@ export async function requestAccountDeletionAction(
 
     return {
       code: "UNKNOWN",
-      message: "Não foi possível concluir a exclusão agora. Tente novamente.",
+      message:
+        "Não foi possível excluir sua conta agora e nada foi removido. Tente novamente.",
       status: "error",
     };
   }

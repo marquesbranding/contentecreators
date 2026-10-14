@@ -178,7 +178,7 @@ describeLocalStack("Drizzle admin provisioning repository", () => {
     let result:
       | {
           account: {
-            authUserId: string;
+            authUserId: string | null;
             role: string | null;
             status: string;
           };
@@ -417,7 +417,7 @@ describeLocalStack("Drizzle admin provisioning repository", () => {
     let result:
       | {
           account: {
-            authUserId: string;
+            authUserId: string | null;
             role: string | null;
             status: string;
           };

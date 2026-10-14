@@ -79,9 +79,7 @@ describe("BackofficeShell", () => {
   });
 
   it("marks account operations active and hides identifiers from nested breadcrumbs", () => {
-    renderShell(
-      "/backoffice/accounts/61d89515-0d70-4b03-a251-51bb21c279d0/edit",
-    );
+    renderShell("/backoffice/accounts/61d89515-0d70-4b03-a251-51bb21c279d0");
 
     const navigation = screen.getByRole("navigation", {
       name: "Navegação do backoffice",
@@ -100,7 +98,7 @@ describe("BackofficeShell", () => {
       within(breadcrumb).getByRole("link", { name: "Contas" }),
     ).toHaveAttribute("href", "/backoffice/accounts");
     expect(within(breadcrumb).getByText("Detalhes da conta")).toBeVisible();
-    expect(within(breadcrumb).getByText("Editar perfil")).toBeVisible();
+    expect(within(breadcrumb).queryByText("Editar perfil")).toBeNull();
     expect(breadcrumb).not.toHaveTextContent(
       "61d89515-0d70-4b03-a251-51bb21c279d0",
     );

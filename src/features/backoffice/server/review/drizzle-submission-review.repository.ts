@@ -255,6 +255,8 @@ export function createDrizzleSubmissionReviewRepository({
                 creatorType: creatorProfiles.creatorType,
                 displayName: creatorProfiles.displayName,
                 isCdlMember: creatorProfiles.isCdlMember,
+                isInfluencerJourneyParticipant:
+                  creatorProfiles.isInfluencerJourneyParticipant,
                 legalName: creatorProfiles.legalName,
                 state: creatorProfiles.state,
                 version: creatorProfiles.version,
@@ -288,6 +290,7 @@ export function createDrizzleSubmissionReviewRepository({
                 followerCount: creatorMetricSnapshots.followerCount,
                 observedOn: creatorMetricSnapshots.observedOn,
                 platform: creatorMetricSnapshots.platform,
+                sharedContentCount: creatorMetricSnapshots.sharedContentCount,
               })
               .from(creatorMetricSnapshots)
               .innerJoin(
@@ -318,6 +321,8 @@ export function createDrizzleSubmissionReviewRepository({
                 creatorType: profile.creatorType,
                 displayName: profile.displayName,
                 isCdlMember: profile.isCdlMember,
+                isInfluencerJourneyParticipant:
+                  profile.isInfluencerJourneyParticipant,
                 legalName: profile.legalName,
                 niches: nicheRows,
                 selfReportedMetrics: metricRows.map((metric) => ({
@@ -339,6 +344,8 @@ export function createDrizzleSubmissionReviewRepository({
               employeeRange: companyProfiles.employeeRange,
               id: companyProfiles.id,
               isCdlMember: companyProfiles.isCdlMember,
+              isInfluencerJourneyParticipant:
+                companyProfiles.isInfluencerJourneyParticipant,
               legalName: companyProfiles.legalName,
               logoAssetId: companyProfiles.logoAssetId,
               coverAssetId: companyProfiles.coverAssetId,
@@ -400,6 +407,8 @@ export function createDrizzleSubmissionReviewRepository({
               description: profile.description,
               employeeRange: profile.employeeRange,
               isCdlMember: profile.isCdlMember,
+              isInfluencerJourneyParticipant:
+                profile.isInfluencerJourneyParticipant,
               legalName: profile.legalName,
               locations: locationRows,
               segment: profile.segment,

@@ -144,12 +144,13 @@ function DesktopAccounts({ items }: { items: ManagedAccountSummaryDto[] }) {
 }
 
 function ArchiveBadge({ item }: { item: ManagedAccountSummaryDto }) {
-  if (item.deletionState === "REQUESTED" || item.deletionState === "FAILED") {
-    return <Badge variant="destructive">Exclusão solicitada</Badge>;
+  if (item.deletionState === "ELIMINATED") {
+    return <Badge variant="destructive">Excluída</Badge>;
   }
 
-  if (item.deletionState === "ELIMINATED") {
-    return <Badge variant="outline">Dados eliminados</Badge>;
+  // Legacy: left by the retired 30-day flow until the operator script runs.
+  if (item.deletionState === "REQUESTED" || item.deletionState === "FAILED") {
+    return <Badge variant="outline">Exclusão pendente</Badge>;
   }
 
   return item.archivedAt ? <Badge variant="outline">Arquivada</Badge> : null;

@@ -30,9 +30,12 @@ the Beta.
 
 ## Approved-account operations
 
-- **Edit profile**: use the account detail form. It uses the same validation,
-  optimistic version, and audit pipeline as owner editing. Approval remains
-  unchanged.
+- **Correct profile data**: the backoffice does not edit declared profile data.
+  Corrections are only made by the account owner. To request one, use
+  **Solicitar alterações** in moderation with a concrete `pt-BR` reason naming
+  the fields to fix; the account detail page links to that review. The owner
+  edits the data in their own profile and resubmits. Approval remains unchanged
+  while the owner edits.
 - **Suspend**: use for a reversible access restriction. Enter a specific
   reason; the profile disappears from catalogs immediately.
 - **Restore**: only after the suspension reason is resolved. Record why access

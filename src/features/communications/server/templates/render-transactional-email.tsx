@@ -95,18 +95,23 @@ const templateCopy = {
     preview: "Seu acesso administrativo à Contente Creators está disponível.",
     subject: "Seu acesso administrativo está disponível",
   },
+  // Legacy enum name: since review 04 it confirms an immediate, permanent
+  // deletion (no recovery window).
   ACCOUNT_DELETION_REQUESTED: {
-    actionLabel: "Fale com a gente",
+    actionLabel: "Ir para a Contente Creators",
     body: [
-      "Recebemos o pedido para excluir a sua conta na Contente Creators. Seu perfil já não aparece mais para outros usuários.",
-      "Se foi um engano, entre em contato com a gente antes da data abaixo e recuperamos a sua conta.",
+      "Confirmamos a exclusão da sua conta na Contente Creators. Seu perfil, suas fotos e seus dados foram apagados e não podem ser restaurados.",
+      "Guardamos apenas o que a lei exige, como os registros de acesso por 6 meses e a comprovação dos seus aceites, sem seu nome nem seu e-mail.",
+      "Se quiser voltar, é só se cadastrar de novo quando quiser, com o mesmo e-mail ou a mesma conta Google.",
+      "Se não foi você quem pediu a exclusão, escreva para contato@marquesbranding.com.",
     ],
-    heading: "Recebemos o pedido de exclusão da sua conta",
+    heading: "Sua conta foi excluída",
     path: "/",
     preview:
-      "Seu pedido de exclusão foi recebido. Você ainda pode recuperar a conta por 30 dias.",
-    subject: "Recebemos o pedido de exclusão da sua conta",
+      "Sua conta e seus dados foram apagados. Se quiser voltar, é só se cadastrar de novo.",
+    subject: "Sua conta foi excluída",
   },
+  // Legacy: only rendered for rows queued by the retired recovery flow.
   ACCOUNT_RECOVERED: {
     actionLabel: "Entrar na plataforma",
     body: [
@@ -146,7 +151,7 @@ export async function renderTransactionalEmail(
     <TransactionalEmail
       actionLabel={copy.actionLabel}
       actionUrl={actionUrl}
-      body={[...copy.body, ...dynamicBodyLines(parsed)]}
+      body={copy.body}
       heading={copy.heading}
       logoUrl={logoUrl}
       preview={copy.preview}
@@ -208,23 +213,4 @@ function getRequestedFieldLabels(
       ? `${getCorrectableFieldLabel(item.field)}: ${item.note}`
       : getCorrectableFieldLabel(item.field),
   );
-}
-
-function dynamicBodyLines(input: ParsedTransactionalEmailInput): string[] {
-  if (input.template !== "ACCOUNT_DELETION_REQUESTED") {
-    return [];
-  }
-
-  return [
-    `Você pode pedir a recuperação da conta até ${formatPtBrDate(input.payload.recoverableUntil)}.`,
-    `Depois disso, eliminaremos seus dados pessoais, no máximo até ${formatPtBrDate(input.payload.eliminationBy)}, salvo o que a lei exige guardar (como os registros de acesso, por 6 meses).`,
-    "Para recuperar a conta, escreva para contato@marquesbranding.com.",
-  ];
-}
-
-function formatPtBrDate(isoDate: string): string {
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "long",
-    timeZone: "America/Sao_Paulo",
-  }).format(new Date(isoDate));
 }
