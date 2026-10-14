@@ -161,7 +161,6 @@ describe("SponsorshipCarousel", () => {
       "Ir para a posição 2 de 3 dos patrocínios",
       "Ir para a posição 3 de 3 dos patrocínios",
       "Próximo patrocínio",
-      "Pausar rotação dos patrocínios",
     ]);
     expect(
       screen.getByRole("button", {
@@ -203,11 +202,39 @@ describe("SponsorshipCarousel", () => {
       name: "Patrocínios em destaque",
     });
 
-    fireEvent.pointerEnter(region);
+    fireEvent.pointerEnter(region, { pointerType: "mouse" });
     tick(30_000);
     expect(scrollTo).not.toHaveBeenCalled();
 
-    fireEvent.pointerLeave(region);
+    fireEvent.pointerLeave(region, { pointerType: "mouse" });
+    tick(5_000);
+    expect(lastScrollLeft()).toBe(116);
+  });
+
+  it("pauses while a touch is pressed and held, and resumes on release", () => {
+    overflowingLayout();
+    render(<SponsorshipCarousel creatives={creatives(5)} />);
+    const region = screen.getByRole("region", {
+      name: "Patrocínios em destaque",
+    });
+
+    fireEvent.pointerDown(region, { pointerType: "touch" });
+    tick(30_000);
+    expect(scrollTo).not.toHaveBeenCalled();
+
+    fireEvent.pointerUp(region, { pointerType: "touch" });
+    tick(5_000);
+    expect(lastScrollLeft()).toBe(116);
+  });
+
+  it("does not treat a touch pointerenter as hover", () => {
+    overflowingLayout();
+    render(<SponsorshipCarousel creatives={creatives(5)} />);
+
+    fireEvent.pointerEnter(
+      screen.getByRole("region", { name: "Patrocínios em destaque" }),
+      { pointerType: "touch" },
+    );
     tick(5_000);
     expect(lastScrollLeft()).toBe(116);
   });
@@ -233,23 +260,6 @@ describe("SponsorshipCarousel", () => {
     expect(lastScrollLeft()).toBe(116);
   });
 
-  it("can be paused and resumed with the button", () => {
-    overflowingLayout();
-    render(<SponsorshipCarousel creatives={creatives(5)} />);
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Pausar rotação dos patrocínios" }),
-    );
-    tick(30_000);
-    expect(scrollTo).not.toHaveBeenCalled();
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Retomar rotação dos patrocínios" }),
-    );
-    tick(5_000);
-    expect(lastScrollLeft()).toBe(116);
-  });
-
   it("does not autoplay with reduced motion but stays navigable", () => {
     stubReducedMotion(true);
     overflowingLayout();
@@ -258,7 +268,7 @@ describe("SponsorshipCarousel", () => {
     tick(60_000);
     expect(scrollTo).not.toHaveBeenCalled();
     expect(
-      screen.queryByRole("button", { name: /Pausar rotação/ }),
+      screen.queryByRole("button", { name: /Pausar|Retomar/ }),
     ).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Próximo patrocínio" }));
@@ -272,7 +282,7 @@ describe("SponsorshipCarousel", () => {
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
     expect(screen.queryByRole("group")).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /patrocínio|Pausar/i }),
+      screen.queryByRole("button", { name: /patrocínio|Pausar|Retomar/i }),
     ).not.toBeInTheDocument();
     tick(60_000);
     expect(scrollTo).not.toHaveBeenCalled();

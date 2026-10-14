@@ -305,9 +305,11 @@ test.describe("client review R04", () => {
         rotator.getByRole("button", { name: /Ir para o banner 2 de \d/u }),
       ).toHaveAttribute("aria-current", "true", { timeout: 12_000 });
 
-      await rotator
-        .getByRole("button", { name: "Pausar rotação dos banners" })
-        .click();
+      // No pause button: hovering with the mouse pauses the rotation.
+      await expect(
+        rotator.getByRole("button", { name: /Pausar|Retomar/u }),
+      ).toHaveCount(0);
+      await rotator.hover();
       await rotator
         .getByRole("button", { name: /Ir para o banner 1 de \d/u })
         .click();

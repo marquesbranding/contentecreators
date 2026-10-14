@@ -53,9 +53,7 @@ function Harness({
       <output data-testid="index">{advance.activeIndex}</output>
       <output data-testid="playing">{String(advance.isPlaying)}</output>
       <output data-testid="can-autoplay">{String(advance.canAutoplay)}</output>
-      <button onClick={advance.togglePaused} type="button">
-        toggle
-      </button>
+      <button type="button">toggle</button>
       <button onClick={() => advance.goTo(2)} type="button">
         go-2
       </button>
@@ -129,22 +127,70 @@ describe("useAutoAdvance", () => {
     render(<Harness />);
     const zone = screen.getByTestId("zone");
 
-    fireEvent.pointerEnter(zone);
+    fireEvent.pointerEnter(zone, { pointerType: "mouse" });
     tick(5_000);
     expect(index()).toBe("0");
     expect(screen.getByTestId("playing")).toHaveTextContent("false");
 
-    fireEvent.pointerLeave(zone);
+    fireEvent.pointerLeave(zone, { pointerType: "mouse" });
     tick(1_000);
     expect(index()).toBe("1");
   });
 
-  it("does not treat a touch contact as hover", () => {
+  it("does not treat a touch or pen pointerenter as hover", () => {
+    render(<Harness />);
+    const zone = screen.getByTestId("zone");
+
+    fireEvent.pointerEnter(zone, { pointerType: "touch" });
+    fireEvent.pointerEnter(zone, { pointerType: "pen" });
+    tick(1_000);
+    expect(index()).toBe("1");
+  });
+
+  it.each(["touch", "pen"])(
+    "holds while a %s contact is pressed and resumes when it is released",
+    (pointerType) => {
+      render(<Harness />);
+      const zone = screen.getByTestId("zone");
+
+      fireEvent.pointerDown(zone, { pointerType });
+      tick(5_000);
+      expect(index()).toBe("0");
+      expect(screen.getByTestId("playing")).toHaveTextContent("false");
+
+      fireEvent.pointerUp(zone, { pointerType });
+      tick(1_000);
+      expect(index()).toBe("1");
+    },
+  );
+
+  it("resumes when a held touch is cancelled by the browser (scroll takeover)", () => {
+    render(<Harness />);
+    const zone = screen.getByTestId("zone");
+
+    fireEvent.pointerDown(zone, { pointerType: "touch" });
+    tick(3_000);
+    expect(index()).toBe("0");
+
+    fireEvent.pointerCancel(zone, { pointerType: "touch" });
+    tick(1_000);
+    expect(index()).toBe("1");
+  });
+
+  it("resumes when a held touch leaves the region", () => {
+    render(<Harness />);
+    const zone = screen.getByTestId("zone");
+
+    fireEvent.pointerDown(zone, { pointerType: "touch" });
+    fireEvent.pointerLeave(zone, { pointerType: "touch" });
+    tick(1_000);
+    expect(index()).toBe("1");
+  });
+
+  it("does not hold for a mouse button press", () => {
     render(<Harness />);
 
-    fireEvent.pointerEnter(screen.getByTestId("zone"), {
-      pointerType: "touch",
-    });
+    fireEvent.pointerDown(screen.getByTestId("zone"), { pointerType: "mouse" });
     tick(1_000);
     expect(index()).toBe("1");
   });
@@ -197,31 +243,6 @@ describe("useAutoAdvance", () => {
     expect(index()).toBe("1");
   });
 
-  it("pauses and resumes on demand", () => {
-    render(<Harness />);
-    const toggle = screen.getByRole("button", { name: "toggle" });
-
-    fireEvent.click(toggle);
-    tick(5_000);
-    expect(index()).toBe("0");
-
-    fireEvent.click(toggle);
-    tick(1_000);
-    expect(index()).toBe("1");
-  });
-
-  it("lets an explicit resume win over the pointer resting on the controls", () => {
-    render(<Harness />);
-    const zone = screen.getByTestId("zone");
-    const toggle = screen.getByRole("button", { name: "toggle" });
-
-    fireEvent.click(toggle);
-    fireEvent.pointerEnter(zone);
-    fireEvent.click(toggle);
-    tick(1_000);
-    expect(index()).toBe("1");
-  });
-
   it("uses the same 5 second rhythm for every carousel", () => {
     expect(CAROUSEL_AUTO_ADVANCE_MS).toBe(5_000);
   });
@@ -255,6 +276,7 @@ describe("useAutoAdvance", () => {
     stubReducedMotion(true);
     render(<Harness />);
 
+    expect(screen.queryByRole("button", { name: /Pausar|Retomar/ })).toBeNull();
     expect(screen.getByTestId("can-autoplay")).toHaveTextContent("false");
     tick(10_000);
     expect(index()).toBe("0");

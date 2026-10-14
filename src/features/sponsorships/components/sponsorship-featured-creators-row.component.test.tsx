@@ -207,11 +207,39 @@ describe("SponsorshipFeaturedCreatorsRow", () => {
       name: "Criadores em destaque",
     });
 
-    fireEvent.pointerEnter(region);
+    fireEvent.pointerEnter(region, { pointerType: "mouse" });
     tick(30_000);
     expect(scrollTo).not.toHaveBeenCalled();
 
-    fireEvent.pointerLeave(region);
+    fireEvent.pointerLeave(region, { pointerType: "mouse" });
+    tick(5_000);
+    expect(lastScrollLeft()).toBe(116);
+  });
+
+  it("pauses while a touch is pressed and held, and resumes on release", () => {
+    overflowingLayout();
+    render(<SponsorshipFeaturedCreatorsRow items={items(5)} />);
+    const region = screen.getByRole("region", {
+      name: "Criadores em destaque",
+    });
+
+    fireEvent.pointerDown(region, { pointerType: "touch" });
+    tick(30_000);
+    expect(scrollTo).not.toHaveBeenCalled();
+
+    fireEvent.pointerUp(region, { pointerType: "touch" });
+    tick(5_000);
+    expect(lastScrollLeft()).toBe(116);
+  });
+
+  it("does not treat a touch pointerenter as hover", () => {
+    overflowingLayout();
+    render(<SponsorshipFeaturedCreatorsRow items={items(5)} />);
+
+    fireEvent.pointerEnter(
+      screen.getByRole("region", { name: "Criadores em destaque" }),
+      { pointerType: "touch" },
+    );
     tick(5_000);
     expect(lastScrollLeft()).toBe(116);
   });
@@ -233,27 +261,6 @@ describe("SponsorshipFeaturedCreatorsRow", () => {
     expect(scrollTo).not.toHaveBeenCalled();
 
     fireEvent.focusOut(link, { relatedTarget: document.body });
-    tick(5_000);
-    expect(lastScrollLeft()).toBe(116);
-  });
-
-  it("can be paused and resumed with the button", () => {
-    overflowingLayout();
-    render(<SponsorshipFeaturedCreatorsRow items={items(5)} />);
-
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: "Pausar rotação dos criadores em destaque",
-      }),
-    );
-    tick(30_000);
-    expect(scrollTo).not.toHaveBeenCalled();
-
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: "Retomar rotação dos criadores em destaque",
-      }),
-    );
     tick(5_000);
     expect(lastScrollLeft()).toBe(116);
   });
@@ -301,7 +308,7 @@ describe("SponsorshipFeaturedCreatorsRow", () => {
     tick(60_000);
     expect(scrollTo).not.toHaveBeenCalled();
     expect(
-      screen.queryByRole("button", { name: /Pausar rotação/ }),
+      screen.queryByRole("button", { name: /Pausar|Retomar/ }),
     ).not.toBeInTheDocument();
     // Still manually scrollable: the list is a plain overflow container.
     expect(screen.getByRole("list")).toHaveClass("overflow-x-auto");
@@ -337,7 +344,6 @@ describe("SponsorshipFeaturedCreatorsRow", () => {
       "Ir para a posição 2 de 3 dos criadores em destaque",
       "Ir para a posição 3 de 3 dos criadores em destaque",
       "Próximo criador em destaque",
-      "Pausar rotação dos criadores em destaque",
     ]);
   });
 
@@ -365,7 +371,7 @@ describe("SponsorshipFeaturedCreatorsRow", () => {
     expect(lastScrollLeft()).toBe(132);
   });
 
-  it("keeps arrows and dots but no pause button with reduced motion", () => {
+  it("keeps arrows and dots with reduced motion and never shows a pause button", () => {
     stubReducedMotion(true);
     overflowingLayout();
     render(<SponsorshipFeaturedCreatorsRow items={items(5)} />);
@@ -374,7 +380,7 @@ describe("SponsorshipFeaturedCreatorsRow", () => {
       screen.getByRole("button", { name: "Próximo criador em destaque" }),
     ).toBeVisible();
     expect(
-      screen.queryByRole("button", { name: /Pausar rotação/ }),
+      screen.queryByRole("button", { name: /Pausar|Retomar/ }),
     ).not.toBeInTheDocument();
     tick(60_000);
     expect(scrollTo).not.toHaveBeenCalled();

@@ -18,12 +18,12 @@ export const HERO_ROTATION_INTERVAL_MS = CAROUSEL_AUTO_ADVANCE_MS;
  * crossfade. A single banner never reaches this component (callers render
  * `SponsorshipHeroBanner` directly), so there is nothing to rotate here.
  * The banners themselves are untouched; the control bar (arrows, indicator
- * dots, discreet pause button) sits below them, centered.
+ * dots) sits below them, centered.
  *
  * The banners are stacked in one grid cell so the region keeps the height of
  * the (identical-ratio) banners; only the active one is exposed to assistive
- * technology and the tab order. Timer and pause rules (hover, keyboard
- * focus, hidden tab, manual pause, reduced motion) live in
+ * technology and the tab order. Timer and pause rules (mouse hover, touch
+ * press-and-hold, keyboard focus, hidden tab, reduced motion) live in
  * `useAutoAdvance`; with reduced motion there is no autoplay and no
  * transition, and the arrows and indicators are the way to change banner.
  */
@@ -34,20 +34,11 @@ export function SponsorshipHeroRotator({
   creatives: readonly SponsorshipCreativeViewModel[];
   label?: string;
 }) {
-  const {
-    activeIndex,
-    canAutoplay,
-    goTo,
-    interactionProps,
-    isPlaying,
-    manuallyPaused,
-    next,
-    previous,
-    togglePaused,
-  } = useAutoAdvance({
-    count: creatives.length,
-    intervalMs: HERO_ROTATION_INTERVAL_MS,
-  });
+  const { activeIndex, goTo, interactionProps, isPlaying, next, previous } =
+    useAutoAdvance({
+      count: creatives.length,
+      intervalMs: HERO_ROTATION_INTERVAL_MS,
+    });
 
   if (creatives.length === 1) {
     // Defensive: callers already render one banner directly, and a single
@@ -96,22 +87,17 @@ export function SponsorshipHeroRotator({
 
       <SponsorshipCarouselControls
         activeIndex={activeIndex}
-        canAutoplay={canAutoplay}
         className="mt-4"
         count={creatives.length}
         groupLabel="Escolher banner"
         indicatorLabel={(index, count) =>
           `Ir para o banner ${index + 1} de ${count}`
         }
-        manuallyPaused={manuallyPaused}
         nextLabel="Próximo banner"
         onNext={next}
         onPrevious={previous}
         onSelect={goTo}
-        onTogglePaused={togglePaused}
-        pauseLabel="Pausar rotação dos banners"
         previousLabel="Banner anterior"
-        resumeLabel="Retomar rotação dos banners"
       />
     </section>
   );

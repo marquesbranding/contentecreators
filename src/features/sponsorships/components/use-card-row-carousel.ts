@@ -77,7 +77,7 @@ function sameLayout(a: RowLayout, b: RowLayout) {
  * While every card fits, the row is static (`overflowing` false): no motion,
  * no controls. Once the cards overflow the available width it advances one
  * card every 5 seconds, wraps to the start and follows the pause rules of
- * `useAutoAdvance` (hover, keyboard focus, hidden tab, manual pause, reduced
+ * `useAutoAdvance` (mouse hover, touch press-and-hold, keyboard focus, hidden tab, reduced
  * motion). Overflow is measured on the client with a `ResizeObserver`; the
  * server and the first client render are always the static layout, so there
  * is nothing to mismatch on hydration.

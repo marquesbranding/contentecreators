@@ -17,7 +17,7 @@ export const FEATURED_ROTATION_INTERVAL_MS = CAROUSEL_AUTO_ADVANCE_MS;
  * `SponsorshipCarousel`). While they all fit, the row is static: no motion,
  * no controls. Once they overflow the available width, it advances one card
  * every 5 seconds and wraps to the start, with the same control bar (arrows,
- * indicator dots below, discreet pause button) and pause rules as the other
+ * indicator dots below, no pause button) and automatic pause rules as the other
  * carousels (`useCardRowCarousel`). Under reduced motion it never advances
  * by itself but stays navigable by arrows, dots and manual scrolling.
  */
@@ -32,17 +32,14 @@ export function SponsorshipFeaturedCreatorsRow({
   const count = visibleItems.length;
   const {
     activeIndex,
-    canAutoplay,
     goTo,
     handleScroll,
     interactionProps,
     isPlaying,
     layout,
     listRef,
-    manuallyPaused,
     next,
     previous,
-    togglePaused,
   } = useCardRowCarousel({ count });
 
   if (count === 0) {
@@ -78,22 +75,17 @@ export function SponsorshipFeaturedCreatorsRow({
       {layout.overflowing ? (
         <SponsorshipCarouselControls
           activeIndex={activeIndex}
-          canAutoplay={canAutoplay}
           className="mt-3"
           count={layout.stops}
           groupLabel="Escolher criador em destaque"
           indicatorLabel={(index, total) =>
             `Ir para a posição ${index + 1} de ${total} dos criadores em destaque`
           }
-          manuallyPaused={manuallyPaused}
           nextLabel="Próximo criador em destaque"
           onNext={next}
           onPrevious={previous}
           onSelect={goTo}
-          onTogglePaused={togglePaused}
-          pauseLabel="Pausar rotação dos criadores em destaque"
           previousLabel="Criador em destaque anterior"
-          resumeLabel="Retomar rotação dos criadores em destaque"
         />
       ) : null}
     </section>

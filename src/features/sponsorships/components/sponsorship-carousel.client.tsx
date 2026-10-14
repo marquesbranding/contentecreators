@@ -15,7 +15,7 @@ import { useCardRowCarousel } from "./use-card-row-carousel";
  * While they all fit, the row is static (a single card never gets controls).
  * Once they overflow it advances one card every 5 seconds and wraps to the
  * start, with the shared control bar below the cards (arrows, indicator dots,
- * discreet pause button) and the same pause rules as the other carousels
+ * no pause button) and the same automatic pause rules as the other carousels
  * (`useCardRowCarousel`). ArrowLeft/ArrowRight move it from anywhere inside.
  */
 export function SponsorshipCarousel({
@@ -31,17 +31,14 @@ export function SponsorshipCarousel({
   );
   const {
     activeIndex,
-    canAutoplay,
     goTo,
     handleScroll,
     interactionProps,
     isPlaying,
     layout,
     listRef,
-    manuallyPaused,
     next,
     previous,
-    togglePaused,
   } = useCardRowCarousel({ count: visibleCreatives.length });
 
   if (visibleCreatives.length === 0) {
@@ -91,22 +88,17 @@ export function SponsorshipCarousel({
       {layout.overflowing ? (
         <SponsorshipCarouselControls
           activeIndex={activeIndex}
-          canAutoplay={canAutoplay}
           className="-mt-1"
           count={layout.stops}
           groupLabel="Escolher patrocínio"
           indicatorLabel={(index, total) =>
             `Ir para a posição ${index + 1} de ${total} dos patrocínios`
           }
-          manuallyPaused={manuallyPaused}
           nextLabel="Próximo patrocínio"
           onNext={next}
           onPrevious={previous}
           onSelect={goTo}
-          onTogglePaused={togglePaused}
-          pauseLabel="Pausar rotação dos patrocínios"
           previousLabel="Patrocínio anterior"
-          resumeLabel="Retomar rotação dos patrocínios"
         />
       ) : null}
     </section>

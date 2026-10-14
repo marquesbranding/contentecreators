@@ -7,11 +7,11 @@ Implemented from client review R04 (`openspec/changes/apply-client-review-r04`) 
 All three public carousels behave and look the same around their content:
 
 - **Rhythm:** every carousel moves to the next slide every 5 s (`CAROUSEL_AUTO_ADVANCE_MS` in `src/shared/hooks/use-auto-advance.ts`) and wraps from the last slide to the first. A manual change (arrow, dot, scroll) restarts the full 5 s.
-- **Control bar below the content, centered** (`SponsorshipCarouselControls`): `[‹]  ● ● ━━ ●  [›]  [⏸]`. Previous/next outline arrow buttons flank the indicator dots, and a small muted ghost pause/resume button closes the row. Nothing is overlaid on the slides. Arrows are 44 px touch targets below `lg` and 32 px from `lg` up; the pause button is 44 px / 28 px (the responsive route audit fails touch targets under 44 px on phones and tablets).
+- **Control bar below the content, centered** (`SponsorshipCarouselControls`): `[‹]  ● ● ━━ ●  [›]`. Previous/next outline arrow buttons flank the indicator dots. There is no pause button: pausing is automatic (see pause rules). Nothing is overlaid on the slides. Arrows are 44 px touch targets below `lg` and 32 px from `lg` up (the responsive route audit fails touch targets under 44 px on phones and tablets).
 - **Dots:** 10 px dots with a 24 px hit area; the active one is a 24 px pill with `aria-current="true"`. Banner dots are named "Ir para o banner N de M"; the card carousels use "Ir para a posição N de M dos criadores em destaque / dos patrocínios". Arrows wrap at both ends.
 - **Keyboard:** ArrowLeft/ArrowRight move one slide while focus is anywhere inside the carousel (not inside inputs, not with modifier keys). Dots and buttons are ordinary focusable buttons.
-- **Pause rules** (`useAutoAdvance`): pointer hovering the carousel, keyboard focus inside it (mouse-click focus does not count), a hidden tab, and the pause button (WCAG 2.2.2). Touch contact is not hover. Everything resumes when the pointer or focus leaves.
-- **Reduced motion:** with `prefers-reduced-motion: reduce` there is no autoplay, no crossfade, no smooth scroll and no pause button; arrows and dots still work.
+- **Pause rules** (`useAutoAdvance`, all automatic, WCAG 2.2.2): a mouse pointer hovering the carousel (`pointerenter`/`pointerleave` with `pointerType` `mouse` only; the `pointerenter` that touch devices fire is ignored); press-and-hold on touch or pen (`pointerdown` with `touch`/`pen` pauses; `pointerup`, `pointercancel` or `pointerleave` resume the 5 s rotation, so a horizontal swipe, which the browser turns into a scroll and cancels the pointer, only pauses while the finger is down); keyboard focus inside it (mouse-click focus does not count); and a hidden tab. Nothing blocks the card rows' own scrolling.
+- **Reduced motion:** with `prefers-reduced-motion: reduce` there is no autoplay, no crossfade, no smooth scroll; arrows and dots still work.
 - **One slide:** renders as before, with no dots, no arrows, no autoplay and no `aria-roledescription` on the card rows.
 - **Hydration:** nothing random or time-based in render. Timers, listeners and the `ResizeObserver` are cleaned up on unmount.
 
@@ -54,7 +54,7 @@ Both are a horizontal scroll-snap row driven by `useCardRowCarousel` (`use-card-
 | Viewport | Check                                        | Result                            |
 | -------- | -------------------------------------------- | --------------------------------- |
 | 390 px   | Catalog with 4 featured creators and 4 cards | No horizontal overflow            |
-| 375 px   | Landing, 2 banners: pause button             | 44 × 44 px                        |
+| 375 px   | Landing, 2 banners: arrow buttons            | 44 × 44 px                        |
 | 768 px   | Featured row, 4 creators                     | 2 per row, 3 stops and indicators |
 | 1440 px  | Featured row, 4 creators                     | 4 per row, static                 |
 | 375 px   | Jornada badge on the detail header (`md`)    | 24 px logo, readable              |

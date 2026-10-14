@@ -79,8 +79,8 @@ describe("SponsorshipHeroRotator", () => {
       screen.getByRole("button", { name: "Ir para o banner 2 de 2" }),
     ).not.toHaveAttribute("aria-current");
     expect(
-      screen.getByRole("button", { name: "Pausar rotação dos banners" }),
-    ).toBeVisible();
+      screen.queryByRole("button", { name: /Pausar|Retomar/ }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows only the active banner to assistive technology and the tab order", () => {
@@ -144,11 +144,33 @@ describe("SponsorshipHeroRotator", () => {
     render(<SponsorshipHeroRotator creatives={banners(3)} />);
     const region = screen.getByRole("region", { name: "Banners patrocinados" });
 
-    fireEvent.pointerEnter(region);
+    fireEvent.pointerEnter(region, { pointerType: "mouse" });
     tick(30_000);
     expect(visibleTitle()).toEqual(["Campanha 1"]);
 
-    fireEvent.pointerLeave(region);
+    fireEvent.pointerLeave(region, { pointerType: "mouse" });
+    tick(5_000);
+    expect(visibleTitle()).toEqual(["Campanha 2"]);
+  });
+
+  it("pauses while a touch is pressed and held, and resumes on release", () => {
+    render(<SponsorshipHeroRotator creatives={banners(3)} />);
+    const region = screen.getByRole("region", { name: "Banners patrocinados" });
+
+    fireEvent.pointerDown(region, { pointerType: "touch" });
+    tick(30_000);
+    expect(visibleTitle()).toEqual(["Campanha 1"]);
+
+    fireEvent.pointerUp(region, { pointerType: "touch" });
+    tick(5_000);
+    expect(visibleTitle()).toEqual(["Campanha 2"]);
+  });
+
+  it("does not treat a touch pointerenter as hover", () => {
+    render(<SponsorshipHeroRotator creatives={banners(3)} />);
+    const region = screen.getByRole("region", { name: "Banners patrocinados" });
+
+    fireEvent.pointerEnter(region, { pointerType: "touch" });
     tick(5_000);
     expect(visibleTitle()).toEqual(["Campanha 2"]);
   });
@@ -175,41 +197,26 @@ describe("SponsorshipHeroRotator", () => {
     expect(visibleTitle()).toEqual(["Campanha 2"]);
   });
 
-  it("has a pause/resume button that stops and restarts the rotation", () => {
-    render(<SponsorshipHeroRotator creatives={banners(3)} />);
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Pausar rotação dos banners" }),
-    );
-    tick(30_000);
-    expect(visibleTitle()).toEqual(["Campanha 1"]);
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Retomar rotação dos banners" }),
-    );
-    tick(5_000);
-    expect(visibleTitle()).toEqual(["Campanha 2"]);
-  });
-
   it("announces changes politely only while it is not auto-rotating", () => {
     render(<SponsorshipHeroRotator creatives={banners(2)} />);
     const slides = screen.getByTestId("hero-rotator-slides");
 
     expect(slides).toHaveAttribute("aria-live", "off");
-    fireEvent.click(
-      screen.getByRole("button", { name: "Pausar rotação dos banners" }),
+    fireEvent.pointerEnter(
+      screen.getByRole("region", { name: "Banners patrocinados" }),
+      { pointerType: "mouse" },
     );
     expect(slides).toHaveAttribute("aria-live", "polite");
   });
 
-  it("does not rotate, has no pause button and changes only by indicator with reduced motion", () => {
+  it("does not rotate and changes only by indicator with reduced motion", () => {
     stubReducedMotion(true);
     render(<SponsorshipHeroRotator creatives={banners(3)} />);
 
     tick(60_000);
     expect(visibleTitle()).toEqual(["Campanha 1"]);
     expect(
-      screen.queryByRole("button", { name: /rotação dos banners/ }),
+      screen.queryByRole("button", { name: /Pausar|Retomar/ }),
     ).not.toBeInTheDocument();
 
     fireEvent.click(
@@ -244,7 +251,6 @@ describe("SponsorshipHeroRotator", () => {
       "Ir para o banner 2 de 3",
       "Ir para o banner 3 de 3",
       "Próximo banner",
-      "Pausar rotação dos banners",
     ]);
   });
 
@@ -271,7 +277,7 @@ describe("SponsorshipHeroRotator", () => {
     expect(visibleTitle()).toEqual(["Campanha 1"]);
   });
 
-  it("keeps the pause button discreet and keeps arrows and dots with reduced motion", () => {
+  it("keeps arrows and dots working with reduced motion", () => {
     stubReducedMotion(true);
     render(<SponsorshipHeroRotator creatives={banners(3)} />);
 

@@ -73,9 +73,10 @@ export interface UseAutoAdvanceOptions {
  * Timer and pause rules shared by every self-advancing carousel.
  *
  * Content that moves on its own for more than five seconds must be
- * stoppable (WCAG 2.2.2), so autoplay holds while the pointer is over the
- * region, while keyboard focus is inside it and while the tab is hidden, and
- * the caller gets a manual pause toggle. Visitors with
+ * stoppable (WCAG 2.2.2). There is no pause button: autoplay holds on its own
+ * while a mouse pointer hovers the region, while a touch/pen contact is
+ * pressed and held on it (press-and-hold; releasing resumes), while keyboard
+ * focus is inside it and while the tab is hidden. Visitors with
  * `prefers-reduced-motion: reduce` never get autoplay at all (`canAutoplay`
  * is false), and navigate with `goTo`/`next`/`previous` only.
  *
@@ -90,8 +91,8 @@ export function useAutoAdvance({
   enabled = true,
 }: UseAutoAdvanceOptions) {
   const [index, setIndex] = useState(0);
-  const [manuallyPaused, setManuallyPaused] = useState(false);
   const [hovering, setHovering] = useState(false);
+  const [pressed, setPressed] = useState(false);
   const [focused, setFocused] = useState(false);
   const [pageHidden, setPageHidden] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
@@ -99,7 +100,7 @@ export function useAutoAdvance({
   const activeIndex = count > 0 ? Math.min(index, count - 1) : 0;
   const canAutoplay = enabled && count > 1 && !reducedMotion;
   const isPlaying =
-    canAutoplay && !manuallyPaused && !hovering && !focused && !pageHidden;
+    canAutoplay && !hovering && !pressed && !focused && !pageHidden;
 
   useEffect(() => {
     const syncVisibility = () =>
@@ -143,17 +144,6 @@ export function useAutoAdvance({
     }
   }, [count]);
 
-  const togglePaused = useCallback(() => {
-    if (manuallyPaused) {
-      // An explicit "resume" outranks the pointer/focus that is still
-      // resting on the pause button itself.
-      setHovering(false);
-      setFocused(false);
-    }
-
-    setManuallyPaused(!manuallyPaused);
-  }, [manuallyPaused]);
-
   const interactionProps = useMemo(
     () => ({
       onBlur(event: FocusEvent<HTMLElement>) {
@@ -188,13 +178,28 @@ export function useAutoAdvance({
           next();
         }
       },
+      onPointerCancel() {
+        // The browser took the gesture over (e.g. a horizontal swipe turned
+        // into a scroll): the hold is over.
+        setPressed(false);
+      },
+      onPointerDown(event: PointerEvent<HTMLElement>) {
+        if (event.pointerType === "touch" || event.pointerType === "pen") {
+          setPressed(true);
+        }
+      },
       onPointerEnter(event: PointerEvent<HTMLElement>) {
-        if (event.pointerType !== "touch") {
+        // Touch devices also fire `pointerenter`; only a real mouse hovers.
+        if (event.pointerType === "mouse") {
           setHovering(true);
         }
       },
       onPointerLeave() {
         setHovering(false);
+        setPressed(false);
+      },
+      onPointerUp() {
+        setPressed(false);
       },
     }),
     [next, previous],
@@ -206,10 +211,8 @@ export function useAutoAdvance({
     goTo,
     interactionProps,
     isPlaying,
-    manuallyPaused,
     next,
     previous,
     reducedMotion,
-    togglePaused,
   };
 }
