@@ -9,8 +9,10 @@ import { createDatabaseClient } from "@/db/client";
 import {
   accounts,
   companyProfiles,
+  creatorMetricSnapshots,
   creatorProfiles,
   mediaAssets,
+  socialProfiles,
 } from "@/db/schema";
 import { parseServerEnv } from "@/shared/lib/env/server-env-schema";
 
@@ -23,6 +25,10 @@ import { parseServerEnv } from "@/shared/lib/env/server-env-schema";
  *   the carousel renders a signed photo;
  * - several approved, complete companies, so the brand marquee rotates names.
  *
+ * - four extra approved creators with a photo and complete Instagram metrics,
+ *   mixing the CDL and Jornada do Influenciador badges, so the catalog has
+ *   enough profiles for the featured row and the mid-list sponsored cards.
+ *
  * Everything else on the carousel is meant to be managed through the
  * backoffice; this only saves a few clicks after a local database reset.
  *
@@ -33,6 +39,41 @@ import { parseServerEnv } from "@/shared/lib/env/server-env-schema";
 const FEATURED_DISPLAY_NAME = "Gabi Conecta";
 const FIXTURE_EMAIL_DOMAIN = "showcase.local.test";
 const LOCAL_HOSTS = new Set(["127.0.0.1", "localhost"]);
+
+const FIXTURE_CREATORS = [
+  {
+    city: "São Paulo",
+    cdl: true,
+    handle: "marina_viaja",
+    journey: true,
+    name: "Marina Viaja",
+    state: "SP",
+  },
+  {
+    city: "Curitiba",
+    cdl: false,
+    handle: "theo_tech",
+    journey: true,
+    name: "Theo Tech",
+    state: "PR",
+  },
+  {
+    city: "Recife",
+    cdl: true,
+    handle: "lia_receitas",
+    journey: false,
+    name: "Lia Receitas",
+    state: "PE",
+  },
+  {
+    city: "Porto Alegre",
+    cdl: false,
+    handle: "caio_fit",
+    journey: false,
+    name: "Caio Fit",
+    state: "RS",
+  },
+] as const;
 
 const FIXTURE_COMPANIES = [
   { cnpj: "90000000000101", segment: "Moda", tradeName: "Raiz Studio" },
@@ -106,6 +147,7 @@ async function clearFixtures(db: ReturnType<typeof createDatabaseClient>) {
     delete from public.media_assets
     where object_path like '%/avatar/local-featured-fixture.png'
   `);
+  await clearFixtureCreators(db);
   await db.database.execute(sql`
     delete from public.company_profiles
     where cnpj in ${FIXTURE_COMPANIES.map((company) => company.cnpj)}
@@ -172,6 +214,147 @@ async function seedFeaturedCreator(
     .where(eq(creatorProfiles.id, profile.id));
 }
 
+async function clearFixtureCreators(
+  db: ReturnType<typeof createDatabaseClient>,
+) {
+  const pattern = `%@${FIXTURE_EMAIL_DOMAIN}`;
+  const fixtureAccounts = sql`(
+    select id from public.accounts
+    where role = 'INFLUENCER' and operational_email like ${pattern}
+  )`;
+
+  await db.database.execute(sql`
+    delete from public.sponsorship_placements
+    where featured_creator_profile_id in (
+      select id from public.creator_profiles
+      where account_id in ${fixtureAccounts}
+    )
+  `);
+  await db.database.execute(sql`
+    delete from public.creator_metric_snapshots
+    where creator_profile_id in (
+      select id from public.creator_profiles
+      where account_id in ${fixtureAccounts}
+    )
+  `);
+  await db.database.execute(sql`
+    delete from public.creator_niches
+    where creator_profile_id in (
+      select id from public.creator_profiles
+      where account_id in ${fixtureAccounts}
+    )
+  `);
+  await db.database.execute(sql`
+    update public.creator_profiles set avatar_asset_id = null
+    where account_id in ${fixtureAccounts}
+  `);
+  await db.database.execute(sql`
+    delete from public.creator_profiles where account_id in ${fixtureAccounts}
+  `);
+  await db.database.execute(sql`
+    delete from public.social_profiles where owner_account_id in ${fixtureAccounts}
+  `);
+  await db.database.execute(sql`
+    delete from public.media_assets where owner_account_id in ${fixtureAccounts}
+  `);
+}
+
+async function seedApprovedCreators(
+  db: ReturnType<typeof createDatabaseClient>,
+  storage: ReturnType<typeof createClient>["storage"],
+) {
+  const image = await readFile(
+    new URL(
+      "../public/brand/official/contente-creators-mascot.png",
+      import.meta.url,
+    ),
+  );
+
+  for (const [index, creator] of FIXTURE_CREATORS.entries()) {
+    const identityId = crypto.randomUUID();
+    const email = `creator-${index}@${FIXTURE_EMAIL_DOMAIN}`;
+
+    await insertIdentity(db, identityId, email);
+
+    const [account] = await db.database
+      .insert(accounts)
+      .values({
+        approvedAt: new Date(),
+        authUserId: identityId,
+        completionPercentage: 100,
+        operationalEmail: email,
+        role: "INFLUENCER",
+        status: "APPROVED",
+      })
+      .returning({ id: accounts.id });
+    const objectPath = `${account!.id}/avatar/local-showcase-creator.png`;
+    const { error } = await storage
+      .from("profile-media")
+      .upload(objectPath, image, {
+        cacheControl: "3600",
+        contentType: "image/png",
+        upsert: true,
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    const [avatar] = await db.database
+      .insert(mediaAssets)
+      .values({
+        bucketName: "profile-media",
+        height: 512,
+        kind: "AVATAR",
+        mimeType: "image/png",
+        objectPath,
+        ownerAccountId: account!.id,
+        sizeBytes: image.byteLength,
+        status: "ACTIVE",
+        width: 512,
+      })
+      .returning({ id: mediaAssets.id });
+    const [profile] = await db.database
+      .insert(creatorProfiles)
+      .values({
+        accountId: account!.id,
+        avatarAssetId: avatar!.id,
+        bio: `Perfil de demonstração de ${creator.name} para o catálogo local.`,
+        city: creator.city,
+        creatorType: "INFLUENCER",
+        displayName: creator.name,
+        isCdlMember: creator.cdl,
+        isInfluencerJourneyParticipant: creator.journey,
+        legalName: `${creator.name} Exemplo`,
+        state: creator.state,
+        whatsappE164: `+55119${String(88880000 + index)}`,
+      })
+      .returning({ id: creatorProfiles.id });
+    const [social] = await db.database
+      .insert(socialProfiles)
+      .values({
+        handle: `@${creator.handle}`,
+        isPrimary: true,
+        normalizedUrl: `https://instagram.com/${creator.handle}`,
+        ownerAccountId: account!.id,
+        platform: "INSTAGRAM",
+      })
+      .returning({ id: socialProfiles.id });
+
+    await db.database.insert(creatorMetricSnapshots).values({
+      creatorProfileId: profile!.id,
+      followerCount: 18_000 + index * 7_500,
+      interactionCount: 3_200 + index * 410,
+      newFollowerCount: 800 + index * 95,
+      observedOn: new Date(),
+      platform: "INSTAGRAM",
+      sharedContentCount: 22 + index * 3,
+      socialProfileId: social!.id,
+      viewCount: 120_000 + index * 31_000,
+    });
+  }
+}
+
 async function seedApprovedCompanies(
   db: ReturnType<typeof createDatabaseClient>,
 ) {
@@ -202,6 +385,10 @@ async function seedApprovedCompanies(
     FIXTURE_COMPANIES.map((company, index) => ({
       accountId: created[index]!.id,
       cnpj: company.cnpj,
+      // Alternate the self-declared badges so the marquee/catalog show every
+      // combination (none, CDL, Jornada, both).
+      isCdlMember: index % 2 === 0,
+      isInfluencerJourneyParticipant: index % 3 === 0,
       legalName: `${company.tradeName} LTDA`,
       segment: company.segment,
       tradeName: company.tradeName,
@@ -232,10 +419,12 @@ async function main() {
 
     await seedFeaturedCreator(db, storage);
     await seedApprovedCompanies(db);
+    await seedApprovedCreators(db, storage);
 
     process.stdout.write(
       `Landing showcase ready: "${FEATURED_DISPLAY_NAME}" featured with a photo, ` +
-        `${FIXTURE_COMPANIES.length} extra approved companies in the marquee.\n`,
+        `${FIXTURE_COMPANIES.length} extra approved companies in the marquee and ` +
+        `${FIXTURE_CREATORS.length} extra approved creators with Instagram metrics.\n`,
     );
   } finally {
     await db.client.end({ timeout: 2 });

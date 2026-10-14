@@ -124,7 +124,11 @@ insert into public.creator_profiles (
   bio,
   creator_type,
   city,
-  state
+  state,
+  -- Selos de autodeclaração variados (CDL / Jornada do Influenciador) para
+  -- exercitar badges, filtros do catálogo e a revisão no backoffice.
+  is_cdl_member,
+  is_influencer_journey_participant
 )
 select
   ('d0000000-0000-4000-8000-' || right(account.id::text, 12))::uuid,
@@ -135,7 +139,15 @@ select
   fixture.bio,
   fixture.creator_type::public.creator_type,
   fixture.city,
-  fixture.state
+  fixture.state,
+  fixture.account_id in (
+    'b0000000-0000-4000-8000-000000000002'::uuid,
+    'b0000000-0000-4000-8000-000000000004'::uuid
+  ),
+  fixture.account_id in (
+    'b0000000-0000-4000-8000-000000000004'::uuid,
+    'b0000000-0000-4000-8000-000000000007'::uuid
+  )
 from public.accounts account
 join (
   values
@@ -159,7 +171,9 @@ insert into public.company_profiles (
   segment,
   whatsapp_e164,
   description,
-  website_url
+  website_url,
+  is_cdl_member,
+  is_influencer_journey_participant
 )
 select
   ('e0000000-0000-4000-8000-' || right(account.id::text, 12))::uuid,
@@ -171,7 +185,15 @@ select
   fixture.segment,
   '+551188888' || right(account.id::text, 4),
   fixture.description,
-  fixture.website_url
+  fixture.website_url,
+  fixture.account_id in (
+    'c0000000-0000-4000-8000-000000000003'::uuid,
+    'c0000000-0000-4000-8000-000000000004'::uuid
+  ),
+  fixture.account_id in (
+    'c0000000-0000-4000-8000-000000000002'::uuid,
+    'c0000000-0000-4000-8000-000000000004'::uuid
+  )
 from public.accounts account
 join (
   values
@@ -319,6 +341,8 @@ insert into public.creator_metric_snapshots (
   follower_count,
   view_count,
   interaction_count,
+  new_follower_count,
+  shared_content_count,
   engagement_rate,
   observed_on
 )
@@ -332,6 +356,8 @@ select
   -- so the fixtures carry plausible ratios instead of nulls.
   (10000 + (right(profile.id::text, 2)::integer * 500)) * 12,
   (10000 + (right(profile.id::text, 2)::integer * 500)) / 4,
+  (10000 + (right(profile.id::text, 2)::integer * 500)) / 50,
+  10 + right(profile.id::text, 2)::integer,
   4.2500,
   current_date
 from public.creator_profiles profile

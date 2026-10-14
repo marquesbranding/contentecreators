@@ -50,6 +50,9 @@ export const creatorProfiles = pgTable(
     isFeatured: boolean("is_featured").notNull().default(false),
     featureOrder: integer("feature_order"),
     isCdlMember: boolean("is_cdl_member").notNull().default(false),
+    isInfluencerJourneyParticipant: boolean("is_influencer_journey_participant")
+      .notNull()
+      .default(false),
     whatsappContactCount: integer("whatsapp_contact_count")
       .notNull()
       .default(0),
@@ -174,6 +177,9 @@ export const companyProfiles = pgTable(
     isFeatured: boolean("is_featured").notNull().default(false),
     featureOrder: integer("feature_order"),
     isCdlMember: boolean("is_cdl_member").notNull().default(false),
+    isInfluencerJourneyParticipant: boolean("is_influencer_journey_participant")
+      .notNull()
+      .default(false),
     searchDocument: text("search_document").generatedAlwaysAs(
       sql`public.normalize_search_text(
         coalesce("trade_name", '') || ' ' ||
@@ -372,6 +378,7 @@ export const creatorMetricSnapshots = pgTable(
     interactionCount: bigint("interaction_count", { mode: "number" }),
     newFollowerCount: bigint("new_follower_count", { mode: "number" }),
     sharedContentDescription: text("shared_content_description"),
+    sharedContentCount: integer("shared_content_count"),
     observedOn: date("observed_on", { mode: "date" }).notNull(),
     source: creatorMetricSourceEnum("source")
       .notNull()
@@ -412,6 +419,10 @@ export const creatorMetricSnapshots = pgTable(
     check(
       "creator_metric_snapshots_new_follower_count_check",
       sql`${table.newFollowerCount} is null or ${table.newFollowerCount} >= 0`,
+    ),
+    check(
+      "creator_metric_snapshots_shared_content_count_check",
+      sql`${table.sharedContentCount} is null or ${table.sharedContentCount} >= 0`,
     ),
   ],
 );

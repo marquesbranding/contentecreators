@@ -62,6 +62,7 @@ const requiredTables = [
   "rate_limit_buckets",
   "social_profiles",
   "sponsorship_placements",
+  "storage_cleanup_queue",
   "whatsapp_contact_confirmations",
 ] as const;
 

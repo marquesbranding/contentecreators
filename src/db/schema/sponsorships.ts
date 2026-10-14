@@ -111,7 +111,7 @@ export const sponsorshipPlacements = pgTable(
     ),
     check(
       "sponsorship_placements_featured_creator_check",
-      sql`${table.placementType} <> 'FEATURED_CREATOR' or ${table.featuredCreatorProfileId} is not null`,
+      sql`${table.placementType} <> 'FEATURED_CREATOR' or ${table.featuredCreatorProfileId} is not null or ${table.archivedAt} is not null`,
     ),
     check(
       "sponsorship_placements_text_color_check",

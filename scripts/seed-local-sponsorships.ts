@@ -3,10 +3,15 @@ import "server-only";
 import { readFile } from "node:fs/promises";
 
 import { createClient } from "@supabase/supabase-js";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 
 import { createDatabaseClient } from "@/db/client";
-import { accounts, mediaAssets, sponsorshipPlacements } from "@/db/schema";
+import {
+  accounts,
+  creatorProfiles,
+  mediaAssets,
+  sponsorshipPlacements,
+} from "@/db/schema";
 import { parseServerEnv } from "@/shared/lib/env/server-env-schema";
 
 /**
@@ -19,6 +24,10 @@ import { parseServerEnv } from "@/shared/lib/env/server-env-schema";
  * sponsorship-placement-policy.ts checks media.ownerAccountRole === "ADMIN",
  * so uploads owned by a company account never render on the real page even
  * when the placement itself is active.
+ *
+ * It also adds the multi-item slots from review R04: two rotating
+ * `landing-top` banners, four `catalog-midlist` cards and three extra
+ * `catalog-featured` creators (the seed already has one).
  *
  * Usage:
  *   npm run local:sponsorships
@@ -167,6 +176,161 @@ function assertLocalEnvironment() {
   return environment;
 }
 
+interface MultiItemFixture {
+  imageFile: string;
+  slotKey: "catalog-midlist" | "landing-top";
+  title: string;
+  body: string;
+  linkLabel: string;
+}
+
+const MULTI_ITEM_FIXTURES: MultiItemFixture[] = [
+  {
+    body: "Primeiro banner da rotação da página inicial.",
+    imageFile: "full.png",
+    linkLabel: "Saiba mais",
+    slotKey: "landing-top",
+    title: "Banner da home 1",
+  },
+  {
+    body: "Segundo banner da rotação da página inicial.",
+    imageFile: "serif-font.png",
+    linkLabel: "Saiba mais",
+    slotKey: "landing-top",
+    title: "Banner da home 2",
+  },
+  ...["A", "B", "C", "D"].map((letter, index) => ({
+    body: `Card patrocinado ${letter} na listagem do catálogo.`,
+    imageFile: [
+      "full.png",
+      "green-button.png",
+      "no-badge.png",
+      "no-button.png",
+    ][index]!,
+    linkLabel: "Ver oferta",
+    slotKey: "catalog-midlist" as const,
+    title: `Card ${letter}`,
+  })),
+];
+
+/** The ids of the extra featured creators come from approved creator profiles. */
+const EXTRA_FEATURED_CREATORS = 3;
+
+async function seedR04MultiItemSlots(
+  db: ReturnType<typeof createDatabaseClient>,
+  storage: ReturnType<typeof createClient>["storage"],
+  advertiserId: string,
+) {
+  let sortOrder = 100;
+  let count = 0;
+
+  for (const [index, fixture] of MULTI_ITEM_FIXTURES.entries()) {
+    const image = await readFile(
+      new URL(
+        `../supabase/fixtures/sponsorship-variants/${fixture.imageFile}`,
+        import.meta.url,
+      ),
+    );
+    const objectPath = `${ADMIN_OWNER_ACCOUNT_ID}/sponsorship/local-variant-r04-${index}-${fixture.imageFile}`;
+    const { error } = await storage
+      .from("sponsorship-media")
+      .upload(objectPath, image, {
+        cacheControl: "3600",
+        contentType: "image/png",
+        upsert: true,
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    const [asset] = await db.database
+      .insert(mediaAssets)
+      .values({
+        bucketName: "sponsorship-media",
+        height: 800,
+        kind: "SPONSORSHIP_CREATIVE",
+        mimeType: "image/png",
+        objectPath,
+        ownerAccountId: ADMIN_OWNER_ACCOUNT_ID,
+        sizeBytes: image.byteLength,
+        status: "ACTIVE",
+        width: 1600,
+      })
+      .returning({ id: mediaAssets.id });
+
+    await db.database.insert(sponsorshipPlacements).values({
+      advertiserAccountId:
+        fixture.slotKey === "landing-top" ? null : advertiserId,
+      // The public landing payload must not name a participant company.
+      advertiserLabel:
+        fixture.slotKey === "landing-top"
+          ? "Espaço publicitário"
+          : ADVERTISER_LABEL,
+      audience: "ALL",
+      body: fixture.body,
+      creativeAssetId: asset!.id,
+      endsAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      isActive: true,
+      linkLabel: fixture.linkLabel,
+      linkUrl: "https://contentecreators.com.br/r04",
+      placementType:
+        fixture.slotKey === "landing-top" ? "TOP_BANNER" : "CAROUSEL",
+      showAdvertiserLabel: fixture.slotKey !== "landing-top",
+      showSponsoredBadge: true,
+      slotKey: fixture.slotKey,
+      sortOrder: sortOrder++,
+      startsAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      title: `${TITLE_PREFIX}${fixture.title}`,
+    });
+    count += 1;
+  }
+
+  const alreadyFeatured = db.database
+    .select({ id: sponsorshipPlacements.featuredCreatorProfileId })
+    .from(sponsorshipPlacements)
+    .where(
+      and(
+        eq(sponsorshipPlacements.slotKey, "catalog-featured"),
+        isNull(sponsorshipPlacements.archivedAt),
+      ),
+    );
+  const creators = await db.database
+    .select({ id: creatorProfiles.id })
+    .from(creatorProfiles)
+    .innerJoin(accounts, eq(accounts.id, creatorProfiles.accountId))
+    .where(
+      and(
+        eq(accounts.status, "APPROVED"),
+        isNull(creatorProfiles.archivedAt),
+        sql`${creatorProfiles.id} not in (${alreadyFeatured})`,
+      ),
+    )
+    .orderBy(creatorProfiles.id)
+    .limit(EXTRA_FEATURED_CREATORS);
+
+  for (const [index, creator] of creators.entries()) {
+    await db.database.insert(sponsorshipPlacements).values({
+      advertiserAccountId: advertiserId,
+      advertiserLabel: ADVERTISER_LABEL,
+      audience: "COMPANY",
+      endsAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      featuredCreatorProfileId: creator.id,
+      isActive: true,
+      placementType: "FEATURED_CREATOR",
+      showAdvertiserLabel: true,
+      showSponsoredBadge: true,
+      slotKey: "catalog-featured",
+      sortOrder: 20 + index,
+      startsAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      title: `${TITLE_PREFIX}Criador em destaque ${index + 2}`,
+    });
+    count += 1;
+  }
+
+  return count;
+}
+
 async function clearFixtures(db: ReturnType<typeof createDatabaseClient>) {
   await db.database.execute(sql`
     delete from public.sponsorship_placements
@@ -284,8 +448,10 @@ async function main() {
       });
     }
 
+    const r04Count = await seedR04MultiItemSlots(db, storage, advertiser.id);
+
     process.stdout.write(
-      `Sponsorship fixtures ready: ${FIXTURES.length} active placements added.\n`,
+      `Sponsorship fixtures ready: ${FIXTURES.length + r04Count} active placements added.\n`,
     );
   } finally {
     await db.client.end({ timeout: 2 });

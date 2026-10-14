@@ -10,7 +10,7 @@ import {
   legalDocuments,
 } from "./compliance";
 import { emailAttempts, emailOutbox } from "./communications";
-import { mediaAssets } from "./media";
+import { mediaAssets, storageCleanupQueue } from "./media";
 import { moderationCases, moderationEvents } from "./moderation";
 import {
   companyLocations,
@@ -44,4 +44,5 @@ export const applicationTables = [
   niches,
   socialProfiles,
   sponsorshipPlacements,
+  storageCleanupQueue,
 ] satisfies PgTable[];

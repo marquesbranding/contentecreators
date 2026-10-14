@@ -23,9 +23,10 @@ export const accounts = pgTable(
   "accounts",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    authUserId: uuid("auth_user_id")
-      .notNull()
-      .references(() => authUsers.id, { onDelete: "restrict" }),
+    /** Null only on an eliminated tombstone: the login is free to register again. */
+    authUserId: uuid("auth_user_id").references(() => authUsers.id, {
+      onDelete: "restrict",
+    }),
     role: accountRoleEnum("role"),
     registrationStep: registrationStepEnum("registration_step")
       .notNull()
@@ -89,6 +90,10 @@ export const accounts = pgTable(
       sql`${table.completionVersion} > 0`,
     ),
     check("accounts_version_check", sql`${table.version} > 0`),
+    check(
+      "accounts_auth_user_link_check",
+      sql`${table.authUserId} is not null or ${table.deletionState} is not distinct from 'ELIMINATED'`,
+    ),
     check(
       "accounts_operational_email_check",
       sql`length(trim(${table.operationalEmail})) between 3 and 320`,

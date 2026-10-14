@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   char,
   check,
   index,
@@ -44,6 +45,8 @@ export const emailOutbox = pgTable(
     lastErrorCategory: varchar("last_error_category", { length: 80 }),
     lastErrorCode: varchar("last_error_code", { length: 80 }),
     sentAt: timestamp("sent_at", { withTimezone: true }),
+    /** Recipient and payload are scrubbed by the database once SENT or DEAD_LETTER. */
+    retainUntilSent: boolean("retain_until_sent").notNull().default(false),
     version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

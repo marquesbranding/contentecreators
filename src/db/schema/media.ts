@@ -10,6 +10,7 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  varchar,
 } from "drizzle-orm/pg-core";
 
 import { accounts } from "./accounts";
@@ -78,3 +79,37 @@ export const mediaAssets = pgTable(
 
 export type MediaAsset = typeof mediaAssets.$inferSelect;
 export type NewMediaAsset = typeof mediaAssets.$inferInsert;
+
+/**
+ * Storage objects of deleted accounts still to be removed (bucket and path
+ * only). RLS is forced without policies: only server routines touch it.
+ */
+export const storageCleanupQueue = pgTable(
+  "storage_cleanup_queue",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    bucketName: text("bucket_name").notNull(),
+    objectPath: text("object_path").notNull(),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    lastErrorCode: varchar("last_error_code", { length: 80 }),
+    lastAttemptAt: timestamp("last_attempt_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("storage_cleanup_queue_object_uidx").on(
+      table.bucketName,
+      table.objectPath,
+    ),
+    index("storage_cleanup_queue_due_idx").on(table.createdAt, table.id),
+    check(
+      "storage_cleanup_queue_bucket_check",
+      sql`${table.bucketName} in ('profile-media', 'sponsorship-media')`,
+    ),
+    check(
+      "storage_cleanup_queue_attempt_count_check",
+      sql`${table.attemptCount} >= 0`,
+    ),
+  ],
+);
