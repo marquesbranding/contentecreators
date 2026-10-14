@@ -423,7 +423,14 @@ export async function seedAcceptanceAccount(input: {
   } satisfies SeededAcceptanceAccount;
 }
 
-export async function cleanupAcceptanceIdentity(email: string) {
+/**
+ * `deletedAccountIds` covers tombstones left by a self-service deletion: they
+ * no longer carry the e-mail nor the login, so only their id finds them.
+ */
+export async function cleanupAcceptanceIdentity(
+  email: string,
+  { deletedAccountIds = [] }: { deletedAccountIds?: string[] } = {},
+) {
   const normalizedEmail = email.trim().toLowerCase();
 
   if (!normalizedEmail.endsWith(`@${LOCAL_DOMAIN}`)) {
@@ -439,8 +446,16 @@ export async function cleanupAcceptanceIdentity(email: string) {
         select id
         from public.accounts
         where operational_email = ${normalizedEmail}
+          or id = any(${deletedAccountIds}::uuid[])
       `;
       const accountIds = accounts.map((account) => account.id);
+
+      for (const accountId of accountIds) {
+        await transaction`
+          delete from public.storage_cleanup_queue
+          where object_path like ${`${accountId}/%`}
+        `;
+      }
 
       if (accountIds.length > 0) {
         const profiles = await transaction<{ id: string }[]>`
@@ -609,6 +624,31 @@ export async function readAcceptanceAudit(input: {
       and (${input.entityName ?? null}::text is null or entity_table = ${input.entityName ?? null})
       order by revision desc
     `;
+  });
+}
+
+export async function readAcceptanceDeletion(accountId: string) {
+  return withLocalDatabase(async (sql) => {
+    const [account] = await sql<
+      Array<{
+        authUserId: string | null;
+        deletionState: string | null;
+        email: string;
+        fullName: string | null;
+        profiles: number;
+      }>
+    >`
+      select
+        auth_user_id::text as "authUserId",
+        deletion_state as "deletionState",
+        operational_email as email,
+        full_name as "fullName",
+        (select count(*)::integer from public.creator_profiles where account_id = ${accountId}::uuid) as profiles
+      from public.accounts
+      where id = ${accountId}::uuid
+    `;
+
+    return account ?? null;
   });
 }
 
@@ -909,3 +949,120 @@ export async function confirmOnboardingSubmission(page: Page) {
   ).toBeVisible();
   await page.getByRole("button", { name: "Confirmar envio" }).click();
 }
+
+/** The ADMIN-owned sponsorship creative that supabase/seed.sql inserts. */
+const SEEDED_SPONSORSHIP_CREATIVE_ID = "72000000-0000-4000-8000-000000000010";
+const SPONSORSHIP_FIXTURE_PREFIX = "[e2e-r04] ";
+
+export async function readAcceptanceCreatorProfileId(accountId: string) {
+  return withLocalDatabase(async (sql) => {
+    const [profile] = await sql<Array<{ id: string }>>`
+      select id from public.creator_profiles where account_id = ${accountId}::uuid
+    `;
+
+    return profile?.id ?? null;
+  });
+}
+
+/**
+ * Inserts active placements that reuse the seeded admin creative: public
+ * landing banners (`landing-top`), sponsored catalog cards (`catalog-midlist`)
+ * and one `catalog-featured` placement per given creator profile.
+ * Always paired with `removeAcceptanceSponsorships`.
+ */
+export async function seedAcceptanceSponsorships(input: {
+  featuredCreatorProfileIds: string[];
+  landingBanners: number;
+  midlistCards: number;
+}) {
+  await removeAcceptanceSponsorships();
+
+  return withLocalDatabase(async (sql) => {
+    const ids: string[] = [];
+    const insert = async (values: {
+      creative: boolean;
+      featuredCreatorProfileId?: string;
+      placementType: "CAROUSEL" | "FEATURED_CREATOR" | "TOP_BANNER";
+      slotKey: string;
+      sortOrder: number;
+      title: string;
+    }) => {
+      const [row] = await sql<Array<{ id: string }>>`
+        insert into public.sponsorship_placements (
+          placement_type, audience, slot_key, creative_asset_id,
+          featured_creator_profile_id, advertiser_label, show_sponsored_badge,
+          show_advertiser_label, title, body, link_url, link_label,
+          starts_at, ends_at, is_active, sort_order
+        )
+        values (
+          ${values.placementType}::public.placement_type,
+          'ALL'::public.placement_audience,
+          ${values.slotKey},
+          ${values.creative ? SEEDED_SPONSORSHIP_CREATIVE_ID : null}::uuid,
+          ${values.featuredCreatorProfileId ?? null}::uuid,
+          'Anunciante E2E', true, false,
+          ${`${SPONSORSHIP_FIXTURE_PREFIX}${values.title}`},
+          'Fixture automatizada da revisão R04.',
+          'https://contentecreators.com.br/e2e', 'Saiba mais',
+          now() - interval '1 day', now() + interval '1 day', true,
+          ${values.sortOrder}
+        )
+        returning id
+      `;
+
+      ids.push(row!.id);
+    };
+
+    for (let index = 0; index < input.landingBanners; index += 1) {
+      await insert({
+        creative: true,
+        placementType: "TOP_BANNER",
+        slotKey: "landing-top",
+        sortOrder: index,
+        title: `Banner da home ${index + 1}`,
+      });
+    }
+
+    for (let index = 0; index < input.midlistCards; index += 1) {
+      await insert({
+        creative: true,
+        placementType: "CAROUSEL",
+        slotKey: "catalog-midlist",
+        sortOrder: index,
+        title: `Card ${index + 1}`,
+      });
+    }
+
+    for (const [
+      index,
+      profileId,
+    ] of input.featuredCreatorProfileIds.entries()) {
+      await insert({
+        creative: false,
+        featuredCreatorProfileId: profileId,
+        placementType: "FEATURED_CREATOR",
+        slotKey: "catalog-featured",
+        sortOrder: index,
+        title: `Destaque ${index + 1}`,
+      });
+    }
+
+    return ids;
+  });
+}
+
+export async function removeAcceptanceSponsorships() {
+  await withLocalDatabase(async (sql) => {
+    await sql`
+      delete from public.sponsorship_placements
+      where title like ${`${SPONSORSHIP_FIXTURE_PREFIX}%`}
+    `;
+  });
+}
+
+/**
+ * `context.clearCookies({ name: SESSION_COOKIES })` signs the browser out but
+ * keeps the cookie-consent decision (Playwright config pre-declines it), so the
+ * consent banner does not cover the next page.
+ */
+export const SESSION_COOKIES = /^(?!cc_cookie_consent$)/u;

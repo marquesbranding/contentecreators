@@ -28,6 +28,6 @@
 
 ## 5. Verificação e documentação
 
-- [ ] 5.1 e2e: creator e empresa excluem, somem do catálogo/vitrine, não logam; admin recupera dentro da janela e contato segue revogado; rotina elimina só após 30 dias em ambiente de teste
+- [ ] 5.1 (não executada: substituída pela decisão de exclusão imediata, change `apply-client-review-r04`) e2e: creator e empresa excluem, somem do catálogo/vitrine, não logam; admin recupera dentro da janela e contato segue revogado; rotina elimina só após 30 dias em ambiente de teste
 - [x] 5.2 Atualizar `docs/operations/data-subject-requests.md`, `docs/architecture/moderation-state-machine.md` e `docs/launch-blockers.md`
 - [x] 5.3 Rodar lint, typecheck, unit, component, integration e e2e relevantes

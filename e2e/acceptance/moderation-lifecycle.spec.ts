@@ -12,6 +12,7 @@ import {
   resetLocalRegistrationRateLimits,
   seedAcceptanceAccount,
   seedAcceptanceDeadLetterEmail,
+  SESSION_COOKIES,
   setAcceptanceAccountStatus,
   signInAcceptanceUser,
 } from "../support/local-acceptance";
@@ -109,7 +110,7 @@ test.describe("moderation lifecycle acceptance journeys", () => {
         })
         .toBe("CHANGES_REQUESTED");
 
-      await page.context().clearCookies();
+      await page.context().clearCookies({ name: SESSION_COOKIES });
       await signInAcceptanceUser(page, {
         email,
         nextPath: "/onboarding/influencer?corrections=requested",
@@ -131,7 +132,7 @@ test.describe("moderation lifecycle acceptance journeys", () => {
         })
         .toBe("PENDING_REVIEW");
 
-      await page.context().clearCookies();
+      await page.context().clearCookies({ name: SESSION_COOKIES });
       await signInAsLocalAdmin(page, reviewPath, {
         email: adminEmail,
         password: "LocalTest123!",
@@ -213,7 +214,7 @@ test.describe("moderation lifecycle acceptance journeys", () => {
         )
         .toBe(true);
 
-      await page.context().clearCookies();
+      await page.context().clearCookies({ name: SESSION_COOKIES });
       await signInAcceptanceUser(page, {
         email: "company-approved@contentecreators.test",
         nextPath: "/app/catalog",
@@ -341,7 +342,7 @@ test.describe("moderation lifecycle acceptance journeys", () => {
         ),
       ).not.toContain(fixture.profileId!);
 
-      await userContext.clearCookies();
+      await userContext.clearCookies({ name: SESSION_COOKIES });
       await resetLocalRegistrationRateLimits();
       await userPage.goto("/sign-up?intent=influencer");
       await userPage.getByLabel("E-mail", { exact: true }).fill(email);

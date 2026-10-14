@@ -81,6 +81,17 @@ not cross environments.
 | `CRON_SECRET`                           | Unique random value, at least 32 characters | Different unique value                   |
 | `PUBLIC_SOCIAL_PROOF_ENABLED`           | `false`                                     | `false`                                  |
 | `SUPPORT_CONTACT_EMAIL`                 | Client-approved non-production contact      | Client/legal-approved production contact |
+| `CATALOG_SHUFFLE_SALT` (optional)       | Optional random string                      | Optional random string, unique per stage |
+
+`CATALOG_SHUFFLE_SALT` is optional. The catalog directory is shuffled daily:
+profiles are ordered by `md5(profile id || seed)`, where the seed is the
+calendar date in `America/Sao_Paulo` plus this salt. When unset or blank, a
+fixed built-in default is used, so the order is stable but derivable from the
+source code; set a private random value (for example `openssl rand -hex 16`)
+in Production to keep it unpredictable. The salt never reaches the client (the
+pagination cursor carries only the date). Changing it reshuffles the order
+immediately, so a visitor paging through the catalog at that moment may see a
+repeated or skipped profile once; rotate it outside peak hours.
 
 The hosted runtime and deployment verifier also accept the variables installed
 by the Vercel/Supabase integration. Canonical application names remain

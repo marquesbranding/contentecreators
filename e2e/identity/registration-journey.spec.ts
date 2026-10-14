@@ -6,6 +6,7 @@ import {
   acceptanceEmail,
   cleanupAcceptanceIdentity,
   resetLocalRegistrationRateLimits,
+  SESSION_COOKIES,
 } from "../support/local-acceptance";
 
 test.beforeEach(async () => {
@@ -90,7 +91,7 @@ test("email first, confirmation, account details, persisted audience and submiss
       );
     await page.getByRole("button", { name: "Continuar", exact: true }).click();
     await expect(page).toHaveURL(/step=audience/);
-    await context.clearCookies();
+    await context.clearCookies({ name: SESSION_COOKIES });
     await page.goto("/login");
     await page.getByLabel("E-mail", { exact: true }).fill(email);
     await page.getByLabel("Senha", { exact: true }).fill("LocalTest123!");
@@ -142,7 +143,7 @@ test("email first, confirmation, account details, persisted audience and submiss
       fullPage: true,
     });
     expect(errors).toEqual([]);
-    await context.clearCookies();
+    await context.clearCookies({ name: SESSION_COOKIES });
     await page.goto("/sign-up");
     await page.getByLabel("E-mail", { exact: true }).fill(email);
     await page.getByLabel("E-mail", { exact: true }).blur();

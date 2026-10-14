@@ -157,14 +157,23 @@ test.describe("global responsive route matrix", () => {
         label: "Account detail",
         path: `/backoffice/accounts/${PENDING_COMPANY_ACCOUNT_ID}`,
       },
-      {
-        label: "Account editor",
-        path: `/backoffice/accounts/${PENDING_COMPANY_ACCOUNT_ID}/edit`,
-      },
       { label: "Audit history", path: "/backoffice/audit" },
       { label: "Email operations", path: "/backoffice/emails" },
       { label: "Sponsorship management", path: "/backoffice/sponsorships" },
     ]);
+  });
+
+  test("does not expose the removed backoffice profile editor", async ({
+    page,
+  }, testInfo) => {
+    skipOutsideExplicitMatrix(testInfo);
+
+    await signIn(page, "admin", "/backoffice", true);
+    const response = await page.goto(
+      `/backoffice/accounts/${PENDING_COMPANY_ACCOUNT_ID}/edit`,
+    );
+
+    expect(response?.status()).toBe(404);
   });
 });
 
