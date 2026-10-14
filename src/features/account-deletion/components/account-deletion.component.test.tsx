@@ -38,6 +38,11 @@ describe("AccountDeletionSection", () => {
     expect(
       screen.getByRole("checkbox", { name: /não há como recuperá-los/u }),
     ).toBeRequired();
+    const warning = screen.getByRole("alert");
+    expect(warning).toHaveTextContent(
+      /os dados da sua conta serão excluídos de fato/u,
+    );
+    expect(warning).toHaveTextContent(/novo cadastro do zero/u);
     expect(
       screen.getAllByText(/se quiser voltar, é só se cadastrar de novo/iu)
         .length,

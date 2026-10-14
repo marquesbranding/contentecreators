@@ -99,6 +99,20 @@ export function AccountDeletionSection({
               </DialogDescription>
             </DialogHeader>
 
+            <div
+              className="border-destructive bg-destructive/10 text-destructive rounded-xl border-2 p-4 text-sm leading-6 font-semibold"
+              role="alert"
+            >
+              <p>
+                Atenção: ao confirmar, os dados da sua conta serão excluídos de
+                fato, agora, e não há como recuperá-los.
+              </p>
+              <p className="mt-2">
+                Para usar o sistema novamente, você precisará fazer um novo
+                cadastro do zero.
+              </p>
+            </div>
+
             {state.status === "error" && state.message ? (
               <p
                 className="border-destructive/40 bg-destructive/5 text-destructive rounded-xl border p-3 text-sm"
