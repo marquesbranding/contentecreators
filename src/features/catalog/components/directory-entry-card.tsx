@@ -1,3 +1,4 @@
+import { followerUnitLabel } from "@/shared/domain/follower-unit-label";
 import type { DirectoryBrowserEntryDto } from "../api/catalog-directory.contract";
 import { CatalogCompanyCard } from "./catalog-company-card";
 import {
@@ -26,7 +27,7 @@ function toCreatorCardViewModel(
           : [
               {
                 kind: "followers" as const,
-                label: "seguidores",
+                label: followerUnitLabel(metric.platform),
                 value: formatMetricValue(metric.followerCount),
               },
             ]),
@@ -75,7 +76,7 @@ function toCreatorCardViewModel(
           followerLabel:
             metric.followerCount === null
               ? null
-              : `${formatMetricValue(metric.followerCount)} seguidores`,
+              : `${formatMetricValue(metric.followerCount)} ${followerUnitLabel(metric.platform)}`,
           handle: metric.handle,
           platform: metric.platform,
         }

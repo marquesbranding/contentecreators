@@ -8,7 +8,6 @@ import {
 } from "@/shared/components/ui/alert";
 import { CdlMemberBadge } from "@/shared/components/cdl-member-badge";
 import { InfluencerJourneyBadge } from "@/shared/components/influencer-journey-badge";
-import { InfluencerJourneyNote } from "@/shared/components/influencer-journey-note";
 import { ProfileAvatarFrame } from "@/shared/components/profile-avatar-frame";
 import { SignedImage } from "@/shared/components/signed-image";
 import { Badge } from "@/shared/components/ui/badge";
@@ -162,9 +161,6 @@ export function CompanyDetailView({
                   <InfluencerJourneyBadge size="md" />
                 ) : null}
               </CardTitle>
-              {detail.isInfluencerJourneyParticipant ? (
-                <InfluencerJourneyNote className="text-muted-foreground text-xs leading-5" />
-              ) : null}
               <ContactIconRow
                 channels={companyContactChannels(
                   detail.contact,

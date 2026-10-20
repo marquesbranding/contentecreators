@@ -384,6 +384,93 @@ describe("admin sponsorship placement service", () => {
     ).toHaveBeenCalledWith(expect.anything(), assetId, replacementAssetId);
   });
 
+  it("promotes a pending replacement creative when editing an active placement", async () => {
+    const updatedPlacement = {
+      ...placement,
+      creativeAssetId: replacementAssetId,
+      isActive: true,
+      version: 2,
+    };
+    const pendingReplacement = {
+      ...validatedCreativeMetadata,
+      archivedAt: null,
+      bucketName: "sponsorship-media",
+      id: replacementAssetId,
+      kind: "SPONSORSHIP_CREATIVE",
+      ownerAccountId: adminAccountId,
+      ownerAccountRole: "ADMIN",
+      status: "PENDING",
+    } as const;
+    const repository = createRepository({
+      findActivationEvidence: vi.fn(
+        async () =>
+          ({
+            featuredCreator: null,
+            media: pendingReplacement,
+            mediaMobile: null,
+            mediaTablet: null,
+            placement: updatedPlacement,
+          }) satisfies SponsorshipActivationEvidence,
+      ),
+      promotePendingCreative: vi.fn(async () => ({
+        ...pendingReplacement,
+        status: "ACTIVE" as const,
+      })),
+      update: vi.fn(async () => updatedPlacement),
+    });
+    const service = createAdminSponsorshipPlacementService({
+      repository,
+      runVerifiedTransaction: createRunner().runner,
+    });
+
+    await expect(
+      service.update({
+        expectedVersion: 1,
+        patch: { creativeAssetId: replacementAssetId },
+        placementId,
+        reason: "Substituir criativo de placement ativo",
+        requestId: "sponsor-replace-active-creative",
+      }),
+    ).resolves.toEqual(updatedPlacement);
+
+    expect(repository.promotePendingCreative).toHaveBeenCalledWith(
+      expect.anything(),
+      replacementAssetId,
+      adminAccountId,
+    );
+  });
+
+  it("archives the old tablet creative when the slot is removed", async () => {
+    const withTablet = { ...placement, creativeAssetTabletId: assetId };
+    const updatedPlacement = {
+      ...placement,
+      creativeAssetTabletId: null,
+      version: 2,
+    };
+    const repository = createRepository({
+      findById: vi.fn(async () => withTablet),
+      update: vi.fn(async () => updatedPlacement),
+    });
+    const service = createAdminSponsorshipPlacementService({
+      repository,
+      runVerifiedTransaction: createRunner().runner,
+    });
+
+    await expect(
+      service.update({
+        expectedVersion: 1,
+        patch: { creativeAssetTabletId: null },
+        placementId,
+        reason: "Remover imagem de tablet",
+        requestId: "sponsor-remove-tablet",
+      }),
+    ).resolves.toEqual(updatedPlacement);
+
+    expect(
+      repository.archiveReplacedCreativeIfUnreferenced,
+    ).toHaveBeenCalledWith(expect.anything(), assetId, null);
+  });
+
   it("rolls back an update that would leave an active placement invalid", async () => {
     const activePlacement = {
       ...placement,

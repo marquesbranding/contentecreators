@@ -25,6 +25,7 @@ export function SponsorshipCarouselControls({
   onPrevious,
   onSelect,
   previousLabel,
+  variant = "inline",
 }: {
   activeIndex: number;
   className?: string;
@@ -36,7 +37,15 @@ export function SponsorshipCarouselControls({
   onPrevious(): void;
   onSelect(index: number): void;
   previousLabel: string;
+  /**
+   * `inline` (default) renders arrows + dots in normal flow below the slides.
+   * `overlay` is for sitting absolutely inside the banner: white dots only,
+   * no arrows; the dots are the way to move between banners.
+   */
+  variant?: "inline" | "overlay";
 }) {
+  const overlay = variant === "overlay";
+
   return (
     <div
       className={cn(
@@ -44,17 +53,20 @@ export function SponsorshipCarouselControls({
         className,
       )}
       data-slot="sponsorship-carousel-controls"
+      data-variant={variant}
     >
-      <Button
-        aria-label={previousLabel}
-        className="size-11 lg:size-8"
-        onClick={onPrevious}
-        size="icon-sm"
-        type="button"
-        variant="outline"
-      >
-        <ChevronLeft aria-hidden="true" />
-      </Button>
+      {overlay ? null : (
+        <Button
+          aria-label={previousLabel}
+          className="size-11 lg:size-8"
+          onClick={onPrevious}
+          size="icon-sm"
+          type="button"
+          variant="outline"
+        >
+          <ChevronLeft aria-hidden="true" />
+        </Button>
+      )}
       <div
         aria-label={groupLabel}
         className="flex flex-wrap items-center justify-center gap-2 px-1 sm:px-2"
@@ -69,9 +81,13 @@ export function SponsorshipCarouselControls({
               aria-label={indicatorLabel(index, count)}
               className={cn(
                 "focus-visible:ring-ring/50 relative h-2.5 rounded-full outline-none before:absolute before:inset-[-7px] before:content-[''] focus-visible:ring-3 motion-safe:transition-all",
-                active
-                  ? "bg-foreground w-6"
-                  : "bg-foreground/20 hover:bg-foreground/40 w-2.5",
+                overlay
+                  ? active
+                    ? "w-6 bg-white shadow-sm"
+                    : "w-2.5 bg-white/50 shadow-sm hover:bg-white/80"
+                  : active
+                    ? "bg-foreground w-6"
+                    : "bg-foreground/20 hover:bg-foreground/40 w-2.5",
               )}
               key={index}
               onClick={() => onSelect(index)}
@@ -80,16 +96,18 @@ export function SponsorshipCarouselControls({
           );
         })}
       </div>
-      <Button
-        aria-label={nextLabel}
-        className="size-11 lg:size-8"
-        onClick={onNext}
-        size="icon-sm"
-        type="button"
-        variant="outline"
-      >
-        <ChevronRight aria-hidden="true" />
-      </Button>
+      {overlay ? null : (
+        <Button
+          aria-label={nextLabel}
+          className="size-11 lg:size-8"
+          onClick={onNext}
+          size="icon-sm"
+          type="button"
+          variant="outline"
+        >
+          <ChevronRight aria-hidden="true" />
+        </Button>
+      )}
     </div>
   );
 }

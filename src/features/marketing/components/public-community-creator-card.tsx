@@ -1,5 +1,6 @@
 import { ShieldCheck } from "lucide-react";
 
+import { followerUnitLabel } from "@/shared/domain/follower-unit-label";
 import { ProfileAvatarFrame } from "@/shared/components/profile-avatar-frame";
 import { SignedImage } from "@/shared/components/signed-image";
 import { SocialPlatformIcon } from "@/shared/components/social-platform-icon";
@@ -106,7 +107,8 @@ export function PublicCommunityCreatorCard({
             />
             {creator.metric.followerCount ? (
               <span className="font-semibold">
-                {formatCompactNumber(creator.metric.followerCount)} seguidores
+                {formatCompactNumber(creator.metric.followerCount)}{" "}
+                {followerUnitLabel(creator.metric.platform)}
               </span>
             ) : null}
           </p>

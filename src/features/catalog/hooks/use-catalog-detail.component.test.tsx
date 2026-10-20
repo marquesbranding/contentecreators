@@ -21,6 +21,7 @@ const detail: CatalogCreatorDetailViewDto = {
   metrics: [],
   niches: [],
   socialProfiles: [],
+  whatsapp: null,
   whatsappContactCount: 0,
 };
 

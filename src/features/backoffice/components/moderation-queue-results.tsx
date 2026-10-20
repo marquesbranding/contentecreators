@@ -54,7 +54,8 @@ function ReviewLink({ item }: { item: ModerationQueueItemDto }) {
       className={buttonVariants({ size: "sm", variant: "outline" })}
       href={`/backoffice/moderation/${item.accountId}`}
     >
-      Revisar {item.displayName}
+      <span aria-hidden="true">Revisar</span>
+      <span className="sr-only">Revisar {item.displayName}</span>
     </Link>
   );
 }
@@ -76,7 +77,7 @@ function DesktopQueue({ items }: { items: ModerationQueueItemDto[] }) {
   return (
     <section
       aria-label="Submissões para moderação em tabela"
-      className="hidden overflow-hidden rounded-xl border bg-white md:block"
+      className="hidden min-w-0 overflow-x-auto rounded-xl border bg-white lg:block"
     >
       <Table>
         <TableHeader>
@@ -92,7 +93,7 @@ function DesktopQueue({ items }: { items: ModerationQueueItemDto[] }) {
         <TableBody>
           {items.map((item) => (
             <TableRow key={item.accountId}>
-              <TableCell className="font-semibold">
+              <TableCell className="max-w-64 font-semibold break-words whitespace-normal">
                 {item.displayName}
               </TableCell>
               <TableCell>{getModerationRoleLabel(item.role)}</TableCell>
@@ -120,7 +121,7 @@ function MobileQueue({ items }: { items: ModerationQueueItemDto[] }) {
   return (
     <section
       aria-label="Submissões para moderação em cartões"
-      className="grid gap-4 md:hidden"
+      className="grid gap-4 lg:hidden"
     >
       {items.map((item) => (
         <Card key={item.accountId}>

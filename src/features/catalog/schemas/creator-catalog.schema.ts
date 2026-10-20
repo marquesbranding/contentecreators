@@ -32,6 +32,8 @@ export const catalogSocialPlatformSchema = z.enum([
   "FACEBOOK",
   "X",
   "LINKEDIN",
+  "THREADS",
+  "TELEGRAM",
   "OTHER",
 ]);
 

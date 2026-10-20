@@ -76,7 +76,7 @@ describe("CompanyDetailView", () => {
     ).toBeVisible();
   });
 
-  it("shows the Journey badge and explanatory note only when declared", () => {
+  it("shows the Journey badge, never the explanatory note, only when declared", () => {
     const { rerender } = render(<CompanyDetailView detail={detail} />);
 
     expect(
@@ -98,8 +98,10 @@ describe("CompanyDetailView", () => {
       screen.getByRole("img", { name: "Jornada do Influenciador" }),
     ).toBeVisible();
     expect(
-      screen.getByRole("link", { name: "www.jornadadoinfluenciador.com.br" }),
-    ).toHaveAttribute("rel", "noopener noreferrer");
+      screen.queryByRole("link", {
+        name: "www.jornadadoinfluenciador.com.br",
+      }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows a safe unavailable state", () => {

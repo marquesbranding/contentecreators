@@ -15,6 +15,7 @@ export interface CatalogCreatorNicheDto {
 
 export interface CatalogCreatorSocialDto {
   handle: string | null;
+  href: string | null;
   platform: CatalogSocialPlatform;
 }
 
@@ -52,7 +53,6 @@ export type CatalogCreatorContactDto =
         platform: CatalogSocialPlatform;
       }[];
       status: "AVAILABLE";
-      whatsapp: { href: string } | null;
     };
 
 export interface CatalogCreatorDetailDto {
@@ -71,5 +71,7 @@ export interface CatalogCreatorDetailDto {
   metrics: CatalogCreatorMetricDto[];
   niches: CatalogCreatorNicheDto[];
   socialProfiles: CatalogCreatorSocialDto[];
+  /** Always public: the WhatsApp button is not gated by contact consent. */
+  whatsapp: { href: string } | null;
   whatsappContactCount: number;
 }

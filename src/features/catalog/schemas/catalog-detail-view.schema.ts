@@ -56,10 +56,6 @@ const availableContactSchema = z
         .strict(),
     ),
     status: z.literal("AVAILABLE"),
-    whatsapp: z
-      .object({ href: z.url().startsWith("https://wa.me/") })
-      .strict()
-      .nullable(),
   })
   .strict();
 
@@ -116,10 +112,15 @@ export const catalogCreatorDetailViewSchema = z
       z
         .object({
           handle: z.string().trim().max(160).nullable(),
+          href: z.url().refine(isSafeHttpUrl).nullable(),
           platform: catalogSocialPlatformSchema,
         })
         .strict(),
     ),
+    whatsapp: z
+      .object({ href: z.url().startsWith("https://wa.me/") })
+      .strict()
+      .nullable(),
     whatsappContactCount: z.number().int().nonnegative(),
   })
   .strict();

@@ -18,7 +18,6 @@ const detail: CatalogCreatorDetailViewDto = {
       },
     ],
     status: "AVAILABLE",
-    whatsapp: { href: "https://wa.me/5511999999999" },
   },
   creatorId: "10000000-0000-4000-8000-000000000001",
   creatorType: "INFLUENCER",
@@ -67,9 +66,18 @@ const detail: CatalogCreatorDetailViewDto = {
   ],
   niches: [{ name: "Beleza", slug: "beleza" }],
   socialProfiles: [
-    { handle: "@creator", platform: "INSTAGRAM" },
-    { handle: "@creator_tiktok", platform: "TIKTOK" },
+    {
+      handle: "@creator",
+      href: "https://instagram.com/creator",
+      platform: "INSTAGRAM",
+    },
+    {
+      handle: "@creator_tiktok",
+      href: "https://tiktok.com/@creator_tiktok",
+      platform: "TIKTOK",
+    },
   ],
+  whatsapp: { href: "https://wa.me/5511999999999" },
   whatsappContactCount: 5,
 };
 
@@ -83,20 +91,15 @@ describe("CatalogDetailView", () => {
     expect(
       screen.getByRole("heading", { name: "Creator Exemplo" }),
     ).toBeVisible();
-    expect(screen.getAllByText("12.500 seguidores")).toHaveLength(2);
-    expect(screen.getByText("Métrica autodeclarada")).toBeVisible();
-    expect(
-      screen.getByRole("link", { name: "Enviar e-mail para Creator Exemplo" }),
-    ).toHaveAttribute("href", "mailto:creator@example.test");
+    expect(screen.getAllByText("12.500 seguidores")).toHaveLength(1);
+    expect(screen.queryByRole("link", { name: /e-mail/iu })).toBeNull();
     expect(
       screen.getByRole("link", {
         name: "Chamar Creator Exemplo no WhatsApp",
       }),
     ).toHaveAttribute("rel", expect.stringContaining("noreferrer"));
     expect(
-      screen.getByRole("link", {
-        name: "Abrir Instagram de Creator Exemplo",
-      }),
+      screen.getByRole("link", { name: /^@creator(?!_)/u }),
     ).toHaveAttribute("href", "https://instagram.com/creator");
     expect(
       screen.getByRole("img", { name: /foto de perfil/iu }),
@@ -146,7 +149,7 @@ describe("CatalogDetailView", () => {
     expect(screen.queryByText("Conteúdo compartilhado")).toBeNull();
   });
 
-  it("does not invent private contacts for an influencer viewer", () => {
+  it("offers WhatsApp and clickable social links even without contact consent", () => {
     render(
       <CatalogDetailView
         detail={{
@@ -161,8 +164,32 @@ describe("CatalogDetailView", () => {
     );
 
     expect(
-      screen.getByText(/contatos ficam disponíveis somente para empresas/iu),
-    ).toBeVisible();
+      screen.getByRole("link", { name: "Chamar Creator Exemplo no WhatsApp" }),
+    ).toHaveAttribute("href", "https://wa.me/5511999999999");
+    const tiktok = screen.getByRole("link", { name: /@creator_tiktok/u });
+
+    expect(tiktok).toHaveAttribute(
+      "href",
+      "https://tiktok.com/@creator_tiktok",
+    );
+    expect(tiktok).toHaveAttribute("target", "_blank");
+  });
+
+  it("does not invent private contacts for an influencer viewer", () => {
+    render(
+      <CatalogDetailView
+        detail={{
+          ...detail,
+          contact: {
+            reason: "VIEWER_NOT_COMPANY",
+            status: "UNAVAILABLE",
+          },
+          whatsapp: null,
+        }}
+        status="success"
+      />,
+    );
+
     expect(
       screen.queryByRole("link", { name: /e-mail|whatsapp/iu }),
     ).toBeNull();
@@ -189,7 +216,7 @@ describe("CatalogDetailView", () => {
     ).toBeVisible();
   });
 
-  it("shows the Journey badge and explanatory note only when declared", () => {
+  it("shows the Journey badge, never the explanatory note, only when declared", () => {
     const { rerender } = render(
       <CatalogDetailView detail={detail} status="success" />,
     );
@@ -214,8 +241,10 @@ describe("CatalogDetailView", () => {
       screen.getByRole("img", { name: "Jornada do Influenciador" }),
     ).toBeVisible();
     expect(
-      screen.getByRole("link", { name: "www.jornadadoinfluenciador.com.br" }),
-    ).toHaveAttribute("target", "_blank");
+      screen.queryByRole("link", {
+        name: "www.jornadadoinfluenciador.com.br",
+      }),
+    ).not.toBeInTheDocument();
   });
 
   it("replaces stale details with a safe unavailable state", () => {

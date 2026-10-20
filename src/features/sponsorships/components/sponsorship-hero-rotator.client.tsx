@@ -50,6 +50,7 @@ export function SponsorshipHeroRotator({
     <section
       aria-label={label}
       aria-roledescription="carrossel"
+      className="relative"
       data-slot="sponsorship-hero-rotator"
       role="region"
       {...interactionProps}
@@ -87,7 +88,7 @@ export function SponsorshipHeroRotator({
 
       <SponsorshipCarouselControls
         activeIndex={activeIndex}
-        className="mt-4"
+        className="absolute inset-x-0 bottom-3 z-10 sm:bottom-4"
         count={creatives.length}
         groupLabel="Escolher banner"
         indicatorLabel={(index, count) =>
@@ -98,6 +99,7 @@ export function SponsorshipHeroRotator({
         onPrevious={previous}
         onSelect={goTo}
         previousLabel="Banner anterior"
+        variant="overlay"
       />
     </section>
   );

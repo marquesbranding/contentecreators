@@ -164,7 +164,9 @@ describe("CatalogSponsorshipSlots", () => {
       name: "Patrocínios no catálogo",
     });
     await user.click(
-      within(carousel).getByRole("button", { name: "Próximo patrocínio" }),
+      within(carousel).getByRole("button", {
+        name: /posição 2 de 2 dos patrocínios/u,
+      }),
     );
     expect(
       within(carousel).getByRole("button", {

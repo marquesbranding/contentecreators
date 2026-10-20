@@ -521,37 +521,63 @@ export function createAdminSponsorshipPlacementService({
           let evidence: SponsorshipActivationEvidence | null = null;
 
           for (const slot of creativeSlots) {
-            const wasReplaced =
+            const changed =
               Object.hasOwn(command.patch, slot.field) &&
-              slot.current !== slot.updated &&
-              slot.current !== null &&
-              slot.updated !== null;
+              slot.current !== slot.updated;
 
-            if (!wasReplaced) {
+            if (!changed) {
               continue;
             }
 
-            evidence ??= await repository.findActivationEvidence(
-              transaction,
-              command.placementId,
-            );
+            if (slot.updated !== null) {
+              // Replaced or newly added image: uploads are created PENDING, so
+              // promote it here; otherwise the activation check below rejects
+              // every edit of an active placement that touches an image.
+              evidence ??= await repository.findActivationEvidence(
+                transaction,
+                command.placementId,
+              );
 
-            if (
-              !evidence ||
-              !isEligibleReplacementCreative(
+              if (
+                !evidence ||
+                !isEligibleReplacementCreative(
+                  slot.updated,
+                  slot.media(evidence),
+                  actor.accountId,
+                )
+              ) {
+                throw new SponsorshipPlacementServiceError(
+                  "INVALID_ACTIVATION",
+                );
+              }
+
+              const promoted = await promoteIfPending(
+                repository,
+                transaction,
                 slot.updated,
                 slot.media(evidence),
                 actor.accountId,
-              )
-            ) {
-              throw new SponsorshipPlacementServiceError("INVALID_ACTIVATION");
+              );
+
+              evidence = {
+                ...evidence,
+                ...(slot.field === "creativeAssetId"
+                  ? { media: promoted }
+                  : slot.field === "creativeAssetTabletId"
+                    ? { mediaTablet: promoted }
+                    : { mediaMobile: promoted }),
+              };
             }
 
-            await repository.archiveReplacedCreativeIfUnreferenced(
-              transaction,
-              slot.current!,
-              slot.updated!,
-            );
+            if (slot.current !== null) {
+              // Replaced or removed image: retire the old asset when nothing
+              // else references it.
+              await repository.archiveReplacedCreativeIfUnreferenced(
+                transaction,
+                slot.current,
+                slot.updated,
+              );
+            }
           }
 
           if (!updated.isActive) {

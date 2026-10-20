@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { followerUnitLabel } from "@/shared/domain/follower-unit-label";
 import {
   Alert,
   AlertDescription,
@@ -217,7 +218,7 @@ function ProfileCard({ detail }: { detail: BackofficeAccountDetailDto }) {
             />
             <Field label="Rede principal" value={profile.socialPlatform} />
             <Field
-              label="Seguidores autodeclarados"
+              label={`${followerUnitLabel(profile.socialPlatform, { capitalize: true })} autodeclarados`}
               value={formatNumber(profile.followers)}
             />
             <Field
@@ -254,8 +255,8 @@ function ProfileCard({ detail }: { detail: BackofficeAccountDetailDto }) {
                     <p className="font-semibold">{metric.platform}</p>
                     <p className="mt-1 text-sm">
                       {metric.followerCount === null
-                        ? "Seguidores não informados"
-                        : `${formatNumber(metric.followerCount)} seguidores`}
+                        ? `${followerUnitLabel(metric.platform, { capitalize: true })} não informados`
+                        : `${formatNumber(metric.followerCount)} ${followerUnitLabel(metric.platform)}`}
                     </p>
                     <p className="text-muted-foreground text-sm">
                       {metric.engagementRate === null

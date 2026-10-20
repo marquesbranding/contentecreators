@@ -14,7 +14,6 @@ import {
 } from "@/shared/components/ui/alert";
 import { CdlMemberBadge } from "@/shared/components/cdl-member-badge";
 import { InfluencerJourneyBadge } from "@/shared/components/influencer-journey-badge";
-import { InfluencerJourneyNote } from "@/shared/components/influencer-journey-note";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button, buttonVariants } from "@/shared/components/ui/button";
 import {
@@ -30,10 +29,11 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 import { SocialPlatformIcon } from "@/shared/components/social-platform-icon";
 import { WhatsAppIcon } from "@/shared/components/whatsapp-icon";
 import { accountTypeLabels } from "@/shared/domain/account-type-labels";
+import { followerUnitLabel } from "@/shared/domain/follower-unit-label";
 import { formatNumber } from "@/shared/lib/formatting/formatters";
 
 import type { CatalogCreatorDetailViewDto } from "../types/catalog-detail-view.types";
-import { ContactIconRow, type ContactIconChannel } from "./contact-icon-row";
+import { ContactIconRow } from "./contact-icon-row";
 
 type CatalogDetailViewProps =
   | {
@@ -142,67 +142,62 @@ function DetailUnavailable() {
   );
 }
 
-function contactUnavailableMessage(
-  reason: Extract<
-    CatalogCreatorDetailViewDto["contact"],
-    { status: "UNAVAILABLE" }
-  >["reason"],
-) {
-  return {
-    CONSENT_NOT_GRANTED:
-      "Este creator ainda não habilitou o compartilhamento de contatos.",
-    NO_CONTACT_CHANNELS:
-      "Este creator não possui canais de contato disponíveis no momento.",
-    VIEWER_NOT_COMPANY:
-      "Os contatos ficam disponíveis somente para empresas aprovadas.",
-  }[reason];
+function SocialNetworkCardShell({
+  children,
+  href,
+  isPrimary,
+}: {
+  children: React.ReactNode;
+  href: string | null;
+  isPrimary: boolean;
+}) {
+  const className = `flex items-center gap-3 rounded-2xl border p-3 ${
+    isPrimary ? "border-brand-blue bg-brand-blue-soft" : "border-border"
+  }`;
+
+  if (!href) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <a
+      className={`${className} hover:bg-muted/60 focus-visible:ring-ring/50 transition-colors outline-none focus-visible:ring-3`}
+      href={href}
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      {children}
+    </a>
+  );
 }
 
 function ContactSection({
-  contact,
   displayName,
   onWhatsappClick,
+  whatsapp,
 }: {
-  contact: CatalogCreatorDetailViewDto["contact"];
   displayName: string;
   onWhatsappClick: () => void;
+  whatsapp: CatalogCreatorDetailViewDto["whatsapp"];
 }) {
-  if (contact.status === "UNAVAILABLE") {
-    return (
-      <p className="text-muted-foreground text-sm">
-        {contactUnavailableMessage(contact.reason)}
-      </p>
-    );
+  // Only WhatsApp lives up here, and it is always offered when the creator has
+  // a number. Every other network opens from its card in "Redes sociais".
+  if (!whatsapp) {
+    return null;
   }
 
-  const channels: ContactIconChannel[] = [
-    ...(contact.whatsapp
-      ? [
-          {
-            href: contact.whatsapp.href,
-            icon: "whatsapp" as const,
-            label: `Chamar ${displayName} no WhatsApp`,
-            onClick: onWhatsappClick,
-          },
-        ]
-      : []),
-    ...(contact.email
-      ? [
-          {
-            href: contact.email.href,
-            icon: "email" as const,
-            label: `Enviar e-mail para ${displayName}`,
-          },
-        ]
-      : []),
-    ...contact.social.map((social) => ({
-      href: social.href,
-      icon: social.platform,
-      label: `Abrir ${socialLabels[social.platform]} de ${displayName}`,
-    })),
-  ];
-
-  return <ContactIconRow channels={channels} />;
+  return (
+    <ContactIconRow
+      channels={[
+        {
+          href: whatsapp.href,
+          icon: "whatsapp",
+          label: `Chamar ${displayName} no WhatsApp`,
+          onClick: onWhatsappClick,
+        },
+      ]}
+    />
+  );
 }
 
 export function CatalogDetailView(props: CatalogDetailViewProps) {
@@ -219,14 +214,6 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
   }
 
   const { detail } = props;
-  const primaryMetric =
-    detail.metrics.find((metric) => metric.isPrimary) ??
-    detail.metrics[0] ??
-    null;
-  const primaryHandle =
-    detail.socialProfiles.find(
-      (social) => social.platform === primaryMetric?.platform,
-    )?.handle ?? null;
   const instagramMetric =
     detail.metrics.find((metric) => metric.platform === "INSTAGRAM") ?? null;
   const socialNetworks = [...detail.socialProfiles]
@@ -303,9 +290,6 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
                   <InfluencerJourneyBadge size="md" />
                 ) : null}
               </CardTitle>
-              {detail.isInfluencerJourneyParticipant ? (
-                <InfluencerJourneyNote className="text-muted-foreground text-xs leading-5" />
-              ) : null}
               <div className="flex flex-wrap gap-2">
                 <Badge className="bg-brand-night border-transparent text-white">
                   {accountTypeLabels[detail.creatorType]}
@@ -330,35 +314,16 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
                 ) : null}
               </div>
               <ContactSection
-                contact={detail.contact}
                 displayName={detail.displayName}
                 onWhatsappClick={() => {
                   props.onWhatsappClick?.();
                 }}
+                whatsapp={detail.whatsapp}
               />
               <CardDescription className="flex items-center gap-2 text-base">
                 <MapPin aria-hidden="true" className="size-4" />
                 {detail.location.city}, {detail.location.state}
               </CardDescription>
-              {primaryMetric ? (
-                <div className="flex flex-wrap items-center gap-2 text-sm">
-                  <span className="inline-flex items-center gap-1.5 font-semibold">
-                    <SocialPlatformIcon
-                      className="size-4"
-                      platform={primaryMetric.platform}
-                    />
-                    {primaryHandle ?? socialLabels[primaryMetric.platform]}
-                  </span>
-                  {primaryMetric.followerCount !== null ? (
-                    <span className="text-muted-foreground">
-                      {formatNumber(primaryMetric.followerCount)} seguidores
-                    </span>
-                  ) : null}
-                  <Badge className="text-[11px]" variant="outline">
-                    Métrica autodeclarada
-                  </Badge>
-                </div>
-              ) : null}
             </CardHeader>
           </Card>
 
@@ -386,35 +351,33 @@ export function CatalogDetailView(props: CatalogDetailViewProps) {
               <CardContent>
                 <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {socialNetworks.map((social) => (
-                    <li
-                      className={`flex items-center gap-3 rounded-2xl border p-3 ${
-                        social.metric?.isPrimary
-                          ? "border-brand-blue bg-brand-blue-soft"
-                          : "border-border"
-                      }`}
-                      key={social.platform}
-                    >
-                      <SocialPlatformIcon
-                        className="size-6 shrink-0"
-                        platform={social.platform}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="flex items-center gap-1.5 truncate text-sm font-semibold">
-                          {social.handle ?? socialLabels[social.platform]}
-                          {social.metric?.isPrimary ? (
-                            <Badge className="text-[10px]" variant="outline">
-                              Principal
-                            </Badge>
-                          ) : null}
-                        </p>
-                        {social.metric?.followerCount !== undefined &&
-                        social.metric?.followerCount !== null ? (
-                          <p className="text-muted-foreground text-xs">
-                            {formatNumber(social.metric.followerCount)}{" "}
-                            seguidores
+                    <li key={social.platform}>
+                      <SocialNetworkCardShell
+                        href={social.href}
+                        isPrimary={Boolean(social.metric?.isPrimary)}
+                      >
+                        <SocialPlatformIcon
+                          className="size-6 shrink-0"
+                          platform={social.platform}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="flex items-center gap-1.5 truncate text-sm font-semibold">
+                            {social.handle ?? socialLabels[social.platform]}
+                            {social.metric?.isPrimary ? (
+                              <Badge className="text-[10px]" variant="outline">
+                                Principal
+                              </Badge>
+                            ) : null}
                           </p>
-                        ) : null}
-                      </div>
+                          {social.metric?.followerCount !== undefined &&
+                          social.metric?.followerCount !== null ? (
+                            <p className="text-muted-foreground text-xs">
+                              {formatNumber(social.metric.followerCount)}{" "}
+                              {followerUnitLabel(social.platform)}
+                            </p>
+                          ) : null}
+                        </div>
+                      </SocialNetworkCardShell>
                     </li>
                   ))}
                 </ul>

@@ -114,14 +114,6 @@ function mapAvailableContact(
     emailPattern.test(record.contact.email)
       ? { href: `mailto:${record.contact.email}` }
       : null;
-  const whatsapp =
-    access.whatsappVisible &&
-    record.contact?.whatsappE164 &&
-    whatsappPattern.test(record.contact.whatsappE164)
-      ? {
-          href: `https://wa.me/${record.contact.whatsappE164.replace(/\D/gu, "")}`,
-        }
-      : null;
   const social = access.socialVisible
     ? record.socialProfiles.flatMap((profile) => {
         const href = safeHttpUrl(profile.normalizedUrl);
@@ -130,7 +122,7 @@ function mapAvailableContact(
       })
     : [];
 
-  if (!email && !whatsapp && social.length === 0) {
+  if (!email && social.length === 0) {
     return {
       reason: "NO_CONTACT_CHANNELS",
       status: "UNAVAILABLE",
@@ -141,8 +133,15 @@ function mapAvailableContact(
     email,
     social,
     status: "AVAILABLE",
-    whatsapp,
   };
+}
+
+function mapWhatsapp(
+  record: CatalogCreatorDetailRecord,
+): CatalogCreatorDetailDto["whatsapp"] {
+  return record.whatsappE164 && whatsappPattern.test(record.whatsappE164)
+    ? { href: `https://wa.me/${record.whatsappE164.replace(/\D/gu, "")}` }
+    : null;
 }
 
 function mapContact(
@@ -199,10 +198,14 @@ export function mapCatalogCreatorDetail(
     },
     metrics: mapMetrics(record.metrics),
     niches: record.niches.map(({ name, slug }) => ({ name, slug })),
-    socialProfiles: record.socialProfiles.map(({ handle, platform }) => ({
-      handle,
-      platform,
-    })),
+    socialProfiles: record.socialProfiles.map(
+      ({ handle, normalizedUrl, platform }) => ({
+        handle,
+        href: safeHttpUrl(normalizedUrl),
+        platform,
+      }),
+    ),
+    whatsapp: mapWhatsapp(record),
     whatsappContactCount: record.whatsappContactCount,
   };
 }

@@ -27,6 +27,7 @@ const record: CatalogCreatorDetailRecord = {
   socialProfiles: [],
   state: "PE",
   whatsappContactCount: 0,
+  whatsappE164: null,
 };
 
 function createRunner(

@@ -138,7 +138,7 @@ describe("SponsorshipCarousel", () => {
     expect(lastScrollLeft()).toBe(0);
   });
 
-  it("places the controls after the cards, with arrows around the dots", () => {
+  it("overlays only the dots, after the cards and without arrows", () => {
     overflowingLayout();
     render(<SponsorshipCarousel creatives={creatives(5)} />);
 
@@ -156,11 +156,9 @@ describe("SponsorshipCarousel", () => {
         .getAllByRole("button")
         .map((button) => button.getAttribute("aria-label")),
     ).toEqual([
-      "Patrocínio anterior",
       "Ir para a posição 1 de 3 dos patrocínios",
       "Ir para a posição 2 de 3 dos patrocínios",
       "Ir para a posição 3 de 3 dos patrocínios",
-      "Próximo patrocínio",
     ]);
     expect(
       screen.getByRole("button", {
@@ -169,17 +167,23 @@ describe("SponsorshipCarousel", () => {
     ).toHaveAttribute("aria-current", "true");
   });
 
-  it("moves with the arrow buttons, the dots and the keyboard arrows", () => {
+  it("moves with the dots and the keyboard arrows", () => {
     overflowingLayout();
     render(<SponsorshipCarousel creatives={creatives(5)} />);
     const region = screen.getByRole("region", {
       name: "Patrocínios em destaque",
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Próximo patrocínio" }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Ir para a posição 2 de 3 dos patrocínios",
+      }),
+    );
     expect(lastScrollLeft()).toBe(116);
     fireEvent.click(
-      screen.getByRole("button", { name: "Patrocínio anterior" }),
+      screen.getByRole("button", {
+        name: "Ir para a posição 1 de 3 dos patrocínios",
+      }),
     );
     expect(lastScrollLeft()).toBe(0);
     fireEvent.click(
@@ -271,7 +275,11 @@ describe("SponsorshipCarousel", () => {
       screen.queryByRole("button", { name: /Pausar|Retomar/ }),
     ).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Próximo patrocínio" }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Ir para a posição 2 de 3 dos patrocínios",
+      }),
+    );
     expect(scrollTo).toHaveBeenLastCalledWith({ behavior: "auto", left: 116 });
   });
 

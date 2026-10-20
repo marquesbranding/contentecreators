@@ -22,6 +22,7 @@ const detail: CatalogCreatorDetailDto = {
   metrics: [],
   niches: [{ name: "Moda", slug: "moda" }],
   socialProfiles: [],
+  whatsapp: null,
   whatsappContactCount: 0,
 };
 

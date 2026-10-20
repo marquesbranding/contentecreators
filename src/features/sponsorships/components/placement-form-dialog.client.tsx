@@ -265,8 +265,15 @@ function PlacementForm({
       else await mutation.create(command);
       toast.success(placement ? "Patrocínio atualizado" : "Rascunho criado");
       onSaved();
-    } catch {
-      setError("Não foi possível salvar. Confira os dados e tente novamente.");
+    } catch (caught) {
+      const serverMessage = (
+        caught as { response?: { data?: { message?: unknown } } } | null
+      )?.response?.data?.message;
+      setError(
+        typeof serverMessage === "string" && serverMessage.length > 0
+          ? serverMessage
+          : "Não foi possível salvar. Confira os dados e tente novamente.",
+      );
     }
   }
   const steps = ["Posição", "Conteúdo", "Público e agenda"];

@@ -250,7 +250,7 @@ async function archivePlacement(
 async function archiveReplacedCreativeIfUnreferenced(
   transaction: ApplicationTransaction,
   assetId: string,
-  replacementAssetId: string,
+  replacementAssetId: string | null,
 ) {
   const [archived] = await transaction
     .update(mediaAssets)

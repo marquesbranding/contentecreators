@@ -56,6 +56,7 @@ export interface CatalogCreatorDetailRecord {
   }[];
   state: string;
   whatsappContactCount: number;
+  whatsappE164: string | null;
 }
 
 export type FindEligibleCatalogCreator = (

@@ -25,6 +25,7 @@ const detail = {
   metrics: [],
   niches: [],
   socialProfiles: [],
+  whatsapp: null,
   whatsappContactCount: 0,
 } as const;
 

@@ -75,6 +75,7 @@ const baseRecord: CatalogCreatorDetailRecord = {
   ],
   state: "SP",
   whatsappContactCount: 7,
+  whatsappE164: "+5511999999999",
 };
 
 const companyViewer: CurrentAccountDto = {
@@ -127,7 +128,14 @@ describe("catalog detail mapper", () => {
         { name: "Tecnologia", slug: "tecnologia" },
         { name: "Educação", slug: "educacao" },
       ],
-      socialProfiles: [{ handle: "@creator", platform: "INSTAGRAM" }],
+      socialProfiles: [
+        {
+          handle: "@creator",
+          href: "https://instagram.com/creator",
+          platform: "INSTAGRAM",
+        },
+      ],
+      whatsapp: { href: "https://wa.me/5511999999999" },
     });
     expect(result.contact).toEqual({
       reason: "VIEWER_NOT_COMPANY",
@@ -154,10 +162,31 @@ describe("catalog detail mapper", () => {
         },
       ],
       status: "AVAILABLE",
-      whatsapp: {
-        href: "https://wa.me/5511999999999",
-      },
     });
+  });
+
+  it("offers WhatsApp to any viewer, independent of contact consent", () => {
+    const result = mapCatalogCreatorDetail(
+      { ...baseRecord, contact: null },
+      { ...companyViewer, role: "INFLUENCER" },
+    );
+
+    expect(result.whatsapp).toEqual({ href: "https://wa.me/5511999999999" });
+  });
+
+  it("omits WhatsApp when the number is missing or invalid", () => {
+    expect(
+      mapCatalogCreatorDetail(
+        { ...baseRecord, whatsappE164: null },
+        companyViewer,
+      ).whatsapp,
+    ).toBeNull();
+    expect(
+      mapCatalogCreatorDetail(
+        { ...baseRecord, whatsappE164: "invalid" },
+        companyViewer,
+      ).whatsapp,
+    ).toBeNull();
   });
 
   it("returns an explanatory unavailable state without contact data when consent is absent", () => {

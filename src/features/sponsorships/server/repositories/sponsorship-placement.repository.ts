@@ -101,7 +101,7 @@ export interface AdminSponsorshipPlacementRepository {
   archiveReplacedCreativeIfUnreferenced(
     transaction: ApplicationTransaction,
     assetId: string,
-    replacementAssetId: string,
+    replacementAssetId: string | null,
   ): Promise<boolean>;
   archive(
     transaction: ApplicationTransaction,

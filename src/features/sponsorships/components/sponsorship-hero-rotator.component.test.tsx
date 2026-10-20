@@ -246,23 +246,34 @@ describe("SponsorshipHeroRotator", () => {
       .map((button) => button.getAttribute("aria-label"));
 
     expect(names).toEqual([
-      "Banner anterior",
       "Ir para o banner 1 de 3",
       "Ir para o banner 2 de 3",
       "Ir para o banner 3 de 3",
-      "Próximo banner",
     ]);
   });
 
-  it("moves one banner at a time with the arrow buttons, wrapping at both ends", () => {
+  it("has no arrow buttons, only dots", () => {
     render(<SponsorshipHeroRotator creatives={banners(3)} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Banner anterior" }));
+    expect(
+      screen.queryByRole("button", { name: "Banner anterior" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Próximo banner" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("jumps to a banner with its dot", () => {
+    render(<SponsorshipHeroRotator creatives={banners(3)} />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ir para o banner 3 de 3" }),
+    );
     expect(visibleTitle()).toEqual(["Campanha 3"]);
-    fireEvent.click(screen.getByRole("button", { name: "Próximo banner" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ir para o banner 1 de 3" }),
+    );
     expect(visibleTitle()).toEqual(["Campanha 1"]);
-    fireEvent.click(screen.getByRole("button", { name: "Próximo banner" }));
-    expect(visibleTitle()).toEqual(["Campanha 2"]);
   });
 
   it("moves with the keyboard arrows while focus is inside the carousel", () => {
@@ -277,11 +288,13 @@ describe("SponsorshipHeroRotator", () => {
     expect(visibleTitle()).toEqual(["Campanha 1"]);
   });
 
-  it("keeps arrows and dots working with reduced motion", () => {
+  it("keeps dots working with reduced motion", () => {
     stubReducedMotion(true);
     render(<SponsorshipHeroRotator creatives={banners(3)} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Próximo banner" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ir para o banner 2 de 3" }),
+    );
     expect(visibleTitle()).toEqual(["Campanha 2"]);
     tick(60_000);
     expect(visibleTitle()).toEqual(["Campanha 2"]);

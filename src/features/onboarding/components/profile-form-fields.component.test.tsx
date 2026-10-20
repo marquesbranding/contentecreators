@@ -434,7 +434,7 @@ describe("ProfileFormFields company CNPJ experience", () => {
     expect(screen.getByText("Localização principal")).toBeInTheDocument();
   });
 
-  it("orders the social channel columns as rede social, seguidores, link e principal", () => {
+  it("orders the social channel columns as rede social, audiência, link e principal", () => {
     const { container } = render(<ProfileFormFields role="INFLUENCER" />);
 
     const header = container.querySelector(
@@ -443,7 +443,7 @@ describe("ProfileFormFields company CNPJ experience", () => {
     const headerText = header?.textContent ?? "";
     const order = [
       "Rede social",
-      "Seguidores",
+      "Audiência",
       "Link do perfil",
       "Principal",
     ].map((label) => headerText.indexOf(label));

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { contactVisibilityV1_0 } from "@/features/legal/client";
+import { followerUnitLabel } from "@/shared/domain/follower-unit-label";
 import { InfluencerJourneyNote } from "@/shared/components/influencer-journey-note";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -762,7 +763,7 @@ export function ProfileFormFields({
           >
             <span className="text-left">Rede social</span>
             {showChannelMetrics ? (
-              <span className="text-center">Seguidores</span>
+              <span className="text-center">Audiência</span>
             ) : null}
             <span className="text-left">Link do perfil</span>
             <span className="flex items-center justify-end gap-1 text-right normal-case">
@@ -806,7 +807,7 @@ export function ProfileFormFields({
                       className="text-muted-foreground text-xs font-medium sm:hidden"
                       htmlFor={followersInputId}
                     >
-                      Seguidores
+                      {followerUnitLabel(platform, { capitalize: true })}
                     </label>
                     <Input
                       aria-invalid={Boolean(
@@ -814,7 +815,7 @@ export function ProfileFormFields({
                           `socialChannels.${platform}.followers`,
                         )?.length,
                       )}
-                      aria-label={`Seguidores no ${platformLabel}`}
+                      aria-label={`${followerUnitLabel(platform, { capitalize: true })} no ${platformLabel}`}
                       className="rounded-xl sm:text-center sm:tabular-nums"
                       disabled={!entry.checked}
                       id={followersInputId}
