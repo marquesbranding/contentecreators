@@ -321,7 +321,7 @@ describe("SponsorshipFeaturedCreatorsRow", () => {
     expect(scrollTo).toHaveBeenLastCalledWith({ behavior: "auto", left: 116 });
   });
 
-  it("places the controls after the cards, with arrows around the dots", () => {
+  it("overlays only the dots, after the cards and without arrows", () => {
     overflowingLayout();
     render(<SponsorshipFeaturedCreatorsRow items={items(5)} />);
 
@@ -339,29 +339,26 @@ describe("SponsorshipFeaturedCreatorsRow", () => {
         .getAllByRole("button")
         .map((button) => button.getAttribute("aria-label")),
     ).toEqual([
-      "Criador em destaque anterior",
       "Ir para a posição 1 de 3 dos criadores em destaque",
       "Ir para a posição 2 de 3 dos criadores em destaque",
       "Ir para a posição 3 de 3 dos criadores em destaque",
-      "Próximo criador em destaque",
     ]);
   });
 
-  it("moves one position at a time with the arrow buttons and the keyboard arrows", () => {
+  it("moves with the dots and the keyboard arrows", () => {
     overflowingLayout();
     render(<SponsorshipFeaturedCreatorsRow items={items(5)} />);
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Próximo criador em destaque" }),
+      screen.getByRole("button", {
+        name: "Ir para a posição 2 de 3 dos criadores em destaque",
+      }),
     );
     expect(lastScrollLeft()).toBe(116);
     fireEvent.click(
-      screen.getByRole("button", { name: "Criador em destaque anterior" }),
-    );
-    expect(lastScrollLeft()).toBe(0);
-    // Previous from the first position wraps to the last one.
-    fireEvent.click(
-      screen.getByRole("button", { name: "Criador em destaque anterior" }),
+      screen.getByRole("button", {
+        name: "Ir para a posição 3 de 3 dos criadores em destaque",
+      }),
     );
     expect(lastScrollLeft()).toBe(132);
 
@@ -371,13 +368,15 @@ describe("SponsorshipFeaturedCreatorsRow", () => {
     expect(lastScrollLeft()).toBe(132);
   });
 
-  it("keeps arrows and dots with reduced motion and never shows a pause button", () => {
+  it("keeps dots with reduced motion and never shows a pause button", () => {
     stubReducedMotion(true);
     overflowingLayout();
     render(<SponsorshipFeaturedCreatorsRow items={items(5)} />);
 
     expect(
-      screen.getByRole("button", { name: "Próximo criador em destaque" }),
+      screen.getByRole("button", {
+        name: "Ir para a posição 2 de 3 dos criadores em destaque",
+      }),
     ).toBeVisible();
     expect(
       screen.queryByRole("button", { name: /Pausar|Retomar/ }),

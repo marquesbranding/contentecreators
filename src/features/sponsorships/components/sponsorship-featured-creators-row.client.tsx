@@ -55,39 +55,42 @@ export function SponsorshipFeaturedCreatorsRow({
       role="region"
       {...interactionProps}
     >
-      <ul
-        aria-live={layout.overflowing && !isPlaying ? "polite" : "off"}
-        // `relative`: absolutely positioned bits inside the cards (sr-only text,
-        // stretched links) would otherwise escape the scroller and widen the page.
-        className="relative -mx-4 flex snap-x snap-mandatory scroll-pl-4 gap-4 overflow-x-auto px-4 py-1 sm:mx-0 sm:scroll-pl-0 sm:px-0"
-        onScroll={handleScroll}
-        ref={listRef}
-      >
-        {visibleItems.map((item) => (
-          <li
-            className="min-w-0 shrink-0 grow basis-full snap-start sm:basis-[calc((100%-1rem)/2)] lg:basis-[calc((100%-2rem)/3)] xl:basis-[calc((100%-3rem)/4)]"
-            key={item.creative.id}
-          >
-            <SponsorshipFeaturedCreatorCard {...item} />
-          </li>
-        ))}
-      </ul>
-      {layout.overflowing ? (
-        <SponsorshipCarouselControls
-          activeIndex={activeIndex}
-          className="mt-3"
-          count={layout.stops}
-          groupLabel="Escolher criador em destaque"
-          indicatorLabel={(index, total) =>
-            `Ir para a posição ${index + 1} de ${total} dos criadores em destaque`
-          }
-          nextLabel="Próximo criador em destaque"
-          onNext={next}
-          onPrevious={previous}
-          onSelect={goTo}
-          previousLabel="Criador em destaque anterior"
-        />
-      ) : null}
+      <div className="relative">
+        <ul
+          aria-live={layout.overflowing && !isPlaying ? "polite" : "off"}
+          // `relative`: absolutely positioned bits inside the cards (sr-only text,
+          // stretched links) would otherwise escape the scroller and widen the page.
+          className="relative -mx-4 flex snap-x snap-mandatory scroll-pl-4 [scrollbar-width:none] gap-4 overflow-x-auto px-4 py-1 sm:mx-0 sm:scroll-pl-0 sm:px-0 [&::-webkit-scrollbar]:hidden"
+          onScroll={handleScroll}
+          ref={listRef}
+        >
+          {visibleItems.map((item) => (
+            <li
+              className="min-w-0 shrink-0 grow basis-full snap-start sm:basis-[calc((100%-1rem)/2)] lg:basis-[calc((100%-2rem)/3)] xl:basis-[calc((100%-3rem)/4)]"
+              key={item.creative.id}
+            >
+              <SponsorshipFeaturedCreatorCard {...item} />
+            </li>
+          ))}
+        </ul>
+        {layout.overflowing ? (
+          <SponsorshipCarouselControls
+            activeIndex={activeIndex}
+            className="pointer-events-none absolute inset-x-0 bottom-4 z-10 [&>div]:pointer-events-auto [&>div]:rounded-full [&>div]:bg-black/45 [&>div]:px-3 [&>div]:py-1.5 [&>div]:backdrop-blur-sm"
+            count={layout.stops}
+            groupLabel="Escolher criador em destaque"
+            indicatorLabel={(index, total) =>
+              `Ir para a posição ${index + 1} de ${total} dos criadores em destaque`
+            }
+            nextLabel="Próximo criador em destaque"
+            onNext={next}
+            onPrevious={previous}
+            onSelect={goTo}
+            previousLabel="Criador em destaque anterior"
+            variant="overlay"
+          />
+        ) : null}
+      </div>
     </section>
   );
 }
