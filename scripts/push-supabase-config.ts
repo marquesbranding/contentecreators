@@ -19,6 +19,8 @@ const REQUIRED_KEYS = [
   "SUPABASE_SMTP_USER",
   "SUPABASE_SMTP_PASSWORD",
   "SUPABASE_SMTP_SENDER_EMAIL",
+  "SUPABASE_PRD_GOOGLE_CLIENT_ID",
+  "SUPABASE_PRD_GOOGLE_SECRET",
 ];
 const LOCAL_HOSTS = new Set(["127.0.0.1", "::1", "localhost", "mailpit"]);
 
@@ -67,6 +69,12 @@ function assertHostedValues(values: Record<string, string>) {
   if (sender.endsWith(".test")) {
     throw new Error(
       `Refusing to push: SUPABASE_SMTP_SENDER_EMAIL is a local-only address (${sender}).`,
+    );
+  }
+
+  if (values.SUPABASE_PRD_GOOGLE_CLIENT_ID.includes("placeholder")) {
+    throw new Error(
+      "Refusing to push: SUPABASE_PRD_GOOGLE_CLIENT_ID is a local placeholder.",
     );
   }
 

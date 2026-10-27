@@ -465,7 +465,26 @@ site_url = "https://www.contentecreators.com"
 additional_redirect_urls = [
   "https://www.contentecreators.com/auth/callback",
   "https://www.contentecreators.com/reset-password",
+  "https://contentecreators.com/auth/callback",
+  "https://contentecreators.com/reset-password",
+  # Vercel deployment URLs already allowed in the hosted dashboard. A push
+  # replaces the whole list, so anything not repeated here is removed.
+  "https://contente-creators-prd-thomas-9859s-projects.vercel.app/",
+  "https://contente-creators-prd-thomas-9859s-projects.vercel.app/**",
+  "https://contente-*-creators-prd-thomas-9859s-projects.vercel.app",
+  "https://contente-*-creators-prd-thomas-9859s-projects.vercel.app/**",
 ]
+
+# Without this block the hosted project inherits [auth.external.google] above
+# (local placeholders and the 127.0.0.1 callback) and a push wipes the working
+# Google login. Keys are PRD-prefixed so the local SUPABASE_AUTH_EXTERNAL_GOOGLE_*
+# values in the same supabase/.env can never reach production.
+[remotes.production.auth.external.google]
+enabled = true
+client_id = "env(SUPABASE_PRD_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_PRD_GOOGLE_SECRET)"
+redirect_uri = "https://kstbhqeiebutpfvswyla.supabase.co/auth/v1/callback"
+skip_nonce_check = false
 
 [remotes.production.auth.rate_limit]
 # Deliberately generous: real people retry, and a locked-out signup costs more
