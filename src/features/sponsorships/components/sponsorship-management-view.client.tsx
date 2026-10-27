@@ -760,7 +760,7 @@ function PlacementList({
           resultados cabem em uma página.
         </p>
       ) : null}
-      <Card className="hidden min-w-0 overflow-x-auto lg:block">
+      <Card className="hidden min-w-0 overflow-x-auto @4xl:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -793,7 +793,7 @@ function PlacementList({
         </Table>
       </Card>
 
-      <div className="grid gap-4 lg:hidden">
+      <div className="grid gap-4 @4xl:hidden">
         <SortableContext
           items={items.map((item) => item.id)}
           strategy={verticalListSortingStrategy}

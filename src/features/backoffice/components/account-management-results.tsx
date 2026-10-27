@@ -96,7 +96,7 @@ function DesktopAccounts({ items }: { items: ManagedAccountSummaryDto[] }) {
   return (
     <section
       aria-label="Contas em tabela"
-      className="hidden min-w-0 overflow-x-auto rounded-xl border bg-white lg:block"
+      className="hidden min-w-0 overflow-x-auto rounded-xl border bg-white @4xl:block"
       role="region"
     >
       <Table>
@@ -162,7 +162,7 @@ function MobileAccounts({ items }: { items: ManagedAccountSummaryDto[] }) {
   return (
     <section
       aria-label="Contas em cartões"
-      className="grid gap-4 lg:hidden"
+      className="grid gap-4 @4xl:hidden"
       role="region"
     >
       {items.map((item) => (
@@ -192,7 +192,7 @@ function MobileAccounts({ items }: { items: ManagedAccountSummaryDto[] }) {
             </dl>
             <Completion item={item} />
           </CardContent>
-          <CardFooter>
+          <CardFooter className="[&>a]:min-h-11 [&>a]:w-full [&>a]:justify-center">
             <AccountLink item={item} />
           </CardFooter>
         </Card>

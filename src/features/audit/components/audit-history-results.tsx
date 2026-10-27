@@ -181,7 +181,7 @@ function DesktopAuditHistory({ items }: { items: AuditHistoryItemDto[] }) {
   return (
     <section
       aria-label="Histórico de auditoria em tabela"
-      className="hidden min-w-0 overflow-x-auto rounded-xl border bg-white lg:block"
+      className="hidden min-w-0 overflow-x-auto rounded-xl border bg-white @4xl:block"
     >
       <Table>
         <TableHeader>
@@ -233,7 +233,7 @@ function MobileAuditHistory({ items }: { items: AuditHistoryItemDto[] }) {
   return (
     <section
       aria-label="Histórico de auditoria em cartões"
-      className="grid gap-4 lg:hidden"
+      className="grid gap-4 @4xl:hidden"
     >
       {items.map((item) => (
         <Card key={item.revision}>

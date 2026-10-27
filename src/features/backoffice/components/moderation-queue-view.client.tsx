@@ -197,7 +197,7 @@ export function ModerationQueueView({
           </div>
 
           <form
-            className="grid gap-4 lg:grid-cols-[minmax(14rem,1fr)_14rem_14rem_auto]"
+            className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-4"
             onSubmit={(event) => {
               event.preventDefault();
               debouncedSearch.run(search);

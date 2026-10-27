@@ -1,0 +1,272 @@
+{
+  "clipping": [
+    {
+      "name": "dashboard",
+      "w": 1100,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT.",
+        "H2.sr-only",
+        "SPAN."
+      ]
+    },
+    {
+      "name": "dashboard",
+      "w": 1280,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT.",
+        "H2.sr-only",
+        "SPAN."
+      ]
+    },
+    {
+      "name": "dashboard",
+      "w": 768,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT.",
+        "H2.sr-only",
+        "SPAN."
+      ]
+    },
+    {
+      "name": "moderation",
+      "w": 1100,
+      "docOverflow": 0,
+      "count": 20,
+      "sample": [
+        "INPUT.",
+        "SPAN.text-sm font-medium sr-only",
+        "SPAN.",
+        "SPAN.sr-only"
+      ]
+    },
+    {
+      "name": "moderation",
+      "w": 1280,
+      "docOverflow": 0,
+      "count": 20,
+      "sample": [
+        "INPUT.",
+        "SPAN.text-sm font-medium sr-only",
+        "SPAN.",
+        "SPAN.sr-only"
+      ]
+    },
+    {
+      "name": "moderation",
+      "w": 768,
+      "docOverflow": 0,
+      "count": 20,
+      "sample": [
+        "INPUT.",
+        "SPAN.text-sm font-medium sr-only",
+        "SPAN.",
+        "SPAN.sr-only"
+      ]
+    },
+    {
+      "name": "accounts",
+      "w": 1100,
+      "docOverflow": 0,
+      "count": 44,
+      "sample": [
+        "INPUT.",
+        "SPAN.text-sm font-medium sr-only",
+        "SPAN."
+      ]
+    },
+    {
+      "name": "accounts",
+      "w": 1280,
+      "docOverflow": 0,
+      "count": 44,
+      "sample": [
+        "INPUT.",
+        "SPAN.text-sm font-medium sr-only",
+        "SPAN."
+      ]
+    },
+    {
+      "name": "accounts",
+      "w": 768,
+      "docOverflow": 0,
+      "count": 44,
+      "sample": [
+        "INPUT.",
+        "SPAN.text-sm font-medium sr-only",
+        "SPAN."
+      ]
+    },
+    {
+      "name": "account-detail",
+      "w": 1100,
+      "docOverflow": 0,
+      "count": 1,
+      "sample": [
+        "SPAN."
+      ]
+    },
+    {
+      "name": "account-detail",
+      "w": 1280,
+      "docOverflow": 0,
+      "count": 1,
+      "sample": [
+        "SPAN."
+      ]
+    },
+    {
+      "name": "account-detail",
+      "w": 768,
+      "docOverflow": 0,
+      "count": 1,
+      "sample": [
+        "SPAN."
+      ]
+    },
+    {
+      "name": "audit",
+      "w": 1100,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT."
+      ]
+    },
+    {
+      "name": "audit",
+      "w": 1280,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT."
+      ]
+    },
+    {
+      "name": "audit",
+      "w": 768,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT."
+      ]
+    },
+    {
+      "name": "emails",
+      "w": 1100,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT."
+      ]
+    },
+    {
+      "name": "emails",
+      "w": 1280,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT."
+      ]
+    },
+    {
+      "name": "emails",
+      "w": 768,
+      "docOverflow": 0,
+      "count": 4,
+      "sample": [
+        "INPUT.",
+        "INPUT.placeholder:text-muted-foreground h-full min-w-8 f"
+      ]
+    },
+    {
+      "name": "sponsorships",
+      "w": 1100,
+      "docOverflow": 0,
+      "count": 4,
+      "sample": [
+        "INPUT.",
+        "P.sr-only"
+      ]
+    },
+    {
+      "name": "sponsorships",
+      "w": 1280,
+      "docOverflow": 0,
+      "count": 5,
+      "sample": [
+        "INPUT.",
+        "P.sr-only",
+        "SPAN.sr-only"
+      ]
+    },
+    {
+      "name": "sponsorships",
+      "w": 768,
+      "docOverflow": 0,
+      "count": 4,
+      "sample": [
+        "INPUT.",
+        "P.sr-only"
+      ]
+    },
+    {
+      "name": "landing",
+      "w": 1100,
+      "docOverflow": 0,
+      "count": 0,
+      "sample": []
+    },
+    {
+      "name": "landing",
+      "w": 1280,
+      "docOverflow": 0,
+      "count": 0,
+      "sample": []
+    },
+    {
+      "name": "landing",
+      "w": 768,
+      "docOverflow": 0,
+      "count": 0,
+      "sample": []
+    }
+  ],
+  "debounce": {
+    "backoffice-accounts-search": {
+      "requestsAfterTyping3Chars": 2,
+      "urls": [
+        "/backoffice/accounts?archive=ACTIVE&search=abc&order=NEWEST&page=1&pageSize=20&_rsc=EMzKkW",
+        "/api/backoffice/accounts?archive=ACTIVE&search=abc&order=NEWEST&page=1&pageSize=20"
+      ]
+    },
+    "backoffice-audit-search": {
+      "requestsAfterTyping3Chars": 2,
+      "urls": [
+        "/backoffice/audit?entity=abc&page=1&pageSize=20&_rsc=07ArgLGLVXwOYzUM",
+        "/api/backoffice/audit?entity=abc&page=1&pageSize=20"
+      ]
+    },
+    "catalog-followers-min": {
+      "requestsAfterTyping3Chars": 1,
+      "urls": [
+        "/app/catalog?platform=INSTAGRAM&followersMin=123&pageSize=20&_rsc=tUWtvoIQruzdgkTf"
+      ]
+    },
+    "catalog-directory-search": {
+      "requestsAfterTyping3Chars": 1,
+      "urls": [
+        "/app/catalog?search=abc&pageSize=20&_rsc=tUWtvoIQruzdgkTf"
+      ]
+    },
+    "catalog-header-search": {
+      "requestsAfterTyping3Chars": 0,
+      "urls": []
+    }
+  }
+}

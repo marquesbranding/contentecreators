@@ -117,7 +117,7 @@ function DesktopResults({
   return (
     <section
       aria-label="E-mails operacionais em tabela"
-      className="hidden min-w-0 overflow-x-auto rounded-xl border bg-white lg:block"
+      className="hidden min-w-0 overflow-x-auto rounded-xl border bg-white @4xl:block"
     >
       <Table>
         <TableHeader>
@@ -193,7 +193,7 @@ function MobileResults({
   return (
     <section
       aria-label="E-mails operacionais em cartões"
-      className="grid gap-4 lg:hidden"
+      className="grid gap-4 @4xl:hidden"
     >
       {items.map((item) => (
         <Card key={item.id}>

@@ -77,7 +77,7 @@ function DesktopQueue({ items }: { items: ModerationQueueItemDto[] }) {
   return (
     <section
       aria-label="Submissões para moderação em tabela"
-      className="hidden min-w-0 overflow-x-auto rounded-xl border bg-white lg:block"
+      className="hidden min-w-0 overflow-x-auto rounded-xl border bg-white @4xl:block"
     >
       <Table>
         <TableHeader>
@@ -121,7 +121,7 @@ function MobileQueue({ items }: { items: ModerationQueueItemDto[] }) {
   return (
     <section
       aria-label="Submissões para moderação em cartões"
-      className="grid gap-4 lg:hidden"
+      className="grid gap-4 @4xl:hidden"
     >
       {items.map((item) => (
         <Card key={item.accountId}>
@@ -146,7 +146,7 @@ function MobileQueue({ items }: { items: ModerationQueueItemDto[] }) {
             </dl>
             <Completion item={item} />
           </CardContent>
-          <CardFooter>
+          <CardFooter className="[&>a]:min-h-11 [&>a]:w-full [&>a]:justify-center">
             <ReviewLink item={item} />
           </CardFooter>
         </Card>

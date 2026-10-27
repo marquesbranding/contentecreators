@@ -332,8 +332,11 @@ export function BackofficeShell({
           <div className="border-b bg-white px-5 py-3 sm:px-8">
             <BackofficeBreadcrumb />
           </div>
+          {/* Lists switch between table and card layouts on the width of this
+              column (container query), not the viewport: the sidebar eats
+              17rem on lg screens, so viewport breakpoints cut tables off. */}
           <main
-            className="px-5 py-6 sm:px-8 sm:py-8"
+            className="@container px-5 py-6 sm:px-8 sm:py-8"
             id="main-content"
             tabIndex={-1}
           >
