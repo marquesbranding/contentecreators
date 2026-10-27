@@ -335,32 +335,24 @@ function FilterFields({
 
 function ActiveFilters({
   activeFilters,
-  onClearFilters,
   onRemoveFilter,
-}: Pick<
-  DirectoryFilterControlsProps,
-  "activeFilters" | "onClearFilters" | "onRemoveFilter"
->) {
+}: Pick<DirectoryFilterControlsProps, "activeFilters" | "onRemoveFilter">) {
   if (activeFilters.length === 0) {
     return null;
   }
 
   return (
-    <div
-      aria-label="Filtros ativos"
-      className="flex flex-wrap items-center gap-2"
-      role="group"
-    >
+    <div aria-label="Filtros ativos" className="contents" role="group">
       {activeFilters.map((filter) => (
         <Badge
-          className="h-11 gap-1.5 rounded-full pr-0 pl-4"
+          className="h-11 gap-1 rounded-full pr-0 pl-4 lg:h-9 lg:pl-3"
           key={`${filter.key}-${filter.value ?? ""}`}
           variant="secondary"
         >
           {filter.label}
           <button
             aria-label={`Remover filtro ${filter.label}`}
-            className="focus-visible:ring-ring flex size-11 items-center justify-center rounded-full outline-none focus-visible:ring-2"
+            className="focus-visible:ring-ring flex size-11 items-center justify-center rounded-full outline-none focus-visible:ring-2 lg:size-9"
             onClick={() => onRemoveFilter(filter.key, filter.value)}
             type="button"
           >
@@ -368,14 +360,6 @@ function ActiveFilters({
           </button>
         </Badge>
       ))}
-      <Button
-        aria-label="Limpar todos os filtros"
-        onClick={onClearFilters}
-        type="button"
-        variant="ghost"
-      >
-        Limpar tudo
-      </Button>
     </div>
   );
 }
@@ -392,8 +376,10 @@ export function DirectoryFilterControls({
   const hydrated = useHydrated();
   const [filtersOpen, setFiltersOpen] = useState(false);
 
+  // `contents`: the button and the badges become items of the parent's wrapping
+  // row, so badges flow after the button and never push it or the search.
   return (
-    <section aria-label="Filtros do catálogo" className="space-y-3 pt-1">
+    <section aria-label="Filtros do catálogo" className="contents">
       <Dialog onOpenChange={setFiltersOpen} open={filtersOpen}>
         <DialogTrigger
           render={
@@ -448,14 +434,13 @@ export function DirectoryFilterControls({
 
       <ActiveFilters
         activeFilters={activeFilters}
-        onClearFilters={onClearFilters}
         onRemoveFilter={onRemoveFilter}
       />
 
       {isPending ? (
         <p
           aria-live="polite"
-          className="text-muted-foreground text-sm"
+          className="text-muted-foreground basis-full text-sm"
           role="status"
         >
           Atualizando resultados

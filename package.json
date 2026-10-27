@@ -57,6 +57,7 @@
     "accounts:eliminate-legacy": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/eliminate-legacy-account-deletions.ts",
     "local:admins": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/sync-local-admins.ts",
     "local:env": "node --import tsx scripts/sync-local-env.ts",
+    "local:catalog-volume": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/seed-local-catalog-volume.ts",
     "local:showcase": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/seed-local-landing-showcase.ts",
     "local:storage": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/seed-local-storage.ts",
     "local:sponsorships": "node --conditions=react-server --env-file-if-exists=.env.local --import tsx scripts/seed-local-sponsorships.ts",

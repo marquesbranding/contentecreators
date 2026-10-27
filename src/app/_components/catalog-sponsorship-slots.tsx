@@ -163,24 +163,26 @@ export function CatalogSponsorshipSlots({
     return children;
   }
 
-  const mainContent = (
-    <div className="min-w-0 space-y-4 sm:space-y-6">
-      {carousel.length > 0 ? (
-        <SponsorshipCarousel
-          creatives={carousel.map(toCreativeViewModel)}
-          label="Patrocínios no catálogo"
-        />
-      ) : null}
+  const lead =
+    carousel.length > 0 || featured.length > 0 ? (
+      <div className="min-w-0 space-y-4 sm:space-y-6">
+        {carousel.length > 0 ? (
+          <SponsorshipCarousel
+            creatives={carousel.map(toCreativeViewModel)}
+            label="Patrocínios no catálogo"
+          />
+        ) : null}
 
-      {featured.length === 1 ? (
-        <SponsorshipFeaturedCreator {...featured[0]} />
-      ) : featured.length > 1 ? (
-        <SponsorshipFeaturedCreatorsRow items={featured} />
-      ) : null}
-
-      {children}
-    </div>
-  );
+        {featured.length === 1 ? (
+          <SponsorshipFeaturedCreator {...featured[0]} />
+        ) : featured.length > 1 ? (
+          <SponsorshipFeaturedCreatorsRow items={featured} />
+        ) : null}
+      </div>
+    ) : null;
+  // The side banner only shares a row with the sponsored lead; the directory
+  // (filters, results, empty state) then spans the full width below it.
+  const sideBesideLead = Boolean(side && lead);
 
   return (
     <div
@@ -200,7 +202,7 @@ export function CatalogSponsorshipSlots({
             className="order-2 min-w-0 lg:order-1"
             data-slot="catalog-main-content"
           >
-            {mainContent}
+            {sideBesideLead ? lead : children}
           </div>
           <div
             className="order-1 min-w-0 lg:order-2"
@@ -210,8 +212,10 @@ export function CatalogSponsorshipSlots({
           </div>
         </div>
       ) : (
-        mainContent
+        lead
       )}
+
+      {sideBesideLead || !side ? children : null}
     </div>
   );
 }
