@@ -1,0 +1,438 @@
+{
+  "clipping": [
+    {
+      "name": "dashboard",
+      "w": 1440,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT.",
+        "H2.sr-only",
+        "SPAN."
+      ]
+    },
+    {
+      "name": "dashboard",
+      "w": 1280,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT.",
+        "H2.sr-only",
+        "SPAN."
+      ]
+    },
+    {
+      "name": "dashboard",
+      "w": 1024,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT.",
+        "H2.sr-only",
+        "SPAN."
+      ]
+    },
+    {
+      "name": "dashboard",
+      "w": 768,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT.",
+        "H2.sr-only",
+        "SPAN."
+      ]
+    },
+    {
+      "name": "dashboard",
+      "w": 390,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT.",
+        "H2.sr-only",
+        "SPAN."
+      ]
+    },
+    {
+      "name": "moderation",
+      "w": 1440,
+      "docOverflow": 0,
+      "count": 20,
+      "sample": [
+        "INPUT.",
+        "SPAN.text-sm font-medium sr-only",
+        "SPAN.",
+        "SPAN.sr-only"
+      ]
+    },
+    {
+      "name": "moderation",
+      "w": 1280,
+      "docOverflow": 0,
+      "count": 20,
+      "sample": [
+        "INPUT.",
+        "SPAN.text-sm font-medium sr-only",
+        "SPAN.",
+        "SPAN.sr-only"
+      ]
+    },
+    {
+      "name": "moderation",
+      "w": 1024,
+      "docOverflow": 0,
+      "count": 62,
+      "sample": [
+        "DIV.group/card bg-card text-card-foreground ring-foreg",
+        "DIV.grid grid-cols-2 gap-2",
+        "BUTTON.group/button inline-flex shrink-0 items-center jus",
+        "FORM.grid gap-4 lg:grid-cols-[minmax(14rem,1fr)_14rem_1",
+        "INPUT."
+      ]
+    },
+    {
+      "name": "moderation",
+      "w": 768,
+      "docOverflow": 0,
+      "count": 20,
+      "sample": [
+        "INPUT.",
+        "SPAN.text-sm font-medium sr-only",
+        "SPAN.",
+        "SPAN.sr-only"
+      ]
+    },
+    {
+      "name": "moderation",
+      "w": 390,
+      "docOverflow": 0,
+      "count": 20,
+      "sample": [
+        "INPUT.",
+        "SPAN.text-sm font-medium sr-only",
+        "SPAN.",
+        "SPAN.sr-only"
+      ]
+    },
+    {
+      "name": "accounts",
+      "w": 1440,
+      "docOverflow": 0,
+      "count": 44,
+      "sample": [
+        "INPUT.",
+        "SPAN.text-sm font-medium sr-only",
+        "SPAN."
+      ]
+    },
+    {
+      "name": "accounts",
+      "w": 1280,
+      "docOverflow": 0,
+      "count": 44,
+      "sample": [
+        "INPUT.",
+        "SPAN.text-sm font-medium sr-only",
+        "SPAN."
+      ]
+    },
+    {
+      "name": "accounts",
+      "w": 1024,
+      "docOverflow": 0,
+      "count": 210,
+      "sample": [
+        "INPUT.",
+        "TABLE.w-full caption-bottom text-sm",
+        "THEAD.[&_tr]:border-b",
+        "TR.hover:bg-muted/50 data-[state=selected]:bg-muted b",
+        "TH.text-foreground h-11 px-3 text-left align-middle f"
+      ]
+    },
+    {
+      "name": "accounts",
+      "w": 768,
+      "docOverflow": 0,
+      "count": 44,
+      "sample": [
+        "INPUT.",
+        "SPAN.text-sm font-medium sr-only",
+        "SPAN."
+      ]
+    },
+    {
+      "name": "accounts",
+      "w": 390,
+      "docOverflow": 0,
+      "count": 44,
+      "sample": [
+        "INPUT.",
+        "SPAN.text-sm font-medium sr-only",
+        "SPAN."
+      ]
+    },
+    {
+      "name": "account-detail",
+      "w": 1440,
+      "docOverflow": 0,
+      "count": 1,
+      "sample": [
+        "SPAN."
+      ]
+    },
+    {
+      "name": "account-detail",
+      "w": 1280,
+      "docOverflow": 0,
+      "count": 1,
+      "sample": [
+        "SPAN."
+      ]
+    },
+    {
+      "name": "account-detail",
+      "w": 1024,
+      "docOverflow": 0,
+      "count": 1,
+      "sample": [
+        "SPAN."
+      ]
+    },
+    {
+      "name": "account-detail",
+      "w": 768,
+      "docOverflow": 0,
+      "count": 1,
+      "sample": [
+        "SPAN."
+      ]
+    },
+    {
+      "name": "account-detail",
+      "w": 390,
+      "docOverflow": 0,
+      "count": 1,
+      "sample": [
+        "SPAN."
+      ]
+    },
+    {
+      "name": "audit",
+      "w": 1440,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT."
+      ]
+    },
+    {
+      "name": "audit",
+      "w": 1280,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT."
+      ]
+    },
+    {
+      "name": "audit",
+      "w": 1024,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT."
+      ]
+    },
+    {
+      "name": "audit",
+      "w": 768,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT."
+      ]
+    },
+    {
+      "name": "audit",
+      "w": 390,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT."
+      ]
+    },
+    {
+      "name": "emails",
+      "w": 1440,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT."
+      ]
+    },
+    {
+      "name": "emails",
+      "w": 1280,
+      "docOverflow": 0,
+      "count": 3,
+      "sample": [
+        "INPUT."
+      ]
+    },
+    {
+      "name": "emails",
+      "w": 1024,
+      "docOverflow": 0,
+      "count": 18,
+      "sample": [
+        "INPUT.",
+        "TABLE.w-full caption-bottom text-sm",
+        "THEAD.[&_tr]:border-b",
+        "TR.hover:bg-muted/50 data-[state=selected]:bg-muted b",
+        "TH.text-foreground h-11 px-3 text-left align-middle f"
+      ]
+    },
+    {
+      "name": "emails",
+      "w": 768,
+      "docOverflow": 0,
+      "count": 4,
+      "sample": [
+        "INPUT.",
+        "INPUT.placeholder:text-muted-foreground h-full min-w-8 f"
+      ]
+    },
+    {
+      "name": "emails",
+      "w": 390,
+      "docOverflow": 0,
+      "count": 4,
+      "sample": [
+        "INPUT.",
+        "DIV.group/card bg-card text-card-foreground ring-foreg"
+      ]
+    },
+    {
+      "name": "sponsorships",
+      "w": 1440,
+      "docOverflow": 0,
+      "count": 5,
+      "sample": [
+        "INPUT.",
+        "P.sr-only",
+        "SPAN.sr-only"
+      ]
+    },
+    {
+      "name": "sponsorships",
+      "w": 1280,
+      "docOverflow": 0,
+      "count": 5,
+      "sample": [
+        "INPUT.",
+        "P.sr-only",
+        "SPAN.sr-only"
+      ]
+    },
+    {
+      "name": "sponsorships",
+      "w": 1024,
+      "docOverflow": 0,
+      "count": 5,
+      "sample": [
+        "INPUT.",
+        "P.sr-only",
+        "SPAN.sr-only"
+      ]
+    },
+    {
+      "name": "sponsorships",
+      "w": 768,
+      "docOverflow": 0,
+      "count": 4,
+      "sample": [
+        "INPUT.",
+        "P.sr-only"
+      ]
+    },
+    {
+      "name": "sponsorships",
+      "w": 390,
+      "docOverflow": 0,
+      "count": 4,
+      "sample": [
+        "INPUT.",
+        "P.sr-only"
+      ]
+    },
+    {
+      "name": "landing",
+      "w": 1440,
+      "docOverflow": 0,
+      "count": 0,
+      "sample": []
+    },
+    {
+      "name": "landing",
+      "w": 1280,
+      "docOverflow": 0,
+      "count": 0,
+      "sample": []
+    },
+    {
+      "name": "landing",
+      "w": 1024,
+      "docOverflow": 0,
+      "count": 0,
+      "sample": []
+    },
+    {
+      "name": "landing",
+      "w": 768,
+      "docOverflow": 0,
+      "count": 0,
+      "sample": []
+    },
+    {
+      "name": "landing",
+      "w": 390,
+      "docOverflow": 0,
+      "count": 0,
+      "sample": []
+    }
+  ],
+  "debounce": {
+    "backoffice-accounts-search": {
+      "requestsAfterTyping3Chars": 2,
+      "urls": [
+        "/backoffice/accounts?archive=ACTIVE&search=abc&order=NEWEST&page=1&pageSize=20&_rsc=EMzKkW",
+        "/api/backoffice/accounts?archive=ACTIVE&search=abc&order=NEWEST&page=1&pageSize=20"
+      ]
+    },
+    "backoffice-audit-search": {
+      "requestsAfterTyping3Chars": 2,
+      "urls": [
+        "/backoffice/audit?entity=abc&page=1&pageSize=20&_rsc=07ArgLGLVXwOYzUM",
+        "/api/backoffice/audit?entity=abc&page=1&pageSize=20"
+      ]
+    },
+    "catalog-followers-min": {
+      "requestsAfterTyping3Chars": 1,
+      "urls": [
+        "/app/catalog?platform=INSTAGRAM&followersMin=123&pageSize=20&_rsc=tUWtvoIQruzdgkTf"
+      ]
+    },
+    "catalog-directory-search": {
+      "requestsAfterTyping3Chars": 1,
+      "urls": [
+        "/app/catalog?search=abc&pageSize=20&_rsc=tUWtvoIQruzdgkTf"
+      ]
+    },
+    "catalog-header-search": {
+      "requestsAfterTyping3Chars": 0,
+      "urls": []
+    }
+  }
+}

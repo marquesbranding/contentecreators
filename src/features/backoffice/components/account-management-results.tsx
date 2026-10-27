@@ -96,7 +96,7 @@ function DesktopAccounts({ items }: { items: ManagedAccountSummaryDto[] }) {
   return (
     <section
       aria-label="Contas em tabela"
-      className="hidden overflow-hidden rounded-xl border bg-white md:block"
+      className="hidden min-w-0 overflow-x-auto rounded-xl border bg-white lg:block"
       role="region"
     >
       <Table>
@@ -113,14 +113,14 @@ function DesktopAccounts({ items }: { items: ManagedAccountSummaryDto[] }) {
         <TableBody>
           {items.map((item) => (
             <TableRow key={item.accountId}>
-              <TableCell>
+              <TableCell className="max-w-64 break-words whitespace-normal">
                 <p className="font-semibold">{item.displayName}</p>
                 <p className="text-muted-foreground text-xs">
                   {item.operationalEmail}
                 </p>
               </TableCell>
               <TableCell>{roleLabel(item.role)}</TableCell>
-              <TableCell>
+              <TableCell className="whitespace-normal">
                 <div className="flex flex-wrap gap-2">
                   <Badge variant={statusBadgeVariant(item.status)}>
                     {getModerationStatusLabel(item.status)}
@@ -128,7 +128,9 @@ function DesktopAccounts({ items }: { items: ManagedAccountSummaryDto[] }) {
                   <ArchiveBadge item={item} />
                 </div>
               </TableCell>
-              <TableCell>{formatDate(item.createdAt)}</TableCell>
+              <TableCell className="whitespace-normal">
+                {formatDate(item.createdAt)}
+              </TableCell>
               <TableCell>
                 <Completion item={item} />
               </TableCell>
@@ -160,7 +162,7 @@ function MobileAccounts({ items }: { items: ManagedAccountSummaryDto[] }) {
   return (
     <section
       aria-label="Contas em cartões"
-      className="grid gap-4 md:hidden"
+      className="grid gap-4 lg:hidden"
       role="region"
     >
       {items.map((item) => (

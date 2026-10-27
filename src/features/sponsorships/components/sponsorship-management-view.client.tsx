@@ -80,6 +80,7 @@ import {
 } from "@/shared/components/ui/table";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { cn } from "@/shared/lib/cn";
+import { useDebouncedCallback } from "@/shared/hooks/use-debounced-callback";
 
 import {
   type SponsorshipAdminPlacementDto,
@@ -548,7 +549,7 @@ function SortablePlacementRow({
           listeners={listeners}
         />
       </TableCell>
-      <TableCell className="max-w-xs">
+      <TableCell className="max-w-xs break-words whitespace-normal">
         <p className="font-semibold">{placement.title ?? "Sem título"}</p>
         <p className="text-muted-foreground text-sm">
           {typeLabels[placement.placementType]} ·{" "}
@@ -556,8 +557,10 @@ function SortablePlacementRow({
         </p>
         <HiddenCopyNotice placement={placement} />
       </TableCell>
-      <TableCell>{audienceLabels[placement.audience]}</TableCell>
-      <TableCell>
+      <TableCell className="whitespace-normal">
+        {audienceLabels[placement.audience]}
+      </TableCell>
+      <TableCell className="whitespace-normal">
         <p className="text-muted-foreground text-xs">
           {placement.startsAt
             ? new Date(placement.startsAt).toLocaleString("pt-BR")
@@ -757,7 +760,7 @@ function PlacementList({
           resultados cabem em uma página.
         </p>
       ) : null}
-      <Card className="hidden overflow-hidden md:block">
+      <Card className="hidden min-w-0 overflow-x-auto lg:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -790,7 +793,7 @@ function PlacementList({
         </Table>
       </Card>
 
-      <div className="grid gap-4 md:hidden">
+      <div className="grid gap-4 lg:hidden">
         <SortableContext
           items={items.map((item) => item.id)}
           strategy={verticalListSortingStrategy}
@@ -873,6 +876,10 @@ export function SponsorshipManagementView({
     });
   }
 
+  const debouncedSearch = useDebouncedCallback((value: string) =>
+    update({ search: value.trim() }),
+  );
+
   return (
     <div aria-busy={query.status === "loading"} className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -894,25 +901,27 @@ export function SponsorshipManagementView({
       <Card>
         <CardContent className="pt-1">
           <form
-            className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(14rem,1fr)_13rem_13rem_13rem_auto]"
+            className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-4"
             onSubmit={(event) => {
               event.preventDefault();
-              update({ search: search.trim() });
+              debouncedSearch.run(search);
+              debouncedSearch.flush();
             }}
             role="search"
           >
-            <Field className="sm:col-span-2 xl:col-span-1">
+            <Field className="sm:col-span-2">
               <FieldLabel htmlFor="sponsorship-search">
                 Buscar patrocínio
               </FieldLabel>
               <Input
                 id="sponsorship-search"
-                onChange={(event) =>
+                onChange={(event) => {
                   setSearchDraft({
                     canonical: filters.search,
                     value: event.target.value,
-                  })
-                }
+                  });
+                  debouncedSearch.run(event.target.value);
+                }}
                 placeholder="Título, anunciante ou posição"
                 type="search"
                 value={search}

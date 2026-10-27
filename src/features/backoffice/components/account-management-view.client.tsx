@@ -16,6 +16,7 @@ import { Input } from "@/shared/components/ui/input";
 import { SearchableSelect } from "@/shared/components/ui/searchable-select";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 
+import { useDebouncedCallback } from "@/shared/hooks/use-debounced-callback";
 import { useAccountManagement } from "../hooks/use-account-management";
 import { serializeAccountManagementFilters } from "../schemas/account-management.schema";
 import type {
@@ -96,6 +97,10 @@ export function AccountManagementView({
     });
   }
 
+  const debouncedSearch = useDebouncedCallback((value: string) =>
+    update({ search: value.trim() }),
+  );
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -112,18 +117,22 @@ export function AccountManagementView({
       <Card>
         <CardContent className="grid gap-5 pt-1">
           <form
-            className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(14rem,1fr)_12rem_13rem_12rem_12rem_auto]"
+            className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-4"
             onSubmit={(event) => {
               event.preventDefault();
-              update({ search: search.trim() });
+              debouncedSearch.run(search);
+              debouncedSearch.flush();
             }}
             role="search"
           >
-            <Field className="sm:col-span-2 xl:col-span-1">
+            <Field className="sm:col-span-2">
               <FieldLabel htmlFor="account-search">Buscar conta</FieldLabel>
               <Input
                 id="account-search"
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  debouncedSearch.run(event.target.value);
+                }}
                 placeholder="Nome, e-mail ou CNPJ"
                 type="search"
                 value={search}

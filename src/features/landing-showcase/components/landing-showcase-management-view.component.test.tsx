@@ -182,8 +182,16 @@ describe("LandingShowcaseManagementView", () => {
       "zzz",
     );
 
+    // The list only filters once typing paused (550ms debounce).
     expect(
-      screen.getByText("Nenhum perfil encontrado para essa busca."),
+      screen.queryByText("Nenhum perfil encontrado para essa busca."),
+    ).not.toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        "Nenhum perfil encontrado para essa busca.",
+        {},
+        { timeout: 2_000 },
+      ),
     ).toBeVisible();
     expect(
       screen.queryByRole("button", {

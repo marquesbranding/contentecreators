@@ -181,7 +181,7 @@ function DesktopAuditHistory({ items }: { items: AuditHistoryItemDto[] }) {
   return (
     <section
       aria-label="Histórico de auditoria em tabela"
-      className="hidden overflow-hidden rounded-xl border bg-white lg:block"
+      className="hidden min-w-0 overflow-x-auto rounded-xl border bg-white lg:block"
     >
       <Table>
         <TableHeader>
@@ -215,10 +215,10 @@ function DesktopAuditHistory({ items }: { items: AuditHistoryItemDto[] }) {
                   {getAuditActionLabel(item.action)}
                 </Badge>
               </TableCell>
-              <TableCell className="align-top text-sm whitespace-nowrap">
+              <TableCell className="align-top text-sm whitespace-normal">
                 {formatAuditTimestamp(item.occurredAt)}
               </TableCell>
-              <TableCell className="min-w-80 align-top">
+              <TableCell className="min-w-56 align-top whitespace-normal">
                 <AuditDetails item={item} />
               </TableCell>
             </TableRow>

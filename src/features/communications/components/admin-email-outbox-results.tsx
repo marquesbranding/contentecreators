@@ -117,7 +117,7 @@ function DesktopResults({
   return (
     <section
       aria-label="E-mails operacionais em tabela"
-      className="hidden overflow-hidden rounded-xl border bg-white md:block"
+      className="hidden min-w-0 overflow-x-auto rounded-xl border bg-white lg:block"
     >
       <Table>
         <TableHeader>
@@ -149,14 +149,14 @@ function DesktopResults({
                   selected={selected}
                 />
               </TableCell>
-              <TableCell>
+              <TableCell className="max-w-64 break-words whitespace-normal">
                 <p className="font-semibold">{item.reference}</p>
                 <p className="text-muted-foreground text-xs">
                   {item.recipientEmail}
                 </p>
               </TableCell>
               <TableCell>{getAdminEmailTemplateLabel(item.template)}</TableCell>
-              <TableCell>
+              <TableCell className="whitespace-normal">
                 <Badge variant={statusVariant(item.status)}>
                   {getAdminEmailStatusLabel(item.status)}
                 </Badge>
@@ -167,7 +167,9 @@ function DesktopResults({
               <TableCell>
                 {item.attemptCount} de {item.maxAttempts}
               </TableCell>
-              <TableCell>{formatAdminEmailTimestamp(item.dueAt)}</TableCell>
+              <TableCell className="whitespace-normal">
+                {formatAdminEmailTimestamp(item.dueAt)}
+              </TableCell>
               <TableCell>
                 <ItemActions item={item} retryAction={retryAction} />
               </TableCell>
@@ -191,7 +193,7 @@ function MobileResults({
   return (
     <section
       aria-label="E-mails operacionais em cartões"
-      className="grid gap-4 md:hidden"
+      className="grid gap-4 lg:hidden"
     >
       {items.map((item) => (
         <Card key={item.id}>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { httpClient } from "@/shared/api/http-client";
 import { SearchableSelect } from "@/shared/components/ui/searchable-select";
 import { Button } from "@/shared/components/ui/button";
+import { useDebouncedValue } from "@/shared/hooks/use-debounced-callback";
 import {
   eligibleCreatorsResponseSchema,
   type EligibleCreator,
@@ -18,11 +19,7 @@ export function PlacementCreatorPicker({
   onSelection(value: EligibleCreator | null): void;
 }) {
   const [search, setSearch] = useState("");
-  const [debounced, setDebounced] = useState("");
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(search), 250);
-    return () => clearTimeout(timer);
-  }, [search]);
+  const debounced = useDebouncedValue(search);
   const query = useQuery({
     queryKey: [
       "backoffice",

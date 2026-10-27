@@ -9,7 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import {
   Alert,
@@ -22,6 +22,7 @@ import { Field, FieldLabel } from "@/shared/components/ui/field";
 import { Input } from "@/shared/components/ui/input";
 import { SearchableSelect } from "@/shared/components/ui/searchable-select";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { useDebouncedCallback } from "@/shared/hooks/use-debounced-callback";
 
 import { useAuditHistory } from "../hooks/use-audit-history";
 import { serializeAuditHistoryFilters } from "../schemas/audit-history.schema";
@@ -124,6 +125,15 @@ export function AuditHistoryView({
     setDraft((current) => ({ ...current, [key]: value }));
   }
 
+  const formRef = useRef<HTMLFormElement>(null);
+  // Typed filters apply on their own once the user stops typing, unless the
+  // draft is still invalid (e.g. half-typed UUID).
+  const debouncedSubmit = useDebouncedCallback(() => {
+    if (formRef.current?.checkValidity() ?? true) {
+      submitFilters();
+    }
+  });
+
   function submitFilters() {
     onFiltersChange({
       action: draft.action === "ALL" ? undefined : draft.action,
@@ -140,6 +150,7 @@ export function AuditHistoryView({
   }
 
   function clearFilters() {
+    debouncedSubmit.cancel();
     setDraft(draftFromFilters({ page: 1, pageSize: filters.pageSize }));
     onFiltersChange({ page: 1, pageSize: filters.pageSize });
   }
@@ -175,8 +186,10 @@ export function AuditHistoryView({
             className="grid gap-4"
             onSubmit={(event) => {
               event.preventDefault();
+              debouncedSubmit.cancel();
               submitFilters();
             }}
+            ref={formRef}
             role="search"
           >
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -185,9 +198,10 @@ export function AuditHistoryView({
                 <Input
                   autoComplete="off"
                   id="audit-entity"
-                  onChange={(event) =>
-                    updateDraft("entity", event.target.value)
-                  }
+                  onChange={(event) => {
+                    updateDraft("entity", event.target.value);
+                    debouncedSubmit.run();
+                  }}
                   pattern="[a-z][a-z0-9_]*"
                   placeholder="Ex.: accounts"
                   title="Use somente letras minúsculas, números e sublinhado."
@@ -200,9 +214,10 @@ export function AuditHistoryView({
                 <Input
                   autoComplete="off"
                   id="audit-record"
-                  onChange={(event) =>
-                    updateDraft("record", event.target.value)
-                  }
+                  onChange={(event) => {
+                    updateDraft("record", event.target.value);
+                    debouncedSubmit.run();
+                  }}
                   maxLength={200}
                   placeholder="UUID ou identificador"
                   value={draft.record}
@@ -216,9 +231,10 @@ export function AuditHistoryView({
                 <Input
                   autoComplete="off"
                   id="audit-actor-account"
-                  onChange={(event) =>
-                    updateDraft("actorAccountId", event.target.value)
-                  }
+                  onChange={(event) => {
+                    updateDraft("actorAccountId", event.target.value);
+                    debouncedSubmit.run();
+                  }}
                   pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"
                   placeholder="UUID da conta"
                   title="Informe um UUID válido."

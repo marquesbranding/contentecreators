@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { accountTypeLabels } from "@/shared/domain/account-type-labels";
+import { useDebouncedCallback } from "@/shared/hooks/use-debounced-callback";
 import { useHydrated } from "@/shared/hooks/use-hydrated";
 
 import type {
@@ -36,6 +37,55 @@ import type {
   DirectoryFilters,
   DirectoryTypeFilter,
 } from "../types/catalog-directory.types";
+
+/**
+ * Numeric filter that keeps typing local and only commits to the URL once the
+ * user stopped typing, so each digit does not navigate (and does not lock the
+ * field while the navigation is pending).
+ */
+function FollowersInput({
+  id,
+  onCommit,
+  placeholder,
+  value,
+}: {
+  id: string;
+  onCommit: (value: number | undefined) => void;
+  placeholder: string;
+  value: number | undefined;
+}) {
+  const [localValue, setLocalValue] = useState(value?.toString() ?? "");
+  const [syncedValue, setSyncedValue] = useState(value);
+  const debouncedCommit = useDebouncedCallback(onCommit);
+
+  if (value !== syncedValue) {
+    setSyncedValue(value);
+    setLocalValue(value?.toString() ?? "");
+  }
+
+  return (
+    <Input
+      id={id}
+      inputMode="numeric"
+      min={0}
+      onBlur={() => debouncedCommit.flush()}
+      onChange={(event) => {
+        setLocalValue(event.target.value);
+        debouncedCommit.run(
+          event.target.value ? Number(event.target.value) : undefined,
+        );
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          debouncedCommit.flush();
+        }
+      }}
+      placeholder={placeholder}
+      type="number"
+      value={localValue}
+    />
+  );
+}
 
 export interface DirectoryFilterOptions {
   cities: string[];
@@ -259,42 +309,22 @@ function FilterFields({
             <FieldLabel htmlFor="directory-filter-followers-min">
               Seguidores (mínimo)
             </FieldLabel>
-            <Input
-              disabled={isPending}
+            <FollowersInput
               id="directory-filter-followers-min"
-              inputMode="numeric"
-              min={0}
-              onChange={(event) =>
-                update({
-                  followersMin: event.target.value
-                    ? Number(event.target.value)
-                    : undefined,
-                })
-              }
+              onCommit={(followersMin) => update({ followersMin })}
               placeholder="0"
-              type="number"
-              value={filters.followersMin ?? ""}
+              value={filters.followersMin}
             />
           </Field>
           <Field>
             <FieldLabel htmlFor="directory-filter-followers-max">
               Seguidores (máximo)
             </FieldLabel>
-            <Input
-              disabled={isPending}
+            <FollowersInput
               id="directory-filter-followers-max"
-              inputMode="numeric"
-              min={0}
-              onChange={(event) =>
-                update({
-                  followersMax: event.target.value
-                    ? Number(event.target.value)
-                    : undefined,
-                })
-              }
+              onCommit={(followersMax) => update({ followersMax })}
               placeholder="Sem limite"
-              type="number"
-              value={filters.followersMax ?? ""}
+              value={filters.followersMax}
             />
           </Field>
         </div>

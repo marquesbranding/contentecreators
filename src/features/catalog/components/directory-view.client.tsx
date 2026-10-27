@@ -2,14 +2,7 @@
 
 import { Search, ShieldX } from "lucide-react";
 import type { ReactNode } from "react";
-import {
-  useEffect,
-  useMemo,
-  useOptimistic,
-  useRef,
-  useState,
-  useTransition,
-} from "react";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
 
 import {
   Alert,
@@ -22,6 +15,7 @@ import {
   InputGroupInput,
 } from "@/shared/components/ui/input-group";
 import { accountTypeLabels } from "@/shared/domain/account-type-labels";
+import { useDebouncedCallback } from "@/shared/hooks/use-debounced-callback";
 
 import { useDirectory } from "../hooks/use-directory";
 import { useDirectoryUrlState } from "../hooks/directory-url-state";
@@ -49,8 +43,6 @@ const platformLabels: Record<CatalogSocialPlatform, string> = {
   YOUTUBE: "YouTube",
 };
 
-const SEARCH_DEBOUNCE_MS = 300;
-
 function DirectorySearch({
   isPending,
   onSearchChange,
@@ -62,18 +54,14 @@ function DirectorySearch({
 }) {
   const [localValue, setLocalValue] = useState(value);
   const [syncedValue, setSyncedValue] = useState(value);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined,
+  const debouncedSearch = useDebouncedCallback((nextValue: string) =>
+    onSearchChange(nextValue.trim()),
   );
 
   if (value !== syncedValue) {
     setSyncedValue(value);
     setLocalValue(value);
   }
-
-  useEffect(() => {
-    return () => clearTimeout(debounceRef.current);
-  }, []);
 
   return (
     <InputGroup className="w-full sm:w-72">
@@ -86,10 +74,12 @@ function DirectorySearch({
         onChange={(event) => {
           const nextValue = event.target.value;
           setLocalValue(nextValue);
-          clearTimeout(debounceRef.current);
-          debounceRef.current = setTimeout(() => {
-            onSearchChange(nextValue.trim());
-          }, SEARCH_DEBOUNCE_MS);
+          debouncedSearch.run(nextValue);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            debouncedSearch.flush();
+          }
         }}
         placeholder="Buscar"
         type="search"

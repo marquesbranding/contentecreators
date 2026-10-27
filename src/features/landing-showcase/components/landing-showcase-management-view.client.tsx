@@ -29,6 +29,7 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { accountTypeLabels } from "@/shared/domain/account-type-labels";
+import { useDebouncedValue } from "@/shared/hooks/use-debounced-callback";
 
 import type {
   LandingShowcaseCandidateDto,
@@ -107,7 +108,7 @@ function CandidateRow({
 
   return (
     <li
-      className="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between"
+      className="flex min-w-0 flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between lg:flex-col lg:items-stretch 2xl:flex-row 2xl:items-center"
       data-testid="landing-showcase-candidate"
     >
       <div className="min-w-0">
@@ -187,11 +188,12 @@ function KindPanel({
   pending: boolean;
 }) {
   const [search, setSearch] = useState("");
+  const appliedSearch = useDebouncedValue(search);
   const copy = kindCopy[kind];
   const Icon = copy.icon;
   // The API already orders enabled profiles by carousel position.
   const enabled = candidates.filter((candidate) => candidate.enabled);
-  const query = search.trim().toLocaleLowerCase("pt-BR");
+  const query = appliedSearch.trim().toLocaleLowerCase("pt-BR");
   const available = candidates.filter(
     (candidate) =>
       !candidate.enabled &&
@@ -206,7 +208,7 @@ function KindPanel({
         : "Todos os perfis aptos já estão na landing.";
 
   return (
-    <Card>
+    <Card className="min-w-0">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Icon aria-hidden="true" className="size-5" />
@@ -214,7 +216,7 @@ function KindPanel({
         </CardTitle>
         <CardDescription>{copy.description}</CardDescription>
       </CardHeader>
-      <CardContent className="grid gap-6">
+      <CardContent className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6">
         <section aria-label={`${copy.title} — na landing`}>
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold">
@@ -227,7 +229,7 @@ function KindPanel({
               {copy.noneEnabled}
             </p>
           ) : (
-            <ol className="mt-3 grid gap-2">
+            <ol className="mt-3 grid grid-cols-[minmax(0,1fr)] gap-2">
               {enabled.map((candidate, index) => (
                 <CandidateRow
                   candidate={candidate}
@@ -257,7 +259,7 @@ function KindPanel({
               {availableEmptyMessage}
             </p>
           ) : (
-            <ul className="mt-3 grid max-h-[28rem] gap-2 overflow-y-auto">
+            <ul className="mt-3 grid max-h-[28rem] grid-cols-[minmax(0,1fr)] gap-2 overflow-y-auto">
               {available.map((candidate) => (
                 <CandidateRow
                   candidate={candidate}

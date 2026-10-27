@@ -21,6 +21,7 @@ import { Input } from "@/shared/components/ui/input";
 import { SearchableSelect } from "@/shared/components/ui/searchable-select";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 
+import { useDebouncedCallback } from "@/shared/hooks/use-debounced-callback";
 import { useModerationQueue } from "../hooks/use-moderation-queue";
 import { serializeModerationQueueFilters } from "../schemas/moderation-queue.schema";
 import type {
@@ -127,6 +128,10 @@ export function ModerationQueueView({
     });
   }
 
+  const debouncedSearch = useDebouncedCallback((value: string) =>
+    update({ search: value.trim() }),
+  );
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -195,7 +200,8 @@ export function ModerationQueueView({
             className="grid gap-4 lg:grid-cols-[minmax(14rem,1fr)_14rem_14rem_auto]"
             onSubmit={(event) => {
               event.preventDefault();
-              update({ search: search.trim() });
+              debouncedSearch.run(search);
+              debouncedSearch.flush();
             }}
             role="search"
           >
@@ -205,7 +211,10 @@ export function ModerationQueueView({
               </FieldLabel>
               <Input
                 id="moderation-search"
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  debouncedSearch.run(event.target.value);
+                }}
                 placeholder="Nome do cadastro"
                 type="search"
                 value={search}
