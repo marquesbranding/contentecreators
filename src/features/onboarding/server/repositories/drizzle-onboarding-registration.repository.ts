@@ -39,6 +39,7 @@ import type {
   EmailRegistrationInput,
   GoogleProfileInput,
 } from "../../schemas/onboarding-form-schema";
+import { normalizeWhatsapp } from "../../domain/brazilian-whatsapp";
 import { calculateProfileCompletionForAccount } from "./drizzle-profile-completion.repository";
 import { createDrizzleCompanyProfileRepository } from "./drizzle-company-profile.repository";
 import { createDrizzleInfluencerProfileRepository } from "./drizzle-influencer-profile.repository";
@@ -55,11 +56,6 @@ type CompanyProfileInput = Extract<ProfileInput, { role: "COMPANY" }>;
 interface RequestedProfileMedia {
   id: string;
   kind: "AVATAR" | "COVER" | "LOGO";
-}
-
-function normalizeWhatsapp(value: string) {
-  const digits = value.replace(/\D/gu, "");
-  return digits.startsWith("55") ? `+${digits}` : `+55${digits}`;
 }
 
 function auditContext(

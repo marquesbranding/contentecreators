@@ -13,6 +13,7 @@ import {
 import { applyVerifiedAuditContext } from "@/features/audit/server";
 
 import { SOCIAL_CHANNEL_PLATFORMS } from "../../domain/social-channels-form-data";
+import { normalizeWhatsapp } from "../../domain/brazilian-whatsapp";
 import type { InfluencerProfileEditInput } from "../../schemas/influencer-profile-edit-schema";
 import type { InfluencerProfileDto } from "../../types/influencer-profile.types";
 import type { InfluencerProfileRepository } from "../services/influencer-profile.service";
@@ -21,11 +22,6 @@ import {
   mapCreatorNicheSelection,
   resolveCreatorNiches,
 } from "./creator-niche.repository";
-
-function normalizeWhatsapp(value: string) {
-  const digits = value.replace(/\D/gu, "");
-  return digits.startsWith("55") ? `+${digits}` : `+55${digits}`;
-}
 
 /**
  * Channels declared before the fixed-platform picker (e.g. a custom "Outra"

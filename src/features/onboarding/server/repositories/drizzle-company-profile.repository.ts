@@ -7,15 +7,11 @@ import { companyLocations, companyProfiles, socialProfiles } from "@/db/schema";
 import { applyVerifiedAuditContext } from "@/features/audit/server";
 
 import { SOCIAL_CHANNEL_PLATFORMS } from "../../domain/social-channels-form-data";
+import { normalizeWhatsapp } from "../../domain/brazilian-whatsapp";
 import type { CompanyProfileEditInput } from "../../schemas/company-profile-edit-schema";
 import type { CompanyProfileDto } from "../../types/company-profile.types";
 import type { CompanyProfileRepository } from "../services/company-profile.service";
 import { persistCurrentAccountProfileCompletion } from "./drizzle-profile-completion.repository";
-
-function normalizeWhatsapp(value: string) {
-  const digits = value.replace(/\D/gu, "");
-  return digits.startsWith("55") ? `+${digits}` : `+55${digits}`;
-}
 
 /**
  * Channels declared before the fixed-platform picker (e.g. a custom "Outra"
